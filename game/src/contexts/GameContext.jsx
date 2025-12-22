@@ -310,9 +310,16 @@ Looking forward to working with you!
 
   // Load game
   const loadGame = useCallback((usernameToLoad) => {
+    console.log('loadGame called for:', usernameToLoad);
     const gameState = loadFromLocalStorage(usernameToLoad);
-    if (!gameState) return false;
+    console.log('Loaded game state:', gameState);
 
+    if (!gameState) {
+      console.log('No game state found!');
+      return false;
+    }
+
+    console.log('Setting game state...');
     setUsername(gameState.username);
     setPlayerMailId(gameState.playerMailId);
     setCurrentTime(new Date(gameState.currentTime));
@@ -323,8 +330,11 @@ Looking forward to working with you!
     setManagerName(gameState.managerName);
     setWindows(gameState.windows || []);
     setTimeSpeed(TIME_SPEEDS.NORMAL); // Always reset to 1x
+
+    console.log('Setting game phase to desktop');
     setGamePhase('desktop');
 
+    console.log('Load complete, returning true');
     return true;
   }, []);
 

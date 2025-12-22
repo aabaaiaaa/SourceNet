@@ -8,9 +8,13 @@ const GameLoginScreen = () => {
   const usernames = Object.keys(saves);
 
   const handleLoadSave = (username) => {
+    console.log('Loading save for:', username);
     const success = loadGame(username);
+    console.log('Load result:', success);
     if (!success) {
       alert('Failed to load save!');
+    } else {
+      console.log('Load successful, game phase should be desktop');
     }
   };
 
