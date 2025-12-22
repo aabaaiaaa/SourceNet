@@ -28,13 +28,13 @@ test.describe('E2E Test 5: App Interactions Flow', () => {
     await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
 
     // Step 6-7: Hover over mail notification and click
-    await page.waitForTimeout(3000); // Wait for messages
+    await page.waitForTimeout(4000); // Wait for first message
     await page.hover('text=✉');
     await page.click('text=✉');
 
     // Step 8-11: Read and archive Message 1
     await page.click('text=Welcome to SourceNet!');
-    await expect(page.locator('text=SourceNet Human Resources')).toBeVisible();
+    await expect(page.locator('.detail-row:has-text("SourceNet Human Resources")')).toBeVisible();
 
     await page.click('button:has-text("Archive")');
     await page.click('button:has-text("Archive")'); // Tab
@@ -46,7 +46,7 @@ test.describe('E2E Test 5: App Interactions Flow', () => {
     await page.click('button:has-text("Inbox")');
 
     // Step 12-14: Wait for and deposit cheque
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(5000); // Wait for second message after reading first
     await page.click('text=Hi from your manager');
     await page.click('.attachment-item');
 

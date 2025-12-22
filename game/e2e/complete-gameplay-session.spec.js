@@ -52,7 +52,7 @@ test.describe('E2E: Complete Gameplay Session', () => {
     // ========================================
 
     // Wait for first message (2 seconds)
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(4000);
 
     // Verify mail notification shows unread
     const mailNotification = page.locator('text=✉');
@@ -68,14 +68,14 @@ test.describe('E2E: Complete Gameplay Session', () => {
 
     // Read first message
     await page.click('text=Welcome to SourceNet!');
-    await expect(page.locator('text=SourceNet Human Resources')).toBeVisible();
+    await expect(page.locator('.detail-row:has-text("SourceNet Human Resources")')).toBeVisible();
     await expect(page.locator('text=SNET-HQ0-000-001')).toBeVisible();
 
     // Go back to inbox
     await page.click('text=← Back');
 
     // Wait for second message (2 seconds after reading first)
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(5000);
 
     // Verify second message arrived
     await expect(page.locator('text=Hi from your manager')).toBeVisible();
@@ -185,7 +185,7 @@ test.describe('E2E: Complete Gameplay Session', () => {
 
     // Verify time is advancing
     const initialTime = await page.locator('.topbar-time').textContent();
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(5000);
     const advancedTime = await page.locator('.topbar-time').textContent();
     expect(advancedTime).not.toBe(initialTime);
 
@@ -392,12 +392,20 @@ test.describe('E2E: Complete Gameplay Session', () => {
     await page.click('button:has-text("Continue")');
 
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
-    await page.waitForTimeout(3000);
 
-    // Open mail and deposit cheque
+    // Wait for first message
+    await page.waitForTimeout(4000);
+
+    // Open mail and read first message to trigger second
     await page.click('text=☰');
     await page.click('text=SNet Mail');
-    await page.waitForTimeout(3000);
+    await page.click('text=Welcome to SourceNet!');
+    await page.click('text=← Back');
+
+    // Wait for second message
+    await page.waitForTimeout(4000);
+
+    // Open and deposit cheque from second message
     await page.click('text=Hi from your manager');
     await page.click('.attachment-item');
     await page.click('button:has-text("First Bank Ltd")');

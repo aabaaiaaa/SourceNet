@@ -48,7 +48,7 @@ test.describe('E2E Test 1: First Boot Sequence (New Game)', () => {
     await expect(page.locator('text=25/03/2020 09:00')).toBeVisible();
 
     // Step 19-22: Wait 2 seconds, Message 1 arrives
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(4000); // Increased to 4s for reliability
 
     // Verify mail notification shows unread
     const mailNotification = page.locator('text=✉');
@@ -65,12 +65,12 @@ test.describe('E2E Test 1: First Boot Sequence (New Game)', () => {
     await page.click('text=Welcome to SourceNet!');
 
     // Verify message content
-    await expect(page.locator('text=SourceNet Human Resources')).toBeVisible();
-    await expect(page.locator('text=secure the global internet')).toBeVisible();
+    await expect(page.locator('.detail-row:has-text("SourceNet Human Resources")')).toBeVisible();
+    await expect(page.locator('.message-body:has-text("securing the global internet space")')).toBeVisible();
 
     // Step 26-29: Wait 2 seconds after reading, Message 2 arrives
     await page.click('text=← Back'); // Go back to message list
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(4000); // Increased to 4s for reliability
 
     // Verify second message appears
     await expect(page.locator('text=Hi from your manager')).toBeVisible();

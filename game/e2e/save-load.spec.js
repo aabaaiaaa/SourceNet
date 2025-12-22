@@ -20,13 +20,20 @@ test.describe('E2E Test 3: Save/Load Cycle', () => {
     // Wait for desktop
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
-    // Wait for messages to arrive and deposit cheque
-    await page.waitForTimeout(3000);
+    // Wait for first message to arrive
+    await page.waitForTimeout(4000);
 
     // Open SNet Mail
     await page.click('text=☰');
     await page.click('text=SNet Mail');
     await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
+
+    // Read first message to trigger second message
+    await page.click('text=Welcome to SourceNet!');
+    await page.click('text=← Back');
+
+    // Wait for second message
+    await page.waitForTimeout(4000);
 
     // Open second message
     await page.click('text=Hi from your manager');
