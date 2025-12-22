@@ -57,7 +57,9 @@ test.describe('E2E Test 2: Game Login Screen (Multiple Saves)', () => {
     await expect(page.locator('text=New Game')).toBeVisible();
 
     // Step 7: Click second username (agent_2222)
-    await page.click('button:has-text("Load"):near(text=agent_2222)');
+    // Find the save item containing agent_2222, then click its Load button
+    const save2 = page.locator('.save-item:has-text("agent_2222")');
+    await save2.locator('button:has-text("Load")').click();
 
     // Step 8-9: Verify game loads that save's state
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
@@ -69,10 +71,12 @@ test.describe('E2E Test 2: Game Login Screen (Multiple Saves)', () => {
 
     // Step 11: Delete first save
     await expect(page.locator('.game-login-screen')).toBeVisible();
-    await page.click('button:has-text("Delete"):near(text=agent_1111)');
 
-    // Confirm deletion
+    // Handle confirmation dialog
     page.on('dialog', (dialog) => dialog.accept());
+
+    const save1 = page.locator('.save-item:has-text("agent_1111")');
+    await save1.locator('button:has-text("Delete")').click();
 
     // Step 12: Verify first username removed
     await expect(page.locator('text=agent_1111')).not.toBeVisible();

@@ -22,11 +22,11 @@ test.describe('E2E Test 1: First Boot Sequence (New Game)', () => {
     await expect(page.locator('text=90GB')).toBeVisible();
 
     // Steps 5-7: Hardware checks display
-    await expect(page.locator('text=Checksum')).toBeVisible();
-    await expect(page.locator('text=Power')).toBeVisible();
+    await expect(page.locator('text=Checksum: OK')).toBeVisible();
+    await expect(page.locator('text=Power: OK')).toBeVisible();
 
     // Step 8-11: OS installation
-    await expect(page.locator('text=Installing')).toBeVisible();
+    await expect(page.locator('text=Beginning OS installation')).toBeVisible();
 
     // Step 12: Boot sequence takes ~15 seconds - wait for username screen
     await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
