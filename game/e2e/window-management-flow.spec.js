@@ -11,13 +11,21 @@ test.describe('E2E Test 4: Window Management Flow', () => {
             username: 'window_test',
             playerMailId: 'SNET-TST-123-456',
             currentTime: '2020-03-25T09:10:00',
-            hardware: {},
+            hardware: {
+              cpu: { id: 'cpu-1ghz', name: '1GHz CPU' },
+              memory: [{ id: 'ram-2gb', name: '2GB RAM' }],
+              storage: [{ id: 'ssd-90gb', name: '90GB SSD' }],
+              motherboard: { id: 'board-basic', name: 'Basic Board' },
+              powerSupply: { id: 'psu-300w', wattage: 300 },
+              network: { id: 'net-250mb', speed: 250 },
+            },
             software: [],
             bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance: 1000 }],
             messages: [],
             managerName: 'Test',
             windows: [],
             savedAt: '2024-01-01T00:00:00.000Z',
+            saveName: 'WindowTest',
           },
         ],
       };
@@ -51,13 +59,11 @@ test.describe('E2E Test 4: Window Management Flow', () => {
     const portalWindow = page.locator('.window:has-text("OSNet Portal")');
     await expect(portalWindow).toBeVisible();
 
-    // Step 5: Click Mail window → verify brought to front
-    await mailWindow.click();
-    // Z-index verification would require checking computed styles
+    // Step 5: Click Mail window header → verify brought to front
+    await mailWindow.locator('.window-header').click();
 
     // Step 7: Minimize Mail → verify appears in bottom bar
-    const mailMinimizeBtn = mailWindow.locator('button[title="Minimize"]');
-    await mailMinimizeBtn.click();
+    await mailWindow.locator('button[title="Minimize"]').click();
     await expect(page.locator('.minimized-bar .minimized-window:has-text("SNet Mail")')).toBeVisible();
 
     // Step 8: Minimize Banking → verify appears in bottom bar

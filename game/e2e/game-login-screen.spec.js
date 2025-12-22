@@ -63,29 +63,30 @@ test.describe('E2E Test 2: Game Login Screen (Multiple Saves)', () => {
 
     // Step 8-9: Verify game loads that save's state
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('text=1000 credits')).toBeVisible();
+    await expect(page.locator('.topbar-credits:has-text("1000")')).toBeVisible();
 
-    // Step 10: Reboot to login screen
-    // Handle confirmation dialog BEFORE clicking
+    // Step 10-11: Go back to login screen to test delete
+    // Reload page to get back to login screen
+    await page.reload();
+    await expect(page.locator('.game-login-screen')).toBeVisible({ timeout: 5000 });
+
+    // Delete first save
     page.once('dialog', (dialog) => dialog.accept());
-
-    await page.hover('text=⏻');
-    await page.click('text=Reboot');
-
-    // Step 11: Delete first save
-    await expect(page.locator('.game-login-screen')).toBeVisible({ timeout: 10000 });
-
-    // Handle delete confirmation dialog
-    page.once('dialog', (dialog) => dialog.accept());
-
     const save1 = page.locator('.save-item:has-text("agent_1111")');
     await save1.locator('button:has-text("Delete")').click();
 
+    // Wait for reload after delete
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
+
     // Step 12: Verify first username removed
-    await expect(page.locator('text=agent_1111')).not.toBeVisible();
+    await expect(page.locator('.game-login-screen')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.save-item:has-text("agent_1111")')).not.toBeVisible();
+    await expect(page.locator('.save-item:has-text("agent_2222")')).toBeVisible();
+    await expect(page.locator('.save-item:has-text("agent_3333")')).toBeVisible();
 
     // Step 13-14: Click "New Game" and verify boot sequence
-    await page.click('text=New Game');
+    await page.click('.new-game-btn');
     await expect(page.locator('.boot-screen')).toBeVisible({ timeout: 5000 });
 
     console.log('✅ E2E Test 2: Game Login Screen - PASS');

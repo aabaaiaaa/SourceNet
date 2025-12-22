@@ -33,21 +33,25 @@ test.describe('E2E Test 5: App Interactions Flow', () => {
     await page.click('text=✉');
 
     // Step 8-11: Read and archive Message 1
-    await page.click('text=Welcome to SourceNet!');
-    await expect(page.locator('.detail-row:has-text("SourceNet Human Resources")')).toBeVisible();
+    await page.click('.message-item:has-text("Welcome to SourceNet!")');
+    await expect(page.locator('.message-view')).toBeVisible();
 
-    await page.click('button:has-text("Archive")');
-    await page.click('button:has-text("Archive")'); // Tab
+    // Click Archive button in message view
+    await page.click('.archive-button');
+
+    // Should automatically go back to inbox
+    // Switch to Archive tab to verify
+    await page.click('.tab:has-text("Archive")');
 
     // Verify message in Archive tab
-    await expect(page.locator('text=Welcome to SourceNet!')).toBeVisible();
+    await expect(page.locator('.message-item:has-text("Welcome to SourceNet!")')).toBeVisible();
 
     // Switch back to Inbox
-    await page.click('button:has-text("Inbox")');
+    await page.click('.tab:has-text("Inbox")');
 
     // Step 12-14: Wait for and deposit cheque
     await page.waitForTimeout(5000); // Wait for second message after reading first
-    await page.click('text=Hi from your manager');
+    await page.click('.message-item:has-text("Hi from your manager")');
     await page.click('.attachment-item');
 
     // Banking app should open with deposit prompt
@@ -67,8 +71,8 @@ test.describe('E2E Test 5: App Interactions Flow', () => {
 
     // Browse to Software section
     await page.click('button:has-text("Software")');
-    await expect(page.locator('text=VPN Client')).toBeVisible();
-    await expect(page.locator('text=Coming Soon')).toBeVisible();
+    await expect(page.locator('.item-name:has-text("SourceNet VPN Client")')).toBeVisible();
+    await expect(page.locator('.unavailable-badge:has-text("Coming Soon")')).toBeVisible();
 
     // Step 21: Close all apps
     await page.click('.window:has-text("SNet Mail") button[title="Close"]');

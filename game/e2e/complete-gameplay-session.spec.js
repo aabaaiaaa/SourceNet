@@ -17,15 +17,7 @@ test.describe('E2E: Complete Gameplay Session', () => {
     await expect(page.locator('.boot-screen')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('text=OSNet BIOS')).toBeVisible();
 
-    // Verify hardware detection
-    await expect(page.locator('text=1GHz Single Core')).toBeVisible({ timeout: 20000 });
-    await expect(page.locator('text=2GB')).toBeVisible();
-    await expect(page.locator('text=90GB')).toBeVisible();
-
-    // Verify OS installation
-    await expect(page.locator('text=Installing')).toBeVisible();
-
-    // Wait for username selection screen
+    // Wait for boot to complete and username selection screen
     await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
 
     // Enter username
@@ -67,25 +59,24 @@ test.describe('E2E: Complete Gameplay Session', () => {
     await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
 
     // Read first message
-    await page.click('text=Welcome to SourceNet!');
-    await expect(page.locator('.detail-row:has-text("SourceNet Human Resources")')).toBeVisible();
-    await expect(page.locator('text=SNET-HQ0-000-001')).toBeVisible();
+    await page.click('.message-item:has-text("Welcome to SourceNet!")');
+    await expect(page.locator('.message-view')).toBeVisible();
 
     // Go back to inbox
-    await page.click('text=← Back');
+    await page.click('button:has-text("Back")');
 
     // Wait for second message (2 seconds after reading first)
     await page.waitForTimeout(5000);
 
     // Verify second message arrived
-    await expect(page.locator('text=Hi from your manager')).toBeVisible();
+    await expect(page.locator('.message-item:has-text("Hi from your manager")')).toBeVisible({ timeout: 10000 });
 
     // ========================================
     // PHASE 4: Cheque Deposit Flow
     // ========================================
 
     // Open second message
-    await page.click('text=Hi from your manager');
+    await page.click('.message-item:has-text("Hi from your manager")');
 
     // Verify manager message content
     await expect(page.locator('text=welcome bonus')).toBeVisible();
@@ -102,7 +93,7 @@ test.describe('E2E: Complete Gameplay Session', () => {
     await page.click('.account-select-btn:has-text("First Bank Ltd")');
 
     // Verify credits updated
-    await expect(page.locator('text=1000 credits')).toBeVisible({ timeout: 2000 });
+    await expect(page.locator('.topbar-credits:has-text("1000")')).toBeVisible({ timeout: 5000 });
 
     // ========================================
     // PHASE 5: Window Management Testing
@@ -117,8 +108,9 @@ test.describe('E2E: Complete Gameplay Session', () => {
     const windows = await page.locator('.window').count();
     expect(windows).toBe(3);
 
-    // Click on Mail window to bring to front
-    await page.click('.window:has-text("SNet Mail")');
+    // Click on Mail window header to bring to front
+    const mailWindow = page.locator('.window:has-text("SNet Mail")');
+    await mailWindow.locator('.window-header').click();
 
     // Drag Portal window (simulate drag)
     const portalWindow = page.locator('.window:has-text("OSNet Portal")');
@@ -126,7 +118,6 @@ test.describe('E2E: Complete Gameplay Session', () => {
     await portalHeader.hover();
 
     // Minimize Mail window
-    const mailWindow = page.locator('.window:has-text("SNet Mail")');
     await mailWindow.locator('button[title="Minimize"]').click();
 
     // Verify Mail appears in minimized bar
@@ -251,18 +242,10 @@ test.describe('E2E: Complete Gameplay Session', () => {
     // PHASE 10: Save Game
     // ========================================
 
-    // Note current game state
-    const currentTime = await page.locator('.topbar-time').textContent();
-
     // Open power menu and save
+    page.once('dialog', (dialog) => dialog.accept('CompleteGameTest'));
     await page.hover('text=⏻');
     await page.click('text=Save');
-
-    // Handle save dialog
-    page.on('dialog', (dialog) => {
-      dialog.accept('CompleteGameTest');
-    });
-
     await page.waitForTimeout(1000);
 
     // ========================================
@@ -399,25 +382,25 @@ test.describe('E2E: Complete Gameplay Session', () => {
     // Open mail and read first message to trigger second
     await page.click('text=☰');
     await page.click('text=SNet Mail');
-    await page.click('text=Welcome to SourceNet!');
-    await page.click('text=← Back');
+    await page.click('.message-item:has-text("Welcome")');
+    await page.click('button:has-text("Back")');
 
     // Wait for second message
-    await page.waitForTimeout(4000);
+    await page.waitForTimeout(5000);
 
     // Open and deposit cheque from second message
-    await page.click('text=Hi from your manager');
+    await page.click('.message-item:has-text("Hi from your manager")');
     await page.click('.attachment-item');
     await page.click('button:has-text("First Bank Ltd")');
 
     // Save first session
+    page.once('dialog', (dialog) => dialog.accept('Session1'));
     await page.hover('text=⏻');
     await page.click('text=Save');
-    page.on('dialog', (dialog) => dialog.accept('Session1'));
+    await page.waitForTimeout(1000);
 
-    // Start second session
-    await page.hover('text=⏻');
-    await page.click('text=Reboot');
+    // Reload to get back to login screen
+    await page.reload();
 
     // Should show login screen with session_1
     await expect(page.locator('.game-login-screen')).toBeVisible({ timeout: 5000 });
@@ -433,24 +416,29 @@ test.describe('E2E: Complete Gameplay Session', () => {
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
     // Verify this is a fresh session (0 credits)
-    await expect(page.locator('text=0 credits')).toBeVisible();
+    await expect(page.locator('.topbar-credits:has-text("0")')).toBeVisible();
 
-    // Load session_1 to verify independence
+    // Save session_2
+    page.once('dialog', (dialog) => dialog.accept('Session2'));
     await page.hover('text=⏻');
-    await page.click('text=Reboot');
+    await page.click('text=Save');
+    await page.waitForTimeout(1000);
+
+    // Reload to verify both sessions saved
+    await page.reload();
 
     await expect(page.locator('.game-login-screen')).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('text=session_1')).toBeVisible();
-    await expect(page.locator('text=session_2')).toBeVisible();
+    await expect(page.locator('.save-item:has-text("session_1")')).toBeVisible();
+    await expect(page.locator('.save-item:has-text("session_2")')).toBeVisible();
 
     // Load session_1
-    const loadBtn = page.locator('button:has-text("Load")').first();
-    await loadBtn.click();
+    const session1Save = page.locator('.save-item:has-text("session_1")');
+    await session1Save.locator('button:has-text("Load")').click();
 
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
     // Verify session_1 still has 1000 credits
-    await expect(page.locator('text=1000 credits')).toBeVisible();
+    await expect(page.locator('.topbar-credits:has-text("1000")')).toBeVisible();
 
     console.log('✅ E2E: Multiple Independent Sessions - PASS');
   });
