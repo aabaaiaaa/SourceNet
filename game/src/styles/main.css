@@ -1,0 +1,206 @@
+/* SourceNet - Phase 1 Main Styles */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Courier New', Courier, monospace;
+  background-color: #000;
+  color: #fff;
+  overflow: hidden;
+}
+
+.game-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.game-container h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #00ff00;
+}
+
+.game-container p {
+  margin: 10px 0;
+  font-size: 1rem;
+}
+
+.game-container ul {
+  list-style: none;
+  margin: 20px 0;
+}
+
+.game-container li {
+  margin: 5px 0;
+  font-size: 0.9rem;
+}
+
+/* OSNet Theme Variables */
+:root {
+  --osnet-bg: #f5f5f5;
+  --osnet-fg: #333333;
+  --osnet-primary: #5a5a5a;
+  --osnet-secondary: #8a8a8a;
+  --osnet-accent: #4a90e2;
+  --osnet-border: #cccccc;
+  --window-shadow: rgba(0, 0, 0, 0.2);
+}
+
+/* Retro Hacker Theme (Login Screen) */
+.retro-hacker-theme {
+  background-color: #000;
+  color: #c9a500;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+/* Desktop */
+.desktop {
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--osnet-bg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Window Styles */
+.window {
+  position: absolute;
+  background-color: white;
+  border: 1px solid var(--osnet-border);
+  box-shadow: 0 4px 6px var(--window-shadow);
+  display: flex;
+  flex-direction: column;
+}
+
+.window-header {
+  background-color: var(--osnet-primary);
+  color: white;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: move;
+  user-select: none;
+}
+
+.window-title {
+  flex: 1;
+  text-align: center;
+  font-weight: bold;
+}
+
+.window-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.window-control-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-family: monospace;
+  font-size: 16px;
+  padding: 0 4px;
+}
+
+.window-control-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.window-content {
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+}
+
+/* Minimized Window Bar */
+.minimized-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background-color: var(--osnet-secondary);
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  gap: 10px;
+}
+
+.minimized-window {
+  background-color: var(--osnet-primary);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+/* Top Bar */
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background-color: var(--osnet-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  z-index: 10000;
+}
+
+.topbar-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topbar-button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-family: monospace;
+}
+
+.topbar-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Boot Sequence */
+.boot-screen {
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  color: #00ff00;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.boot-line {
+  margin: 2px 0;
+  font-size: 14px;
+}
+
+.boot-ascii {
+  white-space: pre;
+  margin: 10px 0;
+}
