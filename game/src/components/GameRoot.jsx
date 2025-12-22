@@ -10,15 +10,14 @@ const GameRoot = () => {
   const { gamePhase, setGamePhase } = useGame();
 
   useEffect(() => {
-    // On initial mount, check if we have any saves
-    if (gamePhase === 'boot') {
-      const savesExist = hasSaves();
-      if (savesExist) {
-        setGamePhase('login');
-      }
-      // If no saves, stay in 'boot' phase
+    // Only check for saves on initial mount (gamePhase starts as 'boot')
+    // Don't re-check if user explicitly chose "New Game"
+    const savesExist = hasSaves();
+    if (savesExist && gamePhase === 'boot') {
+      setGamePhase('login');
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps = only run on mount
 
   // Render appropriate component based on game phase
   switch (gamePhase) {

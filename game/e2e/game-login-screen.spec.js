@@ -6,31 +6,31 @@ test.describe('E2E Test 2: Game Login Screen (Multiple Saves)', () => {
 
     // Create first save
     await page.evaluate(() => {
+      const createSave = (username, balance) => ({
+        username,
+        playerMailId: `SNET-TST-${username.slice(-4)}-XXX`,
+        currentTime: '2020-03-25T09:00:00',
+        hardware: {
+          cpu: { id: 'cpu-1ghz', name: '1GHz CPU' },
+          memory: [{ id: 'ram-2gb', name: '2GB RAM' }],
+          storage: [{ id: 'ssd-90gb', name: '90GB SSD' }],
+          motherboard: { id: 'board-basic', name: 'Basic Board' },
+          powerSupply: { id: 'psu-300w', wattage: 300 },
+          network: { id: 'net-250mb', speed: 250 },
+        },
+        software: [],
+        bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance }],
+        messages: [],
+        managerName: 'TestManager',
+        windows: [],
+        savedAt: new Date().toISOString(),
+        saveName: username,
+      });
+
       const saves = {
-        agent_1111: [
-          {
-            username: 'agent_1111',
-            currentTime: '2020-03-25T09:00:00',
-            bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance: 500 }],
-            savedAt: '2024-01-01T00:00:00.000Z',
-          },
-        ],
-        agent_2222: [
-          {
-            username: 'agent_2222',
-            currentTime: '2020-03-25T10:00:00',
-            bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance: 1000 }],
-            savedAt: '2024-01-02T00:00:00.000Z',
-          },
-        ],
-        agent_3333: [
-          {
-            username: 'agent_3333',
-            currentTime: '2020-03-25T11:00:00',
-            bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance: 1500 }],
-            savedAt: '2024-01-03T00:00:00.000Z',
-          },
-        ],
+        agent_1111: [createSave('agent_1111', 500)],
+        agent_2222: [createSave('agent_2222', 1000)],
+        agent_3333: [createSave('agent_3333', 1500)],
       };
       localStorage.setItem('sourcenet_saves', JSON.stringify(saves));
     });
@@ -66,14 +66,17 @@ test.describe('E2E Test 2: Game Login Screen (Multiple Saves)', () => {
     await expect(page.locator('text=1000 credits')).toBeVisible();
 
     // Step 10: Reboot to login screen
+    // Handle confirmation dialog BEFORE clicking
+    page.once('dialog', (dialog) => dialog.accept());
+
     await page.hover('text=⏻');
     await page.click('text=Reboot');
 
     // Step 11: Delete first save
-    await expect(page.locator('.game-login-screen')).toBeVisible();
+    await expect(page.locator('.game-login-screen')).toBeVisible({ timeout: 10000 });
 
-    // Handle confirmation dialog
-    page.on('dialog', (dialog) => dialog.accept());
+    // Handle delete confirmation dialog
+    page.once('dialog', (dialog) => dialog.accept());
 
     const save1 = page.locator('.save-item:has-text("agent_1111")');
     await save1.locator('button:has-text("Delete")').click();

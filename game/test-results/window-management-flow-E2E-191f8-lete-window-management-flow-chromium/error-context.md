@@ -1,0 +1,110 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button "⏻" [ref=e7] [cursor=pointer]
+    - generic [ref=e8]:
+      - generic [ref=e9]: 25/03/2020 09:10:10
+      - button "1x" [ref=e10] [cursor=pointer]
+    - generic [ref=e11]:
+      - generic [ref=e12] [cursor=pointer]: ✉
+      - generic [ref=e13] [cursor=pointer]: 💳
+      - generic "Click to open Banking App" [ref=e14] [cursor=pointer]: 1000 credits
+    - button "☰" [ref=e17] [cursor=pointer]
+  - generic [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - generic [ref=e21]: SNet Mail
+        - generic [ref=e22]:
+          - button "_" [ref=e23] [cursor=pointer]
+          - button "×" [ref=e24] [cursor=pointer]
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - generic [ref=e28]: "Your Mail ID: SNET-TST-123-456"
+          - generic [ref=e29]:
+            - button "Inbox (0)" [ref=e30] [cursor=pointer]
+            - button "Archive (0)" [ref=e31] [cursor=pointer]
+        - generic [ref=e34]: No messages in inbox
+    - generic [ref=e35]:
+      - generic [ref=e36]:
+        - generic [ref=e37]: SNet Banking App
+        - generic [ref=e38]:
+          - button "_" [ref=e39] [cursor=pointer]
+          - button "×" [ref=e40] [cursor=pointer]
+      - generic [ref=e42]:
+        - generic [ref=e43]:
+          - heading "SNet Banking App" [level=2] [ref=e44]
+          - paragraph [ref=e45]: Manage your accounts securely
+        - generic [ref=e46]:
+          - heading "Your Accounts" [level=3] [ref=e47]
+          - generic [ref=e48]:
+            - generic [ref=e49]:
+              - generic [ref=e50]: First Bank Ltd
+              - generic [ref=e51]: "Account: acc-1"
+            - generic [ref=e52]: 1000 credits
+        - paragraph [ref=e54]:
+          - text: "Total across all accounts:"
+          - strong [ref=e55]: 1000 credits
+    - generic [ref=e56]:
+      - generic [ref=e57]:
+        - generic [ref=e58]: OSNet Portal
+        - generic [ref=e59]:
+          - button "_" [ref=e60] [cursor=pointer]
+          - button "×" [ref=e61] [cursor=pointer]
+      - generic [ref=e63]:
+        - generic [ref=e64]:
+          - heading "OSNet Software/Hardware Portal" [level=2] [ref=e65]
+          - paragraph [ref=e66]: Browse available upgrades
+        - generic [ref=e67]:
+          - button "Hardware" [ref=e68] [cursor=pointer]
+          - button "Software" [ref=e69] [cursor=pointer]
+        - generic [ref=e70]:
+          - button "Processors" [ref=e71] [cursor=pointer]
+          - button "Memory" [ref=e72] [cursor=pointer]
+          - button "Storage" [ref=e73] [cursor=pointer]
+          - button "Motherboards" [ref=e74] [cursor=pointer]
+          - button "Power Supplies" [ref=e75] [cursor=pointer]
+          - button "Network Adapters" [ref=e76] [cursor=pointer]
+        - generic [ref=e77]:
+          - generic [ref=e78]:
+            - generic [ref=e79]:
+              - generic [ref=e80]: 1GHz Single Core
+              - generic [ref=e81]: $200
+            - generic [ref=e82]:
+              - generic [ref=e83]: "Specs: 1GHz, 1 core"
+              - generic [ref=e84]: "Power: 65W"
+            - generic [ref=e86]: Purchase (Phase 2)
+          - generic [ref=e87]:
+            - generic [ref=e88]:
+              - generic [ref=e89]: 2GHz Dual Core
+              - generic [ref=e90]: $800
+            - generic [ref=e91]:
+              - generic [ref=e92]: "Specs: 2GHz, 2 cores"
+              - generic [ref=e93]: "Power: 95W"
+            - generic [ref=e95]: Purchase (Phase 2)
+          - generic [ref=e96]:
+            - generic [ref=e97]:
+              - generic [ref=e98]: 3GHz Dual Core
+              - generic [ref=e99]: $1500
+            - generic [ref=e100]:
+              - generic [ref=e101]: "Specs: 3GHz, 2 cores"
+              - generic [ref=e102]: "Power: 125W"
+            - generic [ref=e104]: Purchase (Phase 2)
+          - generic [ref=e105]:
+            - generic [ref=e106]:
+              - generic [ref=e107]: 4GHz Quad Core
+              - generic [ref=e108]: $3000
+            - generic [ref=e109]:
+              - generic [ref=e110]: "Specs: 4GHz, 4 cores"
+              - generic [ref=e111]: "Power: 150W"
+            - generic [ref=e113]: Purchase (Phase 2)
+          - generic [ref=e114]:
+            - generic [ref=e115]:
+              - generic [ref=e116]: 6GHz Octa Core
+              - generic [ref=e117]: $6000
+            - generic [ref=e118]:
+              - generic [ref=e119]: "Specs: 6GHz, 8 cores"
+              - generic [ref=e120]: "Power: 180W"
+            - generic [ref=e122]: Purchase (Phase 2)
+```
