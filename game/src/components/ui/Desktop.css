@@ -1,0 +1,23 @@
+.desktop {
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--osnet-bg);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.desktop-content {
+  flex: 1;
+  position: relative;
+  background-image: linear-gradient(
+      to bottom,
+      rgba(245, 245, 245, 0.95),
+      rgba(245, 245, 245, 0.95)
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23cccccc' font-family='Arial, sans-serif' font-size='48' font-weight='bold' opacity='0.3'%3EOSNet%3C/text%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 400px 300px;
+}

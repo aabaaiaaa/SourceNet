@@ -1,0 +1,132 @@
+.banking-app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.banking-header {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--osnet-border);
+}
+
+.banking-header h2 {
+  margin: 0 0 5px 0;
+  font-size: 18px;
+  color: var(--osnet-primary);
+}
+
+.banking-subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: var(--osnet-secondary);
+}
+
+.cheque-deposit-prompt {
+  background-color: #fff9e6;
+  border: 2px solid #ffd700;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.prompt-header {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.cheque-deposit-prompt p {
+  margin: 8px 0;
+  font-size: 13px;
+}
+
+.account-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.account-select-btn {
+  padding: 12px;
+  border: 2px solid #ffd700;
+  background-color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.account-select-btn:hover {
+  background-color: #fffdf0;
+  border-color: #ffb700;
+  transform: translateY(-2px);
+}
+
+.account-name {
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.account-balance {
+  font-size: 12px;
+  color: var(--osnet-secondary);
+}
+
+.accounts-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.accounts-list h3 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: var(--osnet-primary);
+}
+
+.account-card {
+  padding: 15px;
+  border: 1px solid var(--osnet-border);
+  border-radius: 4px;
+  margin-bottom: 10px;
+  background-color: #f9f9f9;
+}
+
+.account-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.bank-name {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.account-id {
+  font-size: 11px;
+  color: var(--osnet-secondary);
+}
+
+.account-balance-large {
+  font-size: 24px;
+  font-weight: bold;
+  color: #27ae60;
+}
+
+.banking-footer {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 2px solid var(--osnet-border);
+}
+
+.banking-footer p {
+  margin: 0;
+  font-size: 13px;
+  text-align: right;
+}

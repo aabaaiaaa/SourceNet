@@ -1,0 +1,15 @@
+.boot-screen {
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  color: #00ff00;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.boot-line {
+  margin: 2px 0;
+  font-size: 14px;
+  line-height: 1.4;
+}

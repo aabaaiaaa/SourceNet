@@ -1,0 +1,47 @@
+.minimized-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background-color: var(--osnet-secondary);
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  gap: 10px;
+  z-index: 9999;
+  border-top: 1px solid var(--osnet-border);
+}
+
+.minimized-window {
+  background-color: var(--osnet-primary);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+  transition: background-color 0.2s;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+}
+
+.minimized-window:hover {
+  background-color: var(--osnet-accent);
+}
+
+.minimized-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.restore-icon {
+  font-size: 14px;
+  opacity: 0.8;
+}

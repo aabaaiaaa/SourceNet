@@ -1,0 +1,65 @@
+.window {
+  position: absolute;
+  background-color: white;
+  border: 1px solid var(--osnet-border);
+  box-shadow: 0 4px 12px var(--window-shadow);
+  display: flex;
+  flex-direction: column;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.window-header {
+  background-color: var(--osnet-primary);
+  color: white;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+  min-height: 36px;
+}
+
+.window-title {
+  flex: 1;
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.window-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.window-control-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 20px;
+  padding: 0 6px;
+  border-radius: 3px;
+  transition: background-color 0.2s;
+  line-height: 1;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.window-control-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.window-content {
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+  background-color: white;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+}

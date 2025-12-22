@@ -1,0 +1,71 @@
+.username-selection {
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  color: #00ff00;
+  font-family: 'Courier New', Courier, monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.username-container {
+  max-width: 500px;
+  padding: 40px;
+  border: 2px solid #00ff00;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.username-container h1 {
+  margin: 0 0 20px 0;
+  font-size: 32px;
+}
+
+.username-container p {
+  margin: 0 0 30px 0;
+  font-size: 16px;
+}
+
+.username-input {
+  width: 100%;
+  padding: 12px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 18px;
+  background-color: #000;
+  color: #00ff00;
+  border: 2px solid #00ff00;
+  border-radius: 4px;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.username-input:focus {
+  outline: none;
+  border-color: #00ff00;
+  box-shadow: 0 0 10px #00ff00;
+}
+
+.username-hint {
+  font-size: 12px;
+  margin-bottom: 20px;
+  opacity: 0.7;
+}
+
+.username-submit {
+  padding: 12px 32px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 16px;
+  background-color: #00ff00;
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.username-submit:hover {
+  background-color: #00cc00;
+  transform: scale(1.05);
+}
