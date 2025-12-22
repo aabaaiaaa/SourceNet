@@ -84,4 +84,82 @@ describe('TopBar Component', () => {
 
     expect(screen.getByText('10x')).toBeInTheDocument();
   });
+
+  it('should toggle pause/resume when pause button clicked', async () => {
+    renderWithProvider(<TopBar />);
+    const powerButton = screen.getByText('⏻');
+
+    fireEvent.mouseEnter(powerButton.parentElement);
+
+    await waitFor(() => {
+      expect(screen.getByText('Pause')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Pause'));
+
+    // Menu should close and show Resume next time
+    fireEvent.mouseEnter(powerButton.parentElement);
+    await waitFor(() => {
+      expect(screen.getByText('Resume')).toBeInTheDocument();
+    });
+  });
+
+  it('should show save dialog when Save clicked', async () => {
+    // Mock window.prompt
+    global.prompt = vi.fn(() => 'TestSave');
+    global.alert = vi.fn();
+
+    renderWithProvider(<TopBar />);
+    const powerButton = screen.getByText('⏻');
+
+    fireEvent.mouseEnter(powerButton.parentElement);
+
+    await waitFor(() => {
+      expect(screen.getByText('Save')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Save'));
+
+    expect(global.prompt).toHaveBeenCalled();
+    expect(global.alert).toHaveBeenCalledWith('Game saved!');
+  });
+
+  it('should show confirmation when Reboot clicked', async () => {
+    global.confirm = vi.fn(() => false); // User cancels
+
+    renderWithProvider(<TopBar />);
+    const powerButton = screen.getByText('⏻');
+
+    fireEvent.mouseEnter(powerButton.parentElement);
+
+    await waitFor(() => {
+      expect(screen.getByText('Reboot')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Reboot'));
+
+    expect(global.confirm).toHaveBeenCalledWith(
+      'Reboot the system? Unsaved progress will be lost.'
+    );
+  });
+
+  it('should show confirmation when Sleep clicked', async () => {
+    global.confirm = vi.fn(() => false); // User cancels
+    global.alert = vi.fn();
+
+    renderWithProvider(<TopBar />);
+    const powerButton = screen.getByText('⏻');
+
+    fireEvent.mouseEnter(powerButton.parentElement);
+
+    await waitFor(() => {
+      expect(screen.getByText('Sleep')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Sleep'));
+
+    expect(global.confirm).toHaveBeenCalledWith(
+      'Exit the game? Make sure to save first!'
+    );
+  });
 });
