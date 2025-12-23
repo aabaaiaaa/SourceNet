@@ -8,7 +8,16 @@ const BootSequence = () => {
   const [bootComplete, setBootComplete] = useState(false);
 
   useEffect(() => {
-    const lines = [
+    // Check if OS is already installed (subsequent boot)
+    const osInstalled = localStorage.getItem('osnet_installed') === 'true';
+    const isFirstBoot = !osInstalled;
+
+    // Mark OS as installed for future boots
+    if (isFirstBoot) {
+      localStorage.setItem('osnet_installed', 'true');
+    }
+
+    const baseLines = [
       'OSNet BIOS v1.0',
       '==========================================',
       '',
@@ -30,6 +39,9 @@ const BootSequence = () => {
       'Network connection test...',
       `Speed: ${hardware.network.speed}Mb/s`,
       '',
+    ];
+
+    const osInstallationLines = [
       'Searching for operating system...',
       'No OS found on local storage.',
       '',
@@ -52,6 +64,23 @@ const BootSequence = () => {
       'System will now continue to username setup...',
     ];
 
+    const subsequentBootLines = [
+      'Searching for operating system...',
+      'OSNet v1.0 found.',
+      '',
+      'Loading OSNet...',
+      'OSNet loaded successfully.',
+      '',
+    ];
+
+    // Build complete boot sequence
+    const lines = isFirstBoot
+      ? [...baseLines, ...osInstallationLines]
+      : [...baseLines, ...subsequentBootLines];
+
+    // Timing: 300ms per line for first boot (~15s), 150ms for subsequent (~4s)
+    const lineDelay = isFirstBoot ? 300 : 150;
+
     let currentIndex = 0;
     const interval = setInterval(() => {
       if (currentIndex < lines.length) {
@@ -61,7 +90,7 @@ const BootSequence = () => {
         setBootComplete(true);
         clearInterval(interval);
       }
-    }, 300); // Show each line every 300ms (~15 seconds total)
+    }, lineDelay);
 
     return () => clearInterval(interval);
   }, []);
