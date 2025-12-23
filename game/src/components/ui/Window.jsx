@@ -52,7 +52,7 @@ const Window = ({ window }) => {
   };
 
   // Add/remove mouse event listeners
-  useState(() => {
+  useEffect(() => {
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
@@ -65,7 +65,7 @@ const Window = ({ window }) => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging]);
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
   const getAppComponent = () => {
     switch (window.appId) {

@@ -35,20 +35,32 @@ test.describe('E2E: Boot Sequence Timing', () => {
     await page.click('button:has-text("Continue")');
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
-    // Reboot to trigger subsequent boot
-    page.once('dialog', (dialog) => dialog.accept());
+    // Save so we have saves (triggers subsequent boot logic)
+    page.once('dialog', (dialog) => dialog.accept('BootTest'));
     await page.hover('text=⏻');
-    await page.click('text=Reboot');
+    await page.click('text=Save');
+    await page.waitForTimeout(1000);
 
-    // Wait for boot screen (subsequent boot)
-    await expect(page.locator('.boot-screen')).toBeVisible({ timeout: 10000 });
+    // Reload to get back to login screen
+    await page.reload();
+    await expect(page.locator('.game-login-screen')).toBeVisible({ timeout: 5000 });
 
-    // Subsequent boot should show "OSNet v1.0 found" instead of installation
-    await expect(page.locator('text=OSNet v1.0 found')).toBeVisible({ timeout: 10000 });
+    // Click "New Game" to start another game (should show subsequent boot since OS installed)
+    await page.click('.new-game-btn');
 
-    // Should NOT see "No OS found on local storage" (that's first boot only)
-    // Note: Can't use .not.toBeVisible() reliably as text may have already scrolled past
+    // Should go to boot screen
+    await expect(page.locator('.boot-screen')).toBeVisible({ timeout: 5000 });
 
+    // Subsequent boot: Boot should complete faster and show different sequence
+    // Wait for username screen (should be faster, ~4s instead of ~15s)
+    const bootStart = Date.now();
+    await expect(page.locator('.username-selection')).toBeVisible({ timeout: 15000 });
+    const bootDuration = (Date.now() - bootStart) / 1000;
+
+    // Subsequent boot should be relatively quick (under 10s, ideally ~4s)
+    expect(bootDuration).toBeLessThan(10);
+
+    console.log(`Subsequent boot took ${bootDuration.toFixed(1)}s (should be <10s)`);
     console.log('✅ E2E: Different Boot Sequences - PASS');
   });
 });

@@ -9,8 +9,13 @@ const BootSequence = () => {
 
   useEffect(() => {
     // Check if OS is already installed (subsequent boot)
+    // Also check if any saves exist - if no saves AND no OS, definitely first boot
     const osInstalled = localStorage.getItem('osnet_installed') === 'true';
-    const isFirstBoot = !osInstalled;
+    const hasSaves = localStorage.getItem('sourcenet_saves') !== null;
+
+    // If no saves exist, this is a brand new game - show full installation
+    // Even if osnet_installed flag exists (might be from tests)
+    const isFirstBoot = !hasSaves || !osInstalled;
 
     // Mark OS as installed for future boots
     if (isFirstBoot) {
