@@ -352,8 +352,10 @@ Looking forward to working with you!
     setWindows(gameState.windows || []);
     setTimeSpeed(TIME_SPEEDS.NORMAL); // Always reset to 1x
 
-    console.log('Setting game phase to desktop');
-    setGamePhase('desktop');
+    // Always show boot sequence when loading (subsequent boot ~4s)
+    // This provides consistent "booting up your computer" experience
+    console.log('Going to boot sequence before loading desktop');
+    setGamePhase('boot');
 
     console.log('Load complete, returning true');
     return true;

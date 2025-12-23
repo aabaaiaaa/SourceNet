@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import { WINDOW_SIZES } from '../../constants/gameConstants';
 import SNetMail from '../apps/SNetMail';
@@ -31,7 +31,7 @@ const Window = ({ window }) => {
     bringToFront(window.appId);
   };
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = useCallback((e) => {
     if (!isDragging) return;
 
     const newX = e.clientX - dragOffset.x;
@@ -45,11 +45,11 @@ const Window = ({ window }) => {
     const boundedY = Math.max(40, Math.min(newY, maxY)); // Account for topbar
 
     moveWindow(window.appId, { x: boundedX, y: boundedY });
-  };
+  }, [isDragging, dragOffset, size, window.appId, moveWindow]);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false);
-  };
+  }, []);
 
   // Add/remove mouse event listeners
   useEffect(() => {

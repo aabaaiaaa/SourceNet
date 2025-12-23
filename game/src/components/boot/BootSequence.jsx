@@ -3,7 +3,7 @@ import { useGame } from '../../contexts/GameContext';
 import './BootSequence.css';
 
 const BootSequence = () => {
-  const { setGamePhase, hardware } = useGame();
+  const { setGamePhase, hardware, username } = useGame();
   const [bootLines, setBootLines] = useState([]);
   const [bootComplete, setBootComplete] = useState(false);
 
@@ -103,10 +103,12 @@ const BootSequence = () => {
   useEffect(() => {
     if (bootComplete) {
       setTimeout(() => {
-        setGamePhase('username');
+        // If username already exists (loading a save), go to desktop
+        // Otherwise go to username selection (new game)
+        setGamePhase(username ? 'desktop' : 'username');
       }, 2000);
     }
-  }, [bootComplete]);
+  }, [bootComplete, setGamePhase, username]);
 
   return (
     <div className="boot-screen">
