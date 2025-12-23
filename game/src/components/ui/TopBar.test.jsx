@@ -124,6 +124,27 @@ describe('TopBar Component', () => {
     expect(global.alert).toHaveBeenCalledWith('Game saved!');
   });
 
+  it('should show load modal when Load clicked', async () => {
+    renderWithProvider(<TopBar />);
+    const powerButton = screen.getByText('⏻');
+
+    fireEvent.mouseEnter(powerButton.parentElement);
+
+    await waitFor(() => {
+      expect(screen.getByText('Load')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Load'));
+
+    // Load modal should appear
+    await waitFor(() => {
+      expect(screen.getByText('Load Game')).toBeInTheDocument();
+    });
+
+    // Should show "No saved games" message when no saves exist
+    expect(screen.getByText('No saved games found.')).toBeInTheDocument();
+  });
+
   it('should show confirmation when Reboot clicked', async () => {
     global.confirm = vi.fn(() => false); // User cancels
 

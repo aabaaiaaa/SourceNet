@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useGame } from '../../contexts/GameContext';
-import { formatDateTime } from '../../utils/helpers';
+import { formatDateTime, getAllSaves } from '../../utils/helpers';
 import './TopBar.css';
 
 const TopBar = () => {
@@ -14,6 +14,7 @@ const TopBar = () => {
     bankAccounts,
     openWindow,
     saveGame,
+    loadGame,
     setGamePhase,
     getTotalCredits,
   } = useGame();
@@ -22,6 +23,7 @@ const TopBar = () => {
   const [showAppLauncher, setShowAppLauncher] = useState(false);
   const [showMailPreview, setShowMailPreview] = useState(false);
   const [showBankPreview, setShowBankPreview] = useState(false);
+  const [showLoadMenu, setShowLoadMenu] = useState(false);
 
   const unreadMessages = messages.filter((m) => !m.read);
   const totalCredits = getTotalCredits();
@@ -40,8 +42,17 @@ const TopBar = () => {
   };
 
   const handleLoad = () => {
-    alert('Load functionality coming soon!');
     setShowPowerMenu(false);
+    setShowLoadMenu(true);
+  };
+
+  const handleLoadSave = (username) => {
+    const success = loadGame(username);
+    if (success) {
+      setShowLoadMenu(false);
+    } else {
+      alert('Failed to load save!');
+    }
   };
 
   const handleReboot = () => {
@@ -173,6 +184,36 @@ const TopBar = () => {
           )}
         </div>
       </div>
+
+      {/* Load Game Modal */}
+      {showLoadMenu && (
+        <div className="modal-overlay" onClick={() => setShowLoadMenu(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Load Game</h3>
+            <div className="load-saves-list">
+              {Object.keys(getAllSaves()).length === 0 ? (
+                <p>No saved games found.</p>
+              ) : (
+                Object.keys(getAllSaves()).map((username) => (
+                  <button
+                    key={username}
+                    className="load-save-btn"
+                    onClick={() => handleLoadSave(username)}
+                  >
+                    {username}
+                  </button>
+                ))
+              )}
+            </div>
+            <button
+              className="modal-close-btn"
+              onClick={() => setShowLoadMenu(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

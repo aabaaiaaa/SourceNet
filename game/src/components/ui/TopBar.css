@@ -160,3 +160,79 @@
   right: 0;
   left: auto;
 }
+
+/* Load Game Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20000;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px;
+  min-width: 300px;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.modal-content h3 {
+  margin: 0 0 20px 0;
+  color: var(--osnet-primary);
+  font-size: 18px;
+  text-align: center;
+}
+
+.load-saves-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.load-save-btn {
+  padding: 12px 16px;
+  border: 2px solid var(--osnet-border);
+  background-color: white;
+  color: var(--osnet-primary);
+  cursor: pointer;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.load-save-btn:hover {
+  background-color: var(--osnet-accent);
+  color: white;
+  border-color: var(--osnet-accent);
+  transform: translateX(5px);
+}
+
+.modal-close-btn {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--osnet-border);
+  background-color: #f0f0f0;
+  cursor: pointer;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.modal-close-btn:hover {
+  background-color: #e0e0e0;
+}
