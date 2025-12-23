@@ -174,7 +174,7 @@ Looking forward to working with you!
       )
     );
 
-    // Play notification chime
+    // Play notification chime for banking activity
     playNotificationChime();
   }, [messages]);
 
