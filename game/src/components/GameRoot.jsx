@@ -5,6 +5,7 @@ import GameLoginScreen from './GameLoginScreen';
 import BootSequence from './boot/BootSequence';
 import UsernameSelection from './boot/UsernameSelection';
 import Rebooting from './boot/Rebooting';
+import SleepAnimation from './boot/SleepAnimation';
 import Desktop from './ui/Desktop';
 
 const GameRoot = () => {
@@ -26,6 +27,8 @@ const GameRoot = () => {
       return <GameLoginScreen />;
     case 'rebooting':
       return <Rebooting />;
+    case 'sleeping':
+      return <SleepAnimation />;
     case 'boot':
       return <BootSequence />;
     case 'username':

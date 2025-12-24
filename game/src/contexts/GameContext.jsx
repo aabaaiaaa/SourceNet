@@ -343,6 +343,8 @@ Looking forward to working with you!
   const rebootSystem = useCallback(() => {
     // Close all windows but keep all other state
     setWindows([]);
+    // Mark that this is a reboot (not fresh start)
+    localStorage.setItem('osnet_rebooting', 'true');
     // Go to reboot animation phase
     setGamePhase('rebooting');
   }, []);

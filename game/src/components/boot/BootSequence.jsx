@@ -14,10 +14,16 @@ const BootSequence = () => {
     // Also check if any saves exist - if no saves AND no OS, definitely first boot
     const osInstalled = localStorage.getItem('osnet_installed') === 'true';
     const hasSaves = localStorage.getItem('sourcenet_saves') !== null;
+    const isRebooting = localStorage.getItem('osnet_rebooting') === 'true';
 
-    // If no saves exist, this is a brand new game - show full installation
-    // Even if osnet_installed flag exists (might be from tests)
-    const isFirstBoot = !hasSaves || !osInstalled;
+    // Clear reboot flag
+    if (isRebooting) {
+      localStorage.removeItem('osnet_rebooting');
+    }
+
+    // If rebooting (even without saves), use subsequent boot (you're rebooting the same machine)
+    // Otherwise, if no saves exist, this is a brand new game - show full installation
+    const isFirstBoot = !isRebooting && (!hasSaves || !osInstalled);
 
     // Mark OS as installed for future boots
     if (isFirstBoot) {

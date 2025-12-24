@@ -1,8 +1,8 @@
 .username-selection {
   width: 100vw;
   height: 100vh;
-  background-color: #000;
-  color: #00ff00;
+  background-color: var(--osnet-bg);
+  color: var(--osnet-fg);
   font-family: 'Courier New', Courier, monospace;
   display: flex;
   align-items: center;
@@ -12,19 +12,23 @@
 .username-container {
   max-width: 500px;
   padding: 40px;
-  border: 2px solid #00ff00;
+  border: 2px solid var(--osnet-border);
   border-radius: 8px;
   text-align: center;
+  background-color: white;
+  box-shadow: 0 4px 12px var(--window-shadow);
 }
 
 .username-container h1 {
   margin: 0 0 20px 0;
   font-size: 32px;
+  color: var(--osnet-primary);
 }
 
 .username-container p {
   margin: 0 0 30px 0;
   font-size: 16px;
+  color: var(--osnet-secondary);
 }
 
 .username-input {
@@ -32,9 +36,9 @@
   padding: 12px;
   font-family: 'Courier New', Courier, monospace;
   font-size: 18px;
-  background-color: #000;
-  color: #00ff00;
-  border: 2px solid #00ff00;
+  background-color: white;
+  color: #222222;
+  border: 2px solid var(--osnet-border);
   border-radius: 4px;
   text-align: center;
   margin-bottom: 10px;
@@ -42,22 +46,22 @@
 
 .username-input:focus {
   outline: none;
-  border-color: #00ff00;
-  box-shadow: 0 0 10px #00ff00;
+  border-color: var(--osnet-accent);
+  box-shadow: 0 0 10px rgba(74, 144, 226, 0.3);
 }
 
 .username-hint {
   font-size: 12px;
   margin-bottom: 20px;
-  opacity: 0.7;
+  color: var(--osnet-secondary);
 }
 
 .username-submit {
   padding: 12px 32px;
   font-family: 'Courier New', Courier, monospace;
   font-size: 16px;
-  background-color: #00ff00;
-  color: #000;
+  background-color: var(--osnet-accent);
+  color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -66,6 +70,6 @@
 }
 
 .username-submit:hover {
-  background-color: #00cc00;
+  background-color: #3a7bc8;
   transform: scale(1.05);
 }

@@ -75,9 +75,8 @@ test.describe('E2E Test 6: Time System Flow', () => {
     // Time should not have advanced
     expect(timeAfterPause).toBe(timePaused);
 
-    // Resume
-    await page.hover('text=⏻');
-    await page.click('text=Resume');
+    // Resume by clicking pause overlay
+    await page.click('.pause-overlay');
 
     await page.waitForTimeout(2000);
     const timeAfterResume = await page.locator('.topbar-time').textContent();

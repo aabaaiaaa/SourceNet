@@ -199,9 +199,8 @@ test.describe('E2E: Complete Gameplay Session', () => {
     const timeAfterPause = await page.locator('.topbar-time').textContent();
     expect(timeAfterPause).toBe(pausedTime); // Should not advance
 
-    // Resume
-    await page.hover('text=⏻');
-    await page.click('text=Resume');
+    // Resume by clicking pause overlay
+    await page.click('.pause-overlay');
 
     // ========================================
     // PHASE 8: Banking App Verification

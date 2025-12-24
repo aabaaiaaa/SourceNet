@@ -68,10 +68,19 @@ const TopBar = () => {
   };
 
   const handleSleep = () => {
-    if (confirm('Exit the game? Make sure to save first!')) {
-      alert('Thanks for playing SourceNet!');
-      // In a real game, this would close the window or return to main menu
+    // Auto-save before sleeping
+    const saveName = prompt('Save game before sleeping (enter save name):');
+    if (saveName === null) {
+      // User cancelled
+      setShowPowerMenu(false);
+      return;
     }
+
+    // Save the game
+    saveGame(saveName || 'AutoSave');
+
+    // Go to sleep animation
+    setGamePhase('sleeping');
     setShowPowerMenu(false);
   };
 

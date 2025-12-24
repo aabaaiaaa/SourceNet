@@ -164,9 +164,8 @@ describe('TopBar Component', () => {
     );
   });
 
-  it('should show confirmation when Sleep clicked', async () => {
-    global.confirm = vi.fn(() => false); // User cancels
-    global.alert = vi.fn();
+  it('should prompt for save name when Sleep clicked', async () => {
+    global.prompt = vi.fn(() => null); // User cancels
 
     renderWithProvider(<TopBar />);
     const powerButton = screen.getByText('⏻');
@@ -179,8 +178,8 @@ describe('TopBar Component', () => {
 
     fireEvent.click(screen.getByText('Sleep'));
 
-    expect(global.confirm).toHaveBeenCalledWith(
-      'Exit the game? Make sure to save first!'
+    expect(global.prompt).toHaveBeenCalledWith(
+      'Save game before sleeping (enter save name):'
     );
   });
 });
