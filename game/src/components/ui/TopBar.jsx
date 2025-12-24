@@ -68,16 +68,8 @@ const TopBar = () => {
   };
 
   const handleSleep = () => {
-    // Auto-save before sleeping
-    const saveName = prompt('Save game before sleeping (enter save name):');
-    if (saveName === null) {
-      // User cancelled
-      setShowPowerMenu(false);
-      return;
-    }
-
-    // Save the game
-    saveGame(saveName || 'AutoSave');
+    // Auto-save before sleeping (uses in-game time as default name, like manual save)
+    saveGame(null);
 
     // Go to sleep animation
     setGamePhase('sleeping');
@@ -117,8 +109,10 @@ const TopBar = () => {
                 }, 100);
               }}
             >
-              {!isPaused && (
+              {!isPaused ? (
                 <button onClick={() => setIsPaused(true)}>Pause</button>
+              ) : (
+                <button onClick={() => setIsPaused(false)}>Resume</button>
               )}
               <button onClick={handleSave}>Save</button>
               <button onClick={handleLoad}>Load</button>

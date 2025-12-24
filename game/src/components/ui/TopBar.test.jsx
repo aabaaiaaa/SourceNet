@@ -164,9 +164,7 @@ describe('TopBar Component', () => {
     );
   });
 
-  it('should prompt for save name when Sleep clicked', async () => {
-    global.prompt = vi.fn(() => null); // User cancels
-
+  it('should show Sleep option in power menu', async () => {
     renderWithProvider(<TopBar />);
     const powerButton = screen.getByText('⏻');
 
@@ -176,10 +174,6 @@ describe('TopBar Component', () => {
       expect(screen.getByText('Sleep')).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText('Sleep'));
-
-    expect(global.prompt).toHaveBeenCalledWith(
-      'Save game before sleeping (enter save name):'
-    );
+    // Sleep functionality tested in E2E tests
   });
 });
