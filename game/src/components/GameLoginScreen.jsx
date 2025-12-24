@@ -3,7 +3,7 @@ import { getAllSaves, deleteSave } from '../utils/helpers';
 import './GameLoginScreen.css';
 
 const GameLoginScreen = () => {
-  const { loadGame, setGamePhase } = useGame();
+  const { loadGame, resetGame } = useGame();
   const saves = getAllSaves();
   const usernames = Object.keys(saves);
 
@@ -27,7 +27,7 @@ const GameLoginScreen = () => {
   };
 
   const handleNewGame = () => {
-    setGamePhase('boot');
+    resetGame();
   };
 
   return (

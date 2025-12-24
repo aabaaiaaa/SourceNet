@@ -284,9 +284,13 @@ Looking forward to working with you!
       return; // Don't run time
     }
 
+    // Update interval based on time speed for smooth ticking
+    // At 1x: update every 1000ms, add 1 second
+    // At 10x: update every 100ms, add 1 second (ticks 10x faster visually)
+    const updateInterval = 1000 / timeSpeed;
     timeIntervalRef.current = setInterval(() => {
-      setCurrentTime((prev) => new Date(prev.getTime() + 1000 * timeSpeed));
-    }, 1000);
+      setCurrentTime((prev) => new Date(prev.getTime() + 1000));
+    }, updateInterval);
 
     return () => {
       if (timeIntervalRef.current) {
@@ -360,6 +364,26 @@ Looking forward to working with you!
     sessionStorage.setItem('is_active_reboot', 'true');
     // Go to reboot animation phase
     setGamePhase('rebooting');
+  }, []);
+
+  // Reset game state for new game
+  const resetGame = useCallback(() => {
+    // Reset all state to initial values
+    setUsername('');
+    setPlayerMailId('');
+    setCurrentTime(new Date(GAME_START_DATE));
+    setTimeSpeed(TIME_SPEEDS.NORMAL);
+    setIsPaused(false);
+    setHardware(STARTING_HARDWARE);
+    setSoftware(STARTING_SOFTWARE);
+    setBankAccounts([STARTING_BANK_ACCOUNT]);
+    setMessages([]);
+    setManagerName('');
+    setWindows([]);
+    setPendingChequeDeposit(null);
+    nextZIndexRef.current = 1000;
+    // Go to boot phase
+    setGamePhase('boot');
   }, []);
 
   // Load game
@@ -448,6 +472,7 @@ Looking forward to working with you!
     saveGame,
     loadGame,
     rebootSystem,
+    resetGame,
     generateUsername,
   };
 
