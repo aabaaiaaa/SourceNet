@@ -29,13 +29,16 @@ test.describe('E2E: Boot Sequence Timing', () => {
   test('should show different boot sequences for first vs subsequent boot', async ({ page }) => {
     await page.goto('/');
 
-    // First boot: Complete boot to set OS installed flag
+    // First boot: Complete boot (should show long installation sequence)
+    const firstBootStart = Date.now();
     await expect(page.locator('.username-selection')).toBeVisible({ timeout: 25000 });
+    const firstBootDuration = (Date.now() - firstBootStart) / 1000;
+
     await page.fill('input.username-input', 'install_test');
     await page.click('button:has-text("Continue")');
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
-    // Save so we have saves (triggers subsequent boot logic)
+    // Save the game
     page.once('dialog', (dialog) => dialog.accept('BootTest'));
     await page.hover('text=⏻');
     await page.click('text=Save');
@@ -45,21 +48,23 @@ test.describe('E2E: Boot Sequence Timing', () => {
     await page.reload();
     await expect(page.locator('.game-login-screen')).toBeVisible({ timeout: 5000 });
 
-    // Click "New Game" to start another game (should show subsequent boot since OS installed)
-    await page.click('.new-game-btn');
+    // LOAD the existing save (should show short boot sequence)
+    await page.click('text=install_test');
+    await page.click('button:has-text("Load")');
 
     // Should go to boot screen
     await expect(page.locator('.boot-screen')).toBeVisible({ timeout: 5000 });
 
-    // Subsequent boot: Boot should complete faster and show different sequence
-    // Wait for username screen (should be faster, ~4s instead of ~15s)
+    // Subsequent boot (loading save): Boot should complete faster
+    // Wait for desktop (should be faster, ~4s instead of ~15s)
     const bootStart = Date.now();
-    await expect(page.locator('.username-selection')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('.desktop')).toBeVisible({ timeout: 15000 });
     const bootDuration = (Date.now() - bootStart) / 1000;
 
-    // Subsequent boot should be relatively quick (under 10s, ideally ~4s)
+    // Loading save boot should be relatively quick (under 10s, ideally ~4s)
     expect(bootDuration).toBeLessThan(10);
 
+    console.log(`First boot took ${firstBootDuration.toFixed(1)}s (long boot with installation)`);
     console.log(`Subsequent boot took ${bootDuration.toFixed(1)}s (should be <10s)`);
     console.log('✅ E2E: Different Boot Sequences - PASS');
   });

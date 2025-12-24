@@ -13,23 +13,16 @@ const BootSequence = () => {
     // Check if this is a reboot (should always use short boot)
     const isRebooting = localStorage.getItem('osnet_rebooting') === 'true';
 
-    // Check if OS is already installed
-    const osInstalled = localStorage.getItem('osnet_installed') === 'true';
-    const hasSaves = localStorage.getItem('sourcenet_saves') !== null;
-
     // Clear reboot flag immediately
     localStorage.removeItem('osnet_rebooting');
 
-    // If rebooting OR OS already installed, use short boot
-    // Only show long installation boot for truly first-time new game
-    const isFirstBoot = !isRebooting && !osInstalled && !hasSaves;
+    // Determine boot type based on context:
+    // - Rebooting → short boot (system already set up)
+    // - Loading save (username exists) → short boot (OS already installed in save)
+    // - New game (no username) → long boot (fresh OS installation)
+    const isFirstBoot = !isRebooting && !username;
 
-    console.log('[BootSequence] isRebooting:', isRebooting, 'osInstalled:', osInstalled, 'hasSaves:', hasSaves, 'isFirstBoot:', isFirstBoot);
-
-    // Mark OS as installed for future boots
-    if (isFirstBoot) {
-      localStorage.setItem('osnet_installed', 'true');
-    }
+    console.log('[BootSequence] isRebooting:', isRebooting, 'username:', username, 'isFirstBoot:', isFirstBoot);
 
     const baseLines = [
       'OSNet BIOS v1.0',
