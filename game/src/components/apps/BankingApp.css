@@ -35,11 +35,13 @@
   font-weight: bold;
   font-size: 16px;
   margin-bottom: 10px;
+  color: #222222 !important;  /* Force dark header text */
 }
 
 .cheque-deposit-prompt p {
   margin: 8px 0;
   font-size: 13px;
+  color: #222222 !important;  /* Force dark prompt text */
 }
 
 .account-selection {
@@ -70,11 +72,12 @@
   font-weight: bold;
   font-size: 14px;
   margin-bottom: 4px;
+  color: #222222 !important;  /* Force dark account name */
 }
 
 .account-balance {
   font-size: 12px;
-  color: var(--osnet-secondary);
+  color: #444444 !important;  /* Force dark balance text */
 }
 
 .accounts-list {
@@ -106,6 +109,7 @@
 .bank-name {
   font-weight: bold;
   font-size: 14px;
+  color: #222222 !important;  /* Force bank name to be dark */
 }
 
 .account-id {

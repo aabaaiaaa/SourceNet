@@ -11,7 +11,14 @@ test.describe('E2E Test 6: Time System Flow', () => {
             username: 'time_test',
             playerMailId: 'SNET-TST-123-456',
             currentTime: '2020-03-25T09:00:00',
-            hardware: {},
+            hardware: {
+              cpu: { id: 'cpu-1ghz', name: '1GHz CPU' },
+              memory: [{ id: 'ram-2gb', name: '2GB RAM' }],
+              storage: [{ id: 'ssd-90gb', name: '90GB SSD' }],
+              motherboard: { id: 'board-basic', name: 'Basic Board' },
+              powerSupply: { id: 'psu-300w', wattage: 300 },
+              network: { id: 'net-250mb', speed: 250 },
+            },
             software: [],
             bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance: 1000 }],
             messages: [],
@@ -28,9 +35,9 @@ test.describe('E2E Test 6: Time System Flow', () => {
   test('should handle time system correctly with speed changes and pause', async ({ page }) => {
     await page.goto('/');
 
-    // Load save
+    // Load save (includes ~4s boot sequence)
     await page.click('button:has-text("Load")');
-    await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.desktop')).toBeVisible({ timeout: 15000 });
 
     // Step 2: Note current time
     await expect(page.locator('text=25/03/2020 09:00:00')).toBeVisible();
@@ -85,7 +92,8 @@ test.describe('E2E Test 6: Time System Flow', () => {
 
     await page.reload();
     await page.click('button:has-text("Load")');
-    await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
+    // Wait for desktop (includes ~4s boot sequence)
+    await expect(page.locator('.desktop')).toBeVisible({ timeout: 15000 });
 
     // Verify time speed is 1x (reset)
     await expect(page.locator('button:has-text("1x")')).toBeVisible();

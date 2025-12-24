@@ -9,10 +9,16 @@ import './Window.css';
 const Window = ({ window }) => {
   const { closeWindow, minimizeWindow, bringToFront, moveWindow } = useGame();
   const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const dragOffsetRef = useRef({ x: 0, y: 0 });
   const windowRef = useRef(null);
 
   const size = WINDOW_SIZES[window.appId] || { width: 600, height: 500 };
+
+  // Ensure position is always valid (fallback if somehow NaN)
+  const safePosition = {
+    x: typeof window.position?.x === 'number' && !isNaN(window.position.x) ? window.position.x : 50,
+    y: typeof window.position?.y === 'number' && !isNaN(window.position.y) ? window.position.y : 100,
+  };
 
   const handleMouseDown = (e) => {
     // Only start drag if clicking on header (not buttons)
@@ -20,12 +26,12 @@ const Window = ({ window }) => {
       return;
     }
 
-    setIsDragging(true);
     const rect = windowRef.current.getBoundingClientRect();
-    setDragOffset({
+    dragOffsetRef.current = {
       x: e.clientX - rect.left,
       y: e.clientY - rect.top,
-    });
+    };
+    setIsDragging(true);
 
     // Bring window to front
     bringToFront(window.appId);
@@ -34,18 +40,18 @@ const Window = ({ window }) => {
   const handleMouseMove = useCallback((e) => {
     if (!isDragging) return;
 
-    const newX = e.clientX - dragOffset.x;
-    const newY = e.clientY - dragOffset.y;
+    const newX = e.clientX - dragOffsetRef.current.x;
+    const newY = e.clientY - dragOffsetRef.current.y;
 
-    // Keep window within viewport bounds
-    const maxX = window.innerWidth - size.width;
-    const maxY = window.innerHeight - size.height - 40; // Account for minimized bar
+    // Keep window within viewport bounds (use globalThis to access browser window)
+    const maxX = globalThis.innerWidth - size.width;
+    const maxY = globalThis.innerHeight - size.height - 40; // Account for minimized bar
 
     const boundedX = Math.max(0, Math.min(newX, maxX));
     const boundedY = Math.max(40, Math.min(newY, maxY)); // Account for topbar
 
     moveWindow(window.appId, { x: boundedX, y: boundedY });
-  }, [isDragging, dragOffset, size, window.appId, moveWindow]);
+  }, [isDragging, size, window.appId, moveWindow]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -98,8 +104,8 @@ const Window = ({ window }) => {
       ref={windowRef}
       className="window"
       style={{
-        left: window.position.x,
-        top: window.position.y,
+        left: safePosition.x,
+        top: safePosition.y,
         width: size.width,
         height: size.height,
         zIndex: window.zIndex,

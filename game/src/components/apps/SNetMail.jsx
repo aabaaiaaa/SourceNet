@@ -1,12 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import { formatDateTime } from '../../utils/helpers';
 import './SNetMail.css';
 
 const SNetMail = () => {
-  const { playerMailId, messages, markMessageAsRead, archiveMessage, openWindow } = useGame();
+  const { playerMailId, messages, markMessageAsRead, archiveMessage, initiateChequeDeposit } = useGame();
   const [activeTab, setActiveTab] = useState('inbox');
   const [selectedMessage, setSelectedMessage] = useState(null);
+
+  // Update selectedMessage when messages change (e.g., when cheque is deposited)
+  useEffect(() => {
+    if (selectedMessage) {
+      const updatedMessage = messages.find(m => m.id === selectedMessage.id);
+      if (updatedMessage) {
+        setSelectedMessage(updatedMessage);
+      }
+    }
+  }, [messages, selectedMessage]);
 
   const inboxMessages = messages.filter((m) => !m.archived);
   const archivedMessages = messages.filter((m) => m.archived);
@@ -29,8 +39,7 @@ const SNetMail = () => {
 
   const handleChequeClick = (message) => {
     if (message.attachment && !message.attachment.deposited) {
-      openWindow('banking');
-      // The Banking app will handle the deposit
+      initiateChequeDeposit(message.id);
     }
   };
 

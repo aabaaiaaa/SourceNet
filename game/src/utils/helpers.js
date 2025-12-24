@@ -23,16 +23,20 @@ export const generateUsername = () => {
 
 /**
  * Format date/time as dd/mm/yyyy hh:mm:ss
+ * Handles both Date objects and date strings
  */
 export const formatDateTime = (date) => {
+  // Convert to Date object if it's a string
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+
   const pad = (num) => num.toString().padStart(2, '0');
 
-  const day = pad(date.getDate());
-  const month = pad(date.getMonth() + 1);
-  const year = date.getFullYear();
-  const hours = pad(date.getHours());
-  const minutes = pad(date.getMinutes());
-  const seconds = pad(date.getSeconds());
+  const day = pad(dateObj.getDate());
+  const month = pad(dateObj.getMonth() + 1);
+  const year = dateObj.getFullYear();
+  const hours = pad(dateObj.getHours());
+  const minutes = pad(dateObj.getMinutes());
+  const seconds = pad(dateObj.getSeconds());
 
   return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
 };

@@ -160,7 +160,7 @@ describe('TopBar Component', () => {
     fireEvent.click(screen.getByText('Reboot'));
 
     expect(global.confirm).toHaveBeenCalledWith(
-      'Reboot the system? Unsaved progress will be lost.'
+      'Reboot the system? This will close all opened apps.'
     );
   });
 

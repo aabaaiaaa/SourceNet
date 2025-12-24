@@ -47,9 +47,12 @@ export const GameProvider = ({ children }) => {
   const [messages, setMessages] = useState([]);
   const [managerName, setManagerName] = useState('');
 
+  // Cheque deposit
+  const [pendingChequeDeposit, setPendingChequeDeposit] = useState(null);
+
   // Windows
   const [windows, setWindows] = useState([]);
-  const [nextZIndex, setNextZIndex] = useState(1000);
+  const nextZIndexRef = useRef(1000);
 
   // Notifications
   const [notifications, setNotifications] = useState([]);
@@ -146,6 +149,12 @@ Looking forward to working with you!
     );
   }, []);
 
+  // Initiate cheque deposit (called when user clicks attachment in Mail)
+  const initiateChequeDeposit = useCallback((messageId) => {
+    setPendingChequeDeposit(messageId);
+    openWindow('banking');
+  }, []);
+
   // Deposit cheque
   const depositCheque = useCallback((messageId, accountId) => {
     const message = messages.find((m) => m.id === messageId);
@@ -174,34 +183,50 @@ Looking forward to working with you!
       )
     );
 
-    // Play notification chime for banking activity
+    // Clear pending deposit and play notification chime
+    setPendingChequeDeposit(null);
     playNotificationChime();
   }, [messages]);
+
+  // Cancel cheque deposit
+  const cancelChequeDeposit = useCallback(() => {
+    setPendingChequeDeposit(null);
+  }, []);
 
   // Window management
   const openWindow = useCallback((appId) => {
     setWindows((prev) => {
       // Check if window is already open
       const existing = prev.find((w) => w.appId === appId);
+
       if (existing) {
-        // Bring to front
+        // Bring to front with new z-index
+        const newZ = nextZIndexRef.current++;
         return prev.map((w) =>
-          w.appId === appId ? { ...w, zIndex: nextZIndex, minimized: false } : w
+          w.appId === appId ? { ...w, zIndex: newZ, minimized: false } : w
         );
       }
 
-      // Create new window
+      // Create new window - calculate position inline
+      const CASCADE_OFFSET = 30;
+      const BASE_X = 50;
+      const BASE_Y = 100;
+      const openWindows = prev.filter((w) => !w.minimized);
+      const offset = openWindows.length * CASCADE_OFFSET;
+
       const newWindow = {
         appId,
-        zIndex: nextZIndex,
+        zIndex: nextZIndexRef.current++,
         minimized: false,
-        position: calculateCascadePosition(prev),
+        position: {
+          x: BASE_X + offset,
+          y: BASE_Y + offset,
+        },
       };
 
-      setNextZIndex((z) => z + 1);
       return [...prev, newWindow];
     });
-  }, [nextZIndex]);
+  }, []);
 
   const closeWindow = useCallback((appId) => {
     setWindows((prev) => prev.filter((w) => w.appId !== appId));
@@ -216,22 +241,22 @@ Looking forward to working with you!
   }, []);
 
   const restoreWindow = useCallback((appId) => {
+    const newZ = nextZIndexRef.current++;
     setWindows((prev) =>
       prev.map((w) =>
-        w.appId === appId ? { ...w, minimized: false, zIndex: nextZIndex } : w
+        w.appId === appId ? { ...w, minimized: false, zIndex: newZ } : w
       )
     );
-    setNextZIndex((z) => z + 1);
-  }, [nextZIndex]);
+  }, []);
 
   const bringToFront = useCallback((appId) => {
+    const newZ = nextZIndexRef.current++;
     setWindows((prev) =>
       prev.map((w) =>
-        w.appId === appId ? { ...w, zIndex: nextZIndex } : w
+        w.appId === appId ? { ...w, zIndex: newZ } : w
       )
     );
-    setNextZIndex((z) => z + 1);
-  }, [nextZIndex]);
+  }, []);
 
   const moveWindow = useCallback((appId, position) => {
     setWindows((prev) =>
@@ -240,21 +265,6 @@ Looking forward to working with you!
       )
     );
   }, []);
-
-  // Calculate cascade position
-  const calculateCascadePosition = (existingWindows) => {
-    const CASCADE_OFFSET = 30;
-    const BASE_X = 50;
-    const BASE_Y = 100;
-
-    const openWindows = existingWindows.filter((w) => !w.minimized);
-    const offset = openWindows.length * CASCADE_OFFSET;
-
-    return {
-      x: BASE_X + offset,
-      y: BASE_Y + offset,
-    };
-  };
 
   // Time management
   useEffect(() => {
@@ -329,18 +339,21 @@ Looking forward to working with you!
     saveToLocalStorage(username, gameState, saveName);
   }, [username, playerMailId, currentTime, hardware, software, bankAccounts, messages, managerName, windows]);
 
+  // Reboot system
+  const rebootSystem = useCallback(() => {
+    // Close all windows but keep all other state
+    setWindows([]);
+    // Go to reboot animation phase
+    setGamePhase('rebooting');
+  }, []);
+
   // Load game
   const loadGame = useCallback((usernameToLoad) => {
-    console.log('loadGame called for:', usernameToLoad);
     const gameState = loadFromLocalStorage(usernameToLoad);
-    console.log('Loaded game state:', gameState);
 
     if (!gameState) {
-      console.log('No game state found!');
       return false;
     }
-
-    console.log('Setting game state...');
     setUsername(gameState.username);
     setPlayerMailId(gameState.playerMailId);
     setCurrentTime(new Date(gameState.currentTime));
@@ -349,15 +362,36 @@ Looking forward to working with you!
     setBankAccounts(gameState.bankAccounts);
     setMessages(gameState.messages);
     setManagerName(gameState.managerName);
-    setWindows(gameState.windows || []);
+
+    // Validate and fix window positions when loading
+    const loadedWindows = (gameState.windows || []).map((w, index) => {
+      // If position is missing or invalid, calculate a valid position
+      if (!w.position || typeof w.position.x !== 'number' || typeof w.position.y !== 'number') {
+        const CASCADE_OFFSET = 30;
+        const BASE_X = 50;
+        const BASE_Y = 100;
+        return {
+          ...w,
+          position: {
+            x: BASE_X + (index * CASCADE_OFFSET),
+            y: BASE_Y + (index * CASCADE_OFFSET)
+          }
+        };
+      }
+      return w;
+    });
+    setWindows(loadedWindows);
+
+    // Reset nextZIndex to be higher than any loaded window z-index
+    const maxZIndex = loadedWindows.reduce((max, w) => Math.max(max, w.zIndex || 0), 1000);
+    nextZIndexRef.current = maxZIndex + 1;
+
     setTimeSpeed(TIME_SPEEDS.NORMAL); // Always reset to 1x
 
     // Always show boot sequence when loading (subsequent boot ~4s)
     // This provides consistent "booting up your computer" experience
-    console.log('Going to boot sequence before loading desktop');
     setGamePhase('boot');
 
-    console.log('Load complete, returning true');
     return true;
   }, []);
 
@@ -378,13 +412,16 @@ Looking forward to working with you!
     messages,
     managerName,
     windows,
+    pendingChequeDeposit,
 
     // Actions
     initializePlayer,
     addMessage,
     markMessageAsRead,
     archiveMessage,
+    initiateChequeDeposit,
     depositCheque,
+    cancelChequeDeposit,
     openWindow,
     closeWindow,
     minimizeWindow,
@@ -395,6 +432,7 @@ Looking forward to working with you!
     getTotalCredits,
     saveGame,
     loadGame,
+    rebootSystem,
     generateUsername,
   };
 

@@ -6,6 +6,8 @@ const BootSequence = () => {
   const { setGamePhase, hardware, username } = useGame();
   const [bootLines, setBootLines] = useState([]);
   const [bootComplete, setBootComplete] = useState(false);
+  const [showLogo, setShowLogo] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     // Check if OS is already installed (subsequent boot)
@@ -28,10 +30,12 @@ const BootSequence = () => {
       '',
       'Initializing hardware...',
       '',
+      // Motherboard FIRST - everything else slots into it
+      `Motherboard: ${hardware.motherboard.name} detected`,
+      '',
       `CPU: ${hardware.cpu.name} detected`,
       `Memory: ${hardware.memory.map((m) => m.capacity).join(', ')} detected`,
       `Storage: ${hardware.storage.map((s) => s.capacity).join(', ')} detected`,
-      `Motherboard: ${hardware.motherboard.name}`,
       `Power Supply: ${hardware.powerSupply.wattage}W`,
       `Network: ${hardware.network.name}`,
       '',
@@ -55,15 +59,8 @@ const BootSequence = () => {
       '',
       'Beginning OS installation...',
       '',
-      '  ___  ____  _   _      _   ',
-      ' / _ \\/ ___|| \\ | | ___| |_ ',
-      '| | | \\___ \\|  \\| |/ _ \\ __|',
-      '| |_| |___) | |\\  |  __/ |_ ',
-      ' \\___/|____/|_| \\_|\\___|\\__|',
-      '',
-      'SourceNet Operating System',
-      '',
-      'Installing... [##########] 100%',
+      // Logo will be shown separately as full screen
+      'SHOW_LOGO',  // Special marker
       '',
       'Installation complete!',
       'System will now continue to username setup...',
@@ -89,7 +86,33 @@ const BootSequence = () => {
     let currentIndex = 0;
     const interval = setInterval(() => {
       if (currentIndex < lines.length) {
-        setBootLines((prev) => [...prev, lines[currentIndex]]);
+        const line = lines[currentIndex];
+
+        // Check for logo marker
+        if (line === 'SHOW_LOGO') {
+          // Clear screen and show logo
+          setBootLines([]);
+          setShowLogo(true);
+
+          // Start progress bar animation
+          const progressInterval = setInterval(() => {
+            setProgress((prev) => {
+              if (prev >= 100) {
+                clearInterval(progressInterval);
+                // Hide logo after progress complete
+                setTimeout(() => {
+                  setShowLogo(false);
+                  setBootLines([]);
+                }, 500);
+                return 100;
+              }
+              return prev + 2; // Increment by 2% every interval
+            });
+          }, 50); // Update every 50ms for smooth animation
+        } else {
+          setBootLines((prev) => [...prev, line]);
+        }
+
         currentIndex++;
       } else {
         setBootComplete(true);
@@ -112,11 +135,34 @@ const BootSequence = () => {
 
   return (
     <div className="boot-screen">
-      {bootLines.map((line, index) => (
-        <div key={index} className="boot-line">
-          {line}
+      {showLogo ? (
+        <div className="osnet-logo-screen">
+          <div className="osnet-logo-large">
+            <div className="logo-line">  ___  ____  _   _      _   </div>
+            <div className="logo-line"> / _ \/ ___|| \ | | ___| |_ </div>
+            <div className="logo-line">| | | \___ \|  \| |/ _ \ __|</div>
+            <div className="logo-line">| |_| |___) | |\  |  __/ |_ </div>
+            <div className="logo-line"> \___/|____/|_| \_|\___|\___|</div>
+          </div>
+          <div className="osnet-title">SourceNet Operating System</div>
+          <div className="progress-bar-container">
+            <div className="progress-bar-label">Installing...</div>
+            <div className="progress-bar-outer">
+              <div
+                className="progress-bar-inner"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+            <div className="progress-bar-percent">{progress}%</div>
+          </div>
         </div>
-      ))}
+      ) : (
+        bootLines.map((line, index) => (
+          <div key={index} className="boot-line">
+            {line}
+          </div>
+        ))
+      )}
     </div>
   );
 };

@@ -63,6 +63,8 @@ test.describe('E2E: Window State Persistence', () => {
     await expect(page.locator('.game-login-screen')).toBeVisible({ timeout: 5000 });
     const saveItem = page.locator('.save-item:has-text("window_persist_test")');
     await saveItem.locator('button:has-text("Load")').click();
+    // Wait for boot sequence to complete
+    await expect(page.locator('.boot-screen')).not.toBeVisible({ timeout: 10000 });
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
     // Verify window state persisted
@@ -140,6 +142,8 @@ test.describe('E2E: Window State Persistence', () => {
 
     await page.reload();
     await page.click('button:has-text("Load")');
+    // Wait for boot sequence to complete
+    await expect(page.locator('.boot-screen')).not.toBeVisible({ timeout: 10000 });
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
     // Open 3 windows in specific order
@@ -183,6 +187,8 @@ test.describe('E2E: Window State Persistence', () => {
     // Reload and load save
     await page.reload();
     await page.click('.save-item:has-text("zindex_test") button:has-text("Load")');
+    // Wait for boot sequence to complete
+    await expect(page.locator('.boot-screen')).not.toBeVisible({ timeout: 10000 });
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
     // Verify all 3 windows restored

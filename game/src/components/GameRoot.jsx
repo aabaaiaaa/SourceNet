@@ -4,6 +4,7 @@ import { hasSaves } from '../utils/helpers';
 import GameLoginScreen from './GameLoginScreen';
 import BootSequence from './boot/BootSequence';
 import UsernameSelection from './boot/UsernameSelection';
+import Rebooting from './boot/Rebooting';
 import Desktop from './ui/Desktop';
 
 const GameRoot = () => {
@@ -23,6 +24,8 @@ const GameRoot = () => {
   switch (gamePhase) {
     case 'login':
       return <GameLoginScreen />;
+    case 'rebooting':
+      return <Rebooting />;
     case 'boot':
       return <BootSequence />;
     case 'username':

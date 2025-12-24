@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import { formatDateTime, getAllSaves } from '../../utils/helpers';
 import './TopBar.css';
@@ -17,6 +17,7 @@ const TopBar = () => {
     loadGame,
     setGamePhase,
     getTotalCredits,
+    rebootSystem,
   } = useGame();
 
   const [showPowerMenu, setShowPowerMenu] = useState(false);
@@ -24,6 +25,10 @@ const TopBar = () => {
   const [showMailPreview, setShowMailPreview] = useState(false);
   const [showBankPreview, setShowBankPreview] = useState(false);
   const [showLoadMenu, setShowLoadMenu] = useState(false);
+
+  // Timeout refs for delayed menu closing
+  const powerMenuTimeout = useRef(null);
+  const appLauncherTimeout = useRef(null);
 
   const unreadMessages = messages.filter((m) => !m.read);
   const totalCredits = getTotalCredits();
@@ -56,8 +61,8 @@ const TopBar = () => {
   };
 
   const handleReboot = () => {
-    if (confirm('Reboot the system? Unsaved progress will be lost.')) {
-      setGamePhase('boot');
+    if (confirm('Reboot the system? This will close all opened apps.')) {
+      rebootSystem();
     }
     setShowPowerMenu(false);
   };
@@ -76,12 +81,33 @@ const TopBar = () => {
       <div className="topbar-section">
         <div
           className="topbar-button-wrapper"
-          onMouseEnter={() => setShowPowerMenu(true)}
-          onMouseLeave={() => setShowPowerMenu(false)}
+          onMouseEnter={() => {
+            if (powerMenuTimeout.current) {
+              clearTimeout(powerMenuTimeout.current);
+            }
+            setShowPowerMenu(true);
+          }}
+          onMouseLeave={() => {
+            powerMenuTimeout.current = setTimeout(() => {
+              setShowPowerMenu(false);
+            }, 100);
+          }}
         >
           <button className="topbar-button">⏻</button>
           {showPowerMenu && (
-            <div className="dropdown-menu power-menu">
+            <div
+              className="dropdown-menu power-menu"
+              onMouseEnter={() => {
+                if (powerMenuTimeout.current) {
+                  clearTimeout(powerMenuTimeout.current);
+                }
+              }}
+              onMouseLeave={() => {
+                powerMenuTimeout.current = setTimeout(() => {
+                  setShowPowerMenu(false);
+                }, 100);
+              }}
+            >
               <button onClick={() => setIsPaused(!isPaused)}>
                 {isPaused ? 'Resume' : 'Pause'}
               </button>
@@ -163,12 +189,33 @@ const TopBar = () => {
       <div className="topbar-section">
         <div
           className="topbar-button-wrapper"
-          onMouseEnter={() => setShowAppLauncher(true)}
-          onMouseLeave={() => setShowAppLauncher(false)}
+          onMouseEnter={() => {
+            if (appLauncherTimeout.current) {
+              clearTimeout(appLauncherTimeout.current);
+            }
+            setShowAppLauncher(true);
+          }}
+          onMouseLeave={() => {
+            appLauncherTimeout.current = setTimeout(() => {
+              setShowAppLauncher(false);
+            }, 100);
+          }}
         >
           <button className="topbar-button">☰</button>
           {showAppLauncher && (
-            <div className="dropdown-menu app-launcher-menu">
+            <div
+              className="dropdown-menu app-launcher-menu"
+              onMouseEnter={() => {
+                if (appLauncherTimeout.current) {
+                  clearTimeout(appLauncherTimeout.current);
+                }
+              }}
+              onMouseLeave={() => {
+                appLauncherTimeout.current = setTimeout(() => {
+                  setShowAppLauncher(false);
+                }, 100);
+              }}
+            >
               {apps.map((app) => (
                 <button
                   key={app.id}

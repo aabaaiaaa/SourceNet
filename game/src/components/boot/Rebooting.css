@@ -1,0 +1,67 @@
+.rebooting-screen {
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeToBlack 2s ease-in-out;
+}
+
+.rebooting-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rebooting-text {
+  color: #00ff00;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.rebooting-dots {
+  display: flex;
+  gap: 5px;
+}
+
+.rebooting-dots span {
+  color: #00ff00;
+  font-size: 24px;
+  font-weight: bold;
+  animation: blink 1.5s infinite;
+}
+
+.rebooting-dots span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.rebooting-dots span:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.rebooting-dots span:nth-child(3) {
+  animation-delay: 1s;
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 0;
+  }
+  51%, 100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeToBlack {
+  0% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}

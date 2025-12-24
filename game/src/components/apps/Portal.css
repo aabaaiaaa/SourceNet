@@ -123,6 +123,7 @@
 .item-name {
   font-weight: bold;
   font-size: 14px;
+  color: #222222 !important;  /* Force dark item names to be visible */
 }
 
 .item-price {
@@ -133,7 +134,7 @@
 
 .item-specs {
   font-size: 12px;
-  color: var(--osnet-secondary);
+  color: #444444 !important;  /* Force dark specs text */
   margin-bottom: 8px;
 }
 

@@ -39,6 +39,8 @@ test.describe('E2E: Window Dragging', () => {
     // Load save
     await expect(page.locator('.game-login-screen')).toBeVisible({ timeout: 5000 });
     await page.click('button:has-text("Load")');
+    // Wait for boot sequence to complete
+    await expect(page.locator('.boot-screen')).not.toBeVisible({ timeout: 10000 });
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
     // Open SNet Mail window
@@ -54,23 +56,12 @@ test.describe('E2E: Window Dragging', () => {
     );
     expect(cursorStyle).toBe('grab');
 
-    // Verify drag implementation exists (check for onMouseDown handler)
-    // Note: Actual pixel-perfect drag testing is complex in E2E due to
-    // React synthetic events. The implementation is tested via:
-    // 1. Component structure (header with grab cursor)
-    // 2. Manual verification (works in browser)
-    // 3. Integration tests verify window position can be updated
+    // Verify window has valid position (no NaN)
+    const position = await mailWindow.boundingBox();
+    expect(position.x).toBeGreaterThanOrEqual(0);
+    expect(position.y).toBeGreaterThanOrEqual(40);
 
-    // Test that window CAN be moved programmatically (proves moveWindow works)
-    const initialPosition = await mailWindow.boundingBox();
-
-    // Click window to verify it's interactive
-    await windowHeader.click();
-
-    // Window should still be present and functional
-    await expect(mailWindow).toBeVisible();
-
-    // Verify window is still functional after drag
+    // Verify window is functional
     await expect(mailWindow.locator('.window-header')).toBeVisible();
     await expect(mailWindow.locator('.window-content')).toBeVisible();
 
@@ -94,6 +85,8 @@ test.describe('E2E: Window Dragging', () => {
 
     // Load save
     await page.click('button:has-text("Load")');
+    // Wait for boot sequence to complete
+    await expect(page.locator('.boot-screen')).not.toBeVisible({ timeout: 10000 });
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
     // Open window

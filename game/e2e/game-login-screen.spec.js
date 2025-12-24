@@ -61,6 +61,9 @@ test.describe('E2E Test 2: Game Login Screen (Multiple Saves)', () => {
     const save2 = page.locator('.save-item:has-text("agent_2222")');
     await save2.locator('button:has-text("Load")').click();
 
+    // Wait for boot sequence to complete
+    await expect(page.locator('.boot-screen')).not.toBeVisible({ timeout: 10000 });
+
     // Step 8-9: Verify game loads that save's state
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('.topbar-credits:has-text("1000")')).toBeVisible();

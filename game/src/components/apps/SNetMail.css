@@ -81,6 +81,11 @@
 .message-from {
   font-size: 13px;
   margin-bottom: 4px;
+  color: #222222 !important;
+}
+
+.message-from strong {
+  color: #222222 !important;  /* Force sender name to be dark */
 }
 
 .message-from-id {
@@ -92,6 +97,8 @@
 .message-subject {
   font-size: 14px;
   margin-bottom: 4px;
+  color: #222222 !important;  /* Force subject to be dark */
+  font-weight: 500;
 }
 
 .message-date {
@@ -144,12 +151,17 @@
 .detail-row {
   margin-bottom: 8px;
   font-size: 13px;
+  color: #222222 !important;  /* Explicit dark color for readability */
+}
+
+.detail-row span {
+  color: #222222 !important;  /* Force dark color - override any inherited styles */
 }
 
 .detail-label {
   font-weight: bold;
   margin-right: 8px;
-  color: var(--osnet-primary);
+  color: #333333 !important;  /* Dark gray for labels */
 }
 
 .message-body {
@@ -167,6 +179,7 @@
   word-wrap: break-word;
   font-family: 'Courier New', Courier, monospace;
   font-size: 13px;
+  color: #222222 !important;  /* Force dark text color */
   line-height: 1.6;
   margin: 0;
 }
@@ -182,6 +195,7 @@
   font-weight: bold;
   margin-bottom: 10px;
   font-size: 13px;
+  color: #222222 !important;
 }
 
 .attachment-item {
@@ -219,11 +233,12 @@
   font-weight: bold;
   margin-bottom: 4px;
   font-size: 13px;
+  color: #222222 !important;  /* Force dark color */
 }
 
 .attachment-status {
   font-size: 12px;
-  color: var(--osnet-secondary);
+  color: #444444 !important;  /* Dark gray for status */
 }
 
 .attachment-item.deposited .attachment-status {

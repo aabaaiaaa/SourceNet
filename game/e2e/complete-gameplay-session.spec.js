@@ -270,6 +270,9 @@ test.describe('E2E: Complete Gameplay Session', () => {
     // Load the save
     await page.click('button:has-text("Load")');
 
+    // Wait for boot sequence to complete
+    await expect(page.locator('.boot-screen')).not.toBeVisible({ timeout: 10000 });
+
     // Verify desktop loads
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 

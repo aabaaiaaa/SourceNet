@@ -3,27 +3,24 @@ import { useGame } from '../../contexts/GameContext';
 import './BankingApp.css';
 
 const BankingApp = () => {
-  const { bankAccounts, messages, depositCheque } = useGame();
-  const [pendingCheque, setPendingCheque] = useState(null);
+  const { bankAccounts, messages, depositCheque, cancelChequeDeposit, pendingChequeDeposit } = useGame();
 
-  useEffect(() => {
-    // Check if there's a pending cheque to deposit
-    const undeposited = messages.find(
-      (m) => m.attachment && !m.attachment.deposited
-    );
-    if (undeposited) {
-      setPendingCheque({
-        messageId: undeposited.id,
-        amount: undeposited.attachment.amount,
-      });
-    }
-  }, [messages]);
+  // Get pending cheque info if one is set
+  const pendingCheque = pendingChequeDeposit ? (() => {
+    const message = messages.find(m => m.id === pendingChequeDeposit);
+    return message?.attachment && !message.attachment.deposited
+      ? { messageId: message.id, amount: message.attachment.amount }
+      : null;
+  })() : null;
 
   const handleDeposit = (accountId) => {
     if (pendingCheque) {
       depositCheque(pendingCheque.messageId, accountId);
-      setPendingCheque(null);
     }
+  };
+
+  const handleCancel = () => {
+    cancelChequeDeposit();
   };
 
   return (
@@ -52,6 +49,9 @@ const BankingApp = () => {
               </button>
             ))}
           </div>
+          <button className="cancel-deposit-btn" onClick={handleCancel}>
+            Cancel
+          </button>
         </div>
       )}
 
