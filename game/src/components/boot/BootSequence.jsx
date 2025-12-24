@@ -10,20 +10,21 @@ const BootSequence = () => {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    // Check if OS is already installed (subsequent boot)
-    // Also check if any saves exist - if no saves AND no OS, definitely first boot
-    const osInstalled = localStorage.getItem('osnet_installed') === 'true';
-    const hasSaves = localStorage.getItem('sourcenet_saves') !== null;
+    // Check if this is a reboot (should always use short boot)
     const isRebooting = localStorage.getItem('osnet_rebooting') === 'true';
 
-    // Clear reboot flag
-    if (isRebooting) {
-      localStorage.removeItem('osnet_rebooting');
-    }
+    // Check if OS is already installed
+    const osInstalled = localStorage.getItem('osnet_installed') === 'true';
+    const hasSaves = localStorage.getItem('sourcenet_saves') !== null;
 
-    // If rebooting (even without saves), use subsequent boot (you're rebooting the same machine)
-    // Otherwise, if no saves exist, this is a brand new game - show full installation
-    const isFirstBoot = !isRebooting && (!hasSaves || !osInstalled);
+    // Clear reboot flag immediately
+    localStorage.removeItem('osnet_rebooting');
+
+    // If rebooting OR OS already installed, use short boot
+    // Only show long installation boot for truly first-time new game
+    const isFirstBoot = !isRebooting && !osInstalled && !hasSaves;
+
+    console.log('[BootSequence] isRebooting:', isRebooting, 'osInstalled:', osInstalled, 'hasSaves:', hasSaves, 'isFirstBoot:', isFirstBoot);
 
     // Mark OS as installed for future boots
     if (isFirstBoot) {
@@ -132,6 +133,9 @@ const BootSequence = () => {
   useEffect(() => {
     if (bootComplete) {
       setTimeout(() => {
+        // Clear active reboot flag when boot completes
+        sessionStorage.removeItem('is_active_reboot');
+
         // If username already exists (loading a save), go to desktop
         // Otherwise go to username selection (new game)
         setGamePhase(username ? 'desktop' : 'username');

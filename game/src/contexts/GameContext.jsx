@@ -268,8 +268,20 @@ Looking forward to working with you!
 
   // Time management
   useEffect(() => {
-    if (isPaused || gamePhase !== 'desktop') {
+    if (isPaused) {
       return;
+    }
+
+    // Check if this is an active reboot (time should continue)
+    const isActiveReboot = sessionStorage.getItem('is_active_reboot') === 'true';
+
+    // Time only runs during:
+    // - Desktop (normal gameplay)
+    // - Rebooting/Boot during an active reboot (game continues)
+    if (gamePhase === 'desktop' || (isActiveReboot && (gamePhase === 'rebooting' || gamePhase === 'boot'))) {
+      // Time runs
+    } else {
+      return; // Don't run time
     }
 
     timeIntervalRef.current = setInterval(() => {
@@ -343,8 +355,9 @@ Looking forward to working with you!
   const rebootSystem = useCallback(() => {
     // Close all windows but keep all other state
     setWindows([]);
-    // Mark that this is a reboot (not fresh start)
+    // Mark that this is a reboot (time should continue)
     localStorage.setItem('osnet_rebooting', 'true');
+    sessionStorage.setItem('is_active_reboot', 'true');
     // Go to reboot animation phase
     setGamePhase('rebooting');
   }, []);

@@ -117,9 +117,9 @@ const TopBar = () => {
                 }, 100);
               }}
             >
-              <button onClick={() => setIsPaused(!isPaused)}>
-                {isPaused ? 'Resume' : 'Pause'}
-              </button>
+              {!isPaused && (
+                <button onClick={() => setIsPaused(true)}>Pause</button>
+              )}
               <button onClick={handleSave}>Save</button>
               <button onClick={handleLoad}>Load</button>
               <button onClick={handleReboot}>Reboot</button>

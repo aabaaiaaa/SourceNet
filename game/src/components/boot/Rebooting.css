@@ -1,7 +1,7 @@
 .rebooting-screen {
   width: 100vw;
   height: 100vh;
-  background-color: #000;
+  background-color: var(--osnet-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,10 +12,15 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 40px;
+  background-color: white;
+  border: 2px solid var(--osnet-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px var(--window-shadow);
 }
 
 .rebooting-text {
-  color: #00ff00;
+  color: var(--osnet-primary);
   font-family: 'Courier New', Courier, monospace;
   font-size: 24px;
   font-weight: bold;
@@ -27,7 +32,7 @@
 }
 
 .rebooting-dots span {
-  color: #00ff00;
+  color: var(--osnet-accent);
   font-size: 24px;
   font-weight: bold;
   animation: blink 1.5s infinite;

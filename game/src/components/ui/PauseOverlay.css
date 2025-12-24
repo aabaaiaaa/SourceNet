@@ -1,16 +1,16 @@
 .pause-overlay {
   position: fixed;
-  top: 40px;  /* Don't cover topbar - allow access to power menu */
+  top: 0;  /* Cover entire screen including topbar */
   left: 0;
   width: 100vw;
-  height: calc(100vh - 40px);
+  height: 100vh;
   background-color: rgba(0, 0, 0, 0.8);
   z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  pointer-events: all;  /* Block interactions with desktop */
+  pointer-events: all;  /* Block all interactions */
 }
 
 .pause-content {
