@@ -33,7 +33,7 @@ npm run preview
 ### Run All Tests
 ```bash
 npm test              # 79 unit/component/integration tests
-npm run test:e2e      # 17 E2E tests
+npm run test:e2e      # 25 E2E tests
 ```
 
 ### Test Coverage
@@ -47,7 +47,7 @@ npm run test:ui        # Interactive test UI
 npm run test:e2e:headed  # Watch tests run in browser
 ```
 
-**Test Status:** 96/96 passing (100%)
+**Test Status:** 104/104 passing (100%)
 
 ---
 
@@ -85,9 +85,9 @@ game/src/
 ## 🎯 Features
 
 ### Core Mechanics
-- Time system (1x/10x speeds, pause)
-- Save/load (multiple slots, localStorage)
-- Boot sequences (15s first, 4s subsequent)
+- Time system (1x/10x speeds with smooth visual ticking, pause/resume)
+- Save/load (multiple slots, localStorage, auto-save on sleep)
+- Boot sequences (13s first boot, 7s subsequent - context-aware)
 - Window management (drag, minimize, restore, persistence)
 - Message delivery system
 - Banking with cheque deposits
@@ -106,11 +106,11 @@ game/src/
 
 ## 🧪 Test Suite
 
-**96 Automated Tests:**
+**104 Automated Tests:**
 - Unit tests (32)
 - Component tests (35)
 - Integration tests (12)
-- E2E tests (17)
+- E2E tests (25)
 
 **Coverage:** 100% of features
 
@@ -136,7 +136,7 @@ Compatible with: Vercel, Netlify, GitHub Pages, etc.
 
 ## 🏆 Quality Metrics
 
-- ✅ 96/96 tests passing
+- ✅ 104/104 tests passing
 - ✅ Production-ready code
 - ✅ Comprehensive documentation
 - ✅ Zero known issues

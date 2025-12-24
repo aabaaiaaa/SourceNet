@@ -9,7 +9,11 @@
       "Bash(npm test:*)",
       "Bash(npm run test:e2e:*)",
       "Bash(git checkout:*)",
-      "Bash(npx playwright test:*)"
+      "Bash(npx playwright test:*)",
+      "Bash(ls:*)",
+      "Bash(git log:*)",
+      "Bash(npm run build:*)",
+      "Bash(cat:*)"
     ]
   }
 }
