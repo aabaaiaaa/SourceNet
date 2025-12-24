@@ -208,7 +208,7 @@ export const STARTING_BANK_ACCOUNT = {
 
 // Window sizes (fixed per app)
 export const WINDOW_SIZES = {
-  mail: { width: 600, height: 500 },
+  mail: { width: 600, height: 600 },
   banking: { width: 500, height: 400 },
   portal: { width: 700, height: 600 },
 };
