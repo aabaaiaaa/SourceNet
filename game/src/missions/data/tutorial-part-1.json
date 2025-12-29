@@ -1,0 +1,110 @@
+{
+  "missionId": "tutorial-part-1",
+  "title": "Log File Repair",
+  "client": "Client A - TechCorp Industries",
+  "difficulty": "Beginner",
+  "basePayout": 2000,
+  "category": "story-tutorial",
+
+  "triggers": {
+    "start": {
+      "type": "timeSinceEvent",
+      "event": "missionBoardInstalled",
+      "delay": 0
+    }
+  },
+
+  "requirements": {
+    "software": ["vpn-client", "network-scanner", "file-manager"],
+    "reputation": null,
+    "credits": null
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Connect to ClientA-Corporate network",
+      "type": "networkConnection",
+      "target": "clienta-corporate"
+    },
+    {
+      "id": "obj-2",
+      "description": "Scan network to find fileserver-01",
+      "type": "networkScan",
+      "target": "clienta-corporate",
+      "expectedResult": "fileserver-01"
+    },
+    {
+      "id": "obj-3",
+      "description": "Connect to fileserver-01 file system",
+      "type": "fileSystemConnection",
+      "target": "192.168.50.10"
+    },
+    {
+      "id": "obj-4",
+      "description": "Repair all corrupted files",
+      "type": "fileOperation",
+      "operation": "repair",
+      "target": "all-corrupted",
+      "count": 8
+    }
+  ],
+
+  "scriptedEvents": [
+    {
+      "id": "sabotage-deletion",
+      "trigger": {
+        "type": "afterObjectiveComplete",
+        "objectiveId": "obj-4",
+        "delay": 5000
+      },
+      "actions": [
+        {
+          "type": "forceFileOperation",
+          "operation": "delete",
+          "files": "all-repaired",
+          "visual": "progressBar",
+          "duration": 10000,
+          "playerControl": false
+        },
+        {
+          "type": "forceDisconnect",
+          "network": "clienta-corporate",
+          "reason": "Network administrator terminated connection"
+        },
+        {
+          "type": "setMissionStatus",
+          "status": "failed",
+          "failureReason": "Files deleted instead of repaired"
+        }
+      ]
+    }
+  ],
+
+  "consequences": {
+    "success": {
+      "credits": 2000,
+      "reputation": 0,
+      "messages": []
+    },
+    "failure": {
+      "credits": -10000,
+      "reputation": -6,
+      "messages": [
+        {
+          "id": "manager-angry",
+          "delay": 10000,
+          "from": "manager",
+          "subject": "What happened?!",
+          "templateId": "tutorial-1-failure"
+        }
+      ],
+      "note": "Bank overdraft message triggered by Banking System (not story)"
+    }
+  },
+
+  "followUpMissions": {
+    "onSuccess": [],
+    "onFailure": ["tutorial-part-2"]
+  }
+}

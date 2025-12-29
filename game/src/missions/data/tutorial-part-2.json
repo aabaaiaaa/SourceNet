@@ -1,0 +1,85 @@
+{
+  "missionId": "tutorial-part-2",
+  "title": "Log File Restoration",
+  "client": "Client A - TechCorp Industries",
+  "difficulty": "Beginner",
+  "basePayout": 1000,
+  "category": "story-tutorial",
+
+  "triggers": {
+    "start": {
+      "type": "afterMissionComplete",
+      "missionId": "tutorial-part-1",
+      "delay": 30000
+    }
+  },
+
+  "requirements": {
+    "software": ["vpn-client", "network-scanner", "file-manager"],
+    "reputation": null,
+    "credits": null
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Reconnect to ClientA-Corporate network",
+      "type": "networkConnection",
+      "target": "clienta-corporate"
+    },
+    {
+      "id": "obj-2",
+      "description": "Scan network to find both file systems",
+      "type": "networkScan",
+      "target": "clienta-corporate",
+      "expectedResult": "backup-server"
+    },
+    {
+      "id": "obj-3",
+      "description": "Connect first File Manager to backup-server",
+      "type": "fileSystemConnection",
+      "target": "192.168.50.20"
+    },
+    {
+      "id": "obj-4",
+      "description": "Connect second File Manager to fileserver-01",
+      "type": "fileSystemConnection",
+      "target": "192.168.50.10"
+    },
+    {
+      "id": "obj-5",
+      "description": "Copy all files from backup to original location",
+      "type": "fileOperation",
+      "operation": "copy",
+      "count": 8
+    }
+  ],
+
+  "scriptedEvents": [],
+
+  "consequences": {
+    "success": {
+      "credits": 1000,
+      "reputation": 0,
+      "messages": [
+        {
+          "id": "manager-better",
+          "delay": 5000,
+          "from": "manager",
+          "subject": "Better",
+          "templateId": "tutorial-2-success"
+        }
+      ]
+    },
+    "failure": {
+      "credits": -1000,
+      "reputation": -1,
+      "messages": []
+    }
+  },
+
+  "followUpMissions": {
+    "onSuccess": ["post-tutorial-pool"],
+    "onFailure": []
+  }
+}

@@ -18,6 +18,16 @@ const MinimizedWindowBar = () => {
         return 'SNet Banking App';
       case 'portal':
         return 'OSNet Portal';
+      case 'missionBoard':
+        return 'SourceNet Mission Board';
+      case 'vpnClient':
+        return 'SourceNet VPN Client';
+      case 'networkScanner':
+        return 'Network Scanner';
+      case 'networkAddressRegister':
+        return 'Network Address Register';
+      case 'fileManager':
+        return 'File Manager';
       default:
         return 'Unknown App';
     }

@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import { formatDateTime, getAllSaves } from '../../utils/helpers';
+import { getReputationTier } from '../../systems/ReputationSystem';
 import './TopBar.css';
 
 const TopBar = () => {
@@ -18,6 +19,10 @@ const TopBar = () => {
     setGamePhase,
     getTotalCredits,
     rebootSystem,
+    // Extended state
+    reputation,
+    activeConnections,
+    activeMission,
   } = useGame();
 
   const [showPowerMenu, setShowPowerMenu] = useState(false);
@@ -25,6 +30,9 @@ const TopBar = () => {
   const [showMailPreview, setShowMailPreview] = useState(false);
   const [showBankPreview, setShowBankPreview] = useState(false);
   const [showLoadMenu, setShowLoadMenu] = useState(false);
+  const [showReputationPreview, setShowReputationPreview] = useState(false);
+  const [showNetworkPreview, setShowNetworkPreview] = useState(false);
+  const [showMissionPreview, setShowMissionPreview] = useState(false);
 
   // Timeout refs for delayed menu closing
   const powerMenuTimeout = useRef(null);
@@ -37,6 +45,11 @@ const TopBar = () => {
     { id: 'mail', name: 'SNet Mail' },
     { id: 'banking', name: 'SNet Banking App' },
     { id: 'portal', name: 'OSNet Portal' },
+    { id: 'missionBoard', name: 'SourceNet Mission Board' },
+    { id: 'vpnClient', name: 'SourceNet VPN Client' },
+    { id: 'networkScanner', name: 'Network Scanner' },
+    { id: 'networkAddressRegister', name: 'Network Address Register' },
+    { id: 'fileManager', name: 'File Manager' },
   ].sort((a, b) => a.name.localeCompare(b.name));
 
   const handleSave = () => {
@@ -186,6 +199,91 @@ const TopBar = () => {
         >
           {totalCredits} credits
         </div>
+
+        {/* Reputation Indicator */}
+        <div
+          className="topbar-reputation"
+          onMouseEnter={() => setShowReputationPreview(true)}
+          onMouseLeave={() => setShowReputationPreview(false)}
+          title="Your SourceNet Reputation"
+        >
+          <span
+            className="reputation-badge"
+            style={{ backgroundColor: getReputationTier(reputation).color }}
+          >
+            {reputation}
+          </span>
+          {showReputationPreview && (
+            <div className="notification-preview">
+              <div className="preview-header">Reputation:</div>
+              <div className="preview-item">
+                <strong>{getReputationTier(reputation).name}</strong> (Tier {reputation})
+              </div>
+              <div className="preview-item-small">
+                {getReputationTier(reputation).description}
+              </div>
+              <div className="preview-item-small">
+                Payout Multiplier: {getReputationTier(reputation).payoutMultiplier}x
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Network Connection Indicator */}
+        {activeConnections && activeConnections.length > 0 && (
+          <div
+            className="topbar-network"
+            onMouseEnter={() => setShowNetworkPreview(true)}
+            onMouseLeave={() => setShowNetworkPreview(false)}
+            title="Active Network Connections"
+          >
+            <span className="network-icon" style={{ color: '#32CD32' }}>📶</span>
+            <span className="network-badge">{activeConnections.length}</span>
+            {showNetworkPreview && (
+              <div className="notification-preview">
+                <div className="preview-header">Connected Networks:</div>
+                {activeConnections.map((conn, idx) => (
+                  <div key={idx} className="preview-item">
+                    {conn.networkName || conn.networkId}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Active Mission Indicator */}
+        {activeMission && (
+          <div
+            className="topbar-mission"
+            onMouseEnter={() => setShowMissionPreview(true)}
+            onMouseLeave={() => setShowMissionPreview(false)}
+            onClick={() => openWindow('missionBoard')}
+            title="Click to open Mission Board"
+          >
+            <span className="mission-icon">📋</span>
+            <span className="mission-badge">
+              {activeMission.objectives?.filter(o => o.status !== 'complete').length || 0}
+            </span>
+            {showMissionPreview && (
+              <div className="notification-preview">
+                <div className="preview-header">{activeMission.title}</div>
+                {activeMission.objectives?.map((obj) => (
+                  <div
+                    key={obj.id}
+                    className="preview-item-small"
+                    style={{
+                      textDecoration: obj.status === 'complete' ? 'line-through' : 'none',
+                      color: obj.status === 'complete' ? '#32CD32' : '#222',
+                    }}
+                  >
+                    {obj.status === 'complete' ? '☑' : '☐'} {obj.description}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Right: App Launcher */}

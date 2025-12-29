@@ -1,0 +1,56 @@
+{
+  "missionId": "file-restoration-02",
+  "title": "Multi-Site Backup Recovery",
+  "client": "Client G - Medical Office",
+  "clientType": "small-business",
+  "difficulty": "Medium",
+  "basePayout": 1400,
+  "category": "post-tutorial",
+  "requirements": {
+    "software": ["vpn-client", "network-scanner", "file-manager"],
+    "minReputation": 4
+  },
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Connect to medical network",
+      "type": "networkConnection",
+      "target": "clientg-medical"
+    },
+    {
+      "id": "obj-2",
+      "description": "Scan for backup and primary servers",
+      "type": "networkScan",
+      "expectedResult": "medical-backup"
+    },
+    {
+      "id": "obj-3",
+      "description": "Connect to backup server",
+      "type": "fileSystemConnection",
+      "target": "medical-backup"
+    },
+    {
+      "id": "obj-4",
+      "description": "Connect to primary server",
+      "type": "fileSystemConnection",
+      "target": "medical-primary"
+    },
+    {
+      "id": "obj-5",
+      "description": "Restore patient records to primary",
+      "type": "fileOperation",
+      "operation": "copy",
+      "count": 15
+    }
+  ],
+  "consequences": {
+    "success": {
+      "credits": "calculated",
+      "reputation": 1
+    },
+    "failure": {
+      "credits": -1000,
+      "reputation": -1
+    }
+  }
+}

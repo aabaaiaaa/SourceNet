@@ -1,0 +1,58 @@
+{
+  "missionId": "file-repair-01",
+  "title": "Repair System Logs",
+  "client": "Client C - Community Museum",
+  "clientType": "museum",
+  "difficulty": "Easy",
+  "basePayout": 1000,
+  "category": "post-tutorial",
+
+  "requirements": {
+    "software": ["vpn-client", "network-scanner", "file-manager"],
+    "minReputation": 3
+  },
+
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Connect to client network",
+      "type": "networkConnection",
+      "target": "clientc-network"
+    },
+    {
+      "id": "obj-2",
+      "description": "Scan network and locate file server",
+      "type": "networkScan",
+      "target": "clientc-network",
+      "expectedResult": "log-server"
+    },
+    {
+      "id": "obj-3",
+      "description": "Connect to log server file system",
+      "type": "fileSystemConnection",
+      "target": "log-server"
+    },
+    {
+      "id": "obj-4",
+      "description": "Repair corrupted log files",
+      "type": "fileOperation",
+      "operation": "repair",
+      "count": 6
+    }
+  ],
+
+  "scriptedEvents": [],
+
+  "consequences": {
+    "success": {
+      "credits": "calculated",
+      "reputation": 1,
+      "messages": []
+    },
+    "failure": {
+      "credits": -800,
+      "reputation": -1,
+      "messages": []
+    }
+  }
+}

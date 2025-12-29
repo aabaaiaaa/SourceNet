@@ -134,3 +134,78 @@
   font-size: 13px;
   text-align: right;
 }
+
+.banking-tabs {
+  display: flex;
+  border-bottom: 2px solid var(--osnet-border);
+  margin-bottom: 15px;
+}
+
+.tab {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.tab:hover { background: rgba(0, 0, 0, 0.05); }
+.tab-active { background: var(--osnet-primary); border-bottom: 3px solid #4CAF50; }
+.tab-badge {
+  margin-left: 5px;
+  background: #4CAF50;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 10px;
+}
+
+.transactions-list {
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.transaction-item {
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 1px solid var(--osnet-border);
+  border-left: 4px solid #ccc;
+  background: #f9f9f9;
+}
+
+.transaction-income { border-left-color: #4CAF50; }
+.transaction-expense { border-left-color: #DC143C; }
+
+.transaction-date {
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.transaction-description {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #222;
+}
+
+.transaction-amount {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 3px;
+}
+
+.amount-positive { color: #006400; }
+.amount-negative { color: #8B0000; }
+
+.transaction-balance {
+  font-size: 12px;
+  color: #666;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}

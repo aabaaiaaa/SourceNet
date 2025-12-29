@@ -1,0 +1,66 @@
+.network-scanner {
+  font-family: 'Courier New', Courier, monospace;
+  color: #222;
+  padding: 15px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.scanner-header {
+  border-bottom: 2px solid var(--osnet-border);
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.scanner-header h2 { margin: 0 0 5px 0; }
+.scanner-subtitle { margin: 0; font-size: 12px; color: #666; }
+
+.scan-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.scan-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+}
+
+.scan-controls select {
+  padding: 8px;
+  font-family: inherit;
+}
+
+.scan-btn {
+  padding: 10px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: bold;
+}
+
+.scan-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.scan-results {
+  border: 2px solid var(--osnet-border);
+  padding: 15px;
+}
+
+.machine-item {
+  padding: 10px;
+  margin: 10px 0;
+  border-left: 3px solid #4CAF50;
+  background: #f9f9f9;
+}
+
+.machine-ip { font-weight: bold; }
+.machine-hostname { font-size: 12px; color: #666; }
+.machine-filesystems { font-size: 12px; margin-top: 5px; }

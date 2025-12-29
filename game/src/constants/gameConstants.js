@@ -211,6 +211,11 @@ export const WINDOW_SIZES = {
   mail: { width: 600, height: 600 },
   banking: { width: 500, height: 400 },
   portal: { width: 700, height: 600 },
+  missionBoard: { width: 700, height: 500 },
+  vpnClient: { width: 600, height: 450 },
+  networkScanner: { width: 650, height: 500 },
+  networkAddressRegister: { width: 600, height: 450 },
+  fileManager: { width: 700, height: 550 },
 };
 
 // Boot sequence timing

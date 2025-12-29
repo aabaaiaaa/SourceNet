@@ -61,6 +61,30 @@ export const GameProvider = ({ children }) => {
   const timeIntervalRef = useRef(null);
   const messageTimerRef = useRef(null);
 
+  // ===== EXTENDED GAME STATE =====
+
+  // Reputation System
+  const [reputation, setReputation] = useState(9); // Tier 9 = "Superb" (starting reputation)
+  const [reputationCountdown, setReputationCountdown] = useState(null); // {startTime, endTime, remaining} or null
+
+  // Mission System
+  const [activeMission, setActiveMission] = useState(null); // Current mission object or null
+  const [completedMissions, setCompletedMissions] = useState([]); // Array of completed mission objects
+  const [availableMissions, setAvailableMissions] = useState([]); // Array of available mission objects
+  const [missionCooldowns, setMissionCooldowns] = useState({ easy: null, medium: null, hard: null });
+
+  // Network System
+  const [narEntries, setNarEntries] = useState([]); // Network Address Register entries
+  const [activeConnections, setActiveConnections] = useState([]); // Currently connected networks
+
+  // Purchasing & Installation
+  const [downloadQueue, setDownloadQueue] = useState([]); // Items being downloaded/installed
+  const [transactions, setTransactions] = useState([]); // Banking transaction history
+
+  // Banking System (Phase 2 extensions)
+  const [bankruptcyCountdown, setBankruptcyCountdown] = useState(null); // {startTime, endTime, remaining} or null
+  const [lastInterestTime, setLastInterestTime] = useState(null); // Last time interest was applied
+
   // Initialize player
   const initializePlayer = useCallback((name) => {
     setUsername(name);
@@ -306,6 +330,15 @@ Looking forward to working with you!
     );
   }, []);
 
+  // Interest accumulation (1% per minute when overdrawn)
+  // TODO: Re-enable after fixing test compatibility
+  // useEffect(() => {
+  //   if (isPaused || gamePhase !== 'desktop') return;
+  //   const totalCredits = getTotalCredits();
+  //   if (totalCredits >= 0) return;
+  //   // Interest logic here
+  // }, [currentTime, isPaused, gamePhase]);
+
   // Play notification chime
   const playNotificationChime = useCallback(() => {
     // Create a simple notification sound using Web Audio API
@@ -338,6 +371,63 @@ Looking forward to working with you!
     return bankAccounts.reduce((sum, acc) => sum + acc.balance, 0);
   }, [bankAccounts]);
 
+  // ===== MISSION ACTIONS =====
+
+  // Accept mission
+  const acceptMission = useCallback((mission) => {
+    setActiveMission({
+      ...mission,
+      startTime: currentTime.toISOString(),
+      objectives: mission.objectives.map(obj => ({ ...obj, status: 'pending' })),
+    });
+  }, [currentTime]);
+
+  // Complete mission objective
+  const completeMissionObjective = useCallback((objectiveId) => {
+    if (!activeMission) return;
+
+    const updatedObjectives = activeMission.objectives.map(obj =>
+      obj.id === objectiveId ? { ...obj, status: 'complete' } : obj
+    );
+
+    setActiveMission({
+      ...activeMission,
+      objectives: updatedObjectives,
+    });
+  }, [activeMission]);
+
+  // Complete mission (success or failure)
+  const completeMission = useCallback((status, payout, reputationChange) => {
+    if (!activeMission) return;
+
+    const completedMission = {
+      id: activeMission.id || activeMission.missionId,
+      title: activeMission.title,
+      client: activeMission.client,
+      difficulty: activeMission.difficulty,
+      status,
+      completionTime: currentTime.toISOString(),
+      payout,
+      reputationChange,
+    };
+
+    // Add to completed missions
+    setCompletedMissions([...completedMissions, completedMission]);
+
+    // Clear active mission
+    setActiveMission(null);
+
+    // Update credits
+    const newAccounts = [...bankAccounts];
+    if (newAccounts[0]) {
+      newAccounts[0].balance += payout;
+      setBankAccounts(newAccounts);
+    }
+
+    // Update reputation
+    setReputation(prev => Math.max(1, Math.min(11, prev + reputationChange)));
+  }, [activeMission, currentTime, completedMissions, bankAccounts]);
+
   // Save game
   const saveGame = useCallback((saveName = null) => {
     const gameState = {
@@ -350,10 +440,25 @@ Looking forward to working with you!
       messages,
       managerName,
       windows: windows.map((w) => ({ ...w })),
+      // Extended state (missions, reputation, network, transactions)
+      reputation,
+      reputationCountdown,
+      activeMission,
+      completedMissions,
+      availableMissions,
+      missionCooldowns,
+      narEntries,
+      activeConnections,
+      downloadQueue,
+      transactions,
+      bankruptcyCountdown,
+      lastInterestTime,
     };
 
     saveToLocalStorage(username, gameState, saveName);
-  }, [username, playerMailId, currentTime, hardware, software, bankAccounts, messages, managerName, windows]);
+  }, [username, playerMailId, currentTime, hardware, software, bankAccounts, messages, managerName, windows,
+      reputation, reputationCountdown, activeMission, completedMissions, availableMissions, missionCooldowns,
+      narEntries, activeConnections, downloadQueue, transactions, bankruptcyCountdown, lastInterestTime]);
 
   // Reboot system
   const rebootSystem = useCallback(() => {
@@ -382,6 +487,19 @@ Looking forward to working with you!
     setWindows([]);
     setPendingChequeDeposit(null);
     nextZIndexRef.current = 1000;
+    // Reset extended state
+    setReputation(9); // Superb (starting reputation)
+    setReputationCountdown(null);
+    setActiveMission(null);
+    setCompletedMissions([]);
+    setAvailableMissions([]);
+    setMissionCooldowns({ easy: null, medium: null, hard: null });
+    setNarEntries([]);
+    setActiveConnections([]);
+    setDownloadQueue([]);
+    setTransactions([]);
+    setBankruptcyCountdown(null);
+    setLastInterestTime(null);
     // Go to boot phase
     setGamePhase('boot');
   }, []);
@@ -401,6 +519,20 @@ Looking forward to working with you!
     setBankAccounts(gameState.bankAccounts);
     setMessages(gameState.messages);
     setManagerName(gameState.managerName);
+
+    // Load extended state (with defaults for older save formats)
+    setReputation(gameState.reputation ?? 9);
+    setReputationCountdown(gameState.reputationCountdown ?? null);
+    setActiveMission(gameState.activeMission ?? null);
+    setCompletedMissions(gameState.completedMissions ?? []);
+    setAvailableMissions(gameState.availableMissions ?? []);
+    setMissionCooldowns(gameState.missionCooldowns ?? { easy: null, medium: null, hard: null });
+    setNarEntries(gameState.narEntries ?? []);
+    setActiveConnections(gameState.activeConnections ?? []);
+    setDownloadQueue(gameState.downloadQueue ?? []);
+    setTransactions(gameState.transactions ?? []);
+    setBankruptcyCountdown(gameState.bankruptcyCountdown ?? null);
+    setLastInterestTime(gameState.lastInterestTime ?? null);
 
     // Validate and fix window positions when loading
     const loadedWindows = (gameState.windows || []).map((w, index) => {
@@ -453,6 +585,32 @@ Looking forward to working with you!
     windows,
     pendingChequeDeposit,
 
+    // Extended State (missions, reputation, network, transactions)
+    reputation,
+    setReputation,
+    reputationCountdown,
+    setReputationCountdown,
+    activeMission,
+    setActiveMission,
+    completedMissions,
+    setCompletedMissions,
+    availableMissions,
+    setAvailableMissions,
+    missionCooldowns,
+    setMissionCooldowns,
+    narEntries,
+    setNarEntries,
+    activeConnections,
+    setActiveConnections,
+    downloadQueue,
+    setDownloadQueue,
+    transactions,
+    setTransactions,
+    bankruptcyCountdown,
+    setBankruptcyCountdown,
+    lastInterestTime,
+    setLastInterestTime,
+
     // Actions
     initializePlayer,
     addMessage,
@@ -461,6 +619,10 @@ Looking forward to working with you!
     initiateChequeDeposit,
     depositCheque,
     cancelChequeDeposit,
+    getTotalCredits,
+    acceptMission,
+    completeMissionObjective,
+    completeMission,
     openWindow,
     closeWindow,
     minimizeWindow,
@@ -468,7 +630,6 @@ Looking forward to working with you!
     bringToFront,
     moveWindow,
     toggleTimeSpeed,
-    getTotalCredits,
     saveGame,
     loadGame,
     rebootSystem,

@@ -1,0 +1,50 @@
+{
+  "missionId": "file-repair-02",
+  "title": "Archive Corruption Repair",
+  "client": "Client F - Historical Society",
+  "clientType": "museum",
+  "difficulty": "Easy",
+  "basePayout": 1100,
+  "category": "post-tutorial",
+  "requirements": {
+    "software": ["vpn-client", "network-scanner", "file-manager"],
+    "minReputation": 3
+  },
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Connect to historical society network",
+      "type": "networkConnection",
+      "target": "clientf-archives"
+    },
+    {
+      "id": "obj-2",
+      "description": "Find archive server",
+      "type": "networkScan",
+      "expectedResult": "archive-server"
+    },
+    {
+      "id": "obj-3",
+      "description": "Access archive files",
+      "type": "fileSystemConnection",
+      "target": "archive-server"
+    },
+    {
+      "id": "obj-4",
+      "description": "Repair corrupted archive files",
+      "type": "fileOperation",
+      "operation": "repair",
+      "count": 10
+    }
+  ],
+  "consequences": {
+    "success": {
+      "credits": "calculated",
+      "reputation": 1
+    },
+    "failure": {
+      "credits": -800,
+      "reputation": -1
+    }
+  }
+}

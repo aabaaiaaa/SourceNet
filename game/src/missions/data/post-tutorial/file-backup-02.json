@@ -1,0 +1,50 @@
+{
+  "missionId": "file-backup-02",
+  "title": "Emergency Database Backup",
+  "client": "Client E - Retail Chain",
+  "clientType": "retail",
+  "difficulty": "Easy",
+  "basePayout": 900,
+  "category": "post-tutorial",
+  "requirements": {
+    "software": ["vpn-client", "network-scanner", "file-manager"],
+    "minReputation": 3
+  },
+  "objectives": [
+    {
+      "id": "obj-1",
+      "description": "Connect to retail network",
+      "type": "networkConnection",
+      "target": "cliente-retail"
+    },
+    {
+      "id": "obj-2",
+      "description": "Locate database server",
+      "type": "networkScan",
+      "expectedResult": "db-primary"
+    },
+    {
+      "id": "obj-3",
+      "description": "Access database files",
+      "type": "fileSystemConnection",
+      "target": "db-primary"
+    },
+    {
+      "id": "obj-4",
+      "description": "Copy database files to backup",
+      "type": "fileOperation",
+      "operation": "copy",
+      "count": 3
+    }
+  ],
+  "consequences": {
+    "success": {
+      "credits": "calculated",
+      "reputation": 1
+    },
+    "failure": {
+      "credits": -500,
+      "reputation": -1
+    }
+  }
+}

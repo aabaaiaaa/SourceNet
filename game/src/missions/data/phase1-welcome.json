@@ -1,0 +1,43 @@
+{
+  "eventId": "phase1-welcome",
+  "category": "onboarding",
+  "events": [
+    {
+      "id": "hr-welcome",
+      "trigger": {
+        "type": "timeSinceEvent",
+        "event": "desktopLoaded",
+        "delay": 2000
+      },
+      "message": {
+        "from": "hr",
+        "fromId": "SNET-HQ0-000-001",
+        "fromName": "SourceNet Human Resources",
+        "subject": "Welcome to SourceNet!",
+        "body": "Welcome to SourceNet!\n\nWe are dedicated to securing the global internet space from dark actors and criminals, making it a safe place for all users. You are now part of this important mission.\n\nYour assigned manager will be contacting you shortly with further instructions.\n\nYou have been provided with basic software to get started. To view available software and hardware upgrades, access the OSNet Software/Hardware Portal from your app launcher.\n\nWelcome to the family.\n\n- SourceNet Human Resources",
+        "attachments": []
+      }
+    },
+    {
+      "id": "manager-welcome",
+      "trigger": {
+        "type": "afterMessageRead",
+        "messageId": "hr-welcome",
+        "delay": 2000
+      },
+      "message": {
+        "from": "manager",
+        "fromId": "SNET-MGR-{random}",
+        "fromName": "{managerName}",
+        "subject": "Hi from your manager - {managerName}",
+        "body": "Hey {username}!\n\nWelcome to the team! I'm {managerName}, and I'll be your manager here at SourceNet. I was present during your interview process and I have to say, you really impressed us with your skills and dedication.\n\nTo help you get started, I've attached a welcome bonus cheque for 1,000 credits. Just click on the attachment to deposit it into your bank account.\n\nTake some time to get comfortable with your setup. I'll be reaching out again soon with your first assignment.\n\nLooking forward to working with you!\n\n- {managerName}",
+        "attachments": [
+          {
+            "type": "cheque",
+            "amount": 1000
+          }
+        ]
+      }
+    }
+  ]
+}

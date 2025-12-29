@@ -4,6 +4,11 @@ import { WINDOW_SIZES } from '../../constants/gameConstants';
 import SNetMail from '../apps/SNetMail';
 import BankingApp from '../apps/BankingApp';
 import Portal from '../apps/Portal';
+import MissionBoard from '../apps/MissionBoard';
+import VPNClient from '../apps/VPNClient';
+import NetworkScanner from '../apps/NetworkScanner';
+import NetworkAddressRegister from '../apps/NetworkAddressRegister';
+import FileManager from '../apps/FileManager';
 import './Window.css';
 
 const Window = ({ window }) => {
@@ -81,6 +86,16 @@ const Window = ({ window }) => {
         return <BankingApp />;
       case 'portal':
         return <Portal />;
+      case 'missionBoard':
+        return <MissionBoard />;
+      case 'vpnClient':
+        return <VPNClient />;
+      case 'networkScanner':
+        return <NetworkScanner />;
+      case 'networkAddressRegister':
+        return <NetworkAddressRegister />;
+      case 'fileManager':
+        return <FileManager />;
       default:
         return <div>App not found: {window.appId}</div>;
     }
@@ -94,6 +109,16 @@ const Window = ({ window }) => {
         return 'SNet Banking App';
       case 'portal':
         return 'OSNet Portal';
+      case 'missionBoard':
+        return 'SourceNet Mission Board';
+      case 'vpnClient':
+        return 'SourceNet VPN Client';
+      case 'networkScanner':
+        return 'Network Scanner';
+      case 'networkAddressRegister':
+        return 'Network Address Register';
+      case 'fileManager':
+        return 'File Manager';
       default:
         return 'Unknown App';
     }

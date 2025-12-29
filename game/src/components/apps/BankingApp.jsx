@@ -3,7 +3,8 @@ import { useGame } from '../../contexts/GameContext';
 import './BankingApp.css';
 
 const BankingApp = () => {
-  const { bankAccounts, messages, depositCheque, cancelChequeDeposit, pendingChequeDeposit } = useGame();
+  const { bankAccounts, messages, depositCheque, cancelChequeDeposit, pendingChequeDeposit, transactions } = useGame();
+  const [activeTab, setActiveTab] = useState('accounts'); // 'accounts' or 'transactions'
 
   // Get pending cheque info if one is set
   const pendingCheque = pendingChequeDeposit ? (() => {
@@ -23,6 +24,35 @@ const BankingApp = () => {
     cancelChequeDeposit();
   };
 
+  const renderTransactionHistory = () => {
+    if (!transactions || transactions.length === 0) {
+      return (
+        <div className="empty-state">
+          <p>No transactions yet.</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="transactions-list">
+        {transactions.slice().reverse().map((txn) => (
+          <div key={txn.id} className={`transaction-item transaction-${txn.type}`}>
+            <div className="transaction-date">
+              {new Date(txn.date).toLocaleString()}
+            </div>
+            <div className="transaction-description">{txn.description}</div>
+            <div className={`transaction-amount ${txn.amount >= 0 ? 'amount-positive' : 'amount-negative'}`}>
+              {txn.amount >= 0 ? '+' : ''}{txn.amount} credits
+            </div>
+            <div className="transaction-balance">
+              Balance: {txn.balanceAfter} credits
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="banking-app">
       <div className="banking-header">
@@ -30,7 +60,28 @@ const BankingApp = () => {
         <p className="banking-subtitle">Manage your accounts securely</p>
       </div>
 
-      {pendingCheque && (
+      {/* Tabs */}
+      <div className="banking-tabs">
+        <button
+          className={`tab ${activeTab === 'accounts' ? 'tab-active' : ''}`}
+          onClick={() => setActiveTab('accounts')}
+        >
+          Accounts
+        </button>
+        <button
+          className={`tab ${activeTab === 'transactions' ? 'tab-active' : ''}`}
+          onClick={() => setActiveTab('transactions')}
+        >
+          Transaction History
+          {transactions && transactions.length > 0 && (
+            <span className="tab-badge">{transactions.length}</span>
+          )}
+        </button>
+      </div>
+
+      {activeTab === 'accounts' && (
+        <>
+          {pendingCheque && (
         <div className="cheque-deposit-prompt">
           <div className="prompt-header">💰 Cheque Deposit</div>
           <p>You have a cheque for {pendingCheque.amount} credits.</p>
@@ -68,9 +119,13 @@ const BankingApp = () => {
         ))}
       </div>
 
-      <div className="banking-footer">
-        <p>Total across all accounts: <strong>{bankAccounts.reduce((sum, acc) => sum + acc.balance, 0)} credits</strong></p>
-      </div>
+          <div className="banking-footer">
+            <p>Total across all accounts: <strong>{bankAccounts.reduce((sum, acc) => sum + acc.balance, 0)} credits</strong></p>
+          </div>
+        </>
+      )}
+
+      {activeTab === 'transactions' && renderTransactionHistory()}
     </div>
   );
 };
