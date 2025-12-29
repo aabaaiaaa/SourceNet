@@ -28,6 +28,10 @@ export const useGame = () => {
 };
 
 export const GameProvider = ({ children }) => {
+  // TODO: Initialize story missions
+  // import useStoryMissions from '../missions/useStoryMissions';
+  // useStoryMissions({ gamePhase, username, currentTime, activeConnections, activeMission }, { setAvailableMissions });
+
   // Game state
   const [gamePhase, setGamePhase] = useState('boot'); // boot, login, username, desktop
   const [username, setUsername] = useState('');
@@ -330,14 +334,41 @@ Looking forward to working with you!
     );
   }, []);
 
-  // Interest accumulation (1% per minute when overdrawn)
-  // TODO: Re-enable after fixing test compatibility
+  // TODO: Interest accumulation (1% per minute when overdrawn)
+  // Use ref to track last interest time to avoid infinite loops
+  // const lastInterestRef = useRef(currentTime);
   // useEffect(() => {
   //   if (isPaused || gamePhase !== 'desktop') return;
   //   const totalCredits = getTotalCredits();
   //   if (totalCredits >= 0) return;
-  //   // Interest logic here
+  //   const now = currentTime.getTime();
+  //   const lastTime = lastInterestRef.current.getTime();
+  //   const minutesPassed = Math.floor((now - lastTime) / 60000);
+  //   if (minutesPassed >= 1) {
+  //     const interest = Math.floor(totalCredits * 0.01);
+  //     // Apply interest, add transaction, update lastInterestRef
+  //     lastInterestRef.current = currentTime;
+  //   }
   // }, [currentTime, isPaused, gamePhase]);
+
+  // TODO: Countdown timer updates
+  // useEffect(() => {
+  //   if (bankruptcyCountdown) {
+  //     const updated = updateBankruptcyCountdown(bankruptcyCountdown, currentTime, getTotalCredits());
+  //     if (updated === null) {
+  //       if (getTotalCredits() <= -10000) {
+  //         // Trigger game over
+  //         setGamePhase('gameOver-bankruptcy');
+  //       } else {
+  //         // Countdown cancelled
+  //         setBankruptcyCountdown(null);
+  //       }
+  //     } else {
+  //       setBankruptcyCountdown(updated);
+  //     }
+  //   }
+  //   // Similar for reputationCountdown
+  // }, [currentTime, bankruptcyCountdown, reputationCountdown]);
 
   // Play notification chime
   const playNotificationChime = useCallback(() => {
