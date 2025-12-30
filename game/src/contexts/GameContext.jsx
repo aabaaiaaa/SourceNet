@@ -81,6 +81,9 @@ export const GameProvider = ({ children }) => {
   // Network System
   const [narEntries, setNarEntries] = useState([]); // Network Address Register entries
   const [activeConnections, setActiveConnections] = useState([]); // Currently connected networks
+  const [lastScanResults, setLastScanResults] = useState(null); // Last network scan results
+  const [fileManagerConnections, setFileManagerConnections] = useState([]); // Active File Manager connections
+  const [lastFileOperation, setLastFileOperation] = useState(null); // Last file operation completed
 
   // Purchasing & Installation
   const [downloadQueue, setDownloadQueue] = useState([]); // Items being downloaded/installed
@@ -476,21 +479,18 @@ Looking forward to working with you!
     }
   }, [currentTime, reputation, reputationCountdown, isPaused, gamePhase, username, playNotificationChime]);
 
-  // Objective auto-tracking (TODO: Enable when ready)
+  // Objective auto-tracking (framework ready, manual tracking for now)
+  // TODO: Enable full auto-tracking when mission data is fully connected
+  // const completionTimeoutRef = useRef(null);
   // useEffect(() => {
-  //   if (!activeMission || !username || !activeMission.objectives) return;
-  //   const gameState = { activeConnections, narEntries };
+  //   if (!activeMission || !username) return;
+  //   const gameState = { activeConnections, lastScanResults, fileManagerConnections, lastFileOperation };
   //   const completedObjective = checkMissionObjectives(activeMission, gameState);
-  //   if (completedObjective) {
-  //     completeMissionObjective(completedObjective.id);
-  //   }
+  //   if (completedObjective) completeMissionObjective(completedObjective.id);
   //   if (areAllObjectivesComplete(activeMission.objectives)) {
-  //     setTimeout(() => {
-  //       const payout = calculateMissionPayout(activeMission.basePayout || 1000, reputation);
-  //       completeMission('success', payout, 1);
-  //     }, 3000);
+  //     setTimeout(() => completeMission('success', payout, 1), 3000);
   //   }
-  // }, [activeMission, activeConnections, narEntries, username, reputation]);
+  // }, [activeMission, activeConnections, lastScanResults, fileManagerConnections, lastFileOperation]);
 
   // ===== MISSION ACTIONS =====
 
@@ -570,6 +570,9 @@ Looking forward to working with you!
       missionCooldowns,
       narEntries,
       activeConnections,
+      lastScanResults,
+      fileManagerConnections,
+      lastFileOperation,
       downloadQueue,
       transactions,
       bankruptcyCountdown,
@@ -579,7 +582,8 @@ Looking forward to working with you!
     saveToLocalStorage(username, gameState, saveName);
   }, [username, playerMailId, currentTime, hardware, software, bankAccounts, messages, managerName, windows,
       reputation, reputationCountdown, activeMission, completedMissions, availableMissions, missionCooldowns,
-      narEntries, activeConnections, downloadQueue, transactions, bankruptcyCountdown, lastInterestTime]);
+      narEntries, activeConnections, lastScanResults, fileManagerConnections, lastFileOperation,
+      downloadQueue, transactions, bankruptcyCountdown, lastInterestTime]);
 
   // Reboot system
   const rebootSystem = useCallback(() => {
@@ -617,6 +621,9 @@ Looking forward to working with you!
     setMissionCooldowns({ easy: null, medium: null, hard: null });
     setNarEntries([]);
     setActiveConnections([]);
+    setLastScanResults(null);
+    setFileManagerConnections([]);
+    setLastFileOperation(null);
     setDownloadQueue([]);
     setTransactions([]);
     setBankruptcyCountdown(null);
@@ -650,6 +657,9 @@ Looking forward to working with you!
     setMissionCooldowns(gameState.missionCooldowns ?? { easy: null, medium: null, hard: null });
     setNarEntries(gameState.narEntries ?? []);
     setActiveConnections(gameState.activeConnections ?? []);
+    setLastScanResults(gameState.lastScanResults ?? null);
+    setFileManagerConnections(gameState.fileManagerConnections ?? []);
+    setLastFileOperation(gameState.lastFileOperation ?? null);
     setDownloadQueue(gameState.downloadQueue ?? []);
     setTransactions(gameState.transactions ?? []);
     setBankruptcyCountdown(gameState.bankruptcyCountdown ?? null);
@@ -723,6 +733,12 @@ Looking forward to working with you!
     setNarEntries,
     activeConnections,
     setActiveConnections,
+    lastScanResults,
+    setLastScanResults,
+    fileManagerConnections,
+    setFileManagerConnections,
+    lastFileOperation,
+    setLastFileOperation,
     downloadQueue,
     setDownloadQueue,
     transactions,

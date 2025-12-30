@@ -77,6 +77,16 @@ export const checkFileOperationObjective = (objective, operationData) => {
 };
 
 /**
+ * Check if all objectives are complete
+ * @param {array} objectives - Mission objectives
+ * @returns {boolean} All complete
+ */
+export const areAllObjectivesComplete = (objectives) => {
+  if (!objectives || objectives.length === 0) return false;
+  return objectives.every((obj) => obj.status === 'complete');
+};
+
+/**
  * Monitor active mission objectives
  * Called on relevant game events to check objective progress
  *

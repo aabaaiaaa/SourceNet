@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { useGame } from '../../contexts/GameContext';
+import triggerEventBus from '../../core/triggerEventBus';
 import './NetworkScanner.css';
 
 const NetworkScanner = () => {
-  const { activeConnections } = useGame();
+  const game = useGame();
+  const activeConnections = game.activeConnections || [];
+  const setLastScanResults = game.setLastScanResults || (() => {});
   const [selectedNetwork, setSelectedNetwork] = useState('');
   const [scanType, setScanType] = useState('deep'); // 'quick' or 'deep'
   const [scanning, setScanning] = useState(false);
@@ -16,15 +19,26 @@ const NetworkScanner = () => {
     const scanDuration = scanType === 'quick' ? 5000 : 15000;
 
     setTimeout(() => {
-      // Mock scan results (real implementation would come from game state)
-      setScanResults({
+      // Mock scan results (real implementation would come from mission data)
+      const results = {
         network: selectedNetwork,
         machines: [
-          { ip: '192.168.50.10', hostname: 'fileserver-01', fileSystems: ['/logs/'] },
-          { ip: '192.168.50.20', hostname: 'backup-server', fileSystems: ['/backups/'] },
+          { ip: '192.168.50.10', hostname: 'fileserver-01', id: 'fileserver-01', fileSystems: ['/logs/'] },
+          { ip: '192.168.50.20', hostname: 'backup-server', id: 'backup-server', fileSystems: ['/backups/'] },
         ],
+      };
+
+      setScanResults(results);
+      setLastScanResults(results); // Update global state for objective tracking
+
+      // Emit scan complete event
+      triggerEventBus.emit('networkScanComplete', {
+        network: selectedNetwork,
+        results: results,
       });
+
       setScanning(false);
+      console.log(`🔍 Scan complete: Found ${results.machines.length} machines`);
     }, scanDuration);
   };
 

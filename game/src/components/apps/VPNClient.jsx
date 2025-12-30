@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useGame } from '../../contexts/GameContext';
+import triggerEventBus from '../../core/triggerEventBus';
 import './VPNClient.css';
 
 const VPNClient = () => {
@@ -27,8 +28,16 @@ const VPNClient = () => {
       };
 
       setActiveConnections([...activeConnections, newConnection]);
+
+      // Emit network connected event
+      triggerEventBus.emit('networkConnected', {
+        networkId: newConnection.networkId,
+        networkName: newConnection.networkName,
+      });
+
       setConnecting(false);
       setSelectedNetwork('');
+      console.log(`🔒 Connected to: ${newConnection.networkName}`);
     }, 3000); // 3 second connection time
   };
 
