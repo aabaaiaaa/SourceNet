@@ -57,7 +57,7 @@ describe('Portal Component', () => {
     expect(screen.getByText('250GB SSD')).toBeInTheDocument();
   });
 
-  it('should show software section with VPN client', () => {
+  it('should show software section with Phase 2 apps', () => {
     render(
       <GameProvider>
         <Portal />
@@ -66,6 +66,8 @@ describe('Portal Component', () => {
 
     fireEvent.click(screen.getByText('Software'));
     expect(screen.getByText('SourceNet VPN Client')).toBeInTheDocument();
-    expect(screen.getByText('Coming Soon')).toBeInTheDocument();
+    expect(screen.getByText('SourceNet Mission Board')).toBeInTheDocument();
+    // Software is now available for purchase
+    expect(screen.getByRole('button', { name: /Purchase/i })).toBeInTheDocument();
   });
 });

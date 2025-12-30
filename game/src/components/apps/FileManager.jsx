@@ -83,8 +83,7 @@ const FileManager = () => {
     }
   };
 
-  // Check if connected to any network
-  const game = useGame();
+  // Check if connected to any network (game already declared at top)
   const isConnected = (game.activeConnections || []).length > 0;
 
   return (

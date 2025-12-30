@@ -13,8 +13,8 @@ describe('FileManager Component', () => {
     expect(screen.getByText('File Manager')).toBeInTheDocument();
   });
 
-  it('should show file system selector', () => {
+  it('should show not connected message when no network connection', () => {
     renderWithProvider(<FileManager />);
-    expect(screen.getByRole('combobox')).toBeInTheDocument();
+    expect(screen.getByText(/Not connected to any networks/i)).toBeInTheDocument();
   });
 });
