@@ -172,7 +172,19 @@ performance improvement plan. Continue to demonstrate competence.
  * @returns {object} Complete message object
  */
 export const createSystemMessage = (template, username, data = {}) => {
-  let body = template.bodyTemplate(data.balance, data.timeRemaining, data.tier, data.tierName);
+  let body;
+
+  // Banking templates expect (balance, timeRemaining)
+  if (template.from === 'bank') {
+    body = template.bodyTemplate(data.balance, data.timeRemaining);
+  }
+  // HR templates expect (tier, tierName)
+  else if (template.from === 'hr') {
+    body = template.bodyTemplate(data.tier, data.tierName);
+  }
+  else {
+    body = template.bodyTemplate(data);
+  }
 
   // Replace {username} placeholder
   body = body.replace(/{username}/g, username);
