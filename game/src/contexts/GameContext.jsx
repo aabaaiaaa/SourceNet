@@ -19,6 +19,7 @@ import {
 import useStoryMissions from '../missions/useStoryMissions';
 import { updateBankruptcyCountdown, shouldTriggerBankruptcy, startBankruptcyCountdown } from '../systems/BankingSystem';
 import { updateReputationCountdown, startReputationCountdown } from '../systems/ReputationSystem';
+import triggerEventBus from '../core/triggerEventBus';
 
 const GameContext = createContext();
 
@@ -136,6 +137,11 @@ export const GameProvider = ({ children }) => {
       )
     );
 
+    // Emit message read event for story missions
+    triggerEventBus.emit('messageRead', {
+      messageId: messageId,
+    });
+
     // If this is the first message, schedule second message
     if (messageId === 'msg-welcome-hr') {
       setTimeout(() => {
@@ -207,6 +213,8 @@ Looking forward to working with you!
     );
 
     // Add funds to account
+    const newBalance = bankAccounts.find(acc => acc.id === accountId).balance + message.attachment.amount;
+
     setBankAccounts((prev) =>
       prev.map((acc) =>
         acc.id === accountId
@@ -214,6 +222,19 @@ Looking forward to working with you!
           : acc
       )
     );
+
+    // Add transaction record
+    setTransactions((prev) => [
+      ...prev,
+      {
+        id: `txn-cheque-${Date.now()}`,
+        date: currentTime.toISOString(),
+        type: 'income',
+        amount: message.attachment.amount,
+        description: 'Cheque Deposit',
+        balanceAfter: newBalance,
+      },
+    ]);
 
     // Clear pending deposit and play notification chime
     setPendingChequeDeposit(null);
