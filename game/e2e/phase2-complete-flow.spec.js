@@ -1,43 +1,47 @@
 import { test, expect } from '@playwright/test';
 
+/**
+ * Helper to complete boot sequence and reach desktop
+ */
+const completeBoot = async (page) => {
+  await page.goto('/');
+
+  // Wait for boot screen
+  await expect(page.locator('.boot-screen')).toBeVisible({ timeout: 5000 });
+
+  // Wait for username screen
+  await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
+
+  // Enter username
+  await page.locator('input.username-input').fill('test_agent_phase2');
+  await page.click('button:has-text("Continue")');
+
+  // Desktop should load
+  await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
+};
+
 test.describe('Phase 2 Complete Game Flow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => localStorage.clear());
   });
 
-  test('should complete boot sequence and reach desktop', async ({ page }) => {
-    await page.goto('/');
+  test('should complete boot sequence and show Phase 2 UI elements', async ({ page }) => {
+    await completeBoot(page);
 
-    // Wait for boot sequence
-    await expect(page.locator('.boot-screen')).toBeVisible({ timeout: 5000 });
-
-    // Wait for desktop to load
-    await expect(page.locator('.desktop')).toBeVisible({ timeout: 20000 });
-
-    // Verify TopBar is visible
+    // Verify TopBar with Phase 2 elements
     await expect(page.locator('.topbar')).toBeVisible();
-
-    console.log('✅ E2E: Boot sequence complete');
-  });
-
-  test('should show reputation indicator in TopBar', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('.desktop')).toBeVisible({ timeout: 20000 });
-
-    // TopBar should show reputation badge
     await expect(page.locator('.reputation-badge')).toBeVisible();
 
     // Reputation should be Tier 9 (Superb) at start
-    const repBadge = await page.locator('.reputation-badge').textContent();
-    expect(repBadge).toBe('9');
+    const repText = await page.locator('.reputation-badge').textContent();
+    expect(repText).toBe('9');
 
-    console.log('✅ E2E: Reputation indicator working');
+    console.log('✅ E2E: Boot complete, reputation indicator visible');
   });
 
   test('should open Mission Board from app launcher', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('.desktop')).toBeVisible({ timeout: 20000 });
+    await completeBoot(page);
 
     // Hover over app launcher to open menu
     await page.hover('.topbar-button:has-text("☰")');
@@ -55,8 +59,7 @@ test.describe('Phase 2 Complete Game Flow', () => {
   });
 
   test('should open VPN Client and show connection UI', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('.desktop')).toBeVisible({ timeout: 20000 });
+    await completeBoot(page);
 
     // Open VPN Client
     await page.hover('.topbar-button:has-text("☰")');
@@ -72,8 +75,7 @@ test.describe('Phase 2 Complete Game Flow', () => {
   });
 
   test('should show transaction history in Banking App', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('.desktop')).toBeVisible({ timeout: 20000 });
+    await completeBoot(page);
 
     // Open Banking App
     await page.hover('.topbar-button:has-text("☰")');
@@ -93,8 +95,7 @@ test.describe('Phase 2 Complete Game Flow', () => {
   });
 
   test('should accept mission from Mission Board', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('.desktop')).toBeVisible({ timeout: 20000 });
+    await completeBoot(page);
 
     // Open Mission Board
     await page.hover('.topbar-button:has-text("☰")');
@@ -114,7 +115,13 @@ test.describe('Phase 2 Complete Game Flow', () => {
 test.describe('Phase 2 Debug System', () => {
   test('should load debug scenario', async ({ page }) => {
     await page.goto('/?debug=true');
-    await expect(page.locator('.desktop')).toBeVisible({ timeout: 20000 });
+
+    // Complete boot even with debug mode
+    await expect(page.locator('.boot-screen')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
+    await page.locator('input.username-input').fill('debug_test');
+    await page.click('button:has-text("Continue")');
+    await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
     // Debug scenarios should be accessible via window object
     const scenariosAvailable = await page.evaluate(() => {

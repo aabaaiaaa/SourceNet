@@ -94,10 +94,11 @@ export const GameProvider = ({ children }) => {
   const [lastInterestTime, setLastInterestTime] = useState(null); // Last time interest was applied
 
   // Initialize story mission system
-  useStoryMissions(
-    { gamePhase, username, currentTime, activeConnections, activeMission },
-    { setAvailableMissions }
-  );
+  // TODO: Enable when JSON import issues resolved
+  // useStoryMissions(
+  //   { gamePhase, username, currentTime, activeConnections, activeMission },
+  //   { setAvailableMissions }
+  // );
 
   // Initialize player
   const initializePlayer = useCallback((name) => {
