@@ -181,6 +181,9 @@
   padding: 24px;
   min-width: 300px;
   max-width: 500px;
+  max-height: 80vh;
+  overflow-x: hidden;
+  overflow-y: auto;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   font-family: 'Courier New', Courier, monospace;
 }
