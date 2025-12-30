@@ -67,7 +67,8 @@ describe('Portal Component', () => {
     fireEvent.click(screen.getByText('Software'));
     expect(screen.getByText('SourceNet VPN Client')).toBeInTheDocument();
     expect(screen.getByText('SourceNet Mission Board')).toBeInTheDocument();
-    // Software is now available for purchase
-    expect(screen.getByRole('button', { name: /Purchase/i })).toBeInTheDocument();
+    // Software is now available for purchase (multiple purchase buttons exist)
+    const purchaseButtons = screen.getAllByRole('button', { name: /Purchase/i });
+    expect(purchaseButtons.length).toBeGreaterThan(0);
   });
 });
