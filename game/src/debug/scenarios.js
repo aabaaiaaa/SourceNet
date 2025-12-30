@@ -4,6 +4,8 @@
  * 9 scenarios covering different game states from fresh start to high performer
  */
 
+import { isDebugMode } from './debugSystem';
+
 export const DEBUG_SCENARIOS = {
   freshStart: {
     name: 'Fresh Start',
