@@ -4,10 +4,11 @@ import TopBar from './TopBar';
 import Window from './Window';
 import MinimizedWindowBar from './MinimizedWindowBar';
 import PauseOverlay from './PauseOverlay';
+import GameOverOverlay from './GameOverOverlay';
 import './Desktop.css';
 
 const Desktop = () => {
-  const { windows, isPaused, setIsPaused } = useGame();
+  const { windows, isPaused, setIsPaused, gamePhase, setGamePhase, loadGame } = useGame();
 
   // Handle ESC key to resume from pause
   useEffect(() => {
@@ -37,6 +38,31 @@ const Desktop = () => {
       <MinimizedWindowBar />
 
       {isPaused && <PauseOverlay />}
+
+      {gamePhase === 'gameOver-bankruptcy' && (
+        <GameOverOverlay
+          type="bankruptcy"
+          onLoadSave={() => {
+            // Show load menu
+            setGamePhase('login');
+          }}
+          onNewGame={() => {
+            setGamePhase('login');
+          }}
+        />
+      )}
+
+      {gamePhase === 'gameOver-termination' && (
+        <GameOverOverlay
+          type="termination"
+          onLoadSave={() => {
+            setGamePhase('login');
+          }}
+          onNewGame={() => {
+            setGamePhase('login');
+          }}
+        />
+      )}
     </div>
   );
 };

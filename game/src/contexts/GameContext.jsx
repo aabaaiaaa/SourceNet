@@ -16,6 +16,11 @@ import {
   saveGameState as saveToLocalStorage,
   loadGameState as loadFromLocalStorage,
 } from '../utils/helpers';
+import useStoryMissions from '../missions/useStoryMissions';
+import { updateBankruptcyCountdown, shouldTriggerBankruptcy, startBankruptcyCountdown } from '../systems/BankingSystem';
+import { updateReputationCountdown, startReputationCountdown } from '../systems/ReputationSystem';
+import { checkMissionObjectives, areAllObjectivesComplete } from '../missions/ObjectiveTracker';
+import { calculateMissionPayout } from '../systems/MissionSystem';
 
 const GameContext = createContext();
 
@@ -28,10 +33,6 @@ export const useGame = () => {
 };
 
 export const GameProvider = ({ children }) => {
-  // TODO: Initialize story missions
-  // import useStoryMissions from '../missions/useStoryMissions';
-  // useStoryMissions({ gamePhase, username, currentTime, activeConnections, activeMission }, { setAvailableMissions });
-
   // Game state
   const [gamePhase, setGamePhase] = useState('boot'); // boot, login, username, desktop
   const [username, setUsername] = useState('');
@@ -85,9 +86,15 @@ export const GameProvider = ({ children }) => {
   const [downloadQueue, setDownloadQueue] = useState([]); // Items being downloaded/installed
   const [transactions, setTransactions] = useState([]); // Banking transaction history
 
-  // Banking System (Phase 2 extensions)
+  // Banking System extensions
   const [bankruptcyCountdown, setBankruptcyCountdown] = useState(null); // {startTime, endTime, remaining} or null
   const [lastInterestTime, setLastInterestTime] = useState(null); // Last time interest was applied
+
+  // Initialize story mission system
+  useStoryMissions(
+    { gamePhase, username, currentTime, activeConnections, activeMission },
+    { setAvailableMissions }
+  );
 
   // Initialize player
   const initializePlayer = useCallback((name) => {
@@ -334,42 +341,6 @@ Looking forward to working with you!
     );
   }, []);
 
-  // TODO: Interest accumulation (1% per minute when overdrawn)
-  // Use ref to track last interest time to avoid infinite loops
-  // const lastInterestRef = useRef(currentTime);
-  // useEffect(() => {
-  //   if (isPaused || gamePhase !== 'desktop') return;
-  //   const totalCredits = getTotalCredits();
-  //   if (totalCredits >= 0) return;
-  //   const now = currentTime.getTime();
-  //   const lastTime = lastInterestRef.current.getTime();
-  //   const minutesPassed = Math.floor((now - lastTime) / 60000);
-  //   if (minutesPassed >= 1) {
-  //     const interest = Math.floor(totalCredits * 0.01);
-  //     // Apply interest, add transaction, update lastInterestRef
-  //     lastInterestRef.current = currentTime;
-  //   }
-  // }, [currentTime, isPaused, gamePhase]);
-
-  // TODO: Countdown timer updates
-  // useEffect(() => {
-  //   if (bankruptcyCountdown) {
-  //     const updated = updateBankruptcyCountdown(bankruptcyCountdown, currentTime, getTotalCredits());
-  //     if (updated === null) {
-  //       if (getTotalCredits() <= -10000) {
-  //         // Trigger game over
-  //         setGamePhase('gameOver-bankruptcy');
-  //       } else {
-  //         // Countdown cancelled
-  //         setBankruptcyCountdown(null);
-  //       }
-  //     } else {
-  //       setBankruptcyCountdown(updated);
-  //     }
-  //   }
-  //   // Similar for reputationCountdown
-  // }, [currentTime, bankruptcyCountdown, reputationCountdown]);
-
   // Play notification chime
   const playNotificationChime = useCallback(() => {
     // Create a simple notification sound using Web Audio API
@@ -401,6 +372,109 @@ Looking forward to working with you!
   const getTotalCredits = useCallback(() => {
     return bankAccounts.reduce((sum, acc) => sum + acc.balance, 0);
   }, [bankAccounts]);
+
+  // Interest accumulation (1% per minute when overdrawn)
+  const lastInterestRef = useRef(currentTime);
+
+  useEffect(() => {
+    if (!username || isPaused || gamePhase !== 'desktop') return;
+
+    const totalCredits = getTotalCredits();
+    if (totalCredits >= 0) {
+      lastInterestRef.current = currentTime;
+      return;
+    }
+
+    const now = currentTime.getTime();
+    const lastTime = lastInterestRef.current.getTime();
+    const minutesPassed = Math.floor((now - lastTime) / 60000);
+
+    if (minutesPassed >= 1) {
+      const interest = Math.floor(totalCredits * 0.01);
+
+      // Update balance
+      const newAccounts = [...bankAccounts];
+      if (newAccounts[0]) {
+        newAccounts[0].balance += interest;
+        setBankAccounts(newAccounts);
+
+        // Add transaction
+        setTransactions((prev) => [
+          ...prev,
+          {
+            id: `txn-interest-${Date.now()}`,
+            date: currentTime.toISOString(),
+            type: 'expense',
+            amount: interest,
+            description: 'Overdraft Interest',
+            balanceAfter: newAccounts[0].balance,
+          },
+        ]);
+      }
+
+      lastInterestRef.current = currentTime;
+    }
+  }, [currentTime, isPaused, gamePhase, username, getTotalCredits, bankAccounts]);
+
+  // Bankruptcy countdown
+  const prevBankruptcyRef = useRef(null);
+
+  useEffect(() => {
+    if (!username || isPaused || gamePhase !== 'desktop') return;
+
+    const totalCredits = getTotalCredits();
+
+    if (shouldTriggerBankruptcy(totalCredits) && !bankruptcyCountdown) {
+      setBankruptcyCountdown(startBankruptcyCountdown(currentTime));
+    }
+
+    if (bankruptcyCountdown) {
+      const updated = updateBankruptcyCountdown(bankruptcyCountdown, currentTime, totalCredits);
+
+      if (updated === null) {
+        if (totalCredits <= -10000) {
+          setGamePhase('gameOver-bankruptcy');
+        } else {
+          setBankruptcyCountdown(null);
+        }
+      } else {
+        if (updated.remaining <= 10 && prevBankruptcyRef.current && prevBankruptcyRef.current.remaining > 10) {
+          playNotificationChime();
+        }
+        prevBankruptcyRef.current = updated;
+        setBankruptcyCountdown(updated);
+      }
+    }
+  }, [currentTime, bankruptcyCountdown, isPaused, gamePhase, username, getTotalCredits, playNotificationChime]);
+
+  // Reputation countdown
+  const prevReputationRef = useRef(null);
+
+  useEffect(() => {
+    if (!username || isPaused || gamePhase !== 'desktop') return;
+
+    if (reputation === 1 && !reputationCountdown) {
+      setReputationCountdown(startReputationCountdown(currentTime));
+    }
+
+    if (reputationCountdown) {
+      const updated = updateReputationCountdown(reputationCountdown, currentTime);
+
+      if (updated === null) {
+        setGamePhase('gameOver-termination');
+      } else {
+        if (updated.remaining <= 10) {
+          playNotificationChime();
+        }
+        prevReputationRef.current = updated;
+        setReputationCountdown(updated);
+      }
+    }
+
+    if (reputation > 1 && reputationCountdown) {
+      setReputationCountdown(null);
+    }
+  }, [currentTime, reputation, reputationCountdown, isPaused, gamePhase, username, playNotificationChime]);
 
   // ===== MISSION ACTIONS =====
 
