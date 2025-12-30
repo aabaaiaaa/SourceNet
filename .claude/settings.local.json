@@ -15,7 +15,8 @@
       "Bash(npm run build:*)",
       "Bash(cat:*)",
       "Bash(npm run test:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "Bash(npm run lint:*)"
     ]
   }
 }

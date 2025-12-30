@@ -5,9 +5,54 @@ import { isHardwareInstalled } from '../../utils/helpers';
 import './Portal.css';
 
 const Portal = () => {
-  const { hardware } = useGame();
+  const { hardware, software, bankAccounts, setBankAccounts, setSoftware, setTransactions, currentTime, getTotalCredits } = useGame();
   const [activeCategory, setActiveCategory] = useState('processors');
   const [activeSection, setActiveSection] = useState('hardware');
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const handlePurchaseClick = (item) => {
+    setSelectedItem(item);
+    setShowPurchaseModal(true);
+  };
+
+  const handleConfirmPurchase = () => {
+    if (!selectedItem) return;
+
+    const totalCredits = getTotalCredits();
+    const price = selectedItem.price;
+
+    if (totalCredits < price) {
+      alert(`Insufficient credits. Need ${price}, have ${totalCredits}`);
+      setShowPurchaseModal(false);
+      return;
+    }
+
+    // Deduct credits
+    const newAccounts = [...bankAccounts];
+    if (newAccounts[0]) {
+      newAccounts[0].balance -= price;
+      setBankAccounts(newAccounts);
+
+      // Add transaction
+      setTransactions(prev => [...prev, {
+        id: `txn-purchase-${Date.now()}`,
+        date: currentTime.toISOString(),
+        type: 'expense',
+        amount: -price,
+        description: `Software Purchase: ${selectedItem.name}`,
+        balanceAfter: newAccounts[0].balance,
+      }]);
+
+      // Add software to installed
+      setSoftware(prev => [...prev, selectedItem.id]);
+
+      alert(`✅ Purchased ${selectedItem.name}!`);
+    }
+
+    setShowPurchaseModal(false);
+    setSelectedItem(null);
+  };
 
   const hardwareCategories = [
     { id: 'processors', name: 'Processors', items: HARDWARE_CATALOG.processors },
@@ -62,7 +107,9 @@ const Portal = () => {
           <div className="empty-state">No items in this category</div>
         ) : (
           currentItems.map((item) => {
-            const installed = activeSection === 'hardware' && isHardwareInstalled(item, hardware);
+            const hardwareInstalled = activeSection === 'hardware' && isHardwareInstalled(item, hardware);
+            const softwareInstalled = activeSection === 'software' && software && software.includes(item.id);
+            const installed = hardwareInstalled || softwareInstalled;
             const available = activeSection === 'software' ? item.available : true;
 
             return (
@@ -92,7 +139,12 @@ const Portal = () => {
                   {installed && <span className="status-badge installed-badge">✓ Installed</span>}
                   {!available && <span className="status-badge unavailable-badge">Coming Soon</span>}
                   {!installed && available && activeSection === 'hardware' && (
-                    <span className="status-badge purchasable-badge">Purchase (Phase 2)</span>
+                    <span className="status-badge purchasable-badge">Hardware (Phase 3)</span>
+                  )}
+                  {!installed && available && activeSection === 'software' && (
+                    <button className="purchase-btn" onClick={() => handlePurchaseClick(item)}>
+                      Purchase
+                    </button>
                   )}
                 </div>
               </div>
@@ -100,6 +152,26 @@ const Portal = () => {
           })
         )}
       </div>
+
+      {/* Purchase Confirmation Modal */}
+      {showPurchaseModal && selectedItem && (
+        <div className="modal-overlay" onClick={() => setShowPurchaseModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Purchase {selectedItem.name}?</h3>
+            <p>Price: ${selectedItem.price}</p>
+            <p>Your Balance: ${getTotalCredits()}</p>
+            <p>After Purchase: ${getTotalCredits() - selectedItem.price}</p>
+            <div className="modal-actions">
+              <button className="confirm-btn" onClick={handleConfirmPurchase}>
+                Confirm Purchase
+              </button>
+              <button className="cancel-btn" onClick={() => setShowPurchaseModal(false)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

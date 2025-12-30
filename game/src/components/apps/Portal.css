@@ -168,3 +168,84 @@
   background-color: #e0e0e0;
   color: #333;
 }
+
+.purchase-btn {
+  padding: 8px 16px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: bold;
+  border-radius: 4px;
+}
+
+.purchase-btn:hover {
+  background: #45a049;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  border: 2px solid var(--osnet-border);
+  min-width: 400px;
+  font-family: inherit;
+}
+
+.modal-content h3 {
+  margin: 0 0 20px 0;
+  color: #222;
+}
+
+.modal-content p {
+  margin: 10px 0;
+  color: #222;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.confirm-btn, .cancel-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: bold;
+  border-radius: 4px;
+}
+
+.confirm-btn {
+  background: #4CAF50;
+  color: white;
+}
+
+.confirm-btn:hover {
+  background: #45a049;
+}
+
+.cancel-btn {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.cancel-btn:hover {
+  background: #e0e0e0;
+}
