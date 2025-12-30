@@ -63,6 +63,12 @@ describe('scenarios', () => {
         setBankAccounts: () => {},
         setReputation: () => {},
         setSoftware: () => {},
+        setActiveMission: () => {},
+        setCompletedMissions: () => {},
+        setTransactions: () => {},
+        setBankruptcyCountdown: () => {},
+        setReputationCountdown: () => {},
+        setCurrentTime: () => {},
       };
 
       expect(() => loadScenario('freshStart', mockContext)).not.toThrow();

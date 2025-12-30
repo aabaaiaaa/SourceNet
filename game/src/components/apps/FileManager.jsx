@@ -8,7 +8,6 @@ const FileManager = () => {
   const setFileManagerConnections = game.setFileManagerConnections || (() => {});
   const setLastFileOperation = game.setLastFileOperation || (() => {});
   const [selectedFileSystem, setSelectedFileSystem] = useState('');
-  const [currentPath, setCurrentPath] = useState('/');
   const [files, setFiles] = useState([]);
   const [clipboard, setClipboard] = useState(null);
 

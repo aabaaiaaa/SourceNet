@@ -15,7 +15,6 @@ const MissionBoard = () => {
   } = useGame();
 
   const [activeTab, setActiveTab] = useState('available'); // 'available', 'active', 'completed'
-  const [selectedMission, setSelectedMission] = useState(null);
 
   const installedSoftwareIds = software || [];
 
@@ -150,7 +149,7 @@ const MissionBoard = () => {
         <div className="objectives-section">
           <h4>Objectives:</h4>
           <ul className="objectives-list">
-            {activeMission.objectives?.map((objective, index) => (
+            {activeMission.objectives?.map((objective) => (
               <li
                 key={objective.id}
                 className={`objective-item objective-${objective.status}`}

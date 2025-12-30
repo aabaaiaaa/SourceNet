@@ -293,4 +293,4 @@ if (isDebugMode()) {
   window.debugScenarios = DEBUG_SCENARIOS;
 }
 
-export default { isDebugMode, setGameState, loadScenario, DEBUG_SCENARIOS };
+export default { loadScenario, DEBUG_SCENARIOS };
