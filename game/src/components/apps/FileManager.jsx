@@ -83,6 +83,10 @@ const FileManager = () => {
     }
   };
 
+  // Check if connected to any network
+  const game = useGame();
+  const isConnected = (game.activeConnections || []).length > 0;
+
   return (
     <div className="file-manager">
       <div className="fm-header">
@@ -90,24 +94,31 @@ const FileManager = () => {
         <p className="fm-subtitle">Remote File System Access</p>
       </div>
 
-      <div className="fm-controls">
-        <select
-          value={selectedFileSystem}
-          onChange={(e) => {
-            setSelectedFileSystem(e.target.value);
-            if (e.target.value) handleConnect();
-          }}
-        >
-          <option value="">Select File System</option>
-          {availableFileSystems.map((fs) => (
-            <option key={fs.id} value={fs.id}>
-              {fs.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      {!isConnected ? (
+        <div className="empty-state">
+          <p>Not connected to any networks.</p>
+          <p>Use VPN Client to connect to a network first.</p>
+        </div>
+      ) : (
+        <>
+          <div className="fm-controls">
+            <select
+              value={selectedFileSystem}
+              onChange={(e) => {
+                setSelectedFileSystem(e.target.value);
+                if (e.target.value) handleConnect();
+              }}
+            >
+              <option value="">Select File System</option>
+              {availableFileSystems.map((fs) => (
+                <option key={fs.id} value={fs.id}>
+                  {fs.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-      {selectedFileSystem && (
+          {selectedFileSystem && (
         <>
           <div className="fm-toolbar">
             <button onClick={handleCopy}>Copy</button>
@@ -128,6 +139,8 @@ const FileManager = () => {
               </div>
             ))}
           </div>
+        </>
+          )}
         </>
       )}
     </div>
