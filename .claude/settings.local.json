@@ -21,7 +21,8 @@
       "Bash(do testf=\"$f%.jsx.test.jsx\")",
       "Bash(if [ ! -f \"$testf\" ])",
       "Bash(fi)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(find:*)"
     ]
   }
 }

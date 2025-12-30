@@ -86,7 +86,6 @@ test.describe('Core Gameplay Loop: Save/Load with Phase 2 State', () => {
 
     // Verify Phase 2 UI elements exist
     await expect(page.locator('.reputation-badge')).toBeVisible();
-    const repBefore = await page.locator('.reputation-badge').textContent();
 
     // Open power menu and save
     await page.hover('text=⏻');
