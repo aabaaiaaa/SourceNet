@@ -153,11 +153,39 @@ export const HARDWARE_CATALOG = {
 // Software catalog
 export const SOFTWARE_CATALOG = [
   {
+    id: 'mission-board',
+    name: 'SourceNet Mission Board',
+    description: 'View and accept SourceNet contracts',
+    price: 250,
+    available: true,
+  },
+  {
     id: 'vpn-client',
     name: 'SourceNet VPN Client',
-    description: 'VPN client for secure connections',
+    description: 'Secure connection to private networks',
     price: 500,
-    available: false, // Phase 2
+    available: true,
+  },
+  {
+    id: 'network-scanner',
+    name: 'Network Scanner',
+    description: 'Scan networks for machines and file systems',
+    price: 300,
+    available: true,
+  },
+  {
+    id: 'network-address-register',
+    name: 'Network Address Register',
+    description: 'Manage network connections and credentials',
+    price: 200,
+    available: true,
+  },
+  {
+    id: 'file-manager',
+    name: 'File Manager',
+    description: 'Access and manipulate files on remote systems',
+    price: 350,
+    available: true,
   },
 ];
 
@@ -209,7 +237,7 @@ export const STARTING_BANK_ACCOUNT = {
 // Window sizes (fixed per app)
 export const WINDOW_SIZES = {
   mail: { width: 600, height: 600 },
-  banking: { width: 500, height: 400 },
+  banking: { width: 500, height: 500 },
   portal: { width: 700, height: 600 },
   missionBoard: { width: 700, height: 500 },
   vpnClient: { width: 600, height: 450 },

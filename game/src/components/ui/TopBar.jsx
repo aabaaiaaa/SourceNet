@@ -45,16 +45,22 @@ const TopBar = () => {
   const unreadMessages = messages.filter((m) => !m.read);
   const totalCredits = getTotalCredits();
 
-  const apps = [
-    { id: 'mail', name: 'SNet Mail' },
-    { id: 'banking', name: 'SNet Banking App' },
-    { id: 'portal', name: 'OSNet Portal' },
-    { id: 'missionBoard', name: 'SourceNet Mission Board' },
-    { id: 'vpnClient', name: 'SourceNet VPN Client' },
-    { id: 'networkScanner', name: 'Network Scanner' },
-    { id: 'networkAddressRegister', name: 'Network Address Register' },
-    { id: 'fileManager', name: 'File Manager' },
-  ].sort((a, b) => a.name.localeCompare(b.name));
+  // Map software IDs to app launcher entries (only show installed software)
+  const appMap = {
+    mail: { id: 'mail', name: 'SNet Mail' },
+    banking: { id: 'banking', name: 'SNet Banking App' },
+    portal: { id: 'portal', name: 'OSNet Portal' },
+    'mission-board': { id: 'missionBoard', name: 'SourceNet Mission Board' },
+    'vpn-client': { id: 'vpnClient', name: 'SourceNet VPN Client' },
+    'network-scanner': { id: 'networkScanner', name: 'Network Scanner' },
+    'network-address-register': { id: 'networkAddressRegister', name: 'Network Address Register' },
+    'file-manager': { id: 'fileManager', name: 'File Manager' },
+  };
+
+  const apps = (software || [])
+    .map((sw) => typeof sw === 'string' ? appMap[sw] : appMap[sw.id])
+    .filter((app) => app !== undefined)
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const handleSave = () => {
     const saveName = prompt('Enter save name (or leave blank for auto-name):');
