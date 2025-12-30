@@ -6,7 +6,7 @@ import triggerEventBus from '../../core/triggerEventBus';
 import './Portal.css';
 
 const Portal = () => {
-  const { hardware, software, bankAccounts, setBankAccounts, setSoftware, setTransactions, currentTime, getTotalCredits } = useGame();
+  const { hardware, software, bankAccounts, setBankAccounts, setSoftware, setTransactions, currentTime, getTotalCredits, setDownloadQueue } = useGame();
   const [activeCategory, setActiveCategory] = useState('processors');
   const [activeSection, setActiveSection] = useState('hardware');
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
@@ -45,16 +45,45 @@ const Portal = () => {
         balanceAfter: newAccounts[0].balance,
       }]);
 
-      // Add software to installed
-      setSoftware(prev => [...prev, selectedItem.id]);
-
-      // Emit software installed event
-      triggerEventBus.emit('softwareInstalled', {
+      // Add to download queue (simulates download/installation)
+      const downloadItem = {
+        id: `download-${Date.now()}`,
         softwareId: selectedItem.id,
         softwareName: selectedItem.name,
-      });
+        sizeInMB: 200, // Mock size
+        progress: 0,
+        status: 'downloading',
+        startTime: Date.now(),
+      };
 
-      alert(`✅ Purchased ${selectedItem.name}!`);
+      setDownloadQueue(prev => [...prev, downloadItem]);
+
+      // Simulate download (2 seconds) then install
+      setTimeout(() => {
+        setDownloadQueue(prev =>
+          prev.map(item =>
+            item.id === downloadItem.id
+              ? { ...item, progress: 100, status: 'complete' }
+              : item
+          )
+        );
+
+        // Add to installed software
+        setSoftware(prev => [...prev, selectedItem.id]);
+
+        // Emit software installed event
+        triggerEventBus.emit('softwareInstalled', {
+          softwareId: selectedItem.id,
+          softwareName: selectedItem.name,
+        });
+
+        // Remove from queue after install
+        setTimeout(() => {
+          setDownloadQueue(prev => prev.filter(item => item.id !== downloadItem.id));
+        }, 1000);
+      }, 2000);
+
+      alert(`✅ Purchasing ${selectedItem.name}...\nCheck download queue in bottom-right!`);
     }
 
     setShowPurchaseModal(false);
