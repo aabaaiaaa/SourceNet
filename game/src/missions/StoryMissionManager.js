@@ -42,10 +42,18 @@ class StoryMissionManager {
    * @param {object} missionDef - Mission definition
    */
   subscribeMissionTrigger(missionDef) {
-    const { type, event, delay } = missionDef.triggers.start;
+    const { type, event, delay, condition } = missionDef.triggers.start;
 
     if (type === 'timeSinceEvent') {
-      const unsubscribe = triggerEventBus.on(event, () => {
+      const unsubscribe = triggerEventBus.on(event, (data) => {
+        // Check condition if specified (e.g., softwareId === 'mission-board')
+        if (condition) {
+          const conditionMet = Object.keys(condition).every(
+            (key) => data[key] === condition[key]
+          );
+          if (!conditionMet) return;
+        }
+
         setTimeout(() => {
           this.activateMission(missionDef.missionId);
         }, delay || 0);

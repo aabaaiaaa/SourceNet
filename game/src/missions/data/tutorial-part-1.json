@@ -9,7 +9,10 @@
   "triggers": {
     "start": {
       "type": "timeSinceEvent",
-      "event": "missionBoardInstalled",
+      "event": "softwareInstalled",
+      "condition": {
+        "softwareId": "mission-board"
+      },
       "delay": 0
     }
   },

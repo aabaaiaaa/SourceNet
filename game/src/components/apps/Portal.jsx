@@ -49,13 +49,6 @@ const Portal = () => {
       setSoftware(prev => [...prev, selectedItem.id]);
 
       // Emit software installed event
-      if (selectedItem.id === 'mission-board') {
-        triggerEventBus.emit('missionBoardInstalled', {
-          softwareId: selectedItem.id,
-          softwareName: selectedItem.name,
-        });
-      }
-
       triggerEventBus.emit('softwareInstalled', {
         softwareId: selectedItem.id,
         softwareName: selectedItem.name,
