@@ -344,6 +344,10 @@ const TopBar = () => {
                   {app.name}
                 </button>
               ))}
+              <div className="app-launcher-storage">
+                {/* Mock storage for now - real implementation would calculate from installed software */}
+                14.5 GB used / 90 GB free
+              </div>
             </div>
           )}
         </div>
