@@ -40,6 +40,7 @@
 .tab.active {
   background-color: white;
   font-weight: bold;
+  border-bottom: 3px solid #4CAF50;
 }
 
 .mail-body {

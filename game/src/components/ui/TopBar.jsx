@@ -229,13 +229,12 @@ const TopBar = () => {
           className="topbar-reputation"
           onMouseEnter={() => setShowReputationPreview(true)}
           onMouseLeave={() => setShowReputationPreview(false)}
-          title="Your SourceNet Reputation"
         >
           <span
             className="reputation-badge"
-            style={{ backgroundColor: getReputationTier(reputation).color }}
+            style={{ backgroundColor: getReputationTier(reputation).color, cursor: 'pointer' }}
           >
-            {reputation}
+            ★{reputation}
           </span>
           {showReputationPreview && (
             <div className="notification-preview">
