@@ -16,7 +16,12 @@
       "Bash(cat:*)",
       "Bash(npm run test:*)",
       "Bash(npm run lint)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(while read f)",
+      "Bash(do testf=\"$f%.jsx.test.jsx\")",
+      "Bash(if [ ! -f \"$testf\" ])",
+      "Bash(fi)",
+      "Bash(done)"
     ]
   }
 }
