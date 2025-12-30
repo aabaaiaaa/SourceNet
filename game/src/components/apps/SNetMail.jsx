@@ -12,11 +12,11 @@ const SNetMail = () => {
   useEffect(() => {
     if (selectedMessage) {
       const updatedMessage = messages.find(m => m.id === selectedMessage.id);
-      if (updatedMessage) {
+      if (updatedMessage && updatedMessage !== selectedMessage) {
         setSelectedMessage(updatedMessage);
       }
     }
-  }, [messages, selectedMessage]);
+  }, [messages]); // Remove selectedMessage from deps to avoid cascade
 
   const inboxMessages = messages.filter((m) => !m.archived);
   const archivedMessages = messages.filter((m) => m.archived);

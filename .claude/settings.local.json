@@ -23,7 +23,8 @@
       "Bash(fi)",
       "Bash(done)",
       "Bash(find:*)",
-      "Bash(tee:*)"
+      "Bash(tee:*)",
+      "Bash(npx eslint:*)"
     ]
   }
 }
