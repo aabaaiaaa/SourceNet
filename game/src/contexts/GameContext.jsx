@@ -94,12 +94,10 @@ export const GameProvider = ({ children }) => {
   const [lastInterestTime, setLastInterestTime] = useState(null); // Last time interest was applied
 
   // Initialize story mission system
-  // TEMPORARILY DISABLED - Causes game to not load past username screen
-  // TODO: Debug why useStoryMissions prevents game initialization
-  // useStoryMissions(
-  //   { gamePhase, username, currentTime, activeConnections, activeMission },
-  //   { setAvailableMissions }
-  // );
+  useStoryMissions(
+    { gamePhase, username, currentTime, activeConnections, activeMission },
+    { setAvailableMissions }
+  );
 
   // Initialize player
   const initializePlayer = useCallback((name) => {

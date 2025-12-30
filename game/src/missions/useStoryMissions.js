@@ -22,6 +22,9 @@ import triggerEventBus from '../core/triggerEventBus';
  */
 export const useStoryMissions = (gameState, actions) => {
   const initialized = useRef(false);
+  const desktopLoadedEmitted = useRef(false);
+  const emittedConnectionsRef = useRef(new Set());
+  const emittedMissionRef = useRef(null);
 
   // Initialize missions once on mount
   useEffect(() => {
@@ -57,37 +60,46 @@ export const useStoryMissions = (gameState, actions) => {
     };
   }, [actions]);
 
-  // Emit events when game state changes (for mission triggers)
+  // Emit desktop loaded event (once)
   useEffect(() => {
-    if (!gameState.username) return; // Not initialized yet
+    if (!gameState.username || desktopLoadedEmitted.current) return;
 
-    // Emit desktop loaded event (triggers Phase 1 welcome messages)
-    if (gameState.gamePhase === 'desktop' && !gameState.desktopLoadedEmitted) {
+    if (gameState.gamePhase === 'desktop') {
       triggerEventBus.emit('desktopLoaded', {
         username: gameState.username,
         time: gameState.currentTime,
       });
+      desktopLoadedEmitted.current = true;
+      console.log('📡 Desktop loaded event emitted');
     }
-  }, [gameState.gamePhase, gameState.username, gameState.currentTime, gameState.desktopLoadedEmitted]);
+  }, [gameState.gamePhase, gameState.username, gameState.currentTime]);
 
-  // Emit network connection events
+  // Emit network connection events (only new connections)
   useEffect(() => {
     if (gameState.activeConnections && gameState.activeConnections.length > 0) {
       gameState.activeConnections.forEach((conn) => {
-        triggerEventBus.emit('networkConnected', {
-          networkId: conn.networkId,
-          networkName: conn.networkName,
-        });
+        const connKey = conn.networkId || conn.networkName;
+        if (!emittedConnectionsRef.current.has(connKey)) {
+          triggerEventBus.emit('networkConnected', {
+            networkId: conn.networkId,
+            networkName: conn.networkName,
+          });
+          emittedConnectionsRef.current.add(connKey);
+        }
       });
     }
   }, [gameState.activeConnections]);
 
-  // Emit mission acceptance event
+  // Emit mission acceptance event (only new missions)
   useEffect(() => {
     if (gameState.activeMission) {
-      triggerEventBus.emit('missionAccepted', {
-        missionId: gameState.activeMission.missionId || gameState.activeMission.id,
-      });
+      const missionId = gameState.activeMission.missionId || gameState.activeMission.id;
+      if (missionId && missionId !== emittedMissionRef.current) {
+        triggerEventBus.emit('missionAccepted', {
+          missionId: missionId,
+        });
+        emittedMissionRef.current = missionId;
+      }
     }
   }, [gameState.activeMission]);
 };
