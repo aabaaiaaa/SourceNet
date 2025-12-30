@@ -476,6 +476,22 @@ Looking forward to working with you!
     }
   }, [currentTime, reputation, reputationCountdown, isPaused, gamePhase, username, playNotificationChime]);
 
+  // Objective auto-tracking (TODO: Enable when ready)
+  // useEffect(() => {
+  //   if (!activeMission || !username || !activeMission.objectives) return;
+  //   const gameState = { activeConnections, narEntries };
+  //   const completedObjective = checkMissionObjectives(activeMission, gameState);
+  //   if (completedObjective) {
+  //     completeMissionObjective(completedObjective.id);
+  //   }
+  //   if (areAllObjectivesComplete(activeMission.objectives)) {
+  //     setTimeout(() => {
+  //       const payout = calculateMissionPayout(activeMission.basePayout || 1000, reputation);
+  //       completeMission('success', payout, 1);
+  //     }, 3000);
+  //   }
+  // }, [activeMission, activeConnections, narEntries, username, reputation]);
+
   // ===== MISSION ACTIONS =====
 
   // Accept mission

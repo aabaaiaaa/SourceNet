@@ -23,6 +23,8 @@ const TopBar = () => {
     reputation,
     activeConnections,
     activeMission,
+    bankruptcyCountdown,
+    reputationCountdown,
   } = useGame();
 
   const [showPowerMenu, setShowPowerMenu] = useState(false);
@@ -91,6 +93,20 @@ const TopBar = () => {
 
   return (
     <div className="topbar">
+      {/* Bankruptcy Warning Banner (flashing) */}
+      {bankruptcyCountdown && bankruptcyCountdown.remaining <= 300 && (
+        <div className="bankruptcy-warning-banner">
+          ⚠️ BANKRUPTCY WARNING: {Math.floor(bankruptcyCountdown.remaining / 60)}:{String(bankruptcyCountdown.remaining % 60).padStart(2, '0')} remaining ⚠️
+        </div>
+      )}
+
+      {/* Reputation Warning Banner */}
+      {reputationCountdown && (
+        <div className="reputation-warning-banner">
+          ⚠️ TERMINATION WARNING: {Math.floor(reputationCountdown.remaining / 60)}:{String(reputationCountdown.remaining % 60).padStart(2, '0')} remaining ⚠️
+        </div>
+      )}
+
       {/* Left: Power Button */}
       <div className="topbar-section">
         <div

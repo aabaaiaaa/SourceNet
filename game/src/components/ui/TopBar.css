@@ -236,3 +236,30 @@
 .modal-close-btn:hover {
   background-color: #e0e0e0;
 }
+
+/* Warning Banners */
+.bankruptcy-warning-banner,
+.reputation-warning-banner {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  right: 0;
+  background: #DC143C;
+  color: white;
+  padding: 8px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 13px;
+  z-index: 9999;
+  animation: flash 1s infinite;
+}
+
+.reputation-warning-banner {
+  top: 60px; /* Below bankruptcy if both active */
+  background: #FF8C00;
+}
+
+@keyframes flash {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.6; }
+}
