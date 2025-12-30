@@ -7,7 +7,9 @@
       "trigger": {
         "type": "timeSinceEvent",
         "event": "messageRead",
-        "messageId": "manager-welcome",
+        "condition": {
+          "messageId": "msg-welcome-manager"
+        },
         "delay": 20000
       },
       "message": {
