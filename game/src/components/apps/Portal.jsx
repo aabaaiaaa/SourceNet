@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import { HARDWARE_CATALOG, SOFTWARE_CATALOG } from '../../constants/gameConstants';
 import { isHardwareInstalled } from '../../utils/helpers';
+import triggerEventBus from '../../core/triggerEventBus';
 import './Portal.css';
 
 const Portal = () => {
@@ -46,6 +47,19 @@ const Portal = () => {
 
       // Add software to installed
       setSoftware(prev => [...prev, selectedItem.id]);
+
+      // Emit software installed event
+      if (selectedItem.id === 'mission-board') {
+        triggerEventBus.emit('missionBoardInstalled', {
+          softwareId: selectedItem.id,
+          softwareName: selectedItem.name,
+        });
+      }
+
+      triggerEventBus.emit('softwareInstalled', {
+        softwareId: selectedItem.id,
+        softwareName: selectedItem.name,
+      });
 
       alert(`✅ Purchased ${selectedItem.name}!`);
     }
