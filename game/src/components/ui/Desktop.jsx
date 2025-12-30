@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import TopBar from './TopBar';
 import Window from './Window';
@@ -6,22 +6,37 @@ import MinimizedWindowBar from './MinimizedWindowBar';
 import PauseOverlay from './PauseOverlay';
 import GameOverOverlay from './GameOverOverlay';
 import InstallationQueue from './InstallationQueue';
+import DebugPanel from '../../debug/DebugPanel';
+import { isDebugMode } from '../../debug/debugSystem';
 import './Desktop.css';
 
 const Desktop = () => {
   const { windows, isPaused, setIsPaused, gamePhase, setGamePhase } = useGame();
+  const [showDebugPanel, setShowDebugPanel] = useState(false);
 
-  // Handle ESC key to resume from pause
+  // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
+      // ESC to resume from pause
       if (e.key === 'Escape' && isPaused) {
         setIsPaused(false);
+      }
+
+      // Ctrl+D to toggle debug panel (development mode only)
+      if (e.ctrlKey && e.key === 'd' && isDebugMode()) {
+        e.preventDefault();
+        setShowDebugPanel(prev => !prev);
+      }
+
+      // ESC to close debug panel
+      if (e.key === 'Escape' && showDebugPanel) {
+        setShowDebugPanel(false);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isPaused, setIsPaused]);
+  }, [isPaused, setIsPaused, showDebugPanel]);
 
   return (
     <div className="desktop">
@@ -41,6 +56,8 @@ const Desktop = () => {
       <InstallationQueue />
 
       {isPaused && <PauseOverlay />}
+
+      {showDebugPanel && <DebugPanel onClose={() => setShowDebugPanel(false)} />}
 
       {gamePhase === 'gameOver-bankruptcy' && (
         <GameOverOverlay
