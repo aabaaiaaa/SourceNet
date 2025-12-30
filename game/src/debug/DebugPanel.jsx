@@ -1,7 +1,7 @@
 /**
  * Debug Panel - UI for rapid state manipulation
  *
- * Press Ctrl+Shift+D to open (development mode only)
+ * Access via ?debug=true URL parameter (development mode only)
  *
  * Features:
  * - Quick scenario loading (9 pre-configured states)
