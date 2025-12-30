@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import { formatDateTime, getAllSaves } from '../../utils/helpers';
 import { getReputationTier } from '../../systems/ReputationSystem';
+import { calculateStorageUsed, formatStorage } from '../../systems/StorageSystem';
 import './TopBar.css';
 
 const TopBar = () => {
@@ -25,6 +26,7 @@ const TopBar = () => {
     activeMission,
     bankruptcyCountdown,
     reputationCountdown,
+    software,
   } = useGame();
 
   const [showPowerMenu, setShowPowerMenu] = useState(false);
@@ -345,8 +347,7 @@ const TopBar = () => {
                 </button>
               ))}
               <div className="app-launcher-storage">
-                {/* Mock storage for now - real implementation would calculate from installed software */}
-                14.5 GB used / 90 GB free
+                {formatStorage(calculateStorageUsed(software || []), 90)}
               </div>
             </div>
           )}
