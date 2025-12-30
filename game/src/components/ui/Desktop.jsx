@@ -5,6 +5,7 @@ import Window from './Window';
 import MinimizedWindowBar from './MinimizedWindowBar';
 import PauseOverlay from './PauseOverlay';
 import GameOverOverlay from './GameOverOverlay';
+import InstallationQueue from './InstallationQueue';
 import './Desktop.css';
 
 const Desktop = () => {
@@ -36,6 +37,8 @@ const Desktop = () => {
       </div>
 
       <MinimizedWindowBar />
+
+      <InstallationQueue />
 
       {isPaused && <PauseOverlay />}
 
