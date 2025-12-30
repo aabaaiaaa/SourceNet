@@ -17,11 +17,12 @@ test.describe('E2E Test 5: App Interactions Flow', () => {
     await expect(page.locator('text=SNet Banking App')).toBeVisible();
     await expect(page.locator('text=SNet Mail')).toBeVisible();
 
-    // Verify alphabetical order (Banking, Mail, Portal)
+    // Verify alphabetical order (now 8 apps instead of 3)
     const menuItems = await page.locator('.app-launcher-menu button').allTextContents();
-    expect(menuItems[0]).toContain('OSNet Portal');
-    expect(menuItems[1]).toContain('SNet Banking');
-    expect(menuItems[2]).toContain('SNet Mail');
+    expect(menuItems.length).toBe(8); // 3 Phase 1 + 5 Phase 2 apps
+    // Verify apps are alphabetically sorted
+    const sortedItems = [...menuItems].sort();
+    expect(menuItems).toEqual(sortedItems);
 
     // Step 4: Click "SNet Mail" → verify opens
     await page.click('.app-launcher-menu button:has-text("SNet Mail")');
