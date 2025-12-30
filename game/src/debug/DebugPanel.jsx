@@ -13,7 +13,7 @@
 
 import { useState } from 'react';
 import { useGame } from '../contexts/GameContext';
-import { DEBUG_SCENARIOS, loadScenario, setGameState } from './scenarios';
+import { DEBUG_SCENARIOS, loadScenario } from './scenarios';
 import './DebugPanel.css';
 
 const DebugPanel = ({ onClose }) => {
