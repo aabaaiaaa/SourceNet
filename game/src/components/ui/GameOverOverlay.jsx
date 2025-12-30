@@ -1,4 +1,3 @@
-import { useGame } from '../../contexts/GameContext';
 import './GameOverOverlay.css';
 
 const GameOverOverlay = ({ type, onLoadSave, onNewGame }) => {

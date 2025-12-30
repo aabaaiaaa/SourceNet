@@ -22,7 +22,8 @@
       "Bash(if [ ! -f \"$testf\" ])",
       "Bash(fi)",
       "Bash(done)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(tee:*)"
     ]
   }
 }

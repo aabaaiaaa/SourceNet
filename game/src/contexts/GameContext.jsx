@@ -19,8 +19,6 @@ import {
 import useStoryMissions from '../missions/useStoryMissions';
 import { updateBankruptcyCountdown, shouldTriggerBankruptcy, startBankruptcyCountdown } from '../systems/BankingSystem';
 import { updateReputationCountdown, startReputationCountdown } from '../systems/ReputationSystem';
-import { checkMissionObjectives, areAllObjectivesComplete } from '../missions/ObjectiveTracker';
-import { calculateMissionPayout } from '../systems/MissionSystem';
 
 const GameContext = createContext();
 
@@ -59,12 +57,8 @@ export const GameProvider = ({ children }) => {
   const [windows, setWindows] = useState([]);
   const nextZIndexRef = useRef(1000);
 
-  // Notifications
-  const [notifications, setNotifications] = useState([]);
-
   // Timers
   const timeIntervalRef = useRef(null);
-  const messageTimerRef = useRef(null);
 
   // ===== EXTENDED GAME STATE =====
 

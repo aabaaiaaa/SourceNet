@@ -9,7 +9,7 @@ import InstallationQueue from './InstallationQueue';
 import './Desktop.css';
 
 const Desktop = () => {
-  const { windows, isPaused, setIsPaused, gamePhase, setGamePhase, loadGame } = useGame();
+  const { windows, isPaused, setIsPaused, gamePhase, setGamePhase } = useGame();
 
   // Handle ESC key to resume from pause
   useEffect(() => {
