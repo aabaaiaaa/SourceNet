@@ -79,12 +79,17 @@ export const getMissionsByCategory = (category) => {
  * @param {object} storyMissionManager - Story Mission Manager instance
  */
 export const initializeAllMissions = (storyMissionManager) => {
+  // Register story events (Phase 1 messages, tutorial intro)
+  storyEvents.forEach((event) => {
+    storyMissionManager.registerMission(event);
+  });
+
   // Register all missions
   allMissions.forEach((mission) => {
     storyMissionManager.registerMission(mission);
   });
 
-  console.log(`✅ Loaded ${allMissions.length} story missions`);
+  console.log(`✅ Loaded ${storyEvents.length} story events and ${allMissions.length} missions`);
 };
 
 export default {

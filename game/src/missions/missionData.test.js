@@ -12,12 +12,12 @@ describe('missionData', () => {
   describe('Story Events', () => {
     it('should have phase1-welcome event', () => {
       expect(storyEvents.length).toBeGreaterThan(0);
-      const phase1 = storyEvents.find(e => e.eventId === 'phase1-welcome');
+      const phase1 = storyEvents.find(e => e.missionId === 'phase1-welcome');
       expect(phase1).toBeDefined();
     });
 
     it('should have mission-board-intro event', () => {
-      const intro = storyEvents.find(e => e.eventId === 'mission-board-intro');
+      const intro = storyEvents.find(e => e.missionId === 'mission-board-intro');
       expect(intro).toBeDefined();
     });
   });

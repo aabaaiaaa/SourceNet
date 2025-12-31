@@ -1,5 +1,5 @@
 {
-  "eventId": "mission-board-intro",
+  "missionId": "mission-board-intro",
   "category": "tutorial-intro",
   "events": [
     {
