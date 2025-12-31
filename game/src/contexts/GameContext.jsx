@@ -386,6 +386,25 @@ Looking forward to working with you!
     }
   }, []);
 
+  // Handle story event messages (listen for storyEventTriggered)
+  useEffect(() => {
+    const unsubscribe = triggerEventBus.on('storyEventTriggered', (data) => {
+      const { message } = data;
+      if (message) {
+        addMessage({
+          from: message.from,
+          fromId: message.fromId,
+          fromName: message.fromName,
+          subject: message.subject,
+          body: message.body,
+          attachments: message.attachments || [],
+        });
+      }
+    });
+
+    return () => unsubscribe();
+  }, []); // Empty deps - addMessage is stable
+
   // Get total credits
   const getTotalCredits = useCallback(() => {
     return bankAccounts.reduce((sum, acc) => sum + acc.balance, 0);

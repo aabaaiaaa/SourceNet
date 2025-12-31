@@ -21,8 +21,11 @@
     {
       "id": "manager-welcome",
       "trigger": {
-        "type": "afterMessageRead",
-        "messageId": "hr-welcome",
+        "type": "timeSinceEvent",
+        "event": "messageRead",
+        "condition": {
+          "messageId": "msg-welcome-hr"
+        },
         "delay": 2000
       },
       "message": {
