@@ -3,7 +3,7 @@
   "category": "onboarding",
   "events": [
     {
-      "id": "hr-welcome",
+      "id": "msg-welcome-hr",
       "trigger": {
         "type": "timeSinceEvent",
         "event": "desktopLoaded",
@@ -19,7 +19,7 @@
       }
     },
     {
-      "id": "manager-welcome",
+      "id": "msg-welcome-manager",
       "trigger": {
         "type": "timeSinceEvent",
         "event": "messageRead",

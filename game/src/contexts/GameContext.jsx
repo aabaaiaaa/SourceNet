@@ -368,6 +368,7 @@ export const GameProvider = ({ children }) => {
         };
 
         addMessage({
+          id: data.eventId, // Use event ID as message ID for consistency
           from: message.from,
           fromId: message.fromId.replace(/{random}/g, generateRandomId()),
           fromName: replacePlaceholders(message.fromName),
