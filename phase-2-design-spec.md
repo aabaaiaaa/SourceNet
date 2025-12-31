@@ -90,11 +90,16 @@ Phase 2 introduces the core gameplay loop to SourceNet. Players can now accept m
 - **Tutorial Impact:** Player forced into -9,000 debt, creates urgency
 
 #### 6. Software Attachment System
-- **Message Attachments:** Can include software licenses and Network Address Register entries
-- **Software Licenses:** Click attachment to add free license to Portal account
-- **Network Address Register Entries:** Click attachment to add network to NAR (not automatic)
-- **Installation Required:** Player must visit Portal to download/install licensed software
+- **Message Attachments:** Can include multiple attachments of different types
+- **Attachment Types:**
+  - **Cheque** (type: 'cheque'): Digital cheque with amount, click to deposit
+  - **Software License** (type: 'softwareLicense'): Free software license, click to add to Portal
+  - **Network Credentials** (type: 'networkAddress'): Network access credentials, click to add to NAR
+- **Multiple Attachments:** Messages can have multiple attachments (e.g., license + network credentials)
+- **SNetMail Display:** Shows all attachments with unique icons (💰 cheque, 📦 license, 🔒 network)
+- **Installation Required:** Licensed software must be downloaded/installed from Portal
 - **Portal Display:** Shows actual price + "Licensed" badge for owned licenses
+- **Placeholder Replacement:** Attachment fields support {username}, {managerName}, {random} placeholders
 - **Tutorial Usage:** Manager sends Mission Board license first, then VPN Client, Network Scanner, NAR, File Manager after tutorial accepted
 
 #### 7. Software Storage System

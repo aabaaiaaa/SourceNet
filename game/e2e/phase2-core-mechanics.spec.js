@@ -7,7 +7,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Phase 2 Core Mechanics - Interest & Bankruptcy', () => {
   test('should show bankruptcy warning banner when countdown active', async ({ page }) => {
-    await page.goto('/?debug=true');
+    await page.goto('/?debug=true&skipBoot=true');
 
     // Complete boot
     await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
@@ -19,20 +19,15 @@ test.describe('Phase 2 Core Mechanics - Interest & Bankruptcy', () => {
     await page.keyboard.press('Control+d');
     await expect(page.locator('.debug-panel')).toBeVisible({ timeout: 2000 });
 
-    // Load the "Tutorial Part 1 Failed" scenario which has -9000 credits
+    // Load the "Tutorial Part 1 Failed" scenario which has -9000 credits and reputation 3
     await page.click('button:has-text("Tutorial Part 1 Failed")');
 
     // Close debug panel
     await page.keyboard.press('Escape');
     await expect(page.locator('.debug-panel')).not.toBeVisible();
 
-    // Wait a moment for state to update
-    await page.waitForTimeout(1000);
-
-    // Verify bankruptcy warning banner appears or reputation shows low tier
-    await expect(page.locator('.reputation-badge')).toBeVisible();
-    const repText = await page.locator('.reputation-badge').textContent();
-    expect(repText).toBe('3'); // Accident Prone tier
+    // Verify reputation shows low tier
+    await expect(page.locator('.reputation-badge')).toHaveText('★3');
 
     console.log('✅ E2E: Bankruptcy state setup complete');
   });

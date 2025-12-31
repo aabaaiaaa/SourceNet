@@ -730,6 +730,7 @@ export const GameProvider = ({ children }) => {
     hardware,
     software,
     bankAccounts,
+    setBankAccounts,
     messages,
     managerName,
     windows,
