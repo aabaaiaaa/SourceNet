@@ -3,13 +3,14 @@ import {
   executeForceDisconnectAction,
   executeSetMissionStatusAction,
   isPlayerControlBlocked,
+  initializePlayerControlTracking,
 } from './ScriptedEventExecutor';
 import triggerEventBus from '../core/triggerEventBus';
 
 describe('ScriptedEventExecutor', () => {
   beforeEach(() => {
-    // Don't clear trigger bus - ScriptedEventExecutor sets up
-    // module-level subscriptions that would be removed
+    // Re-initialize player control tracking after event bus is cleared by global setup
+    initializePlayerControlTracking();
   });
 
   describe('executeForceDisconnectAction', () => {

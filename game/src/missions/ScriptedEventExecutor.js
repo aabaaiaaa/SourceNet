@@ -132,9 +132,26 @@ export const executeScriptedEvent = async (scriptedEvent, callbacks = {}) => {
  * Used by UI to disable buttons during scripted sequences
  */
 let playerControlBlocked = false;
+let playerControlSubscription = null;
 
-triggerEventBus.on('playerControlBlocked', (data) => {
-  playerControlBlocked = data.blocked;
-});
+/**
+ * Initialize player control tracking subscription
+ * Called on module load and can be re-called after event bus is cleared (for testing)
+ */
+export const initializePlayerControlTracking = () => {
+  // Unsubscribe existing subscription if any
+  if (playerControlSubscription) {
+    playerControlSubscription();
+  }
+  // Reset state
+  playerControlBlocked = false;
+  // Subscribe to player control events
+  playerControlSubscription = triggerEventBus.on('playerControlBlocked', (data) => {
+    playerControlBlocked = data.blocked;
+  });
+};
+
+// Initialize on module load
+initializePlayerControlTracking();
 
 export const isPlayerControlBlocked = () => playerControlBlocked;

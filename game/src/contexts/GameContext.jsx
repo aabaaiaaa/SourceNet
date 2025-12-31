@@ -15,6 +15,7 @@ import {
   loadGameState as loadFromLocalStorage,
 } from '../utils/helpers';
 import useStoryMissions from '../missions/useStoryMissions';
+import { useObjectiveAutoTracking } from '../missions/useObjectiveAutoTracking';
 import { updateBankruptcyCountdown, shouldTriggerBankruptcy, startBankruptcyCountdown } from '../systems/BankingSystem';
 import { updateReputationCountdown, startReputationCountdown } from '../systems/ReputationSystem';
 import triggerEventBus from '../core/triggerEventBus';
@@ -85,6 +86,9 @@ export const GameProvider = ({ children }) => {
   // Banking System extensions
   const [bankruptcyCountdown, setBankruptcyCountdown] = useState(null); // {startTime, endTime, remaining} or null
   const [lastInterestTime, setLastInterestTime] = useState(null); // Last time interest was applied
+
+  // Auto-tracking control (can be disabled for testing)
+  const [autoTrackingEnabled, setAutoTrackingEnabled] = useState(true);
 
   // Initialize story mission system
   useStoryMissions(
@@ -499,10 +503,6 @@ export const GameProvider = ({ children }) => {
     }
   }, [currentTime, reputation, reputationCountdown, isPaused, gamePhase, username, playNotificationChime]);
 
-  // Objective auto-tracking (disabled - causes test instability)
-  // Manual objective completion via Mission Board UI for now
-  // Framework complete: checkMissionObjectives, completeMissionObjective, completeMission all functional
-
   // ===== MISSION ACTIONS =====
 
   // Accept mission
@@ -559,6 +559,21 @@ export const GameProvider = ({ children }) => {
     // Update reputation
     setReputation(prev => Math.max(1, Math.min(11, prev + reputationChange)));
   }, [activeMission, currentTime, completedMissions, bankAccounts]);
+
+  // Objective auto-tracking - automatically completes objectives when game events occur
+  useObjectiveAutoTracking(
+    activeMission,
+    {
+      activeConnections,
+      lastScanResults,
+      fileManagerConnections,
+      lastFileOperation,
+    },
+    reputation,
+    completeMissionObjective,
+    completeMission,
+    autoTrackingEnabled
+  );
 
   // Save game
   const saveGame = useCallback((saveName = null) => {
@@ -765,6 +780,8 @@ export const GameProvider = ({ children }) => {
     setBankruptcyCountdown,
     lastInterestTime,
     setLastInterestTime,
+    autoTrackingEnabled,
+    setAutoTrackingEnabled,
 
     // Actions
     initializePlayer,
