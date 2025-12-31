@@ -104,10 +104,7 @@ export const GameProvider = ({ children }) => {
     const manager = getRandomManagerName(MANAGER_NAMES);
     setManagerName(manager);
 
-    // Schedule first message
-    setTimeout(() => {
-      addMessage(INITIAL_MESSAGES[0]);
-    }, MESSAGE_TIMING.FIRST_MESSAGE_DELAY);
+    // Phase 1 messages now come from story mission system (no hardcoded messages)
   }, []);
 
   // Add message
@@ -142,41 +139,8 @@ export const GameProvider = ({ children }) => {
       messageId: messageId,
     });
 
-    // If this is the first message, schedule second message
-    if (messageId === 'msg-welcome-hr') {
-      setTimeout(() => {
-        const managerMailId = `SNET-MGR-${Math.random().toString(36).substring(2, 5).toUpperCase()}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
-
-        const managerMessage = {
-          id: 'msg-welcome-manager',
-          from: `SourceNet Manager ${managerName}`,
-          fromId: managerMailId,
-          subject: `Hi from your manager - ${managerName}`,
-          body: `Hey ${username}!
-
-Welcome to the team! I'm ${managerName}, and I'll be your manager here at SourceNet. I was present during your interview process and I have to say, you really impressed us with your skills and dedication.
-
-To help you get started, I've attached a welcome bonus cheque for 1,000 credits. Just click on the attachment to deposit it into your bank account.
-
-Take some time to get comfortable with your setup. I'll be reaching out again soon with your first assignment.
-
-Looking forward to working with you!
-
-- ${managerName}`,
-          timestamp: new Date(currentTime),
-          read: false,
-          archived: false,
-          attachment: {
-            type: 'cheque',
-            amount: 1000,
-            deposited: false,
-          },
-        };
-
-        addMessage(managerMessage);
-      }, MESSAGE_TIMING.SECOND_MESSAGE_DELAY);
-    }
-  }, [managerName, username, currentTime]);
+    // Second message now comes from story mission system
+  }, []);
 
   // Archive message
   const archiveMessage = useCallback((messageId) => {
@@ -391,19 +355,31 @@ Looking forward to working with you!
     const unsubscribe = triggerEventBus.on('storyEventTriggered', (data) => {
       const { message } = data;
       if (message) {
+        // Replace placeholders
+        const replacePlaceholders = (text) => {
+          if (!text) return text;
+          return text
+            .replace(/{username}/g, username)
+            .replace(/{managerName}/g, managerName);
+        };
+
+        const generateRandomId = () => {
+          return `${Math.random().toString(36).substring(2, 5).toUpperCase()}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+        };
+
         addMessage({
           from: message.from,
-          fromId: message.fromId,
-          fromName: message.fromName,
-          subject: message.subject,
-          body: message.body,
+          fromId: message.fromId.replace(/{random}/g, generateRandomId()),
+          fromName: replacePlaceholders(message.fromName),
+          subject: replacePlaceholders(message.subject),
+          body: replacePlaceholders(message.body),
           attachments: message.attachments || [],
         });
       }
     });
 
     return () => unsubscribe();
-  }, []); // Empty deps - addMessage is stable
+  }, []); // Empty deps - username, managerName are accessed from closure
 
   // Get total credits
   const getTotalCredits = useCallback(() => {
