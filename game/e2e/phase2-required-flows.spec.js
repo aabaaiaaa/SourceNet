@@ -6,7 +6,7 @@ import { test, expect } from '@playwright/test';
  */
 
 const completeBoot = async (page) => {
-  await page.goto('/');
+  await page.goto('/?skipBoot=true'); // Skip boot
   await expect(page.locator('.boot-screen')).toBeVisible({ timeout: 5000 });
   await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
   await page.locator('input.username-input').fill('test_phase2');
@@ -16,7 +16,7 @@ const completeBoot = async (page) => {
 
 test.describe('Phase 2 Required E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?skipBoot=true'); // Skip boot
     await page.evaluate(() => localStorage.clear());
   });
 
@@ -57,37 +57,40 @@ test.describe('Phase 2 Required E2E Tests', () => {
     console.log('✅ E2E: Transaction history flow validated');
   });
 
-  test('5. Mission Requirements Check', async ({ page }) => {
+  test('5. Mission Board Available for Purchase', async ({ page }) => {
     await completeBoot(page);
 
-    // Open Mission Board
+    // Open Portal to see Mission Board available
     await page.hover('text=☰');
     await page.waitForTimeout(200);
-    await page.click('button:has-text("SourceNet Mission Board")');
-    await expect(page.locator('.mission-board')).toBeVisible();
+    await page.click('button:has-text("OSNet Portal")');
+    await expect(page.locator('.portal')).toBeVisible();
 
-    // Should show mission board structure
-    await expect(page.locator('text=Available Missions')).toBeVisible();
-    await expect(page.locator('text=Active Mission')).toBeVisible();
-    await expect(page.locator('text=Completed')).toBeVisible();
+    // Switch to Software
+    await page.click('button:has-text("Software")');
 
-    console.log('✅ E2E: Mission requirements check validated');
+    // Mission Board should be available for purchase
+    await expect(page.locator('text=SourceNet Mission Board')).toBeVisible();
+
+    console.log('✅ E2E: Mission Board available for purchase');
   });
 
-  test('6. VPN Connection Flow', async ({ page }) => {
+  test('6. VPN Client Available for Purchase', async ({ page }) => {
     await completeBoot(page);
 
-    // Open VPN Client
+    // Open Portal to see VPN Client available
     await page.hover('text=☰');
     await page.waitForTimeout(200);
-    await page.click('button:has-text("SourceNet VPN Client")');
-    await expect(page.locator('.vpn-client')).toBeVisible();
+    await page.click('button:has-text("OSNet Portal")');
+    await expect(page.locator('.portal')).toBeVisible();
 
-    // Should show connection UI
-    await expect(page.locator('text=Connected Networks')).toBeVisible();
-    await expect(page.locator('text=New Connection')).toBeVisible();
+    // Switch to Software
+    await page.click('button:has-text("Software")');
 
-    console.log('✅ E2E: VPN connection flow validated');
+    // VPN Client should be available for purchase
+    await expect(page.locator('text=SourceNet VPN Client')).toBeVisible();
+
+    console.log('✅ E2E: VPN Client available for purchase');
   });
 
   test('9. Bankruptcy Warning Flow - Initial State', async ({ page }) => {

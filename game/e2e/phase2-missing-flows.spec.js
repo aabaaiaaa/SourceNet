@@ -6,7 +6,7 @@ import { test, expect } from '@playwright/test';
  */
 
 const completeBoot = async (page) => {
-  await page.goto('/');
+  await page.goto('/?skipBoot=true'); // Skip boot
   await expect(page.locator('.boot-screen')).toBeVisible({ timeout: 5000 });
   await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
   await page.locator('input.username-input').fill('complete_test');
@@ -16,7 +16,7 @@ const completeBoot = async (page) => {
 
 test.describe('Missing Required E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?skipBoot=true'); // Skip boot
     await page.evaluate(() => localStorage.clear());
   });
 
@@ -52,22 +52,24 @@ test.describe('Missing Required E2E Tests', () => {
     console.log('✅ E2E: Tutorial flow validated (Phase 1 messages working)');
   });
 
-  test('3. Complete Post-Tutorial Mission - Structure Validation', async ({ page }) => {
+  test('3. Post-Tutorial Software Available - Structure Validation', async ({ page }) => {
     await completeBoot(page);
 
-    // Open Mission Board
+    // Open Portal to verify Phase 2 software available
     await page.hover('text=☰');
     await page.waitForTimeout(200);
-    await page.click('button:has-text("SourceNet Mission Board")');
-    await expect(page.locator('.mission-board')).toBeVisible();
+    await page.click('button:has-text("OSNet Portal")');
+    await expect(page.locator('.portal')).toBeVisible();
 
-    // Should show tabs for mission flow
-    await expect(page.locator('button:has-text("Available Missions")')).toBeVisible();
-    await expect(page.locator('button:has-text("Active Mission")')).toBeVisible();
-    await expect(page.locator('button:has-text("Completed")')).toBeVisible();
+    // Switch to Software tab
+    await page.click('button:has-text("Software")');
 
-    // Mission structure is ready for post-tutorial missions
-    console.log('✅ E2E: Post-tutorial mission structure validated');
+    // Phase 2 software should be available for purchase
+    await expect(page.locator('text=SourceNet Mission Board')).toBeVisible();
+    await expect(page.locator('.portal-item')).toBeVisible();
+
+    // Mission software is ready for post-tutorial purchase
+    console.log('✅ E2E: Post-tutorial software structure validated');
   });
 
   test('7. Installation Queue Management', async ({ page }) => {

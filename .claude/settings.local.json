@@ -24,7 +24,8 @@
       "Bash(done)",
       "Bash(find:*)",
       "Bash(tee:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(grep:*)"
     ]
   }
 }

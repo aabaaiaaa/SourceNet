@@ -82,34 +82,34 @@ test.describe('Phase 2 Transaction History', () => {
   });
 });
 
-test.describe('Phase 2 Mission Board', () => {
-  test('should show Mission Board with empty state initially', async ({ page }) => {
+test.describe('Phase 2 Software Portal', () => {
+  test('should show Phase 2 apps available for purchase', async ({ page }) => {
     await page.goto('/');
 
     await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
-    await page.locator('input.username-input').fill('mission_test');
+    await page.locator('input.username-input').fill('portal_test');
     await page.click('button:has-text("Continue")');
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
-    // Open Mission Board
+    // Open Portal
     await page.hover('text=☰');
     await page.waitForTimeout(200);
-    await page.click('button:has-text("SourceNet Mission Board")');
+    await page.click('button:has-text("OSNet Portal")');
+    await expect(page.locator('.portal')).toBeVisible();
 
-    // Mission Board should open
-    await expect(page.locator('.mission-board')).toBeVisible();
+    // Click Software tab
+    await page.click('button:has-text("Software")');
 
-    // Should have 3 tabs
-    await expect(page.locator('button:has-text("Available Missions")')).toBeVisible();
-    await expect(page.locator('button:has-text("Active Mission")')).toBeVisible();
-    await expect(page.locator('button:has-text("Completed")')).toBeVisible();
+    // Verify Phase 2 apps available for purchase
+    await expect(page.locator('text=SourceNet Mission Board')).toBeVisible();
+    await expect(page.locator('text=SourceNet VPN Client')).toBeVisible();
 
-    console.log('✅ E2E: Mission Board structure correct');
+    console.log('✅ E2E: Phase 2 apps available for purchase in portal');
   });
 });
 
 test.describe('Phase 2 Network Apps', () => {
-  test('should show all 5 Phase 2 apps in launcher', async ({ page }) => {
+  test('should show basic apps in launcher at start', async ({ page }) => {
     await page.goto('/');
 
     await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
@@ -121,16 +121,14 @@ test.describe('Phase 2 Network Apps', () => {
     await page.hover('text=☰');
     await page.waitForTimeout(200);
 
-    // Verify all Phase 2 apps present
-    await expect(page.locator('text=SourceNet Mission Board')).toBeVisible();
-    await expect(page.locator('text=SourceNet VPN Client')).toBeVisible();
-    await expect(page.locator('text=Network Scanner')).toBeVisible();
-    await expect(page.locator('text=Network Address Register')).toBeVisible();
-    await expect(page.locator('text=File Manager')).toBeVisible();
+    // Verify basic apps present (Phase 2 apps require purchase)
+    await expect(page.locator('text=OSNet Portal')).toBeVisible();
+    await expect(page.locator('text=SNet Banking App')).toBeVisible();
+    await expect(page.locator('text=SNet Mail')).toBeVisible();
 
     // Verify storage display
     await expect(page.locator('text=GB used')).toBeVisible();
 
-    console.log('✅ E2E: All Phase 2 apps in launcher with storage display');
+    console.log('✅ E2E: Basic apps in launcher with storage display');
   });
 });

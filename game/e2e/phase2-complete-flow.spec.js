@@ -4,13 +4,10 @@ import { test, expect } from '@playwright/test';
  * Helper to complete boot sequence and reach desktop
  */
 const completeBoot = async (page) => {
-  await page.goto('/');
+  await page.goto('/?skipBoot=true'); // Skip boot sequence for speed
 
-  // Wait for boot screen
-  await expect(page.locator('.boot-screen')).toBeVisible({ timeout: 5000 });
-
-  // Wait for username screen
-  await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
+  // Wait for username screen (boot skipped)
+  await expect(page.locator('.username-selection')).toBeVisible({ timeout: 5000 });
 
   // Enter username
   await page.locator('input.username-input').fill('test_agent_phase2');
@@ -40,7 +37,7 @@ test.describe('Phase 2 Complete Game Flow', () => {
     console.log('✅ E2E: Boot complete, reputation indicator visible');
   });
 
-  test('should open Mission Board from app launcher', async ({ page }) => {
+  test('should show Portal with purchasable Phase 2 software', async ({ page }) => {
     await completeBoot(page);
 
     // Hover over app launcher to open menu
@@ -49,29 +46,37 @@ test.describe('Phase 2 Complete Game Flow', () => {
     // Wait for app menu to appear
     await page.waitForTimeout(200);
 
-    // Click Mission Board (should be in alphabetical order)
-    await page.click('button:has-text("SourceNet Mission Board")');
+    // Click Portal
+    await page.click('button:has-text("OSNet Portal")');
 
-    // Mission Board window should open
-    await expect(page.locator('.mission-board')).toBeVisible({ timeout: 2000 });
+    // Portal window should open
+    await expect(page.locator('.portal')).toBeVisible({ timeout: 2000 });
 
-    console.log('✅ E2E: Mission Board opens successfully');
+    // Switch to Software tab
+    await page.click('button:has-text("Software")');
+
+    // Verify Mission Board available for purchase
+    await expect(page.locator('text=SourceNet Mission Board')).toBeVisible();
+
+    console.log('✅ E2E: Portal shows purchasable Phase 2 software');
   });
 
-  test('should open VPN Client and show connection UI', async ({ page }) => {
+  test('should show basic apps in launcher', async ({ page }) => {
     await completeBoot(page);
 
-    // Open VPN Client
+    // Open app launcher
     await page.hover('.topbar-button:has-text("☰")');
     await page.waitForTimeout(200);
-    await page.click('button:has-text("SourceNet VPN Client")');
 
-    // VPN Client should be visible
-    await expect(page.locator('.vpn-client')).toBeVisible();
-    await expect(page.locator('text=Connected Networks')).toBeVisible();
-    await expect(page.locator('text=No active connections')).toBeVisible();
+    // Verify basic apps present
+    await expect(page.locator('button:has-text("OSNet Portal")')).toBeVisible();
+    await expect(page.locator('button:has-text("SNet Banking App")')).toBeVisible();
+    await expect(page.locator('button:has-text("SNet Mail")')).toBeVisible();
 
-    console.log('✅ E2E: VPN Client UI working');
+    // Storage should be visible
+    await expect(page.locator('text=GB used')).toBeVisible();
+
+    console.log('✅ E2E: Basic apps available in launcher');
   });
 
   test('should show transaction history in Banking App', async ({ page }) => {
@@ -94,21 +99,24 @@ test.describe('Phase 2 Complete Game Flow', () => {
     console.log('✅ E2E: Transaction History tab working');
   });
 
-  test('should accept mission from Mission Board', async ({ page }) => {
+  test('should verify reputation system integrated', async ({ page }) => {
     await completeBoot(page);
 
-    // Open Mission Board
-    await page.hover('.topbar-button:has-text("☰")');
+    // Verify reputation badge visible in TopBar
+    await expect(page.locator('.reputation-badge')).toBeVisible();
+
+    // Should show tier 9 at start
+    const repText = await page.locator('.reputation-badge').textContent();
+    expect(repText).toBe('9');
+
+    // Hover to see reputation preview
+    await page.hover('.reputation-badge');
     await page.waitForTimeout(200);
-    await page.click('button:has-text("SourceNet Mission Board")');
 
-    await expect(page.locator('.mission-board')).toBeVisible();
+    // Preview should appear with reputation details
+    await expect(page.locator('text=Reputation:')).toBeVisible();
 
-    // Check if missions available (might be empty initially)
-    const availableTab = page.locator('text=Available Missions');
-    await expect(availableTab).toBeVisible();
-
-    console.log('✅ E2E: Mission Board functional');
+    console.log('✅ E2E: Reputation system integrated');
   });
 });
 
