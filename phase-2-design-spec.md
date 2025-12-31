@@ -1159,8 +1159,9 @@ src/
 
 **Access:**
 - Development mode only (not in production build)
-- Keyboard shortcut: `Ctrl+Shift+D` (opens debug panel)
+- Keyboard shortcut: `Ctrl+D` (opens debug panel)
 - URL parameter: `?debug=true` enables debug mode
+- URL parameter: `?skipBoot=true` skips boot sequence (E2E testing)
 - Environment variable: `VITE_DEBUG_MODE=true`
 
 ### Debug Panel UI
@@ -1442,7 +1443,7 @@ class StoryMissionManager {
 ### Debug Mode Activation
 
 **Method 1: Keyboard Shortcut**
-- Press `Ctrl+Shift+D` (Windows/Linux) or `Cmd+Shift+D` (Mac)
+- Press `Ctrl+D` (Windows/Linux) or `Cmd+D` (Mac)
 - Debug panel overlays desktop
 - Game automatically pauses when debug panel open
 
@@ -3912,7 +3913,7 @@ Phase 2 is complete when:
 - **Testing Strategy:** Unit tests for triggers, integration for flow, E2E for experience
 
 **Debug System Architecture:**
-- **Development Mode Only:** `Ctrl+Shift+D` or `?debug=true`
+- **Development Mode Only:** `Ctrl+D` or `?debug=true`
 - **5-Tab Debug Panel:**
   1. Game State (credits, reputation, time)
   2. Missions (trigger, complete, fail)
