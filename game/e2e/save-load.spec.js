@@ -3,13 +3,13 @@ import { test, expect } from '@playwright/test';
 test.describe('E2E Test 3: Save/Load Cycle', () => {
   test.beforeEach(async ({ page }) => {
     // Clear localStorage
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
     await page.evaluate(() => localStorage.clear());
   });
 
   test('should save game state and restore it correctly', async ({ page }) => {
     // Create a save directly in localStorage
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
     await page.evaluate(() => {
       const saveData = {
         username: 'save_test',

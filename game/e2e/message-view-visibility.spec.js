@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Message View Text Visibility', () => {
   test('should display all message details with readable text', async ({ page }) => {
     // Setup game with messages
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
     await page.evaluate(() => {
       localStorage.clear();
       const saves = {

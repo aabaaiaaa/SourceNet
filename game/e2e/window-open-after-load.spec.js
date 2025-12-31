@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Window Opening After Load Bug', () => {
   test('should open Mail window after loading a save', async ({ page }) => {
     // Go to app and clear storage
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
 

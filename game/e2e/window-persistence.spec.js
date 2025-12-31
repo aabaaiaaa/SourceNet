@@ -2,12 +2,12 @@ import { test, expect } from '@playwright/test';
 
 test.describe('E2E: Window State Persistence', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
     await page.evaluate(() => localStorage.clear());
   });
 
   test('should persist open windows and their positions after save/load', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
 
     // Create a save with specific window state
     await page.evaluate(() => {
@@ -109,7 +109,7 @@ test.describe('E2E: Window State Persistence', () => {
   });
 
   test('should persist window z-index order after save/load', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
 
     // Create a save with credits to skip message flow
     await page.evaluate(() => {

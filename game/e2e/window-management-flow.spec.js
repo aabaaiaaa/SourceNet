@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('E2E Test 4: Window Management Flow', () => {
   test.beforeEach(async ({ page }) => {
     // Create a save to skip boot sequence
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
     await page.evaluate(() => {
       const saves = {
         window_test: [
@@ -34,7 +34,7 @@ test.describe('E2E Test 4: Window Management Flow', () => {
   });
 
   test('should handle complete window management flow', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
 
     // Load save to skip boot
     await expect(page.locator('.game-login-screen')).toBeVisible({ timeout: 5000 });

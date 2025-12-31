@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('E2E Test 6: Time System Flow', () => {
   test.beforeEach(async ({ page }) => {
     // Create a save to skip boot
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
     await page.evaluate(() => {
       const saves = {
         time_test: [
@@ -33,7 +33,7 @@ test.describe('E2E Test 6: Time System Flow', () => {
   });
 
   test('should handle time system correctly with speed changes and pause', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
 
     // Load save (includes ~4s boot sequence)
     await page.click('button:has-text("Load")');

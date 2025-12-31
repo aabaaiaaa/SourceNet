@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('E2E Test 5: App Interactions Flow', () => {
   test('should handle complete app interaction flow', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
     await page.evaluate(() => localStorage.clear());
 
     // Complete boot sequence quickly

@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('All Apps Text Visibility', () => {
   test('should display all text visibly in all apps', async ({ page }) => {
     // Setup game with messages
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
     await page.evaluate(() => {
       localStorage.clear();
       const saves = {

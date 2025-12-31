@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Cheque Status Update', () => {
   test('should update attachment status to deposited when cheque is deposited', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
 

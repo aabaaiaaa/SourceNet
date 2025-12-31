@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Window Drag Verification', () => {
   test('should actually drag windows and update positions', async ({ page }) => {
     // Setup: Create a new game
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
 

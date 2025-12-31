@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('E2E: Window Dragging', () => {
   test.beforeEach(async ({ page }) => {
     // Create a save to skip boot
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
     await page.evaluate(() => {
       const saves = {
         drag_test: [
@@ -34,7 +34,7 @@ test.describe('E2E: Window Dragging', () => {
   });
 
   test('should drag windows to new positions', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
 
     // Load save
     await expect(page.locator('.game-login-screen')).toBeVisible({ timeout: 5000 });
@@ -81,7 +81,7 @@ test.describe('E2E: Window Dragging', () => {
   });
 
   test('should keep dragged window within viewport bounds', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
 
     // Load save
     await page.click('button:has-text("Load")');

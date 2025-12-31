@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('E2E: Complete Gameplay Session', () => {
   test.beforeEach(async ({ page }) => {
     // Clear localStorage to start fresh
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
     await page.evaluate(() => localStorage.clear());
   });
 
@@ -11,7 +11,7 @@ test.describe('E2E: Complete Gameplay Session', () => {
     // ========================================
     // PHASE 1: New Game Boot Sequence
     // ========================================
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
 
     // Verify boot sequence starts automatically
     await expect(page.locator('.boot-screen')).toBeVisible({ timeout: 5000 });
@@ -347,7 +347,7 @@ test.describe('E2E: Complete Gameplay Session', () => {
 
   test('should handle multiple complete gameplay sessions independently', async ({ page }) => {
     // Create first complete session
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
 
     await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
     await page.fill('input.username-input', 'session_1');

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Cheque Manual Deposit', () => {
   test('should only show deposit prompt when user clicks attachment, not auto-deposit', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
 

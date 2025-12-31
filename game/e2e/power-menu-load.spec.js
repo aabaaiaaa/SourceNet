@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('E2E: Power Menu Load', () => {
   test.beforeEach(async ({ page }) => {
     // Create multiple saves
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
     await page.evaluate(() => {
       const createSave = (username, balance) => ({
         username,
@@ -36,7 +36,7 @@ test.describe('E2E: Power Menu Load', () => {
   });
 
   test('should load game from power menu', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
 
     // Should show login screen with saves
     await expect(page.locator('.game-login-screen')).toBeVisible({ timeout: 5000 });
@@ -81,7 +81,7 @@ test.describe('E2E: Power Menu Load', () => {
   });
 
   test('should close load modal when clicking Cancel', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
 
     // Load a save to enter game
     await page.click('button:has-text("Load")');
@@ -107,7 +107,7 @@ test.describe('E2E: Power Menu Load', () => {
   });
 
   test('should close load modal when clicking overlay', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
 
     // Load a save
     await page.click('button:has-text("Load")');
@@ -131,7 +131,7 @@ test.describe('E2E: Power Menu Load', () => {
 
   test('should load game with messages via power menu and display timestamps correctly', async ({ page }) => {
     // Create saves WITH messages (to test formatDateTime with power menu load)
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
     await page.evaluate(() => {
       const createSaveWithMessages = (username, balance) => ({
         username,

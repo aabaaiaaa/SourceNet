@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Save/Load with SNet Mail Open', () => {
   test('should save and load game with Mail window open and messages intact', async ({ page }) => {
     // Start new game
-    await page.goto('/');
+    await page.goto('/?skipBoot=true');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
 
