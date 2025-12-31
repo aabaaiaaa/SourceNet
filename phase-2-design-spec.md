@@ -865,7 +865,7 @@ These should become story event definitions that use the trigger system, maintai
 
 ```json
 {
-  "eventId": "phase1-welcome",
+  "missionId": "phase1-welcome",
   "category": "onboarding",
   "events": [
     {
@@ -915,7 +915,7 @@ These should become story event definitions that use the trigger system, maintai
 
 ```json
 {
-  "eventId": "phase2-mission-board-intro",
+  "missionId": "phase2-mission-board-intro",
   "category": "phase2-intro",
 
   "events": [
