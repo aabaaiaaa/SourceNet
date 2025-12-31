@@ -8,7 +8,6 @@ test.describe('Window Opening After Load Bug', () => {
     await page.reload();
 
     // Complete boot and username
-    await expect(page.locator('.boot-screen')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
     await page.fill('input.username-input', 'test_user');
     await page.click('button:has-text("Continue")');

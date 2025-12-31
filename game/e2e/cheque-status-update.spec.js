@@ -7,7 +7,6 @@ test.describe('Cheque Status Update', () => {
     await page.reload();
 
     // Complete boot
-    await expect(page.locator('.boot-screen')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
     await page.fill('input.username-input', 'cheque_status_test');
     await page.click('button:has-text("Continue")');

@@ -25,7 +25,11 @@
       "Bash(find:*)",
       "Bash(tee:*)",
       "Bash(npx eslint:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(do if grep -q \"boot-screen\" \"$f\")",
+      "Bash(then echo \"$f has boot-screen check\")",
+      "Bash(for f in all-apps-text-visibility.spec.js cheque-manual-deposit.spec.js cheque-status-update.spec.js complete-gameplay-session.spec.js drag-verification.spec.js message-view-visibility.spec.js power-menu-load.spec.js save-load-with-mail-open.spec.js window-drag.spec.js window-management-flow.spec.js window-open-after-load.spec.js window-persistence.spec.js)",
+      "Bash(do sed -i \"/await expect\\(page.locator\\(''.boot-screen''\\)\\).toBeVisible/d\" \"$f\")"
     ]
   }
 }

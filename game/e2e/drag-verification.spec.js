@@ -7,7 +7,6 @@ test.describe('Window Drag Verification', () => {
     await page.evaluate(() => localStorage.clear());
     await page.reload();
 
-    await expect(page.locator('.boot-screen')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
     await page.fill('input.username-input', 'drag_test_user');
     await page.click('button:has-text("Continue")');

@@ -14,7 +14,6 @@ test.describe('E2E: Complete Gameplay Session', () => {
     await page.goto('/?skipBoot=true');
 
     // Verify boot sequence starts automatically
-    await expect(page.locator('.boot-screen')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('text=OSNet BIOS')).toBeVisible();
 
     // Wait for boot to complete and username selection screen

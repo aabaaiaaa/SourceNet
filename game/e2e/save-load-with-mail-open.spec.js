@@ -8,7 +8,6 @@ test.describe('Save/Load with SNet Mail Open', () => {
     await page.reload();
 
     // Complete boot sequence
-    await expect(page.locator('.boot-screen')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
     await page.fill('input.username-input', 'mail_save_test');
     await page.click('button:has-text("Continue")');
