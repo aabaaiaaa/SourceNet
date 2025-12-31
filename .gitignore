@@ -1,3 +1,5 @@
 
 **/test-results/**
 game/playwright-report/
+
+game/coverage/

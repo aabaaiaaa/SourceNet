@@ -22,7 +22,7 @@ test.describe('E2E: Complete Gameplay Session', () => {
     await page.click('button:has-text("Continue")');
 
     // ========================================
-    // PHASE 2: Desktop Loads & Initial Setup
+    // Desktop Loads & Initial Setup
     // ========================================
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
@@ -161,7 +161,7 @@ test.describe('E2E: Complete Gameplay Session', () => {
     await page.click('button:has-text("Software")');
     await expect(page.locator('text=SourceNet VPN Client')).toBeVisible();
     await expect(page.locator('text=SourceNet Mission Board')).toBeVisible();
-    
+
     // Verify Purchase buttons are available for software
     await expect(page.locator('button:has-text("Purchase")').first()).toBeVisible();
 

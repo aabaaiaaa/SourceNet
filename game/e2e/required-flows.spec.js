@@ -1,19 +1,19 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Phase 2 Required E2E Tests (from spec)
- * These tests validate the 10 critical flows specified in phase-2-design-spec.md
+ * Required E2E Tests
+ * These tests validate the 10 critical gameplay flows
  */
 
 const completeBoot = async (page) => {
   await page.goto('/?skipBoot=true'); // Skip boot
   await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
-  await page.locator('input.username-input').fill('test_phase2');
+  await page.locator('input.username-input').fill('test_user');
   await page.click('button:has-text("Continue")');
   await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 };
 
-test.describe('Phase 2 Required E2E Tests', () => {
+test.describe('Required E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/?skipBoot=true'); // Skip boot
     await page.evaluate(() => localStorage.clear());

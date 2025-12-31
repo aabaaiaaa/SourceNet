@@ -75,7 +75,7 @@ test.describe('E2E Test 5: App Interactions Flow', () => {
     // Browse to Software section
     await page.click('button:has-text("Software")');
 
-    // Verify Phase 2 software is shown and available for purchase
+    // Verify software is shown and available for purchase
     await expect(page.locator('.item-name:has-text("SourceNet VPN Client")')).toBeVisible();
     await expect(page.locator('.item-name:has-text("SourceNet Mission Board")')).toBeVisible();
 

@@ -10,23 +10,23 @@ const completeBoot = async (page) => {
   await expect(page.locator('.username-selection')).toBeVisible({ timeout: 5000 });
 
   // Enter username
-  await page.locator('input.username-input').fill('test_agent_phase2');
+  await page.locator('input.username-input').fill('test_agent_flow');
   await page.click('button:has-text("Continue")');
 
   // Desktop should load
   await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 };
 
-test.describe('Phase 2 Complete Game Flow', () => {
+test.describe('Complete Game Flow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => localStorage.clear());
   });
 
-  test('should complete boot sequence and show Phase 2 UI elements', async ({ page }) => {
+  test('should complete boot sequence and show UI elements', async ({ page }) => {
     await completeBoot(page);
 
-    // Verify TopBar with Phase 2 elements
+    // Verify TopBar elements
     await expect(page.locator('.topbar')).toBeVisible();
     await expect(page.locator('.reputation-badge')).toBeVisible();
 
@@ -37,7 +37,7 @@ test.describe('Phase 2 Complete Game Flow', () => {
     console.log('✅ E2E: Boot complete, reputation indicator visible');
   });
 
-  test('should show Portal with purchasable Phase 2 software', async ({ page }) => {
+  test('should show Portal with purchasable software', async ({ page }) => {
     await completeBoot(page);
 
     // Hover over app launcher to open menu
@@ -58,7 +58,7 @@ test.describe('Phase 2 Complete Game Flow', () => {
     // Verify Mission Board available for purchase
     await expect(page.locator('text=SourceNet Mission Board')).toBeVisible();
 
-    console.log('✅ E2E: Portal shows purchasable Phase 2 software');
+    console.log('✅ E2E: Portal shows purchasable software');
   });
 
   test('should show basic apps in launcher', async ({ page }) => {
@@ -120,7 +120,7 @@ test.describe('Phase 2 Complete Game Flow', () => {
   });
 });
 
-test.describe('Phase 2 Debug System', () => {
+test.describe('Debug System', () => {
   test('should have debug mode enabled with query parameter', async ({ page }) => {
     await page.goto('/?debug=true&skipBoot=true'); // Enable debug and skip boot
 

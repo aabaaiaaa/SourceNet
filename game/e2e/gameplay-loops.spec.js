@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Phase 2 Core Gameplay Loops - Complete End-to-End Flows
+ * Core Gameplay Loops - Complete End-to-End Flows
  * Tests full integration of systems, components, and mechanics
  */
 
@@ -84,13 +84,13 @@ test.describe('Core Gameplay Loop: Software Purchase', () => {
   });
 });
 
-test.describe('Core Gameplay Loop: Save/Load with Phase 2 State', () => {
-  test('should save and load game with Phase 2 state', async ({ page }) => {
+test.describe('Core Gameplay Loop: Save/Load with Game State', () => {
+  test('should save and load game with state', async ({ page }) => {
     await page.goto('/?skipBoot=true'); // Skip boot
     await page.evaluate(() => localStorage.clear());
     await completeBoot(page);
 
-    // Verify Phase 2 UI elements exist
+    // Verify UI elements exist
     await expect(page.locator('.reputation-badge')).toBeVisible();
 
     // Open power menu and save
@@ -139,13 +139,13 @@ test.describe('Core Gameplay Loop: Transaction Tracking', () => {
   });
 });
 
-test.describe('Core Gameplay Loop: Phase 2 UI Integration', () => {
-  test('should show all Phase 2 UI elements integrated', async ({ page }) => {
+test.describe('Core Gameplay Loop: UI Integration', () => {
+  test('should show all UI elements integrated', async ({ page }) => {
     await page.goto('/?skipBoot=true'); // Skip boot
     await page.evaluate(() => localStorage.clear());
     await completeBoot(page);
 
-    // Verify all Phase 2 indicators in TopBar
+    // Verify all indicators in TopBar
     await expect(page.locator('.reputation-badge')).toBeVisible();
 
     // Verify app launcher shows storage
@@ -153,11 +153,11 @@ test.describe('Core Gameplay Loop: Phase 2 UI Integration', () => {
     await page.waitForTimeout(200);
     await expect(page.locator('text=GB used')).toBeVisible();
 
-    // Verify basic apps available (Phase 2 apps require purchase)
+    // Verify basic apps available (advanced apps require purchase)
     await expect(page.locator('button:has-text("OSNet Portal")')).toBeVisible();
     await expect(page.locator('button:has-text("SNet Banking App")')).toBeVisible();
     await expect(page.locator('button:has-text("SNet Mail")')).toBeVisible();
 
-    console.log('✅ E2E: All Phase 2 UI elements integrated');
+    console.log('✅ E2E: All UI elements integrated');
   });
 });

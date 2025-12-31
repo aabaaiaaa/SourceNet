@@ -54,7 +54,7 @@ test.describe('Missing Required E2E Tests', () => {
   test('3. Post-Tutorial Software Available - Structure Validation', async ({ page }) => {
     await completeBoot(page);
 
-    // Open Portal to verify Phase 2 software available
+    // Open Portal to verify software available
     await page.hover('text=☰');
     await page.waitForTimeout(200);
     await page.click('button:has-text("OSNet Portal")');
@@ -63,7 +63,7 @@ test.describe('Missing Required E2E Tests', () => {
     // Switch to Software tab
     await page.click('button:has-text("Software")');
 
-    // Phase 2 software should be available for purchase
+    // Software should be available for purchase
     await expect(page.locator('text=SourceNet Mission Board')).toBeVisible();
     await expect(page.locator('.portal-item').first()).toBeVisible();
     const itemCount = await page.locator('.portal-item').count();

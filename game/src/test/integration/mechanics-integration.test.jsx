@@ -18,7 +18,7 @@ const renderWithProvider = (onRender) => {
   );
 };
 
-describe('Phase 2 Mechanics Integration', () => {
+describe('Mechanics Integration', () => {
   beforeEach(() => {
     localStorage.clear();
   });
@@ -83,7 +83,7 @@ describe('Phase 2 Mechanics Integration', () => {
   });
 
   describe('Extended State Availability', () => {
-    it('should have all Phase 2 state available', () => {
+    it('should have all game state available', () => {
       let gameContext;
       renderWithProvider((game) => {
         gameContext = game;

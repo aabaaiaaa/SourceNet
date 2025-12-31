@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Phase 2 Core Mechanics E2E Tests
+ * Core Mechanics E2E Tests
  * Tests critical game mechanics using debug scenarios for rapid state setup
  */
 
-test.describe('Phase 2 Core Mechanics - Interest & Bankruptcy', () => {
+test.describe('Core Mechanics - Interest & Bankruptcy', () => {
   test('should show bankruptcy warning banner when countdown active', async ({ page }) => {
     await page.goto('/?debug=true&skipBoot=true');
 
@@ -51,7 +51,7 @@ test.describe('Phase 2 Core Mechanics - Interest & Bankruptcy', () => {
   });
 });
 
-test.describe('Phase 2 Transaction History', () => {
+test.describe('Transaction History', () => {
   test('should display transaction history in Banking App', async ({ page }) => {
     await page.goto('/');
 
@@ -79,8 +79,8 @@ test.describe('Phase 2 Transaction History', () => {
   });
 });
 
-test.describe('Phase 2 Software Portal', () => {
-  test('should show Phase 2 apps available for purchase', async ({ page }) => {
+test.describe('Software Portal', () => {
+  test('should show apps available for purchase', async ({ page }) => {
     await page.goto('/');
 
     await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
@@ -97,15 +97,15 @@ test.describe('Phase 2 Software Portal', () => {
     // Click Software tab
     await page.click('button:has-text("Software")');
 
-    // Verify Phase 2 apps available for purchase
+    // Verify apps available for purchase
     await expect(page.locator('text=SourceNet Mission Board')).toBeVisible();
     await expect(page.locator('text=SourceNet VPN Client')).toBeVisible();
 
-    console.log('✅ E2E: Phase 2 apps available for purchase in portal');
+    console.log('✅ E2E: Apps available for purchase in portal');
   });
 });
 
-test.describe('Phase 2 Network Apps', () => {
+test.describe('Network Apps', () => {
   test('should show basic apps in launcher at start', async ({ page }) => {
     await page.goto('/');
 
@@ -118,7 +118,7 @@ test.describe('Phase 2 Network Apps', () => {
     await page.hover('text=☰');
     await page.waitForTimeout(200);
 
-    // Verify basic apps present (Phase 2 apps require purchase)
+    // Verify basic apps present (advanced apps require purchase)
     await expect(page.locator('text=OSNet Portal')).toBeVisible();
     await expect(page.locator('text=SNet Banking App')).toBeVisible();
     await expect(page.locator('text=SNet Mail')).toBeVisible();

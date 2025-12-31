@@ -19,7 +19,7 @@ describe('StorageSystem', () => {
       expect(SOFTWARE_SIZES.banking).toBeDefined();
     });
 
-    it('should define all Phase 2 app sizes', () => {
+    it('should define all app sizes', () => {
       expect(SOFTWARE_SIZES['mission-board']).toBeDefined();
       expect(SOFTWARE_SIZES['vpn-client']).toBeDefined();
       expect(SOFTWARE_SIZES['network-scanner']).toBeDefined();
@@ -34,7 +34,7 @@ describe('StorageSystem', () => {
       expect(used).toBe(12.0 + 0.5 + 0.3 + 0.2); // 13.0
     });
 
-    it('should calculate storage for Phase 1 + Phase 2 software', () => {
+    it('should calculate storage for all software', () => {
       const software = ['osnet', 'portal', 'mail', 'banking', 'mission-board', 'vpn-client'];
       const used = calculateStorageUsed(software);
       expect(used).toBe(12.0 + 0.5 + 0.3 + 0.2 + 0.2 + 0.5); // 13.7

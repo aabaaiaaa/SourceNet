@@ -57,7 +57,7 @@ describe('Portal Component', () => {
     expect(screen.getByText('250GB SSD')).toBeInTheDocument();
   });
 
-  it('should show software section with Phase 2 apps', () => {
+  it('should show software section with available apps', () => {
     render(
       <GameProvider>
         <Portal />
