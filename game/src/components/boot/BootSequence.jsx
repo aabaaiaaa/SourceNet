@@ -121,7 +121,7 @@ const BootSequence = () => {
     }, lineDelay);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [hardware, username]);
 
   useEffect(() => {
     if (bootComplete) {

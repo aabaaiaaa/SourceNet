@@ -8,7 +8,7 @@ vi.mock('../../utils/helpers', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
-    formatDateTime: (date) => '25/03/2020 09:00:00',
+    formatDateTime: () => '25/03/2020 09:00:00',
   };
 });
 

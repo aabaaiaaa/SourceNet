@@ -80,7 +80,7 @@ export const isHardwareInstalled = (hardwareItem, installedHardware) => {
 /**
  * Calculate cascade position for new window
  */
-export const calculateCascadePosition = (existingWindows, windowSize) => {
+export const calculateCascadePosition = (existingWindows) => {
   const CASCADE_OFFSET = 30;
   const BASE_X = 50;
   const BASE_Y = 100;

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { isDebugMode, setGameState, skipTime, installSoftwareInstantly, addNetworkToNAR, connectToNetwork } from './debugSystem';
 
 describe('debugSystem', () => {
@@ -16,8 +16,8 @@ describe('debugSystem', () => {
     it('should accept gameContext and state parameters', () => {
       const mockContext = {
         bankAccounts: [{ id: 'acc-1', balance: 0 }],
-        setBankAccounts: () => {},
-        setReputation: () => {},
+        setBankAccounts: () => { },
+        setReputation: () => { },
       };
 
       // Should not throw

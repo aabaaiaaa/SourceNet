@@ -5,9 +5,7 @@ import {
   STARTING_HARDWARE,
   STARTING_SOFTWARE,
   STARTING_BANK_ACCOUNT,
-  INITIAL_MESSAGES,
   MANAGER_NAMES,
-  MESSAGE_TIMING,
 } from '../constants/gameConstants';
 import {
   generateMailId,
@@ -105,6 +103,33 @@ export const GameProvider = ({ children }) => {
     setManagerName(manager);
 
     // Phase 1 messages now come from story mission system (no hardcoded messages)
+  }, []);
+
+  // Play notification chime
+  const playNotificationChime = useCallback(() => {
+    // Create a simple notification sound using Web Audio API
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      // OSNet notification chime: short, pleasant beep
+      oscillator.frequency.value = 800; // Hz
+      oscillator.type = 'sine';
+
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+
+      console.log('🔔 Notification chime played');
+    } catch {
+      console.log('🔔 Notification chime (audio unavailable)');
+    }
   }, []);
 
   // Add message
@@ -329,33 +354,6 @@ export const GameProvider = ({ children }) => {
     setTimeSpeed((prev) =>
       prev === TIME_SPEEDS.NORMAL ? TIME_SPEEDS.FAST : TIME_SPEEDS.NORMAL
     );
-  }, []);
-
-  // Play notification chime
-  const playNotificationChime = useCallback(() => {
-    // Create a simple notification sound using Web Audio API
-    try {
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      // OSNet notification chime: short, pleasant beep
-      oscillator.frequency.value = 800; // Hz
-      oscillator.type = 'sine';
-
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.2);
-
-      console.log('🔔 Notification chime played');
-    } catch (error) {
-      console.log('🔔 Notification chime (audio unavailable)');
-    }
   }, []);
 
   // Handle story event messages (listen for storyEventTriggered)

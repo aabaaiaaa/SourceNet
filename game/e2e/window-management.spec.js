@@ -1,6 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { openApp, minimizeWindow, restoreWindow } from './helpers/common-actions.js';
-import { createBasicSave } from './helpers/test-data.js';
 import { STARTING_SOFTWARE } from '../src/constants/gameConstants.js';
 
 /**

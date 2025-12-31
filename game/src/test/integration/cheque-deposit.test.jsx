@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { GameProvider, useGame } from '../../contexts/GameContext';
+import { render } from '@testing-library/react';
+import { GameProvider } from '../../contexts/GameContext';
 import SNetMail from '../../components/apps/SNetMail';
 import BankingApp from '../../components/apps/BankingApp';
 
