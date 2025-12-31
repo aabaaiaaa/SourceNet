@@ -17,8 +17,14 @@ const GameRoot = () => {
     const skipBoot = urlParams.get('skipBoot') === 'true';
 
     if (skipBoot && gamePhase === 'boot') {
-      // Skip straight to username selection for E2E tests
-      setGamePhase('username');
+      // If saves exist, go to login to pick save
+      // If no saves, go to username
+      const savesExist = hasSaves();
+      if (savesExist) {
+        setGamePhase('login');
+      } else {
+        setGamePhase('username');
+      }
       return;
     }
 
