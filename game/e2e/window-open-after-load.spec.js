@@ -53,8 +53,7 @@ test.describe('Window Opening After Load Bug', () => {
     // Load the save
     await page.click('button:has-text("Load")');
 
-    // Wait for boot and desktop
-    await expect(page.locator('.boot-screen')).not.toBeVisible({ timeout: 10000 });
+    // Wait for desktop
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 15000 });
 
     // Try to open Mail after loading - this tests the bug fix

@@ -63,8 +63,7 @@ test.describe('Save/Load with SNet Mail Open', () => {
     // Load the save
     await page.click('.save-item:has-text("mail_save_test") button:has-text("Load")');
 
-    // Wait for boot and desktop
-    await expect(page.locator('.boot-screen')).not.toBeVisible({ timeout: 10000 });
+    // Wait for desktop
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 15000 });
 
     // =========================================

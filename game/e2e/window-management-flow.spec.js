@@ -39,8 +39,7 @@ test.describe('E2E Test 4: Window Management Flow', () => {
     // Load save to skip boot
     await expect(page.locator('.game-login-screen')).toBeVisible({ timeout: 5000 });
     await page.click('button:has-text("Load")');
-    // Wait for boot sequence to complete
-    await expect(page.locator('.boot-screen')).not.toBeVisible({ timeout: 10000 });
+    // Wait for desktop to load
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
     // Step 2: Open SNet Mail → verify cascaded position

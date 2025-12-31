@@ -62,7 +62,6 @@ test.describe('All Apps Text Visibility', () => {
 
     // Load game
     await page.click('button:has-text("Load")');
-    await expect(page.locator('.boot-screen')).not.toBeVisible({ timeout: 10000 });
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 15000 });
 
     // === Test 1: SNet Mail App ===

@@ -7,7 +7,6 @@ import { test, expect } from '@playwright/test';
 
 const completeBoot = async (page) => {
   await page.goto('/?skipBoot=true'); // Skip boot
-  await expect(page.locator('.boot-screen')).toBeVisible({ timeout: 5000 });
   await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
   await page.locator('input.username-input').fill('complete_test');
   await page.click('button:has-text("Continue")');

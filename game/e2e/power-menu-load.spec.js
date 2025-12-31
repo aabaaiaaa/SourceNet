@@ -111,8 +111,7 @@ test.describe('E2E: Power Menu Load', () => {
 
     // Load a save
     await page.click('button:has-text("Load")');
-    // Wait for boot sequence to complete
-    await expect(page.locator('.boot-screen')).not.toBeVisible({ timeout: 10000 });
+    // Wait for desktop to load
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
     // Open load modal

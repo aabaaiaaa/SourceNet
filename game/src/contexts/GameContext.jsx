@@ -695,9 +695,15 @@ export const GameProvider = ({ children }) => {
 
     setTimeSpeed(TIME_SPEEDS.NORMAL); // Always reset to 1x
 
-    // Always show boot sequence when loading (subsequent boot ~4s)
-    // This provides consistent "booting up your computer" experience
-    setGamePhase('boot');
+    // Check if should skip boot (E2E tests)
+    const urlParams = new URLSearchParams(window.location.search);
+    const skipBoot = urlParams.get('skipBoot') === 'true';
+
+    if (skipBoot) {
+      setGamePhase('desktop'); // Skip straight to desktop
+    } else {
+      setGamePhase('boot'); // Normal boot sequence
+    }
 
     return true;
   }, []);
