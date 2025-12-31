@@ -37,7 +37,7 @@ export const useStoryMissions = (gameState, actions) => {
     console.log('✅ Story mission system initialized');
 
     // Subscribe to mission available events
-    const unsubscribe = triggerEventBus.on('missionAvailable', (data) => {
+    const unsubscribeMission = triggerEventBus.on('missionAvailable', (data) => {
       const { mission } = data;
 
       // Add mission to available missions
@@ -54,9 +54,34 @@ export const useStoryMissions = (gameState, actions) => {
       console.log(`📋 Mission available: ${mission.title}`);
     });
 
+    // Subscribe to story event triggered (for messages)
+    const unsubscribeEvent = triggerEventBus.on('storyEventTriggered', (data) => {
+      const { message, eventId } = data;
+
+      if (message && actions.addMessage) {
+        // Create message object
+        const newMessage = {
+          id: `msg-${eventId}-${Date.now()}`,
+          from: message.from,
+          fromId: message.fromId,
+          fromName: message.fromName,
+          subject: message.subject,
+          body: message.body,
+          timestamp: null, // Will be set by addMessage
+          read: false,
+          archived: false,
+          attachments: message.attachments || [],
+        };
+
+        actions.addMessage(newMessage);
+        console.log(`📧 Story event message: ${message.subject}`);
+      }
+    });
+
     // Cleanup on unmount
     return () => {
-      unsubscribe();
+      unsubscribeMission();
+      unsubscribeEvent();
     };
   }, [actions]);
 

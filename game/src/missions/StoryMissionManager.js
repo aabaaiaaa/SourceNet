@@ -26,7 +26,16 @@ class StoryMissionManager {
   registerMission(missionDef) {
     this.missions.set(missionDef.missionId, missionDef);
 
-    // Subscribe to trigger events for this mission
+    // Handle story events (have events[] array)
+    if (missionDef.events && Array.isArray(missionDef.events)) {
+      missionDef.events.forEach((event) => {
+        if (event.trigger) {
+          this.subscribeStoryEventTrigger(missionDef, event);
+        }
+      });
+    }
+
+    // Handle missions (have triggers.start)
     if (missionDef.triggers && missionDef.triggers.start) {
       this.subscribeMissionTrigger(missionDef);
     }
@@ -34,6 +43,39 @@ class StoryMissionManager {
     // Subscribe to scripted event triggers
     if (missionDef.scriptedEvents) {
       this.subscribeScriptedEventTriggers(missionDef);
+    }
+  }
+
+  /**
+   * Subscribe to story event trigger (for events with messages)
+   * @param {object} storyEventDef - Story event definition
+   * @param {object} event - Individual event within the story event
+   */
+  subscribeStoryEventTrigger(storyEventDef, event) {
+    const { type, event: eventName, delay, condition } = event.trigger;
+
+    if (type === 'timeSinceEvent') {
+      const unsubscribe = triggerEventBus.on(eventName, (data) => {
+        // Check condition if specified
+        if (condition) {
+          const conditionMet = Object.keys(condition).every(
+            (key) => data[key] === condition[key]
+          );
+          if (!conditionMet) return;
+        }
+
+        setTimeout(() => {
+          // For story events, we need to send the message
+          // This would be handled by the game context
+          triggerEventBus.emit('storyEventTriggered', {
+            storyEventId: storyEventDef.missionId,
+            eventId: event.id,
+            message: event.message,
+          });
+        }, delay || 0);
+      });
+
+      this.addUnsubscriber(storyEventDef.missionId, unsubscribe);
     }
   }
 
