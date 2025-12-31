@@ -160,7 +160,11 @@ export const GameProvider = ({ children }) => {
   // Deposit cheque
   const depositCheque = useCallback((messageId, accountId) => {
     const message = messages.find((m) => m.id === messageId);
-    if (!message || !message.attachment || message.attachment.deposited) {
+    const chequeAttachment = message?.attachments?.find(
+      att => att.type === 'cheque' && !att.deposited
+    );
+
+    if (!message || !chequeAttachment) {
       return;
     }
 
@@ -169,20 +173,24 @@ export const GameProvider = ({ children }) => {
       prev.map((msg) =>
         msg.id === messageId
           ? {
-              ...msg,
-              attachment: { ...msg.attachment, deposited: true },
-            }
+            ...msg,
+            attachments: msg.attachments.map(att =>
+              att.type === 'cheque' && !att.deposited
+                ? { ...att, deposited: true }
+                : att
+            ),
+          }
           : msg
       )
     );
 
     // Add funds to account
-    const newBalance = bankAccounts.find(acc => acc.id === accountId).balance + message.attachment.amount;
+    const newBalance = bankAccounts.find(acc => acc.id === accountId).balance + chequeAttachment.amount;
 
     setBankAccounts((prev) =>
       prev.map((acc) =>
         acc.id === accountId
-          ? { ...acc, balance: acc.balance + message.attachment.amount }
+          ? { ...acc, balance: acc.balance + chequeAttachment.amount }
           : acc
       )
     );
@@ -194,7 +202,7 @@ export const GameProvider = ({ children }) => {
         id: `txn-cheque-${Date.now()}`,
         date: currentTime.toISOString(),
         type: 'income',
-        amount: message.attachment.amount,
+        amount: chequeAttachment.amount,
         description: 'Cheque Deposit',
         balanceAfter: newBalance,
       },
@@ -586,9 +594,9 @@ export const GameProvider = ({ children }) => {
 
     saveToLocalStorage(username, gameState, saveName);
   }, [username, playerMailId, currentTime, hardware, software, bankAccounts, messages, managerName, windows,
-      reputation, reputationCountdown, activeMission, completedMissions, availableMissions, missionCooldowns,
-      narEntries, activeConnections, lastScanResults, fileManagerConnections, lastFileOperation,
-      downloadQueue, transactions, bankruptcyCountdown, lastInterestTime]);
+    reputation, reputationCountdown, activeMission, completedMissions, availableMissions, missionCooldowns,
+    narEntries, activeConnections, lastScanResults, fileManagerConnections, lastFileOperation,
+    downloadQueue, transactions, bankruptcyCountdown, lastInterestTime]);
 
   // Reboot system
   const rebootSystem = useCallback(() => {

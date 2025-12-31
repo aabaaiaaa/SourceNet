@@ -15,23 +15,25 @@ test.describe('Phase 2 Core Mechanics - Interest & Bankruptcy', () => {
     await page.click('button:has-text("Continue")');
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
-    // Use debug to set near bankruptcy state
-    await page.evaluate(() => {
-      if (window.debugSystem && window.debugSystem.setGameState) {
-        const gameContext = window.gameContext || {};
-        // Set credits to trigger bankruptcy
-        window.debugSystem.setGameState(gameContext, {
-          credits: -10500,
-          reputation: 3,
-        });
-      }
-    });
+    // Open debug panel and load a near-bankruptcy scenario
+    await page.keyboard.press('Control+d');
+    await expect(page.locator('.debug-panel')).toBeVisible({ timeout: 2000 });
+
+    // Load the "Tutorial Part 1 Failed" scenario which has -9000 credits
+    await page.click('button:has-text("Tutorial Part 1 Failed")');
+
+    // Close debug panel
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.debug-panel')).not.toBeVisible();
 
     // Wait a moment for state to update
     await page.waitForTimeout(1000);
 
-    // Verify bankruptcy warning banner appears
-    // Note: May not appear immediately if countdown needs to trigger
+    // Verify bankruptcy warning banner appears or reputation shows low tier
+    await expect(page.locator('.reputation-badge')).toBeVisible();
+    const repText = await page.locator('.reputation-badge').textContent();
+    expect(repText).toBe('3'); // Accident Prone tier
+
     console.log('✅ E2E: Bankruptcy state setup complete');
   });
 
@@ -48,7 +50,7 @@ test.describe('Phase 2 Core Mechanics - Interest & Bankruptcy', () => {
 
     // Should show tier 9 at start
     const tierText = await page.locator('.reputation-badge').textContent();
-    expect(tierText).toBe('9');
+    expect(tierText).toBe('★9');
 
     console.log('✅ E2E: Reputation badge displays correctly');
   });

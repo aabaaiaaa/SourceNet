@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { STARTING_SOFTWARE } from '../src/constants/gameConstants.js';
 
 test.describe('E2E Test 3: Save/Load Cycle', () => {
   test.beforeEach(async ({ page }) => {
@@ -10,7 +11,7 @@ test.describe('E2E Test 3: Save/Load Cycle', () => {
   test('should save game state and restore it correctly', async ({ page }) => {
     // Create a save directly in localStorage
     await page.goto('/?skipBoot=true');
-    await page.evaluate(() => {
+    await page.evaluate((startingSoftware) => {
       const saveData = {
         username: 'save_test',
         playerMailId: 'SNET-TST-123-456',
@@ -23,7 +24,7 @@ test.describe('E2E Test 3: Save/Load Cycle', () => {
           powerSupply: { id: 'psu-300w', name: '300W PSU', wattage: 300 },
           network: { id: 'net-250mb', name: '250Mb Network Card', power: 5 },
         },
-        software: [],
+        software: startingSoftware,
         bankAccounts: [
           { id: 'account-first-bank', bankName: 'First Bank Ltd', balance: 1500 },
         ],
@@ -54,7 +55,7 @@ test.describe('E2E Test 3: Save/Load Cycle', () => {
 
       const saves = { save_test: [saveData] };
       localStorage.setItem('sourcenet_saves', JSON.stringify(saves));
-    });
+    }, STARTING_SOFTWARE);
 
     // Reload to trigger game to check for saves
     await page.reload();

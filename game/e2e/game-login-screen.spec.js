@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test';
+import { STARTING_SOFTWARE } from '../src/constants/gameConstants.js';
 
 test.describe('E2E Test 2: Game Login Screen (Multiple Saves)', () => {
   test('should handle multiple saves and new game creation', async ({ page }) => {
     await page.goto('/');
 
     // Create first save
-    await page.evaluate(() => {
+    await page.evaluate((startingSoftware) => {
       const createSave = (username, balance) => ({
         username,
         playerMailId: `SNET-TST-${username.slice(-4)}-XXX`,
@@ -18,7 +19,7 @@ test.describe('E2E Test 2: Game Login Screen (Multiple Saves)', () => {
           powerSupply: { id: 'psu-300w', wattage: 300 },
           network: { id: 'net-250mb', speed: 250 },
         },
-        software: [],
+        software: startingSoftware,
         bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance }],
         messages: [],
         managerName: 'TestManager',
@@ -33,7 +34,7 @@ test.describe('E2E Test 2: Game Login Screen (Multiple Saves)', () => {
         agent_3333: [createSave('agent_3333', 1500)],
       };
       localStorage.setItem('sourcenet_saves', JSON.stringify(saves));
-    });
+    }, STARTING_SOFTWARE);
 
     // Step 2: Restart game
     await page.reload();

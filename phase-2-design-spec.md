@@ -1032,11 +1032,12 @@ if (newTier === 2 && oldTier > 2) {
 - `timePassed` - X minutes/hours of in-game time elapsed
 
 **Phase 2 Events:**
-- `missionBoardInstalled` - Mission Board app installed
 - `missionAccepted` - Player accepts mission
 - `missionObjectiveComplete` - Specific objective completed
 - `missionComplete` - Mission finished (success/failure)
-- `softwareInstalled` - Specific software installed
+- `softwareInstalled` - Any software installed (includes softwareId in event data)
+- `storyEventTriggered` - Story event message triggered
+- `messageRead` - Message marked as read (includes messageId in event data)
 - `networkConnected` - Connected to network
 - `networkDisconnected` - Disconnected from network
 - `fileSystemAccessed` - File Manager connected to file system
@@ -1048,28 +1049,47 @@ if (newTier === 2 && oldTier > 2) {
 **Trigger Conditions:**
 
 ```javascript
-// Example trigger definition
+// Example: Trigger on time since event
 {
   "type": "timeSinceEvent",
-  "event": "chequeDeposited",
+  "event": "desktopLoaded",
+  "delay": 2000  // 2 seconds
+}
+
+// Example: Trigger on software installed with condition filter
+{
+  "type": "timeSinceEvent",
+  "event": "softwareInstalled",
+  "condition": {
+    "softwareId": "mission-board"
+  },
+  "delay": 0
+}
+
+// Example: Trigger on message read with condition filter
+{
+  "type": "timeSinceEvent",
+  "event": "messageRead",
+  "condition": {
+    "messageId": "msg-welcome-manager"
+  },
   "delay": 20000  // 20 seconds
 }
 
+// Example: Trigger after objective complete
 {
-  "type": "objectiveComplete",
+  "type": "afterObjectiveComplete",
   "missionId": "tutorial-part-1",
-  "objectiveId": "obj-4"
-}
-
-{
-  "type": "compound",
-  "conditions": [
-    {"event": "softwareInstalled", "software": "mission-board"},
-    {"event": "timePassed", "duration": 5000}
-  ],
-  "operator": "AND"
+  "objectiveId": "obj-4",
+  "delay": 5000
 }
 ```
+
+**Condition Filtering:**
+- Triggers can include a `condition` object to filter event data
+- Common conditions: `softwareId`, `messageId`, `networkId`
+- All condition fields must match event data for trigger to activate
+- Enables reusable generic events (e.g., one `softwareInstalled` event for all software)
 
 ### Story Mission Manager (Code Architecture)
 

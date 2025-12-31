@@ -65,7 +65,9 @@ test.describe('Missing Required E2E Tests', () => {
 
     // Phase 2 software should be available for purchase
     await expect(page.locator('text=SourceNet Mission Board')).toBeVisible();
-    await expect(page.locator('.portal-item')).toBeVisible();
+    await expect(page.locator('.portal-item').first()).toBeVisible();
+    const itemCount = await page.locator('.portal-item').count();
+    expect(itemCount).toBeGreaterThan(0);
 
     // Mission software is ready for post-tutorial purchase
     console.log('✅ E2E: Post-tutorial software structure validated');
@@ -89,7 +91,7 @@ test.describe('Missing Required E2E Tests', () => {
     // Verify reputation can change (failure would decrease it)
     await expect(page.locator('.reputation-badge')).toBeVisible();
     const reputation = await page.locator('.reputation-badge').textContent();
-    expect(reputation).toBe('9'); // Starts at tier 9
+    expect(reputation).toBe('★9'); // Starts at tier 9
 
     // Mission failure mechanics are in place (tested in unit tests)
     // Full failure flow would require completing a mission

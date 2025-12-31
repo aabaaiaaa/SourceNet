@@ -1,10 +1,11 @@
 import { test, expect } from '@playwright/test';
+import { STARTING_SOFTWARE } from '../src/constants/gameConstants.js';
 
 test.describe('E2E Test 4: Window Management Flow', () => {
   test.beforeEach(async ({ page }) => {
     // Create a save to skip boot sequence
     await page.goto('/?skipBoot=true');
-    await page.evaluate(() => {
+    await page.evaluate((startingSoftware) => {
       const saves = {
         window_test: [
           {
@@ -19,7 +20,7 @@ test.describe('E2E Test 4: Window Management Flow', () => {
               powerSupply: { id: 'psu-300w', wattage: 300 },
               network: { id: 'net-250mb', speed: 250 },
             },
-            software: [],
+            software: startingSoftware,
             bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance: 1000 }],
             messages: [],
             managerName: 'Test',
@@ -30,7 +31,7 @@ test.describe('E2E Test 4: Window Management Flow', () => {
         ],
       };
       localStorage.setItem('sourcenet_saves', JSON.stringify(saves));
-    });
+    }, STARTING_SOFTWARE);
   });
 
   test('should handle complete window management flow', async ({ page }) => {

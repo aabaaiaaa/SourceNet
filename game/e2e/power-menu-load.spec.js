@@ -1,10 +1,11 @@
 import { test, expect } from '@playwright/test';
+import { STARTING_SOFTWARE } from '../src/constants/gameConstants.js';
 
 test.describe('E2E: Power Menu Load', () => {
   test.beforeEach(async ({ page }) => {
     // Create multiple saves
     await page.goto('/?skipBoot=true');
-    await page.evaluate(() => {
+    await page.evaluate((startingSoftware) => {
       const createSave = (username, balance) => ({
         username,
         playerMailId: `SNET-TST-${username.slice(-3)}-XXX`,
@@ -17,7 +18,7 @@ test.describe('E2E: Power Menu Load', () => {
           powerSupply: { id: 'psu-300w', wattage: 300 },
           network: { id: 'net-250mb', speed: 250 },
         },
-        software: [],
+        software: startingSoftware,
         bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance }],
         messages: [],
         managerName: 'TestManager',
@@ -32,7 +33,7 @@ test.describe('E2E: Power Menu Load', () => {
         save_3: [createSave('save_3', 1500)],
       };
       localStorage.setItem('sourcenet_saves', JSON.stringify(saves));
-    });
+    }, STARTING_SOFTWARE);
   });
 
   test('should load game from power menu', async ({ page }) => {
@@ -92,10 +93,11 @@ test.describe('E2E: Power Menu Load', () => {
     // Open load modal
     await page.hover('text=⏻');
     await page.click('text=Load');
-    await expect(page.locator('.modal-content:has-text("Load Game")')).toBeVisible();
+    const modal = page.locator('.modal-content:has-text("Load Game")');
+    await expect(modal).toBeVisible();
 
     // Click Cancel
-    await page.click('button:has-text("Cancel")');
+    await modal.locator('button:has-text("Cancel")').click();
 
     // Modal should close
     await expect(page.locator('.modal-content')).not.toBeVisible();
@@ -131,7 +133,7 @@ test.describe('E2E: Power Menu Load', () => {
   test('should load game with messages via power menu and display timestamps correctly', async ({ page }) => {
     // Create saves WITH messages (to test formatDateTime with power menu load)
     await page.goto('/?skipBoot=true');
-    await page.evaluate(() => {
+    await page.evaluate((startingSoftware) => {
       const createSaveWithMessages = (username, balance) => ({
         username,
         playerMailId: `SNET-MSG-${username.slice(-3)}-XXX`,
@@ -144,7 +146,7 @@ test.describe('E2E: Power Menu Load', () => {
           powerSupply: { id: 'psu-300w', wattage: 300 },
           network: { id: 'net-250mb', speed: 250 },
         },
-        software: [],
+        software: startingSoftware,
         bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance }],
         messages: [
           {
@@ -169,7 +171,7 @@ test.describe('E2E: Power Menu Load', () => {
         msg_save_2: [createSaveWithMessages('msg_save_2', 1000)],
       };
       localStorage.setItem('sourcenet_saves', JSON.stringify(saves));
-    });
+    }, STARTING_SOFTWARE);
 
     await page.reload();
 

@@ -74,8 +74,28 @@ test.describe('E2E Test 5: App Interactions Flow', () => {
 
     // Browse to Software section
     await page.click('button:has-text("Software")');
+
+    // Verify Phase 2 software is shown and available for purchase
     await expect(page.locator('.item-name:has-text("SourceNet VPN Client")')).toBeVisible();
-    await expect(page.locator('.unavailable-badge:has-text("Coming Soon")')).toBeVisible();
+    await expect(page.locator('.item-name:has-text("SourceNet Mission Board")')).toBeVisible();
+
+    // Find the first portal item with a Purchase button (scope to portal window)
+    const purchasableItem = portalWindow.locator('.portal-item:has(button:has-text("Purchase"))').first();
+    await expect(purchasableItem).toBeVisible();
+
+    // Click the Purchase button within that specific item
+    const purchaseBtn = purchasableItem.locator('button:has-text("Purchase")');
+    await purchaseBtn.click();
+
+    // Purchase confirmation modal should appear
+    const modal = page.locator('.modal-content');
+    await expect(modal).toBeVisible();
+    await expect(modal.locator('button:has-text("Confirm Purchase")')).toBeVisible();
+    await expect(modal.locator('text=Your Balance:')).toBeVisible();
+
+    // Cancel the purchase
+    await modal.locator('button:has-text("Cancel")').click();
+    await expect(modal).not.toBeVisible();
 
     // Step 21: Close all apps
     await page.click('.window:has-text("SNet Mail") button[title="Close"]');

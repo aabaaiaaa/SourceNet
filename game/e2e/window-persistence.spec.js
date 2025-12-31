@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { STARTING_SOFTWARE } from '../src/constants/gameConstants.js';
 
 test.describe('E2E: Window State Persistence', () => {
   test.beforeEach(async ({ page }) => {
@@ -10,7 +11,7 @@ test.describe('E2E: Window State Persistence', () => {
     await page.goto('/?skipBoot=true');
 
     // Create a save with specific window state
-    await page.evaluate(() => {
+    await page.evaluate((startingSoftware) => {
       const saves = {
         window_persist_test: [
           {
@@ -25,7 +26,7 @@ test.describe('E2E: Window State Persistence', () => {
               powerSupply: { id: 'psu-300w', wattage: 300 },
               network: { id: 'net-250mb', speed: 250 },
             },
-            software: [],
+            software: startingSoftware,
             bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance: 1000 }],
             messages: [],
             managerName: 'Test',
@@ -55,7 +56,7 @@ test.describe('E2E: Window State Persistence', () => {
         ],
       };
       localStorage.setItem('sourcenet_saves', JSON.stringify(saves));
-    });
+    }, STARTING_SOFTWARE);
 
     await page.reload();
 
@@ -111,7 +112,7 @@ test.describe('E2E: Window State Persistence', () => {
     await page.goto('/?skipBoot=true');
 
     // Create a save with credits to skip message flow
-    await page.evaluate(() => {
+    await page.evaluate((startingSoftware) => {
       const saves = {
         zindex_test: [
           {
@@ -126,7 +127,7 @@ test.describe('E2E: Window State Persistence', () => {
               powerSupply: { id: 'psu-300w', wattage: 300 },
               network: { id: 'net-250mb', speed: 250 },
             },
-            software: [],
+            software: startingSoftware,
             bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance: 1000 }],
             messages: [],
             managerName: 'Test',
@@ -137,7 +138,7 @@ test.describe('E2E: Window State Persistence', () => {
         ],
       };
       localStorage.setItem('sourcenet_saves', JSON.stringify(saves));
-    });
+    }, STARTING_SOFTWARE);
 
     await page.reload();
     await page.click('button:has-text("Load")');

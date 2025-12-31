@@ -31,20 +31,26 @@ test.describe('Core Gameplay Loop: Purchase → Install → Use', () => {
     // Switch to Software
     await page.click('button:has-text("Software")');
 
-    // Should see software items
-    await expect(page.locator('.portal-item')).toBeVisible();
+    // Should see multiple software items available
+    await expect(page.locator('.portal-item').first()).toBeVisible();
+    const itemCount = await page.locator('.portal-item').count();
+    expect(itemCount).toBeGreaterThan(0);
 
-    // Verify purchase button exists for software
-    const purchaseBtn = page.locator('button:has-text("Purchase")').first();
-    if (await purchaseBtn.isVisible()) {
-      await purchaseBtn.click();
+    // Find the first portal item with a Purchase button
+    const purchasableItem = page.locator('.portal-item:has(button:has-text("Purchase"))').first();
+    await expect(purchasableItem).toBeVisible();
 
-      // Should show confirmation modal
-      await expect(page.locator('.modal-content')).toBeVisible();
+    // Click the Purchase button within that item
+    const purchaseBtn = purchasableItem.locator('button:has-text("Purchase")');
+    await purchaseBtn.click();
 
-      // Cancel for now (would need credits to actually purchase)
-      await page.click('button:has-text("Cancel")');
-    }
+    // Should show confirmation modal
+    const modal = page.locator('.modal-content');
+    await expect(modal).toBeVisible();
+
+    // Cancel for now (would need credits to actually purchase)
+    await modal.locator('button:has-text("Cancel")').click();
+    await expect(modal).not.toBeVisible();
 
     console.log('✅ E2E: Purchase flow complete');
   });
@@ -69,8 +75,10 @@ test.describe('Core Gameplay Loop: Software Purchase', () => {
     // Click Software tab
     await page.click('button:has-text("Software")');
 
-    // Software items should be visible
-    await expect(page.locator('.portal-item')).toBeVisible();
+    // Multiple software items should be visible
+    await expect(page.locator('.portal-item').first()).toBeVisible();
+    const itemCount = await page.locator('.portal-item').count();
+    expect(itemCount).toBeGreaterThan(0);
 
     console.log('✅ E2E: Software purchase flow complete');
   });

@@ -1,10 +1,11 @@
 import { test, expect } from '@playwright/test';
+import { STARTING_SOFTWARE } from '../src/constants/gameConstants.js';
 
 test.describe('Message View Text Visibility', () => {
   test('should display all message details with readable text', async ({ page }) => {
     // Setup game with messages
     await page.goto('/?skipBoot=true');
-    await page.evaluate(() => {
+    await page.evaluate((startingSoftware) => {
       localStorage.clear();
       const saves = {
         visibility_test: [{
@@ -19,7 +20,7 @@ test.describe('Message View Text Visibility', () => {
             powerSupply: { id: 'psu-300w', wattage: 300 },
             network: { id: 'net-250mb', speed: 250 },
           },
-          software: [],
+          software: startingSoftware,
           bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance: 1000 }],
           messages: [
             {
@@ -39,7 +40,7 @@ test.describe('Message View Text Visibility', () => {
         }]
       };
       localStorage.setItem('sourcenet_saves', JSON.stringify(saves));
-    });
+    }, STARTING_SOFTWARE);
 
     await page.reload();
 

@@ -32,7 +32,7 @@ test.describe('Phase 2 Complete Game Flow', () => {
 
     // Reputation should be Tier 9 (Superb) at start
     const repText = await page.locator('.reputation-badge').textContent();
-    expect(repText).toBe('9');
+    expect(repText).toBe('★9');
 
     console.log('✅ E2E: Boot complete, reputation indicator visible');
   });
@@ -107,7 +107,7 @@ test.describe('Phase 2 Complete Game Flow', () => {
 
     // Should show tier 9 at start
     const repText = await page.locator('.reputation-badge').textContent();
-    expect(repText).toBe('9');
+    expect(repText).toBe('★9');
 
     // Hover to see reputation preview
     await page.hover('.reputation-badge');
@@ -122,7 +122,7 @@ test.describe('Phase 2 Complete Game Flow', () => {
 
 test.describe('Phase 2 Debug System', () => {
   test('should have debug mode enabled with query parameter', async ({ page }) => {
-    await page.goto('/?debug=true');
+    await page.goto('/?debug=true&skipBoot=true'); // Enable debug and skip boot
 
     // Complete boot
     await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });

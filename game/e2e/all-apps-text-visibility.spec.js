@@ -1,10 +1,11 @@
 import { test, expect } from '@playwright/test';
+import { STARTING_SOFTWARE } from '../src/constants/gameConstants.js';
 
 test.describe('All Apps Text Visibility', () => {
   test('should display all text visibly in all apps', async ({ page }) => {
     // Setup game with messages
     await page.goto('/?skipBoot=true');
-    await page.evaluate(() => {
+    await page.evaluate((startingSoftware) => {
       localStorage.clear();
       const saves = {
         visibility_full_test: [{
@@ -19,7 +20,7 @@ test.describe('All Apps Text Visibility', () => {
             powerSupply: { id: 'psu-300w', wattage: 300 },
             network: { id: 'net-250mb', speed: 250 },
           },
-          software: [],
+          software: startingSoftware,
           bankAccounts: [
             { id: 'acc-1', bankName: 'First Bank Ltd', balance: 1000 },
             { id: 'acc-2', bankName: 'Second Bank Corp', balance: 2500 }
@@ -44,10 +45,13 @@ test.describe('All Apps Text Visibility', () => {
               timestamp: '2020-03-25T09:10:00',
               read: false,
               archived: false,
-              attachment: {
-                amount: 1000,
-                deposited: false
-              }
+              attachments: [
+                {
+                  type: 'cheque',
+                  amount: 1000,
+                  deposited: false
+                }
+              ]
             }
           ],
           managerName: 'TestManager',
@@ -56,7 +60,7 @@ test.describe('All Apps Text Visibility', () => {
         }]
       };
       localStorage.setItem('sourcenet_saves', JSON.stringify(saves));
-    });
+    }, STARTING_SOFTWARE);
 
     await page.reload();
 

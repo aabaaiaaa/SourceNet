@@ -9,14 +9,11 @@ test.describe('E2E: Complete Gameplay Session', () => {
 
   test('should complete full gameplay session from start to finish', async ({ page }) => {
     // ========================================
-    // PHASE 1: New Game Boot Sequence
+    // PHASE 1: New Game Boot Sequence (skipped boot)
     // ========================================
     await page.goto('/?skipBoot=true');
 
-    // Verify boot sequence starts automatically
-    await expect(page.locator('text=OSNet BIOS')).toBeVisible();
-
-    // Wait for boot to complete and username selection screen
+    // Wait for username selection screen
     await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
 
     // Enter username
@@ -163,7 +160,10 @@ test.describe('E2E: Complete Gameplay Session', () => {
     // Check Software section
     await page.click('button:has-text("Software")');
     await expect(page.locator('text=SourceNet VPN Client')).toBeVisible();
-    await expect(page.locator('text=Coming Soon')).toBeVisible();
+    await expect(page.locator('text=SourceNet Mission Board')).toBeVisible();
+    
+    // Verify Purchase buttons are available for software
+    await expect(page.locator('button:has-text("Purchase")').first()).toBeVisible();
 
     // ========================================
     // PHASE 7: Time System Testing

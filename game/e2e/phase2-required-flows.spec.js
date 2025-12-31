@@ -32,8 +32,10 @@ test.describe('Phase 2 Required E2E Tests', () => {
     await page.click('button:has-text("Software")');
     await page.waitForTimeout(200);
 
-    // Verify software items visible
-    await expect(page.locator('.portal-item')).toBeVisible();
+    // Verify multiple software items visible
+    await expect(page.locator('.portal-item').first()).toBeVisible();
+    const itemCount = await page.locator('.portal-item').count();
+    expect(itemCount).toBeGreaterThan(0);
 
     console.log('✅ E2E: Purchase and install flow validated');
   });
@@ -114,7 +116,7 @@ test.describe('Phase 2 Required E2E Tests', () => {
 
     // Should show Tier 9 at start
     const repText = await page.locator('.reputation-badge').textContent();
-    expect(repText).toBe('9');
+    expect(repText).toBe('★9');
 
     // No reputation warning should be visible initially
     const warningVisible = await page.locator('.reputation-warning-banner').isVisible().catch(() => false);
