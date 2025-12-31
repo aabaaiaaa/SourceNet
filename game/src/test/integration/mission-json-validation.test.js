@@ -112,6 +112,51 @@ describe('Mission JSON Validation', () => {
     });
   });
 
+  describe('Trigger Condition Validation', () => {
+    it('should have valid condition fields', () => {
+      [...storyEvents, ...allMissions].forEach((item) => {
+        // Check story events
+        if (item.events) {
+          item.events.forEach((event) => {
+            if (event.trigger.condition) {
+              // Condition should be an object
+              expect(typeof event.trigger.condition).toBe('object');
+              // If has messageId, should start with msg-
+              if (event.trigger.condition.messageId) {
+                expect(event.trigger.condition.messageId).toMatch(/^msg-/);
+              }
+              // If has softwareId, should be kebab-case
+              if (event.trigger.condition.softwareId) {
+                expect(event.trigger.condition.softwareId).toMatch(/^[a-z-]+$/);
+              }
+            }
+          });
+        }
+        // Check missions
+        if (item.triggers && item.triggers.start && item.triggers.start.condition) {
+          const condition = item.triggers.start.condition;
+          expect(typeof condition).toBe('object');
+        }
+      });
+    });
+
+    it('should have valid delay values', () => {
+      [...storyEvents, ...allMissions].forEach((item) => {
+        if (item.events) {
+          item.events.forEach((event) => {
+            if (event.trigger.delay !== undefined) {
+              expect(typeof event.trigger.delay).toBe('number');
+              expect(event.trigger.delay).toBeGreaterThanOrEqual(0);
+            }
+          });
+        }
+        if (item.triggers && item.triggers.start && item.triggers.start.delay !== undefined) {
+          expect(typeof item.triggers.start.delay).toBe('number');
+        }
+      });
+    });
+  });
+
   describe('Cross-Reference Validation', () => {
     it('should have unique mission IDs', () => {
       const allIds = [...storyEvents, ...allMissions].map((m) => m.missionId);
