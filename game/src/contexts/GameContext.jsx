@@ -16,6 +16,7 @@ import {
 } from '../utils/helpers';
 import useStoryMissions from '../missions/useStoryMissions';
 import { useObjectiveAutoTracking } from '../missions/useObjectiveAutoTracking';
+import { useDownloadManager } from '../systems/useDownloadManager';
 import { updateBankruptcyCountdown, shouldTriggerBankruptcy, startBankruptcyCountdown } from '../systems/BankingSystem';
 import { updateReputationCountdown, startReputationCountdown } from '../systems/ReputationSystem';
 import triggerEventBus from '../core/triggerEventBus';
@@ -94,6 +95,23 @@ export const GameProvider = ({ children }) => {
   useStoryMissions(
     { gamePhase, username, currentTime, activeConnections, activeMission },
     { setAvailableMissions }
+  );
+
+  // Download completion callback - adds software to installed list
+  const handleDownloadComplete = useCallback((softwareId) => {
+    setSoftware((prev) => {
+      if (prev.includes(softwareId)) return prev;
+      return [...prev, softwareId];
+    });
+  }, []);
+
+  // Download manager - handles real progress updates for downloads
+  useDownloadManager(
+    downloadQueue,
+    setDownloadQueue,
+    hardware,
+    handleDownloadComplete,
+    gamePhase === 'desktop' // Only run when on desktop
   );
 
   // Initialize player

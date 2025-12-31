@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import { HARDWARE_CATALOG, SOFTWARE_CATALOG } from '../../constants/gameConstants';
 import { isHardwareInstalled } from '../../utils/helpers';
-import triggerEventBus from '../../core/triggerEventBus';
+import { createDownloadItem } from '../../systems/useDownloadManager';
 import './Portal.css';
 
 const Portal = () => {
-  const { hardware, software, bankAccounts, setBankAccounts, setSoftware, setTransactions, currentTime, getTotalCredits, setDownloadQueue } = useGame();
+  const { hardware, software, bankAccounts, setBankAccounts, setTransactions, currentTime, getTotalCredits, setDownloadQueue } = useGame();
   const [activeCategory, setActiveCategory] = useState('processors');
   const [activeSection, setActiveSection] = useState('hardware');
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
@@ -45,45 +45,14 @@ const Portal = () => {
         balanceAfter: newAccounts[0].balance,
       }]);
 
-      // Add to download queue (simulates download/installation)
-      const downloadItem = {
-        id: `download-${Date.now()}`,
-        softwareId: selectedItem.id,
-        softwareName: selectedItem.name,
-        sizeInMB: 200, // Mock size
-        progress: 0,
-        status: 'downloading',
-        startTime: Date.now(),
-      };
+      // Add to download queue - the download manager hook handles progress and completion
+      const downloadItem = createDownloadItem(
+        selectedItem.id,
+        selectedItem.name,
+        selectedItem.sizeInMB || 50 // Use actual size from catalog
+      );
 
       setDownloadQueue(prev => [...prev, downloadItem]);
-
-      // Simulate download (2 seconds) then install
-      setTimeout(() => {
-        setDownloadQueue(prev =>
-          prev.map(item =>
-            item.id === downloadItem.id
-              ? { ...item, progress: 100, status: 'complete' }
-              : item
-          )
-        );
-
-        // Add to installed software
-        setSoftware(prev => [...prev, selectedItem.id]);
-
-        // Emit software installed event
-        triggerEventBus.emit('softwareInstalled', {
-          softwareId: selectedItem.id,
-          softwareName: selectedItem.name,
-        });
-
-        // Remove from queue after install
-        setTimeout(() => {
-          setDownloadQueue(prev => prev.filter(item => item.id !== downloadItem.id));
-        }, 1000);
-      }, 2000);
-
-      alert(`✅ Purchasing ${selectedItem.name}...\nCheck download queue in bottom-right!`);
     }
 
     setShowPurchaseModal(false);

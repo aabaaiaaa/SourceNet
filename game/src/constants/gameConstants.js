@@ -157,6 +157,7 @@ export const SOFTWARE_CATALOG = [
     name: 'SourceNet Mission Board',
     description: 'View and accept SourceNet contracts',
     price: 250,
+    sizeInMB: 25, // ~4 seconds at 50 Mbps
     available: true,
   },
   {
@@ -164,6 +165,7 @@ export const SOFTWARE_CATALOG = [
     name: 'SourceNet VPN Client',
     description: 'Secure connection to private networks',
     price: 500,
+    sizeInMB: 45, // ~7 seconds at 50 Mbps
     available: true,
   },
   {
@@ -171,6 +173,7 @@ export const SOFTWARE_CATALOG = [
     name: 'Network Scanner',
     description: 'Scan networks for machines and file systems',
     price: 300,
+    sizeInMB: 30, // ~5 seconds at 50 Mbps
     available: true,
   },
   {
@@ -178,6 +181,7 @@ export const SOFTWARE_CATALOG = [
     name: 'Network Address Register',
     description: 'Manage network connections and credentials',
     price: 200,
+    sizeInMB: 15, // ~2.5 seconds at 50 Mbps
     available: true,
   },
   {
@@ -185,6 +189,7 @@ export const SOFTWARE_CATALOG = [
     name: 'File Manager',
     description: 'Access and manipulate files on remote systems',
     price: 350,
+    sizeInMB: 35, // ~5.5 seconds at 50 Mbps
     available: true,
   },
 ];
