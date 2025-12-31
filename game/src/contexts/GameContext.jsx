@@ -352,10 +352,12 @@ export const GameProvider = ({ children }) => {
 
   // Handle story event messages (listen for storyEventTriggered)
   useEffect(() => {
-    const unsubscribe = triggerEventBus.on('storyEventTriggered', (data) => {
+    if (!username) return; // Wait until username is set
+
+    const handleStoryEvent = (data) => {
       const { message } = data;
       if (message) {
-        // Replace placeholders
+        // Replace placeholders with current values
         const replacePlaceholders = (text) => {
           if (!text) return text;
           return text
@@ -368,7 +370,7 @@ export const GameProvider = ({ children }) => {
         };
 
         addMessage({
-          id: data.eventId, // Use event ID as message ID for consistency
+          id: data.eventId,
           from: message.from,
           fromId: message.fromId.replace(/{random}/g, generateRandomId()),
           fromName: replacePlaceholders(message.fromName),
@@ -377,10 +379,11 @@ export const GameProvider = ({ children }) => {
           attachments: message.attachments || [],
         });
       }
-    });
+    };
 
+    const unsubscribe = triggerEventBus.on('storyEventTriggered', handleStoryEvent);
     return () => unsubscribe();
-  }, []); // Empty deps - username, managerName are accessed from closure
+  }, [username, managerName]); // Include dependencies so placeholders update
 
   // Get total credits
   const getTotalCredits = useCallback(() => {
