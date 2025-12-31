@@ -38,7 +38,11 @@ const SNetMail = () => {
   };
 
   const handleChequeClick = (message) => {
-    if (message.attachment && !message.attachment.deposited) {
+    // Find first non-deposited cheque in attachments
+    const cheque = message.attachments?.find(
+      (att) => att.type === 'cheque' && !att.deposited
+    );
+    if (cheque) {
       initiateChequeDeposit(message.id);
     }
   };
@@ -89,8 +93,10 @@ const SNetMail = () => {
                   <div className="message-date">
                     {msg.timestamp && formatDateTime(msg.timestamp)}
                   </div>
-                  {msg.attachment && (
-                    <div className="message-has-attachment">📎</div>
+                  {msg.attachments && msg.attachments.length > 0 && (
+                    <div className="message-has-attachment">
+                      📎{msg.attachments.length > 1 ? ` (${msg.attachments.length})` : ''}
+                    </div>
                   )}
                 </div>
               ))
@@ -136,27 +142,61 @@ const SNetMail = () => {
             <div className="message-body">
               <pre>{selectedMessage.body}</pre>
             </div>
-            {selectedMessage.attachment && (
+            {selectedMessage.attachments && selectedMessage.attachments.length > 0 && (
               <div className="message-attachment">
-                <div className="attachment-header">Attachment:</div>
-                <div
-                  className={`attachment-item ${
-                    selectedMessage.attachment.deposited ? 'deposited' : ''
-                  }`}
-                  onClick={() => handleChequeClick(selectedMessage)}
-                >
-                  <div className="attachment-icon">💰</div>
-                  <div className="attachment-details">
-                    <div className="attachment-name">
-                      Digital Cheque - {selectedMessage.attachment.amount} credits
-                    </div>
-                    <div className="attachment-status">
-                      {selectedMessage.attachment.deposited
-                        ? '✓ Deposited'
-                        : 'Click to deposit'}
-                    </div>
-                  </div>
+                <div className="attachment-header">
+                  {selectedMessage.attachments.length > 1 ? 'Attachments:' : 'Attachment:'}
                 </div>
+                {selectedMessage.attachments.map((attachment, index) => {
+                  if (attachment.type === 'cheque') {
+                    return (
+                      <div
+                        key={index}
+                        className={`attachment-item ${attachment.deposited ? 'deposited' : ''}`}
+                        onClick={() => handleChequeClick(selectedMessage)}
+                      >
+                        <div className="attachment-icon">💰</div>
+                        <div className="attachment-details">
+                          <div className="attachment-name">
+                            Digital Cheque - {attachment.amount} credits
+                          </div>
+                          <div className="attachment-status">
+                            {attachment.deposited ? '✓ Deposited' : 'Click to deposit'}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  } else if (attachment.type === 'softwareLicense') {
+                    return (
+                      <div key={index} className="attachment-item">
+                        <div className="attachment-icon">📦</div>
+                        <div className="attachment-details">
+                          <div className="attachment-name">
+                            Software License: {attachment.softwareName}
+                          </div>
+                          <div className="attachment-status">
+                            ${attachment.price} value - Click to add to Portal
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  } else if (attachment.type === 'networkAddress') {
+                    return (
+                      <div key={index} className="attachment-item">
+                        <div className="attachment-icon">🔒</div>
+                        <div className="attachment-details">
+                          <div className="attachment-name">
+                            Network Credentials: {attachment.networkName}
+                          </div>
+                          <div className="attachment-status">
+                            Click to add to Network Address Register
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })}
               </div>
             )}
           </div>
