@@ -371,12 +371,12 @@ export const GameProvider = ({ children }) => {
 
         addMessage({
           id: data.eventId,
-          from: message.from,
+          from: replacePlaceholders(message.from),
           fromId: message.fromId.replace(/{random}/g, generateRandomId()),
           fromName: replacePlaceholders(message.fromName),
           subject: replacePlaceholders(message.subject),
           body: replacePlaceholders(message.body),
-          attachments: message.attachments || [],
+          attachment: message.attachments && message.attachments[0] ? message.attachments[0] : undefined,
         });
       }
     };

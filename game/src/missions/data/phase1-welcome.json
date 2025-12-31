@@ -29,7 +29,7 @@
         "delay": 2000
       },
       "message": {
-        "from": "manager",
+        "from": "SourceNet Manager {managerName}",
         "fromId": "SNET-MGR-{random}",
         "fromName": "{managerName}",
         "subject": "Hi from your manager - {managerName}",
@@ -37,7 +37,8 @@
         "attachments": [
           {
             "type": "cheque",
-            "amount": 1000
+            "amount": 1000,
+            "deposited": false
           }
         ]
       }
