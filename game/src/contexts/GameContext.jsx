@@ -376,7 +376,7 @@ export const GameProvider = ({ children }) => {
           fromName: replacePlaceholders(message.fromName),
           subject: replacePlaceholders(message.subject),
           body: replacePlaceholders(message.body),
-          attachment: message.attachments && message.attachments[0] ? message.attachments[0] : undefined,
+          attachments: message.attachments || [],
         });
       }
     };
