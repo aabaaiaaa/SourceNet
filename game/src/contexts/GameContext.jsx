@@ -700,7 +700,7 @@ export const GameProvider = ({ children }) => {
     const skipBoot = urlParams.get('skipBoot') === 'true';
 
     if (skipBoot) {
-      setGamePhase('login'); // Skip to login screen (if saves exist) or desktop
+      setGamePhase('desktop'); // Skip boot, go straight to desktop
     } else {
       setGamePhase('boot'); // Normal boot sequence
     }

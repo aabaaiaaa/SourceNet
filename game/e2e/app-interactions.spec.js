@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { STARTING_SOFTWARE } from '../src/constants/gameConstants.js';
 
 test.describe('E2E Test 5: App Interactions Flow', () => {
   test('should handle complete app interaction flow', async ({ page }) => {
@@ -17,9 +18,10 @@ test.describe('E2E Test 5: App Interactions Flow', () => {
     await expect(page.locator('text=SNet Banking App')).toBeVisible();
     await expect(page.locator('text=SNet Mail')).toBeVisible();
 
-    // Verify alphabetical order (now 8 apps instead of 3)
+    // Verify alphabetical order - count matches pre-installed apps (excluding OS which isn't shown in launcher)
     const menuItems = await page.locator('.app-launcher-menu button').allTextContents();
-    expect(menuItems.length).toBe(8); // 3 Phase 1 + 5 Phase 2 apps
+    const expectedAppCount = STARTING_SOFTWARE.filter(sw => sw.type !== 'os').length;
+    expect(menuItems.length).toBe(expectedAppCount);
     // Verify apps are alphabetically sorted
     const sortedItems = [...menuItems].sort();
     expect(menuItems).toEqual(sortedItems);
