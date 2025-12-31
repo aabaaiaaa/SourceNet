@@ -12,6 +12,16 @@ const GameRoot = () => {
   const { gamePhase, setGamePhase } = useGame();
 
   useEffect(() => {
+    // Check for skipBoot parameter (for E2E tests)
+    const urlParams = new URLSearchParams(window.location.search);
+    const skipBoot = urlParams.get('skipBoot') === 'true';
+
+    if (skipBoot && gamePhase === 'boot') {
+      // Skip straight to username selection for E2E tests
+      setGamePhase('username');
+      return;
+    }
+
     // Only check for saves on initial mount (gamePhase starts as 'boot')
     // Don't re-check if user explicitly chose "New Game"
     const savesExist = hasSaves();

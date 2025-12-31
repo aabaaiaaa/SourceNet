@@ -6,6 +6,16 @@ const Rebooting = () => {
   const { setGamePhase } = useGame();
 
   useEffect(() => {
+    // Check for skipBoot parameter (E2E tests)
+    const urlParams = new URLSearchParams(window.location.search);
+    const skipBoot = urlParams.get('skipBoot') === 'true';
+
+    if (skipBoot) {
+      // Skip straight to desktop on reboot (E2E tests)
+      setGamePhase('desktop');
+      return;
+    }
+
     // Show "Rebooting..." for 2 seconds
     const timer = setTimeout(() => {
       // Fade to black for 1 second, then start boot
