@@ -291,17 +291,17 @@ const TopBar = () => {
               <span className="bandwidth-icon">{hasActivity ? '⬇' : '○'}</span>
               {hasActivity && (
                 <span className="bandwidth-speed">
-                  {bandwidthInfo.currentSpeedMBps.toFixed(1)}
+                  {bandwidthInfo.transferSpeedMBps.toFixed(1)}
                 </span>
               )}
               {showBandwidthPreview && (
                 <div className="notification-preview bandwidth-preview">
                   <div className="preview-header">Bandwidth</div>
                   <div className="preview-item">
-                    Max: {bandwidthInfo.maxSpeedMBps.toFixed(1)} MB/s
+                    Max: {(bandwidthInfo.maxBandwidth / 8).toFixed(1)} MB/s
                   </div>
                   <div className="preview-item">
-                    Current: {bandwidthInfo.currentSpeedMBps.toFixed(1)} MB/s
+                    Current: {bandwidthInfo.transferSpeedMBps.toFixed(1)} MB/s
                   </div>
                   <div className="preview-item">
                     Active Operations: {bandwidthInfo.activeOperations}

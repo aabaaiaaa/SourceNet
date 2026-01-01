@@ -51,7 +51,7 @@ const InstallationQueue = () => {
   const adapterSpeed = getAdapterSpeed(hardware);
   const connectionSpeed = getNetworkBandwidth();
   const effectiveSpeed = calculateAvailableBandwidth(adapterSpeed, connectionSpeed, 1);
-  const downloadSpeedMBps = calculateTransferSpeed(effectiveSpeed * bandwidthShare);
+  const downloadSpeedMBps = calculateTransferSpeed(effectiveSpeed * bandwidthShare) || 0;
 
   return (
     <div className="installation-queue-widget">
