@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import triggerEventBus from '../../core/triggerEventBus';
 import './FileManager.css';
@@ -7,9 +7,14 @@ const FileManager = () => {
   const game = useGame();
   const setFileManagerConnections = game.setFileManagerConnections || (() => {});
   const setLastFileOperation = game.setLastFileOperation || (() => {});
+  const registerBandwidthOperation = game.registerBandwidthOperation || (() => ({ operationId: null, estimatedTimeMs: 2000 }));
+  const completeBandwidthOperation = game.completeBandwidthOperation || (() => {});
   const [selectedFileSystem, setSelectedFileSystem] = useState('');
   const [files, setFiles] = useState([]);
   const [clipboard, setClipboard] = useState(null);
+  const [repairing, setRepairing] = useState(false);
+  const [repairProgress, setRepairProgress] = useState(0);
+  const repairIntervalRef = useRef(null);
 
   // Mock file systems (real implementation would come from scan results)
   const availableFileSystems = [
@@ -59,9 +64,35 @@ const FileManager = () => {
 
   const handleRepair = () => {
     const corrupted = files.filter((f) => f.corrupted);
-    if (corrupted.length > 0) {
-      // Simulate repair
-      setTimeout(() => {
+    if (corrupted.length === 0 || repairing) return;
+
+    // Register bandwidth operation (1 MB per file to repair)
+    const sizeInMB = corrupted.length * 1;
+    const { operationId, estimatedTimeMs } = registerBandwidthOperation(
+      'file_repair',
+      sizeInMB,
+      { fileSystem: selectedFileSystem, fileCount: corrupted.length }
+    );
+
+    setRepairing(true);
+    setRepairProgress(0);
+
+    // Update progress based on estimated time
+    const updateInterval = 100; // Update every 100ms
+    const progressIncrement = (100 / estimatedTimeMs) * updateInterval;
+    let currentProgress = 0;
+
+    repairIntervalRef.current = setInterval(() => {
+      currentProgress += progressIncrement;
+      setRepairProgress(Math.min(100, currentProgress));
+
+      if (currentProgress >= 100) {
+        clearInterval(repairIntervalRef.current);
+        repairIntervalRef.current = null;
+
+        // Complete the bandwidth operation
+        completeBandwidthOperation(operationId);
+
         // Update files to mark as repaired
         setFiles(files.map(f => ({ ...f, corrupted: false })));
 
@@ -77,10 +108,11 @@ const FileManager = () => {
         // Emit file operation complete event
         triggerEventBus.emit('fileOperationComplete', operation);
 
+        setRepairing(false);
+        setRepairProgress(0);
         console.log(`🔧 Repaired ${corrupted.length} files`);
-        alert(`✅ Repaired ${corrupted.length} corrupted file(s)`);
-      }, 2000); // 2 second repair time
-    }
+      }
+    }, updateInterval);
   };
 
   // Check if connected to any network (game already declared at top)
@@ -120,11 +152,27 @@ const FileManager = () => {
           {selectedFileSystem && (
         <>
           <div className="fm-toolbar">
-            <button onClick={handleCopy}>Copy</button>
-            <button disabled={!clipboard}>Paste</button>
-            <button>Delete</button>
-            <button onClick={handleRepair}>Repair</button>
+            <button onClick={handleCopy} disabled={repairing}>Copy</button>
+            <button disabled={!clipboard || repairing}>Paste</button>
+            <button disabled={repairing}>Delete</button>
+            <button
+              onClick={handleRepair}
+              disabled={repairing || !files.some(f => f.corrupted)}
+              className={repairing ? 'repairing' : ''}
+            >
+              {repairing ? `Repairing... ${Math.floor(repairProgress)}%` : 'Repair'}
+            </button>
           </div>
+          {repairing && (
+            <div className="repair-progress">
+              <div className="repair-progress-bar">
+                <div
+                  className="repair-progress-fill"
+                  style={{ width: `${repairProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
 
           <div className="file-list">
             {files.map((file, idx) => (

@@ -27,6 +27,7 @@ const TopBar = () => {
     bankruptcyCountdown,
     reputationCountdown,
     software,
+    getBandwidthInfo,
   } = useGame();
 
   const [showPowerMenu, setShowPowerMenu] = useState(false);
@@ -37,6 +38,7 @@ const TopBar = () => {
   const [showReputationPreview, setShowReputationPreview] = useState(false);
   const [showNetworkPreview, setShowNetworkPreview] = useState(false);
   const [showMissionPreview, setShowMissionPreview] = useState(false);
+  const [showBandwidthPreview, setShowBandwidthPreview] = useState(false);
 
   // Timeout refs for delayed menu closing
   const powerMenuTimeout = useRef(null);
@@ -274,6 +276,49 @@ const TopBar = () => {
             )}
           </div>
         )}
+
+        {/* Bandwidth Indicator */}
+        {getBandwidthInfo && (() => {
+          const bandwidthInfo = getBandwidthInfo();
+          const hasActivity = bandwidthInfo.activeOperations > 0;
+          return (
+            <div
+              className={`topbar-bandwidth ${hasActivity ? 'active' : ''}`}
+              onMouseEnter={() => setShowBandwidthPreview(true)}
+              onMouseLeave={() => setShowBandwidthPreview(false)}
+              title="Bandwidth Status"
+            >
+              <span className="bandwidth-icon">{hasActivity ? '⬇' : '○'}</span>
+              {hasActivity && (
+                <span className="bandwidth-speed">
+                  {bandwidthInfo.currentSpeedMBps.toFixed(1)}
+                </span>
+              )}
+              {showBandwidthPreview && (
+                <div className="notification-preview bandwidth-preview">
+                  <div className="preview-header">Bandwidth</div>
+                  <div className="preview-item">
+                    Max: {bandwidthInfo.maxSpeedMBps.toFixed(1)} MB/s
+                  </div>
+                  <div className="preview-item">
+                    Current: {bandwidthInfo.currentSpeedMBps.toFixed(1)} MB/s
+                  </div>
+                  <div className="preview-item">
+                    Active Operations: {bandwidthInfo.activeOperations}
+                  </div>
+                  {bandwidthInfo.usagePercent > 0 && (
+                    <div className="bandwidth-usage-bar">
+                      <div
+                        className="bandwidth-usage-fill"
+                        style={{ width: `${bandwidthInfo.usagePercent}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Active Mission Indicator */}
         {activeMission && (

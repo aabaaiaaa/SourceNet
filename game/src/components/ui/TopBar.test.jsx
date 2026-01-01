@@ -176,4 +176,37 @@ describe('TopBar Component', () => {
 
     // Sleep functionality tested in E2E tests
   });
+
+  describe('bandwidth indicator', () => {
+    it('should display bandwidth indicator', () => {
+      renderWithProvider(<TopBar />);
+
+      // Bandwidth indicator should be present (idle state shows circle)
+      const bandwidthIndicator = document.querySelector('.topbar-bandwidth');
+      expect(bandwidthIndicator).toBeInTheDocument();
+    });
+
+    it('should show idle icon when no active operations', () => {
+      renderWithProvider(<TopBar />);
+
+      const bandwidthIndicator = document.querySelector('.topbar-bandwidth');
+      expect(bandwidthIndicator).toBeInTheDocument();
+      expect(bandwidthIndicator.textContent).toContain('○');
+    });
+
+    it('should have bandwidth class on indicator', () => {
+      renderWithProvider(<TopBar />);
+
+      const bandwidthIndicator = document.querySelector('.topbar-bandwidth');
+      expect(bandwidthIndicator).toBeInTheDocument();
+      expect(bandwidthIndicator).toHaveClass('topbar-bandwidth');
+    });
+
+    it('should have bandwidth icon element', () => {
+      renderWithProvider(<TopBar />);
+
+      const bandwidthIcon = document.querySelector('.bandwidth-icon');
+      expect(bandwidthIcon).toBeInTheDocument();
+    });
+  });
 });

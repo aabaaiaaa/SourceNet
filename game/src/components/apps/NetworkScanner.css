@@ -64,3 +64,25 @@
 .machine-ip { font-weight: bold; }
 .machine-hostname { font-size: 12px; color: #666; }
 .machine-filesystems { font-size: 12px; margin-top: 5px; }
+
+/* Scan progress bar */
+.scan-progress {
+  margin-bottom: 20px;
+}
+
+.scan-progress-bar {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.scan-progress-fill {
+  height: 100%;
+  background: #4CAF50;
+  transition: width 0.1s ease;
+}
+
+.scan-btn.scanning {
+  background: #FF9800;
+}

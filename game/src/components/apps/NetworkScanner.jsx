@@ -1,45 +1,80 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import triggerEventBus from '../../core/triggerEventBus';
 import './NetworkScanner.css';
+
+// Data sizes for scan types (in MB)
+const SCAN_SIZES = {
+  quick: 5,  // 5 MB for quick scan
+  deep: 15,  // 15 MB for deep scan
+};
 
 const NetworkScanner = () => {
   const game = useGame();
   const activeConnections = game.activeConnections || [];
   const setLastScanResults = game.setLastScanResults || (() => {});
+  const registerBandwidthOperation = game.registerBandwidthOperation || (() => ({ operationId: null, estimatedTimeMs: 5000 }));
+  const completeBandwidthOperation = game.completeBandwidthOperation || (() => {});
   const [selectedNetwork, setSelectedNetwork] = useState('');
   const [scanType, setScanType] = useState('deep'); // 'quick' or 'deep'
   const [scanning, setScanning] = useState(false);
+  const [scanProgress, setScanProgress] = useState(0);
   const [scanResults, setScanResults] = useState(null);
+  const scanIntervalRef = useRef(null);
 
   const handleScan = () => {
-    if (!selectedNetwork) return;
+    if (!selectedNetwork || scanning) return;
+
+    // Register bandwidth operation based on scan type
+    const sizeInMB = SCAN_SIZES[scanType];
+    const { operationId, estimatedTimeMs } = registerBandwidthOperation(
+      'network_scan',
+      sizeInMB,
+      { network: selectedNetwork, scanType }
+    );
 
     setScanning(true);
-    const scanDuration = scanType === 'quick' ? 5000 : 15000;
+    setScanProgress(0);
 
-    setTimeout(() => {
-      // Mock scan results (real implementation would come from mission data)
-      const results = {
-        network: selectedNetwork,
-        machines: [
-          { ip: '192.168.50.10', hostname: 'fileserver-01', id: 'fileserver-01', fileSystems: ['/logs/'] },
-          { ip: '192.168.50.20', hostname: 'backup-server', id: 'backup-server', fileSystems: ['/backups/'] },
-        ],
-      };
+    // Update progress based on estimated time
+    const updateInterval = 100; // Update every 100ms
+    const progressIncrement = (100 / estimatedTimeMs) * updateInterval;
+    let currentProgress = 0;
 
-      setScanResults(results);
-      setLastScanResults(results); // Update global state for objective tracking
+    scanIntervalRef.current = setInterval(() => {
+      currentProgress += progressIncrement;
+      setScanProgress(Math.min(100, currentProgress));
 
-      // Emit scan complete event
-      triggerEventBus.emit('networkScanComplete', {
-        network: selectedNetwork,
-        results: results,
-      });
+      if (currentProgress >= 100) {
+        clearInterval(scanIntervalRef.current);
+        scanIntervalRef.current = null;
 
-      setScanning(false);
-      console.log(`🔍 Scan complete: Found ${results.machines.length} machines`);
-    }, scanDuration);
+        // Complete the bandwidth operation
+        completeBandwidthOperation(operationId);
+
+        // Mock scan results (real implementation would come from mission data)
+        const results = {
+          network: selectedNetwork,
+          machines: [
+            { ip: '192.168.50.10', hostname: 'fileserver-01', id: 'fileserver-01', fileSystems: ['/logs/'] },
+            { ip: '192.168.50.20', hostname: 'backup-server', id: 'backup-server', fileSystems: ['/backups/'] },
+          ],
+        };
+
+        setScanResults(results);
+        setLastScanResults(results); // Update global state for objective tracking
+
+        // Emit scan complete event
+        triggerEventBus.emit('networkScanComplete', {
+          network: selectedNetwork,
+          results: results,
+        });
+
+        setScanning(false);
+        setScanProgress(0);
+        console.log(`🔍 Scan complete: Found ${results.machines.length} machines`);
+      }
+    }, updateInterval);
   };
 
   return (
@@ -79,13 +114,24 @@ const NetworkScanner = () => {
         </label>
 
         <button
-          className="scan-btn"
+          className={`scan-btn ${scanning ? 'scanning' : ''}`}
           onClick={handleScan}
           disabled={!selectedNetwork || scanning}
         >
-          {scanning ? 'Scanning...' : 'Start Scan'}
+          {scanning ? `Scanning... ${Math.floor(scanProgress)}%` : 'Start Scan'}
         </button>
       </div>
+
+      {scanning && (
+        <div className="scan-progress">
+          <div className="scan-progress-bar">
+            <div
+              className="scan-progress-fill"
+              style={{ width: `${scanProgress}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       {scanResults && (
         <div className="scan-results">

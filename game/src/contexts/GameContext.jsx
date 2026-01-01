@@ -17,6 +17,13 @@ import {
 import useStoryMissions from '../missions/useStoryMissions';
 import { useObjectiveAutoTracking } from '../missions/useObjectiveAutoTracking';
 import { useDownloadManager } from '../systems/useDownloadManager';
+import {
+  getNetworkBandwidth,
+  getAdapterSpeed,
+  calculateAvailableBandwidth,
+  calculateTransferSpeed,
+  calculateOperationTime,
+} from '../systems/NetworkBandwidthSystem';
 import { updateBankruptcyCountdown, shouldTriggerBankruptcy, startBankruptcyCountdown } from '../systems/BankingSystem';
 import { updateReputationCountdown, startReputationCountdown } from '../systems/ReputationSystem';
 import triggerEventBus from '../core/triggerEventBus';
@@ -84,6 +91,9 @@ export const GameProvider = ({ children }) => {
   const [downloadQueue, setDownloadQueue] = useState([]); // Items being downloaded/installed
   const [transactions, setTransactions] = useState([]); // Banking transaction history
 
+  // Bandwidth Operations (non-download operations that use bandwidth)
+  const [bandwidthOperations, setBandwidthOperations] = useState([]); // {id, type, status, progress}
+
   // Banking System extensions
   const [bankruptcyCountdown, setBankruptcyCountdown] = useState(null); // {startTime, endTime, remaining} or null
   const [lastInterestTime, setLastInterestTime] = useState(null); // Last time interest was applied
@@ -113,6 +123,85 @@ export const GameProvider = ({ children }) => {
     handleDownloadComplete,
     gamePhase === 'desktop' // Only run when on desktop
   );
+
+  // ===== BANDWIDTH SYSTEM =====
+
+  // Count active bandwidth operations (downloads + other operations)
+  const getActiveBandwidthOperationCount = useCallback(() => {
+    const activeDownloads = (downloadQueue || []).filter(
+      (item) => item.status === 'downloading'
+    ).length;
+    const activeOps = (bandwidthOperations || []).filter(
+      (op) => op.status === 'active'
+    ).length;
+    return activeDownloads + activeOps;
+  }, [downloadQueue, bandwidthOperations]);
+
+  // Calculate current bandwidth info
+  const getBandwidthInfo = useCallback(() => {
+    const adapterSpeed = getAdapterSpeed(hardware);
+    const connectionSpeed = getNetworkBandwidth();
+    const maxBandwidth = Math.min(adapterSpeed, connectionSpeed);
+    const activeCount = getActiveBandwidthOperationCount();
+    const bandwidthPerOperation = activeCount > 0 ? maxBandwidth / activeCount : maxBandwidth;
+    const transferSpeedMBps = calculateTransferSpeed(bandwidthPerOperation);
+
+    return {
+      maxBandwidth,
+      activeOperations: activeCount,
+      bandwidthPerOperation,
+      transferSpeedMBps,
+      usagePercent: Math.min(100, (activeCount / 4) * 100), // Cap visual at 4 ops
+    };
+  }, [hardware, getActiveBandwidthOperationCount]);
+
+  // Register a bandwidth operation (returns operation info including estimated time)
+  const registerBandwidthOperation = useCallback((type, sizeInMB, metadata = {}) => {
+    const id = `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    const operation = {
+      id,
+      type,
+      sizeInMB,
+      status: 'active',
+      progress: 0,
+      startTime: Date.now(),
+      metadata,
+    };
+
+    setBandwidthOperations((prev) => [...prev, operation]);
+
+    // Calculate estimated time with the new operation included
+    const adapterSpeed = getAdapterSpeed(hardware);
+    const connectionSpeed = getNetworkBandwidth();
+    const maxBandwidth = Math.min(adapterSpeed, connectionSpeed);
+    const newActiveCount = getActiveBandwidthOperationCount() + 1;
+    const bandwidthShare = maxBandwidth / newActiveCount;
+    const transferSpeed = calculateTransferSpeed(bandwidthShare);
+    const estimatedTimeMs = calculateOperationTime(sizeInMB, transferSpeed) * 1000;
+
+    return {
+      operationId: id,
+      estimatedTimeMs,
+      transferSpeedMBps: transferSpeed,
+    };
+  }, [hardware, getActiveBandwidthOperationCount]);
+
+  // Complete a bandwidth operation
+  const completeBandwidthOperation = useCallback((operationId) => {
+    setBandwidthOperations((prev) =>
+      prev.filter((op) => op.id !== operationId)
+    );
+  }, []);
+
+  // Update bandwidth operation progress
+  const updateBandwidthOperationProgress = useCallback((operationId, progress) => {
+    setBandwidthOperations((prev) =>
+      prev.map((op) =>
+        op.id === operationId ? { ...op, progress } : op
+      )
+    );
+  }, []);
 
   // Initialize player
   const initializePlayer = useCallback((name) => {
@@ -800,6 +889,11 @@ export const GameProvider = ({ children }) => {
     setLastInterestTime,
     autoTrackingEnabled,
     setAutoTrackingEnabled,
+    bandwidthOperations,
+    getBandwidthInfo,
+    registerBandwidthOperation,
+    completeBandwidthOperation,
+    updateBandwidthOperationProgress,
 
     // Actions
     initializePlayer,

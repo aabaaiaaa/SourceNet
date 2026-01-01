@@ -71,3 +71,28 @@
   font-size: 11px;
   color: #666;
 }
+
+/* Repair progress bar */
+.repair-progress {
+  margin-bottom: 15px;
+  padding: 0 10px;
+}
+
+.repair-progress-bar {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.repair-progress-fill {
+  height: 100%;
+  background: #FF9800;
+  transition: width 0.1s ease;
+}
+
+.fm-toolbar button.repairing {
+  background: #FFF3E0;
+  border-color: #FF9800;
+  color: #E65100;
+}
