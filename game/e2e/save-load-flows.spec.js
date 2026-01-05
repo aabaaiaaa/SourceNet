@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { completeBoot, openApp, clearAndReload } from './helpers/common-actions.js';
+import { completeBoot, openApp, clearAndReload, waitForGameTime } from './helpers/common-actions.js';
 import { STARTING_SOFTWARE } from '../src/constants/gameConstants.js';
 
 /**
@@ -178,8 +178,8 @@ test.describe('Save/Load with Windows Open', () => {
         // Complete boot sequence
         await completeBoot(page, 'mail_save_test');
 
-        // Wait for first message to arrive
-        await page.waitForTimeout(4000);
+        // Wait for first message to arrive (2 seconds game time)
+        await waitForGameTime(page, 2000);
 
         // Open SNet Mail
         await openApp(page, 'SNet Mail');
@@ -201,8 +201,8 @@ test.describe('Save/Load with Windows Open', () => {
         // Go back to inbox
         await page.click('button:has-text("Back")');
 
-        // Wait for second message
-        await page.waitForTimeout(4000);
+        // Wait for second message (2 seconds game time)
+        await waitForGameTime(page, 2000);
         await expect(page.locator('.message-item:has-text("Hi from your manager")')).toBeVisible();
 
         // Save game WITH Mail window open

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { waitForGameTime } from './helpers/common-actions.js';
 
 test.describe('E2E: Complete Gameplay Session', () => {
   test.beforeEach(async ({ page }) => {
@@ -9,7 +10,7 @@ test.describe('E2E: Complete Gameplay Session', () => {
 
   test('should complete full gameplay session from start to finish', async ({ page }) => {
     // ========================================
-    // PHASE 1: New Game Boot Sequence (skipped boot)
+    // STEP 1: New Game Boot Sequence (skipped boot)
     // ========================================
     await page.goto('/?skipBoot=true');
 
@@ -36,11 +37,11 @@ test.describe('E2E: Complete Gameplay Session', () => {
     await expect(page.locator('text=0 credits')).toBeVisible();
 
     // ========================================
-    // PHASE 3: Message Delivery & Reading
+    // STEP 3: Message Delivery & Reading
     // ========================================
 
-    // Wait for first message (2 seconds)
-    await page.waitForTimeout(4000);
+    // Wait for first message (2 seconds game time)
+    await waitForGameTime(page, 2000);
 
     // Verify mail notification shows unread
     const mailNotification = page.locator('text=✉');
@@ -61,14 +62,14 @@ test.describe('E2E: Complete Gameplay Session', () => {
     // Go back to inbox
     await page.click('button:has-text("Back")');
 
-    // Wait for second message (2 seconds after reading first)
-    await page.waitForTimeout(5000);
+    // Wait for second message (2 seconds after reading first, in game time)
+    await waitForGameTime(page, 2000);
 
     // Verify second message arrived
     await expect(page.locator('.message-item:has-text("Hi from your manager")')).toBeVisible({ timeout: 10000 });
 
     // ========================================
-    // PHASE 4: Cheque Deposit Flow
+    // STEP 4: Cheque Deposit Flow
     // ========================================
 
     // Open second message
@@ -92,7 +93,7 @@ test.describe('E2E: Complete Gameplay Session', () => {
     await expect(page.locator('.topbar-credits:has-text("1000")')).toBeVisible({ timeout: 5000 });
 
     // ========================================
-    // PHASE 5: Window Management Testing
+    // STEP 5: Window Management Testing
     // ========================================
 
     // Open Portal app
@@ -126,7 +127,7 @@ test.describe('E2E: Complete Gameplay Session', () => {
     await expect(mailWindow).toBeVisible();
 
     // ========================================
-    // PHASE 6: Application Features Testing
+    // STEP 6: Application Features Testing
     // ========================================
 
     // Test Mail: Archive a message
@@ -169,7 +170,7 @@ test.describe('E2E: Complete Gameplay Session', () => {
     await expect(page.locator('button:has-text("Purchase")').first()).toBeVisible();
 
     // ========================================
-    // PHASE 7: Time System Testing
+    // STEP 7: Time System Testing
     // ========================================
 
     // Verify time is advancing
@@ -205,7 +206,7 @@ test.describe('E2E: Complete Gameplay Session', () => {
     await page.click('.pause-overlay');
 
     // ========================================
-    // PHASE 8: Banking App Verification
+    // STEP 8: Banking App Verification
     // ========================================
 
     // Restore Banking window
@@ -223,7 +224,7 @@ test.describe('E2E: Complete Gameplay Session', () => {
     // Banking should come to front or already be open
 
     // ========================================
-    // PHASE 9: Notification Hover Previews
+    // STEP 9: Notification Hover Previews
     // ========================================
 
     // Test mail notification hover
@@ -236,7 +237,7 @@ test.describe('E2E: Complete Gameplay Session', () => {
     await expect(page.locator('text=First Bank Ltd: 1000 credits')).toBeVisible();
 
     // ========================================
-    // PHASE 10: Save Game
+    // STEP 10: Save Game
     // ========================================
 
     // Open power menu and save
@@ -246,7 +247,7 @@ test.describe('E2E: Complete Gameplay Session', () => {
     await page.waitForTimeout(1000);
 
     // ========================================
-    // PHASE 11: Exit and Reload
+    // STEP 11: Exit and Reload
     // ========================================
 
     // Reload page to simulate exiting and returning
@@ -265,7 +266,7 @@ test.describe('E2E: Complete Gameplay Session', () => {
     await expect(page.locator('text=complete_test')).toBeVisible();
 
     // ========================================
-    // PHASE 12: Load Saved Game
+    // STEP 12: Load Saved Game
     // ========================================
 
     // Load the save
@@ -285,10 +286,10 @@ test.describe('E2E: Complete Gameplay Session', () => {
     await expect(page.locator('button:has-text("1x")')).toBeVisible();
 
     // Note: Window state doesn't persist in current implementation
-    // This is acceptable for Phase 1 - verify state persisted correctly
+    // This is acceptable for current implementation - verify state persisted correctly
 
     // ========================================
-    // PHASE 13: Final Verification
+    // STEP 13: Final Verification
     // ========================================
 
     // Verify all core features still work after load
@@ -314,7 +315,7 @@ test.describe('E2E: Complete Gameplay Session', () => {
     await expect(page.locator('text=Pause')).toBeVisible();
 
     // ========================================
-    // PHASE 14: Complete Session Validation
+    // STEP 14: Complete Session Validation
     // ========================================
 
     // Verify all key game elements present and functional:
@@ -341,7 +342,7 @@ test.describe('E2E: Complete Gameplay Session', () => {
     // ✓ All features continue to work after load
 
     console.log('✅ E2E: Complete Gameplay Session - PASS');
-    console.log('   All 14 phases validated successfully!');
+    console.log('   All 14 steps validated successfully!');
   });
 
   test('should handle multiple complete gameplay sessions independently', async ({ page }) => {

@@ -12,11 +12,21 @@
  */
 
 import triggerEventBus from '../core/triggerEventBus';
+import { scheduleGameTimeCallback, clearGameTimeCallback } from '../core/gameTimeScheduler';
 
 class StoryMissionManager {
   constructor() {
     this.missions = new Map(); // missionId -> mission definition
     this.unsubscribers = new Map(); // missionId -> array of unsubscribe functions
+    this.timeSpeed = 1; // Current time speed multiplier (1x or 10x)
+  }
+
+  /**
+   * Update the current time speed
+   * @param {number} speed - Time speed multiplier (1 or 10)
+   */
+  setTimeSpeed(speed) {
+    this.timeSpeed = speed;
   }
 
   /**
@@ -64,7 +74,8 @@ class StoryMissionManager {
           if (!conditionMet) return;
         }
 
-        setTimeout(() => {
+        // Use game-time-aware scheduling
+        scheduleGameTimeCallback(() => {
           // For story events, we need to send the message
           // This would be handled by the game context
           triggerEventBus.emit('storyEventTriggered', {
@@ -72,7 +83,7 @@ class StoryMissionManager {
             eventId: event.id,
             message: event.message,
           });
-        }, delay || 0);
+        }, delay || 0, this.timeSpeed);
       });
 
       this.addUnsubscriber(storyEventDef.missionId, unsubscribe);
@@ -96,9 +107,10 @@ class StoryMissionManager {
           if (!conditionMet) return;
         }
 
-        setTimeout(() => {
+        // Use game-time-aware scheduling
+        scheduleGameTimeCallback(() => {
           this.activateMission(missionDef.missionId);
-        }, delay || 0);
+        }, delay || 0, this.timeSpeed);
       });
 
       this.addUnsubscriber(missionDef.missionId, unsubscribe);
@@ -116,9 +128,10 @@ class StoryMissionManager {
       if (type === 'afterObjectiveComplete') {
         const unsubscribe = triggerEventBus.on('objectiveComplete', (data) => {
           if (data.objectiveId === objectiveId && data.missionId === missionDef.missionId) {
-            setTimeout(() => {
+            // Use game-time-aware scheduling
+            scheduleGameTimeCallback(() => {
               this.executeScriptedEvent(missionDef.missionId, scriptedEvent);
-            }, delay || 0);
+            }, delay || 0, this.timeSpeed);
           }
         });
 

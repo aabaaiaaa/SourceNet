@@ -1,15 +1,20 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import storyMissionManager from '../../missions/StoryMissionManager';
 import triggerEventBus from '../../core/triggerEventBus';
 
 describe('Story Mission Trigger System Integration', () => {
   beforeEach(() => {
+    vi.useFakeTimers();
     storyMissionManager.clear();
     triggerEventBus.clear();
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   describe('timeSinceEvent Trigger', () => {
-    it('should activate mission when event fires', (done) => {
+    it('should activate mission when event fires', () => {
       const mission = {
         missionId: 'test-mission',
         triggers: {
@@ -23,15 +28,19 @@ describe('Story Mission Trigger System Integration', () => {
 
       storyMissionManager.registerMission(mission);
 
-      triggerEventBus.once('missionAvailable', (data) => {
-        expect(data.missionId).toBe('test-mission');
-        done();
-      });
+      const handler = vi.fn();
+      triggerEventBus.once('missionAvailable', handler);
 
       triggerEventBus.emit('testEvent');
+
+      vi.advanceTimersByTime(10);
+
+      expect(handler).toHaveBeenCalledWith(
+        expect.objectContaining({ missionId: 'test-mission' })
+      );
     });
 
-    it('should support condition filtering', (done) => {
+    it('should support condition filtering', () => {
       const mission = {
         missionId: 'conditional-mission',
         triggers: {
@@ -48,31 +57,25 @@ describe('Story Mission Trigger System Integration', () => {
 
       storyMissionManager.registerMission(mission);
 
-      let missionTriggered = false;
-
-      triggerEventBus.on('missionAvailable', (data) => {
-        if (data.missionId === 'conditional-mission') {
-          missionTriggered = true;
-        }
-      });
+      const handler = vi.fn();
+      triggerEventBus.on('missionAvailable', handler);
 
       // Emit with wrong softwareId - should NOT trigger
       triggerEventBus.emit('softwareInstalled', { softwareId: 'other-software' });
+      vi.advanceTimersByTime(10);
 
-      setTimeout(() => {
-        expect(missionTriggered).toBe(false);
+      expect(handler).not.toHaveBeenCalled();
 
-        // Emit with correct softwareId - should trigger
-        triggerEventBus.emit('softwareInstalled', { softwareId: 'mission-board' });
+      // Emit with correct softwareId - should trigger
+      triggerEventBus.emit('softwareInstalled', { softwareId: 'mission-board' });
+      vi.advanceTimersByTime(10);
 
-        setTimeout(() => {
-          expect(missionTriggered).toBe(true);
-          done();
-        }, 50);
-      }, 50);
+      expect(handler).toHaveBeenCalledWith(
+        expect.objectContaining({ missionId: 'conditional-mission' })
+      );
     });
 
-    it('should support messageId filtering for message read events', (done) => {
+    it('should support messageId filtering for message read events', () => {
       const mission = {
         missionId: 'message-triggered-mission',
         triggers: {
@@ -89,16 +92,19 @@ describe('Story Mission Trigger System Integration', () => {
 
       storyMissionManager.registerMission(mission);
 
-      triggerEventBus.once('missionAvailable', (data) => {
-        expect(data.missionId).toBe('message-triggered-mission');
-        done();
-      });
+      const handler = vi.fn();
+      triggerEventBus.once('missionAvailable', handler);
 
       // Emit messageRead with correct messageId
       triggerEventBus.emit('messageRead', { messageId: 'msg-welcome-manager' });
+      vi.advanceTimersByTime(10);
+
+      expect(handler).toHaveBeenCalledWith(
+        expect.objectContaining({ missionId: 'message-triggered-mission' })
+      );
     });
 
-    it('should respect delay parameter', (done) => {
+    it('should respect delay parameter', () => {
       const mission = {
         missionId: 'delayed-mission',
         triggers: {
@@ -112,29 +118,25 @@ describe('Story Mission Trigger System Integration', () => {
 
       storyMissionManager.registerMission(mission);
 
-      let triggered = false;
-
-      triggerEventBus.on('missionAvailable', () => {
-        triggered = true;
-      });
+      const handler = vi.fn();
+      triggerEventBus.on('missionAvailable', handler);
 
       triggerEventBus.emit('testEvent');
 
-      // Should not be triggered immediately
-      setTimeout(() => {
-        expect(triggered).toBe(false);
+      // Should not be triggered before delay
+      vi.advanceTimersByTime(50);
+      expect(handler).not.toHaveBeenCalled();
 
-        // Should be triggered after delay
-        setTimeout(() => {
-          expect(triggered).toBe(true);
-          done();
-        }, 60);
-      }, 50);
+      // Should be triggered after delay
+      vi.advanceTimersByTime(50);
+      expect(handler).toHaveBeenCalledWith(
+        expect.objectContaining({ missionId: 'delayed-mission' })
+      );
     });
   });
 
   describe('afterObjectiveComplete Trigger', () => {
-    it('should activate scripted events when objective completes', (done) => {
+    it('should activate scripted events when objective completes', () => {
       const mission = {
         missionId: 'mission-with-events',
         triggers: {
@@ -159,16 +161,20 @@ describe('Story Mission Trigger System Integration', () => {
 
       storyMissionManager.registerMission(mission);
 
-      triggerEventBus.once('scriptedEventStart', (data) => {
-        expect(data.eventId).toBe('test-event');
-        done();
-      });
+      const handler = vi.fn();
+      triggerEventBus.once('scriptedEventStart', handler);
 
       // Emit objective complete
       triggerEventBus.emit('objectiveComplete', {
         missionId: 'mission-with-events',
         objectiveId: 'obj-1',
       });
+
+      vi.advanceTimersByTime(10);
+
+      expect(handler).toHaveBeenCalledWith(
+        expect.objectContaining({ eventId: 'test-event' })
+      );
     });
   });
 });

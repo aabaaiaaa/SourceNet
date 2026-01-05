@@ -249,3 +249,57 @@ export async function verifyAppInLauncher(page, appName) {
     await expect(page.locator(`.app-launcher-menu button:has-text("${appName}")`)).toBeVisible();
     await page.keyboard.press('Escape'); // Close launcher
 }
+
+// ============================================================================
+// TIME CONTROL HELPERS
+// ============================================================================
+
+/**
+ * Toggle game time speed between 1x and 10x
+ * @param {Page} page - Playwright page object
+ */
+export async function toggleTimeSpeed(page) {
+    await page.click('button.time-speed');
+}
+
+/**
+ * Set game time speed to 10x (fast mode)
+ * @param {Page} page - Playwright page object
+ */
+export async function setTimeTo10x(page) {
+    const currentSpeed = await page.locator('button.time-speed').textContent();
+    if (currentSpeed.includes('1x')) {
+        await toggleTimeSpeed(page);
+        await expect(page.locator('button.time-speed:has-text("10x")')).toBeVisible();
+    }
+}
+
+/**
+ * Set game time speed to 1x (normal mode)
+ * @param {Page} page - Playwright page object
+ */
+export async function setTimeTo1x(page) {
+    const currentSpeed = await page.locator('button.time-speed').textContent();
+    if (currentSpeed.includes('10x')) {
+        await toggleTimeSpeed(page);
+        await expect(page.locator('button.time-speed:has-text("1x")')).toBeVisible();
+    }
+}
+
+/**
+ * Wait for game-time delay (uses 10x speed to make tests faster)
+ * This is much faster than page.waitForTimeout for in-game time-based events
+ * @param {Page} page - Playwright page object
+ * @param {number} gameTimeMs - Game time to wait in milliseconds
+ */
+export async function waitForGameTime(page, gameTimeMs) {
+    // Speed up to 10x
+    await setTimeTo10x(page);
+
+    // Wait for gameTimeMs / 10 in real time
+    const realTimeMs = gameTimeMs / 10;
+    await page.waitForTimeout(realTimeMs);
+
+    // Set back to 1x
+    await setTimeTo1x(page);
+}

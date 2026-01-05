@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { INITIAL_MESSAGES, MANAGER_NAMES, MESSAGE_TIMING } from '../../constants/gameConstants';
+import { INITIAL_MESSAGES, MANAGER_NAMES, MESSAGE_TIMING } from './gameConstants';
 
-describe('Message Delivery Integration', () => {
+describe('Game Constants', () => {
   it('should have correct initial message configuration', () => {
     expect(INITIAL_MESSAGES).toHaveLength(1);
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { GameProvider } from '../../contexts/GameContext';
-import GameLoginScreen from '../../components/GameLoginScreen';
+import { GameProvider } from '../contexts/GameContext';
+import GameLoginScreen from './GameLoginScreen';
 
 describe('GameLoginScreen', () => {
     beforeEach(() => {

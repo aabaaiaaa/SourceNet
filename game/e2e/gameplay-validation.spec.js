@@ -3,6 +3,7 @@ import {
     completeBoot,
     openApp,
     openMail,
+    waitForGameTime,
 } from './helpers/common-actions.js';
 
 /**
@@ -31,8 +32,8 @@ test.describe('Gameplay Validation - Tutorial & First-Time Experience', () => {
         await page.goto('/?skipBoot=true');
         await completeBoot(page, 'tutorial_test');
 
-        // Wait for first message (HR welcome)
-        await page.waitForTimeout(3000);
+        // Wait for first message (HR welcome) - 2 seconds game time
+        await waitForGameTime(page, 2000);
 
         // Open Mail
         await openMail(page);
@@ -47,8 +48,8 @@ test.describe('Gameplay Validation - Tutorial & First-Time Experience', () => {
         // Go back to message list
         await page.click('button:has-text("Back")');
 
-        // Wait for second message
-        await page.waitForTimeout(3000);
+        // Wait for second message - 2 seconds game time after reading first
+        await waitForGameTime(page, 2000);
 
         // Should have at least 1 message (tutorial messages working)
         const messageCount = await page.locator('.message-item').count();

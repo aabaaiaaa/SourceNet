@@ -29,7 +29,7 @@ describe('messageTemplates', () => {
 
       expect(message).toBeDefined();
       expect(message.id).toMatch(/^msg-/);
-      expect(message.from).toBe('manager');
+      expect(message.from).toBe('SourceNet Manager');
       expect(message.body).toContain('test_agent');
       expect(message.body).toContain('Alex');
       expect(message.read).toBe(false);

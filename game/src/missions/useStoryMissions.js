@@ -127,6 +127,13 @@ export const useStoryMissions = (gameState, actions) => {
       }
     }
   }, [gameState.activeMission]);
+
+  // Update time speed in StoryMissionManager when it changes
+  useEffect(() => {
+    if (gameState.timeSpeed !== undefined) {
+      storyMissionManager.setTimeSpeed(gameState.timeSpeed);
+    }
+  }, [gameState.timeSpeed]);
 };
 
 export default useStoryMissions;

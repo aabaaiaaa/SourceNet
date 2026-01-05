@@ -104,7 +104,7 @@ export const GameProvider = ({ children }) => {
 
   // Initialize story mission system
   useStoryMissions(
-    { gamePhase, username, currentTime, activeConnections, activeMission },
+    { gamePhase, username, currentTime, activeConnections, activeMission, timeSpeed },
     { setAvailableMissions }
   );
 
