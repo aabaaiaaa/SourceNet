@@ -90,6 +90,7 @@ export const GameProvider = ({ children }) => {
   // Purchasing & Installation
   const [downloadQueue, setDownloadQueue] = useState([]); // Items being downloaded/installed
   const [transactions, setTransactions] = useState([]); // Banking transaction history
+  const [licensedSoftware, setLicensedSoftware] = useState([]); // Array of software IDs that have been licensed
 
   // Bandwidth Operations (non-download operations that use bandwidth)
   const [bandwidthOperations, setBandwidthOperations] = useState([]); // {id, type, status, progress}
@@ -352,6 +353,32 @@ export const GameProvider = ({ children }) => {
   // Cancel cheque deposit
   const cancelChequeDeposit = useCallback(() => {
     setPendingChequeDeposit(null);
+  }, []);
+
+  // Activate software license
+  const activateLicense = useCallback((messageId, softwareId) => {
+    // Mark license as activated in message
+    setMessages((prev) =>
+      prev.map((msg) => {
+        if (msg.id === messageId) {
+          return {
+            ...msg,
+            attachments: msg.attachments.map((att) =>
+              att.type === 'softwareLicense' && att.softwareId === softwareId
+                ? { ...att, activated: true }
+                : att
+            ),
+          };
+        }
+        return msg;
+      })
+    );
+
+    // Add to licensed software list if not already there
+    setLicensedSoftware((prev) => {
+      if (prev.includes(softwareId)) return prev;
+      return [...prev, softwareId];
+    });
   }, []);
 
   // Window management
@@ -708,6 +735,7 @@ export const GameProvider = ({ children }) => {
       lastFileOperation,
       downloadQueue,
       transactions,
+      licensedSoftware,
       bankruptcyCountdown,
       lastInterestTime,
     };
@@ -716,7 +744,7 @@ export const GameProvider = ({ children }) => {
   }, [username, playerMailId, currentTime, hardware, software, bankAccounts, messages, managerName, windows,
     reputation, reputationCountdown, activeMission, completedMissions, availableMissions, missionCooldowns,
     narEntries, activeConnections, lastScanResults, fileManagerConnections, lastFileOperation,
-    downloadQueue, transactions, bankruptcyCountdown, lastInterestTime]);
+    downloadQueue, transactions, licensedSoftware, bankruptcyCountdown, lastInterestTime]);
 
   // Reboot system
   const rebootSystem = useCallback(() => {
@@ -759,6 +787,7 @@ export const GameProvider = ({ children }) => {
     setLastFileOperation(null);
     setDownloadQueue([]);
     setTransactions([]);
+    setLicensedSoftware([]);
     setBankruptcyCountdown(null);
     setLastInterestTime(null);
     // Go to boot phase
@@ -795,6 +824,7 @@ export const GameProvider = ({ children }) => {
     setLastFileOperation(gameState.lastFileOperation ?? null);
     setDownloadQueue(gameState.downloadQueue ?? []);
     setTransactions(gameState.transactions ?? []);
+    setLicensedSoftware(gameState.licensedSoftware ?? []);
     setBankruptcyCountdown(gameState.bankruptcyCountdown ?? null);
     setLastInterestTime(gameState.lastInterestTime ?? null);
 
@@ -885,6 +915,8 @@ export const GameProvider = ({ children }) => {
     setDownloadQueue,
     transactions,
     setTransactions,
+    licensedSoftware,
+    setLicensedSoftware,
     bankruptcyCountdown,
     setBankruptcyCountdown,
     lastInterestTime,
@@ -905,6 +937,7 @@ export const GameProvider = ({ children }) => {
     initiateChequeDeposit,
     depositCheque,
     cancelChequeDeposit,
+    activateLicense,
     getTotalCredits,
     acceptMission,
     completeMissionObjective,

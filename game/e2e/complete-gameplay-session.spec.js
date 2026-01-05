@@ -144,6 +144,9 @@ test.describe('E2E: Complete Gameplay Session', () => {
     const portalWindow2 = page.locator('.window:has-text("OSNet Portal")');
     await portalWindow2.locator('.window-header').click();
 
+    // Switch to Hardware tab (portal defaults to Software)
+    await page.click('button:has-text("Hardware")');
+
     // Browse Memory category
     await page.click('button:has-text("Memory")');
     await expect(page.locator('.item-name:has-text("2GB RAM")').first()).toBeVisible();

@@ -4,7 +4,7 @@ import { formatDateTime } from '../../utils/helpers';
 import './SNetMail.css';
 
 const SNetMail = () => {
-  const { playerMailId, messages, markMessageAsRead, archiveMessage, initiateChequeDeposit } = useGame();
+  const { playerMailId, messages, markMessageAsRead, archiveMessage, initiateChequeDeposit, activateLicense } = useGame();
   const [activeTab, setActiveTab] = useState('inbox');
   const [selectedMessage, setSelectedMessage] = useState(null);
 
@@ -44,6 +44,13 @@ const SNetMail = () => {
     );
     if (cheque) {
       initiateChequeDeposit(message.id);
+    }
+  };
+
+  const handleLicenseClick = (message, attachment) => {
+    // Only activate if not already activated
+    if (!attachment.activated) {
+      activateLicense(message.id, attachment.softwareId);
     }
   };
 
@@ -168,14 +175,18 @@ const SNetMail = () => {
                     );
                   } else if (attachment.type === 'softwareLicense') {
                     return (
-                      <div key={index} className="attachment-item">
+                      <div
+                        key={index}
+                        className={`attachment-item ${attachment.activated ? 'activated' : ''}`}
+                        onClick={() => handleLicenseClick(selectedMessage, attachment)}
+                      >
                         <div className="attachment-icon">📦</div>
                         <div className="attachment-details">
                           <div className="attachment-name">
                             Software License: {attachment.softwareName}
                           </div>
                           <div className="attachment-status">
-                            ${attachment.price} value - Click to add to Portal
+                            {attachment.activated ? '✓ Activated' : `$${attachment.price} value - Click to add to Portal`}
                           </div>
                         </div>
                       </div>

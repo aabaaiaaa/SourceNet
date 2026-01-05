@@ -72,9 +72,7 @@ test.describe('E2E Test 5: App Interactions Flow', () => {
     const portalWindow = page.locator('.window:has-text("OSNet Portal")');
     await expect(portalWindow).toBeVisible();
 
-    // Browse to Software section
-    await page.click('button:has-text("Software")');
-
+    // Portal defaults to Software tab
     // Verify software is shown and available for purchase
     await expect(page.locator('.item-name:has-text("SourceNet VPN Client")')).toBeVisible();
     await expect(page.locator('.item-name:has-text("SourceNet Mission Board")')).toBeVisible();

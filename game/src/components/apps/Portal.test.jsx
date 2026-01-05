@@ -30,6 +30,9 @@ describe('Portal Component', () => {
       </GameProvider>
     );
 
+    // Switch to Hardware tab (Software is default)
+    fireEvent.click(screen.getByText('Hardware'));
+
     // Should show starting CPU as installed
     expect(screen.getByText('1GHz Single Core')).toBeInTheDocument();
     expect(screen.getByText('✓ Installed')).toBeInTheDocument();
@@ -45,6 +48,9 @@ describe('Portal Component', () => {
         <Portal />
       </GameProvider>
     );
+
+    // Switch to Hardware tab first (Software is default)
+    fireEvent.click(screen.getByText('Hardware'));
 
     // Switch to Memory category
     fireEvent.click(screen.getByText('Memory'));
@@ -64,7 +70,7 @@ describe('Portal Component', () => {
       </GameProvider>
     );
 
-    fireEvent.click(screen.getByText('Software'));
+    // Software tab is default, so apps should already be visible
     expect(screen.getByText('SourceNet VPN Client')).toBeInTheDocument();
     expect(screen.getByText('SourceNet Mission Board')).toBeInTheDocument();
     // Software is now available for purchase (multiple purchase buttons exist)

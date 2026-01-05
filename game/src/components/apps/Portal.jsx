@@ -6,9 +6,9 @@ import { createDownloadItem } from '../../systems/useDownloadManager';
 import './Portal.css';
 
 const Portal = () => {
-  const { hardware, software, bankAccounts, setBankAccounts, setTransactions, currentTime, getTotalCredits, setDownloadQueue } = useGame();
+  const { hardware, software, bankAccounts, setBankAccounts, setTransactions, currentTime, getTotalCredits, setDownloadQueue, licensedSoftware } = useGame();
   const [activeCategory, setActiveCategory] = useState('processors');
-  const [activeSection, setActiveSection] = useState('hardware');
+  const [activeSection, setActiveSection] = useState('software');
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
@@ -57,6 +57,16 @@ const Portal = () => {
 
     setShowPurchaseModal(false);
     setSelectedItem(null);
+  };
+
+  const handleInstallLicensed = (item) => {
+    // Install licensed software without payment
+    const downloadItem = createDownloadItem(
+      item.id,
+      item.name,
+      item.sizeInMB || 50
+    );
+    setDownloadQueue(prev => [...prev, downloadItem]);
   };
 
   const hardwareCategories = [
@@ -115,6 +125,7 @@ const Portal = () => {
             const hardwareInstalled = activeSection === 'hardware' && isHardwareInstalled(item, hardware);
             const softwareInstalled = activeSection === 'software' && software && software.includes(item.id);
             const installed = hardwareInstalled || softwareInstalled;
+            const isLicensed = activeSection === 'software' && licensedSoftware && licensedSoftware.includes(item.id);
             const available = activeSection === 'software' ? item.available : true;
 
             return (
@@ -147,9 +158,15 @@ const Portal = () => {
                     <span className="status-badge purchasable-badge">Hardware (Phase 3)</span>
                   )}
                   {!installed && available && activeSection === 'software' && (
-                    <button className="purchase-btn" onClick={() => handlePurchaseClick(item)}>
-                      Purchase
-                    </button>
+                    isLicensed ? (
+                      <button className="install-btn purchase-btn" onClick={() => handleInstallLicensed(item)}>
+                        Install (Licensed)
+                      </button>
+                    ) : (
+                      <button className="purchase-btn" onClick={() => handlePurchaseClick(item)}>
+                        Purchase
+                      </button>
+                    )
                   )}
                 </div>
               </div>

@@ -94,9 +94,7 @@ test.describe('Software Portal', () => {
     await page.click('button:has-text("OSNet Portal")');
     await expect(page.locator('.portal')).toBeVisible();
 
-    // Click Software tab
-    await page.click('button:has-text("Software")');
-
+    // Portal defaults to Software tab
     // Verify apps available for purchase
     await expect(page.locator('text=SourceNet Mission Board')).toBeVisible();
     await expect(page.locator('text=SourceNet VPN Client')).toBeVisible();
