@@ -1,4 +1,4 @@
-// Game Constants for SourceNet Phase 1
+// Game Constants for SourceNet
 
 // Starting date/time
 export const GAME_START_DATE = new Date('2020-03-25T09:00:00');

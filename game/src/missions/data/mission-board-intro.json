@@ -13,9 +13,9 @@
         "delay": 20000
       },
       "message": {
-        "from": "manager",
+        "from": "SourceNet Manager",
         "fromId": "SNET-MGR-{random}",
-        "fromName": "{managerName}",
+        "fromName": "SourceNet Manager {managerName}",
         "subject": "Get Ready for Your First Mission",
         "body": "Hey {username}!\n\nNow that you're all set up, it's time to get you started with actual work.\n\nI've attached a license for the SourceNet Mission Board application. This is where you'll find all available missions from our clients.\n\nTo get started:\n\n1. Click the attachment above to add the Mission Board license to your account\n2. Open the OSNet Portal from your app launcher\n3. Go to Software section - you'll see \"SourceNet Mission Board\" marked as \"Licensed\"\n4. Download and install it\n5. Once installed, open the Mission Board from your app launcher\n\nI've posted your first assignment there. It's a straightforward file repair job for one of our clients - perfect for learning the ropes.\n\nAfter you install the Mission Board and accept the mission, I'll send you the software licenses you'll need to complete it.\n\n- {managerName}",
         "attachments": [

@@ -5,7 +5,7 @@
  * to the Story Mission Manager for registration.
  */
 
-import phase1Welcome from './data/phase1-welcome.json';
+import welcomeMessages from './data/welcome-messages.json';
 import missionBoardIntro from './data/mission-board-intro.json';
 import tutorialPart1 from './data/tutorial-part-1.json';
 import tutorialPart2 from './data/tutorial-part-2.json';
@@ -18,10 +18,10 @@ import fileRestoration02 from './data/post-tutorial/file-restoration-02.json';
 import combinedTasks01 from './data/post-tutorial/combined-tasks-01.json';
 
 /**
- * All story event definitions (Phase 1 messages)
+ * All story event definitions (initial welcome messages)
  */
 export const storyEvents = [
-  phase1Welcome,
+  welcomeMessages,
   missionBoardIntro,
 ];
 
@@ -79,7 +79,7 @@ export const getMissionsByCategory = (category) => {
  * @param {object} storyMissionManager - Story Mission Manager instance
  */
 export const initializeAllMissions = (storyMissionManager) => {
-  // Register story events (Phase 1 messages, tutorial intro)
+  // Register story events (welcome messages, tutorial intro)
   storyEvents.forEach((event) => {
     storyMissionManager.registerMission(event);
   });

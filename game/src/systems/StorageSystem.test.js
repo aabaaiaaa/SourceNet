@@ -13,7 +13,7 @@ describe('StorageSystem', () => {
       expect(SOFTWARE_SIZES.osnet).toBe(12.0);
     });
 
-    it('should define all Phase 1 app sizes', () => {
+    it('should define all app sizes', () => {
       expect(SOFTWARE_SIZES.portal).toBeDefined();
       expect(SOFTWARE_SIZES.mail).toBeDefined();
       expect(SOFTWARE_SIZES.banking).toBeDefined();
@@ -28,7 +28,7 @@ describe('StorageSystem', () => {
   });
 
   describe('calculateStorageUsed', () => {
-    it('should calculate storage for Phase 1 software', () => {
+    it('should calculate storage for software', () => {
       const software = ['osnet', 'portal', 'mail', 'banking'];
       const used = calculateStorageUsed(software);
       expect(used).toBe(12.0 + 0.5 + 0.3 + 0.2); // 13.0

@@ -1,7 +1,7 @@
 /**
  * Banking System - Overdraft, interest, and bankruptcy mechanics
  *
- * Extends Phase 1 banking with:
+ * Banking system with:
  * - Overdraft allowed (negative balances)
  * - Interest: 1% per minute when overdrawn (affected by time speed)
  * - Bankruptcy: >10k overdrawn for 5 consecutive minutes = game over

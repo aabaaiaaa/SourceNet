@@ -56,9 +56,9 @@ const generateRandomId = () => {
 export const MESSAGE_TEMPLATES = {
   // Tutorial Part 1 - Manager angry after failure
   'tutorial-1-failure': {
-    from: 'manager',
+    from: 'SourceNet Manager',
     fromId: 'SNET-MGR-{random}',
-    fromName: '{managerName}',
+    fromName: 'SourceNet Manager {managerName}',
     subject: 'What happened?!',
     body: `{username},
 
@@ -79,9 +79,9 @@ I'm giving you another chance, but you need to prove you can handle this work.
 
   // Tutorial Part 2 - Recovery mission introduction
   'tutorial-2-intro': {
-    from: 'manager',
+    from: 'SourceNet Manager',
     fromId: 'SNET-MGR-{random}',
-    fromName: '{managerName}',
+    fromName: 'SourceNet Manager {managerName}',
     subject: "Let's try something simpler",
     body: `{username},
 
@@ -114,9 +114,9 @@ Don't mess this one up.
 
   // Tutorial Part 2 - Success acknowledgment
   'tutorial-2-success': {
-    from: 'manager',
+    from: 'SourceNet Manager',
     fromId: 'SNET-MGR-{random}',
-    fromName: '{managerName}',
+    fromName: 'SourceNet Manager {managerName}',
     subject: 'Better',
     body: `{username},
 
@@ -137,9 +137,9 @@ Keep working.
 
   // Player breaks even
   'back-in-black': {
-    from: 'manager',
+    from: 'SourceNet Manager',
     fromId: 'SNET-MGR-{random}',
-    fromName: '{managerName}',
+    fromName: 'SourceNet Manager {managerName}',
     subject: 'Back in the Black',
     body: `{username},
 

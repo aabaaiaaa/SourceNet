@@ -214,7 +214,7 @@ export const GameProvider = ({ children }) => {
     const manager = getRandomManagerName(MANAGER_NAMES);
     setManagerName(manager);
 
-    // Phase 1 messages now come from story mission system (no hardcoded messages)
+    // Welcome messages now come from story mission system (no hardcoded messages)
   }, []);
 
   // Play notification chime

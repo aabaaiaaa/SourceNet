@@ -79,7 +79,7 @@ describe('Mission State Save/Load Integration', () => {
 
   it('should handle backward compatibility with older saves', () => {
     const olderSaveState = {
-      username: 'phase1_player',
+      username: 'test_player',
       playerMailId: 'SNET-DEF-456-ABC',
       currentTime: '2020-03-25T09:00:00.000Z',
       hardware: { cpu: 'test' },

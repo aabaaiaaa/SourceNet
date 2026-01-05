@@ -10,10 +10,10 @@ import {
 
 describe('missionData', () => {
   describe('Story Events', () => {
-    it('should have phase1-welcome event', () => {
+    it('should have welcome-messages event', () => {
       expect(storyEvents.length).toBeGreaterThan(0);
-      const phase1 = storyEvents.find(e => e.missionId === 'phase1-welcome');
-      expect(phase1).toBeDefined();
+      const welcomeMsg = storyEvents.find(e => e.missionId === 'welcome-messages');
+      expect(welcomeMsg).toBeDefined();
     });
 
     it('should have mission-board-intro event', () => {
