@@ -161,6 +161,72 @@ export function createMessageWithNetworkAddress({
 }
 
 // ============================================================================
+// NETWORK & FILE SYSTEM BUILDERS
+// ============================================================================
+
+/**
+ * Create a network entry with file systems
+ * @param {Object} options - Network configuration
+ * @param {string} options.networkId - Network ID
+ * @param {string} options.networkName - Network display name
+ * @param {string} options.address - Network address (CIDR format)
+ * @param {Array} options.fileSystems - Array of file system objects
+ * @returns {Object} NAR entry object with file systems
+ */
+export function createNetworkWithFileSystem({
+    networkId = 'corp-net-1',
+    networkName = 'Corporate Network',
+    address = '192.168.50.0/24',
+    fileSystems = [],
+} = {}) {
+    return {
+        id: `nar-${networkId}`,
+        networkId,
+        networkName,
+        address,
+        addedAt: '2020-03-25T09:00:00.000Z',
+        status: 'active',
+        fileSystems: fileSystems.map(fs => ({
+            id: fs.id || 'fs-001',
+            ip: fs.ip || '192.168.50.10',
+            name: fs.name || 'fileserver',
+            files: fs.files || [],
+        })),
+    };
+}
+
+/**
+ * Create a network entry with multiple devices for scanner testing
+ * @param {Object} options - Network configuration
+ * @param {string} options.networkId - Network ID
+ * @param {string} options.networkName - Network display name
+ * @param {string} options.address - Network address (CIDR format)
+ * @param {Array} options.devices - Array of device objects (fileservers, databases, etc.)
+ * @returns {Object} NAR entry object with devices as fileSystems
+ */
+export function createNetworkWithDevices({
+    networkId = 'corp-net-1',
+    networkName = 'Corporate Network',
+    address = '192.168.50.0/24',
+    devices = [],
+} = {}) {
+    // Convert devices to fileSystems format
+    const fileSystems = devices.map((device, index) => ({
+        id: device.id || `fs-${String(index + 1).padStart(3, '0')}`,
+        ip: device.ip || `192.168.50.${10 + index}`,
+        name: device.name || device.hostname || `device-${index + 1}`,
+        files: device.files || [],
+    }));
+
+    return createNetworkWithFileSystem({
+        networkId,
+        networkName,
+        address,
+        fileSystems,
+    });
+}
+
+// ============================================================================
 // BANK ACCOUNT BUILDERS
 // ============================================================================
 

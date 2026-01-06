@@ -250,4 +250,222 @@ describe('Network Address Integration', () => {
             expect(screen.getByTestId('network-attachment-multi-net-b')).toBeInTheDocument();
         });
     });
+
+    it('should include fileSystems in NAR entry when attachment contains them', async () => {
+        const user = userEvent.setup();
+
+        // Create message with network attachment including fileSystems (like tutorial mission)
+        const message = {
+            id: 'msg-mission-network',
+            from: 'SourceNet Manager <manager@sourcenet.local>',
+            to: 'testuser@sourcenet.local',
+            subject: 'Mission Software & Network Access',
+            body: 'Network credentials for your first mission.',
+            timestamp: '2020-03-25T09:00:00.000Z',
+            read: false,
+            archived: false,
+            attachments: [
+                {
+                    type: 'networkAddress',
+                    networkId: 'clienta-corporate',
+                    networkName: 'ClientA-Corporate',
+                    address: '192.168.50.0/24',
+                    fileSystems: [
+                        {
+                            id: 'fs-clienta-01',
+                            ip: '192.168.50.10',
+                            name: 'fileserver-01',
+                            files: [
+                                { name: 'log_2024_01.txt', size: '2.5 KB', corrupted: true },
+                                { name: 'log_2024_02.txt', size: '3.1 KB', corrupted: true },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        };
+
+        const saveState = createCompleteSaveState({
+            username: 'testuser',
+            messages: [message],
+            software: [
+                { id: 'osnet', type: 'os' },
+                { id: 'portal', type: 'system' },
+                { id: 'mail', type: 'system' },
+                { id: 'banking', type: 'system' },
+                { id: 'network-address-register', type: 'utility', name: 'Network Address Register', size: 50 },
+            ],
+            narEntries: [],
+        });
+
+        setSaveInLocalStorage('testuser', saveState);
+
+        let capturedNarEntries = null;
+
+        const NarCapture = () => {
+            const { narEntries } = useGame();
+
+            useEffect(() => {
+                if (narEntries && narEntries.length > 0) {
+                    capturedNarEntries = narEntries;
+                }
+            }, [narEntries]);
+
+            return null;
+        };
+
+        render(
+            <GameProvider>
+                <GameLoader username="testuser" />
+                <NarCapture />
+                <TopBar />
+                <SNetMail />
+            </GameProvider>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText(/Your Mail ID:/)).toBeInTheDocument();
+        });
+
+        // Click the message to open it
+        await user.click(screen.getByText('Mission Software & Network Access'));
+
+        await waitFor(() => {
+            expect(screen.getByText(/Network Credentials: ClientA-Corporate/i)).toBeInTheDocument();
+        });
+
+        // Click the network attachment to add to NAR
+        const attachment = screen.getByTestId('network-attachment-clienta-corporate');
+        await user.click(attachment);
+
+        // Wait for NAR to update
+        await waitFor(() => {
+            expect(screen.getByText(/✓ Added to NAR/i)).toBeInTheDocument();
+        });
+
+        // Wait for NAR state to propagate
+        await waitFor(() => {
+            expect(capturedNarEntries).not.toBeNull();
+            expect(capturedNarEntries.length).toBeGreaterThan(0);
+        });
+
+        // Verify NAR entry includes fileSystems
+        const narEntry = capturedNarEntries[0];
+        expect(narEntry).toBeDefined();
+        expect(narEntry.networkId).toBe('clienta-corporate');
+        expect(narEntry.networkName).toBe('ClientA-Corporate');
+        expect(narEntry.address).toBe('192.168.50.0/24');
+        expect(narEntry.fileSystems).toBeDefined();
+        expect(narEntry.fileSystems.length).toBe(1);
+        expect(narEntry.fileSystems[0].id).toBe('fs-clienta-01');
+        expect(narEntry.fileSystems[0].ip).toBe('192.168.50.10');
+        expect(narEntry.fileSystems[0].name).toBe('fileserver-01');
+        expect(narEntry.fileSystems[0].files).toBeDefined();
+        expect(narEntry.fileSystems[0].files.length).toBe(2);
+
+        console.log('✅ Verified NAR entry includes fileSystems from mission network attachment');
+    });
+
+    it('should resolve network data from mission when attachment uses missionId reference', async () => {
+        const user = userEvent.setup();
+
+        // Create message with network attachment that references mission (no duplication)
+        const message = {
+            id: 'msg-mission-ref',
+            from: 'SourceNet Manager <manager@sourcenet.local>',
+            to: 'testuser@sourcenet.local',
+            subject: 'Mission Software & Network Access',
+            body: 'Network credentials for your first mission.',
+            timestamp: '2020-03-25T09:00:00.000Z',
+            read: false,
+            archived: false,
+            attachments: [
+                {
+                    type: 'networkAddress',
+                    missionId: 'tutorial-part-1',  // Reference to mission, not duplicate data
+                },
+            ],
+        };
+
+        const saveState = createCompleteSaveState({
+            username: 'testuser',
+            messages: [message],
+            software: [
+                { id: 'osnet', type: 'os' },
+                { id: 'portal', type: 'system' },
+                { id: 'mail', type: 'system' },
+                { id: 'banking', type: 'system' },
+                { id: 'network-address-register', type: 'utility', name: 'Network Address Register', size: 50 },
+            ],
+            narEntries: [],
+        });
+
+        setSaveInLocalStorage('testuser', saveState);
+
+        let capturedNarEntries = null;
+
+        const NarCapture = () => {
+            const { narEntries } = useGame();
+            
+            useEffect(() => {
+                if (narEntries && narEntries.length > 0) {
+                    capturedNarEntries = narEntries;
+                }
+            }, [narEntries]);
+
+            return null;
+        };
+
+        render(
+            <GameProvider>
+                <GameLoader username="testuser" />
+                <NarCapture />
+                <TopBar />
+                <SNetMail />
+            </GameProvider>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText(/Your Mail ID:/)).toBeInTheDocument();
+        });
+
+        // Click the message to open it
+        await user.click(screen.getByText('Mission Software & Network Access'));
+
+        await waitFor(() => {
+            // Should display resolved network name from tutorial-part-1 mission
+            expect(screen.getByText(/Network Credentials: ClientA-Corporate/i)).toBeInTheDocument();
+        });
+
+        // Click the network attachment to add to NAR
+        const attachment = screen.getByTestId('network-attachment-clienta-corporate');
+        await user.click(attachment);
+
+        // Wait for NAR to update
+        await waitFor(() => {
+            expect(screen.getByText(/✓ Added to NAR/i)).toBeInTheDocument();
+        });
+
+        // Wait for NAR state to propagate
+        await waitFor(() => {
+            expect(capturedNarEntries).not.toBeNull();
+            expect(capturedNarEntries.length).toBeGreaterThan(0);
+        });
+
+        // Verify NAR entry includes complete network data from tutorial-part-1 mission
+        const narEntry = capturedNarEntries[0];
+        expect(narEntry.networkId).toBe('clienta-corporate');
+        expect(narEntry.networkName).toBe('ClientA-Corporate');
+        expect(narEntry.address).toBe('192.168.50.0/24');
+        
+        // Most importantly: verify fileSystems were resolved from mission
+        expect(narEntry.fileSystems).toBeDefined();
+        expect(narEntry.fileSystems.length).toBe(1);
+        expect(narEntry.fileSystems[0].id).toBe('fs-clienta-01');
+        expect(narEntry.fileSystems[0].ip).toBe('192.168.50.10');
+        expect(narEntry.fileSystems[0].name).toBe('fileserver-01');
+        expect(narEntry.fileSystems[0].files.length).toBe(11);
+
+        console.log('✅ Verified missionId reference resolves complete network data from tutorial-part-1.json');
+    });
 });

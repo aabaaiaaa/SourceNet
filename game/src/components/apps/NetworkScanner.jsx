@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import triggerEventBus from '../../core/triggerEventBus';
+import { generateDevicesForNetwork } from '../../systems/NetworkDeviceGenerator';
 import './NetworkScanner.css';
 
 // Data sizes for scan types (in MB)
@@ -11,58 +12,49 @@ const SCAN_SIZES = {
 
 const NetworkScanner = () => {
   const game = useGame();
+  const { currentTime } = game;
   const activeConnections = game.activeConnections || [];
-  const setLastScanResults = game.setLastScanResults || (() => {});
+  const narEntries = game.narEntries || [];
+  const setLastScanResults = game.setLastScanResults || (() => { });
   const registerBandwidthOperation = game.registerBandwidthOperation || (() => ({ operationId: null, estimatedTimeMs: 5000 }));
-  const completeBandwidthOperation = game.completeBandwidthOperation || (() => {});
+  const completeBandwidthOperation = game.completeBandwidthOperation || (() => { });
   const [selectedNetwork, setSelectedNetwork] = useState('');
   const [scanType, setScanType] = useState('deep'); // 'quick' or 'deep'
   const [scanning, setScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
   const [scanResults, setScanResults] = useState(null);
-  const scanIntervalRef = useRef(null);
+  const [scanStartTime, setScanStartTime] = useState(null);
+  const [estimatedDuration, setEstimatedDuration] = useState(0);
+  const animationFrameRef = useRef(null);
+  const operationIdRef = useRef(null);
 
-  const handleScan = () => {
-    if (!selectedNetwork || scanning) return;
+  // Animation loop for scan progress using game time
+  useEffect(() => {
+    if (!scanning || !scanStartTime || !currentTime) return;
 
-    // Register bandwidth operation based on scan type
-    const sizeInMB = SCAN_SIZES[scanType];
-    const { operationId, estimatedTimeMs } = registerBandwidthOperation(
-      'network_scan',
-      sizeInMB,
-      { network: selectedNetwork, scanType }
-    );
+    const animate = () => {
+      // Calculate elapsed GAME time (respects game speed)
+      const elapsedGameMs = currentTime.getTime() - scanStartTime;
+      const newProgress = Math.min(100, (elapsedGameMs / estimatedDuration) * 100);
+      setScanProgress(newProgress);
 
-    setScanning(true);
-    setScanProgress(0);
+      if (newProgress >= 100) {
+        // Scan complete
+        completeBandwidthOperation(operationIdRef.current);
 
-    // Update progress based on estimated time
-    const updateInterval = 100; // Update every 100ms
-    const progressIncrement = (100 / estimatedTimeMs) * updateInterval;
-    let currentProgress = 0;
+        // Find the NAR entry for this network
+        const narEntry = narEntries.find(entry => entry.networkId === selectedNetwork);
 
-    scanIntervalRef.current = setInterval(() => {
-      currentProgress += progressIncrement;
-      setScanProgress(Math.min(100, currentProgress));
+        // Generate devices using the device generator
+        const machines = generateDevicesForNetwork(narEntry, scanType);
 
-      if (currentProgress >= 100) {
-        clearInterval(scanIntervalRef.current);
-        scanIntervalRef.current = null;
-
-        // Complete the bandwidth operation
-        completeBandwidthOperation(operationId);
-
-        // Mock scan results (real implementation would come from mission data)
         const results = {
           network: selectedNetwork,
-          machines: [
-            { ip: '192.168.50.10', hostname: 'fileserver-01', id: 'fileserver-01', fileSystems: ['/logs/'] },
-            { ip: '192.168.50.20', hostname: 'backup-server', id: 'backup-server', fileSystems: ['/backups/'] },
-          ],
+          machines,
         };
 
         setScanResults(results);
-        setLastScanResults(results); // Update global state for objective tracking
+        setLastScanResults(results);
 
         // Emit scan complete event
         triggerEventBus.emit('networkScanComplete', {
@@ -72,9 +64,38 @@ const NetworkScanner = () => {
 
         setScanning(false);
         setScanProgress(0);
+        setScanStartTime(null);
         console.log(`🔍 Scan complete: Found ${results.machines.length} machines`);
+      } else {
+        animationFrameRef.current = requestAnimationFrame(animate);
       }
-    }, updateInterval);
+    };
+
+    animationFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [scanning, scanStartTime, currentTime, estimatedDuration, selectedNetwork, scanType, narEntries, completeBandwidthOperation, setLastScanResults]);
+
+  const handleScan = () => {
+    if (!selectedNetwork || scanning || !currentTime) return;
+
+    // Register bandwidth operation based on scan type
+    const sizeInMB = SCAN_SIZES[scanType];
+    const { operationId, estimatedTimeMs } = registerBandwidthOperation(
+      'network_scan',
+      sizeInMB,
+      { network: selectedNetwork, scanType }
+    );
+
+    operationIdRef.current = operationId;
+    setEstimatedDuration(estimatedTimeMs);
+    setScanStartTime(currentTime.getTime());
+    setScanning(true);
+    setScanProgress(0);
   };
 
   return (

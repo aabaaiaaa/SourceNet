@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { waitForGameTime } from './helpers/common-actions.js';
 
 /**
  * Tutorial & Mission System E2E Tests
@@ -54,7 +53,13 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         console.log('✅ STEP 1: Desktop loaded');
 
         // Wait for HR welcome message (2 seconds game time)
-        await waitForGameTime(page, 2000);
+        // Set 100x speed for story delays (TEST mode, not accessible via UI button)
+        await page.evaluate(() => {
+            if (typeof window.gameContext?.setSpecificTimeSpeed === 'function') {
+                window.gameContext.setSpecificTimeSpeed(100);
+            }
+        });
+        await page.waitForTimeout(100); // 2s game time at 100x + buffer
 
         // Open Mail
         await page.click('text=☰');
@@ -66,16 +71,13 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await expect(page.locator('.message-view')).toBeVisible();
         await page.click('button:has-text("Back")');
 
-        // Wait for manager introduction message (2 seconds game time)
-        await waitForGameTime(page, 2000);
+        // Wait for manager introduction message (2 seconds game time at 100x)
+        await page.waitForTimeout(100); // 2s game time at 100x + buffer
 
-        // Set to 10x speed BEFORE reading manager message
-        // This ensures the 20s delay timer is scheduled at 10x speed
-        await page.click('button:has-text("1x")');
-        await expect(page.locator('button:has-text("10x")')).toBeVisible();
+        // Speed is already at 100x from previous step
 
         // Read manager message with cheque
-        // Reading this triggers the 20s delay timer at 10x speed (2s real time)
+        // Reading this triggers the 20s delay timer (2s real time at 10x)
         await page.click('.message-item:has-text("Hi from your manager")');
 
         // Wait for message view to open
@@ -92,24 +94,25 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         console.log('✅ STEP 1: Welcome messages read, cheque deposited (1000 credits)');
 
         // ========================================
-        // STEP 2: Mission Board License (20s delay at 10x speed)
+        // STEP 2: Mission Board License (20s game time at 100x speed)
         // ========================================
 
-        console.log('⏳ Waiting 20 seconds game time (2s real at 10x speed) for Mission Board license...');
+        console.log('⏳ Waiting 20 seconds game time (200ms real at 100x speed) for Mission Board license...');
 
-        // Wait 2.5 seconds real time (20s game time at 10x speed + buffer)
-        await page.waitForTimeout(2500);
+        // Wait 300ms real time (20s game time at 100x speed + buffer)
+        await page.waitForTimeout(300);
 
         // Return to 1x speed
-        await page.click('button:has-text("10x")');
-        await expect(page.locator('button:has-text("1x")')).toBeVisible();
+        await page.evaluate(() => {
+            window.gameContext?.setSpecificTimeSpeed?.(1);
+        });
 
         // Close Banking window if it's open (it's blocking Mail)
         const bankingWindow = page.locator('.window:has-text("SNet Banking")');
         if (await bankingWindow.isVisible()) {
             const closeButton = bankingWindow.locator('.window-controls button:has-text("×")');
             await closeButton.click();
-            await page.waitForTimeout(300);
+            await page.waitForTimeout(100);
         }
 
         // Make sure we're in Mail inbox view
@@ -117,13 +120,13 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         if (await mailWindow.isVisible()) {
             // Click Mail window header to bring to front
             await page.click('.window:has-text("SNet Mail") .window-header');
-            await page.waitForTimeout(300);
+            await page.waitForTimeout(100);
 
             // If we're viewing a message, click Back to return to inbox
             const backButton = page.locator('button:has-text("Back to inbox")');
             if (await backButton.isVisible()) {
                 await backButton.click();
-                await page.waitForTimeout(500);
+                await page.waitForTimeout(200);
             }
         } else {
             // Mail is closed, reopen it
@@ -156,17 +159,17 @@ test.describe('E2E: Tutorial Mission Flow', () => {
 
         // Go back to inbox first
         await page.click('button:has-text("Back")');
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(100);
 
         // Open Portal
         await page.click('text=☰');
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(100);
         await page.click('text=OSNet Portal');
         await expect(page.locator('.window:has-text("OSNet Portal")').or(page.locator('.window:has-text("Portal")'))).toBeVisible();
 
         // Navigate to Software tab
         await page.click('button:has-text("Software")');
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(100);
 
         // Find Mission Board showing "Licensed"
         await expect(page.locator('text=SourceNet Mission Board').or(page.locator('text=Mission Board'))).toBeVisible();
@@ -175,16 +178,20 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         const installButton = page.locator('button:has-text("Install")').first();
         await installButton.click();
 
-        // Set 10x speed for installation
-        await page.click('button:has-text("1x")');
-        await expect(page.locator('button:has-text("10x")')).toBeVisible();
+        // Set 100x speed for installation
+        await page.evaluate(() => {
+            if (typeof window.gameContext?.setSpecificTimeSpeed === 'function') {
+                window.gameContext.setSpecificTimeSpeed(100);
+            }
+        });
 
-        // Wait for installation to complete
-        await page.waitForTimeout(3000);
+        // Wait for installation to complete (200MB at 100x speed)
+        await page.waitForTimeout(500);
 
         // Return to 1x speed
-        await page.click('button:has-text("10x")');
-        await expect(page.locator('button:has-text("1x")')).toBeVisible();
+        await page.evaluate(() => {
+            window.gameContext?.setSpecificTimeSpeed?.(1);
+        });
 
         // Verify Mission Board in app launcher
         await page.click('text=☰');
@@ -197,8 +204,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         // ========================================
 
         // Wait for mission to be activated (scheduled with 0 delay but still async)
-        // Even setTimeout(callback, 0) needs time to execute on the event loop
-        await page.waitForTimeout(2000);
+        await page.waitForTimeout(500);
 
         // Open Mission Board
         await page.click('text=Mission Board');
@@ -241,9 +247,23 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         // STEP 6: Get Software Licenses Message
         // ========================================
 
-        // Wait for software licenses message (5s after mission board installed)
-        console.log('⏳ Waiting 5 seconds real time for software licenses...');
-        await page.waitForTimeout(5500);
+        // Wait for software licenses message (5s game time after mission board installed)
+        console.log('⏳ Waiting 5 seconds game time for software licenses...');
+
+        // Set 100x speed for the wait
+        await page.evaluate(() => {
+            if (typeof window.gameContext?.setSpecificTimeSpeed === 'function') {
+                window.gameContext.setSpecificTimeSpeed(100);
+            }
+        });
+
+        // Wait 100ms real time (5s game time at 100x speed + buffer)
+        await page.waitForTimeout(100);
+
+        // Return to 1x speed
+        await page.evaluate(() => {
+            window.gameContext?.setSpecificTimeSpeed?.(1);
+        });
 
         // Open Mail
         await page.click('text=☰');
@@ -253,7 +273,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         const backButton = page.locator('button:has-text("Back")');
         if (await backButton.isVisible()) {
             await backButton.click();
-            await page.waitForTimeout(300);
+            await page.waitForTimeout(100);
         }
 
         // Read "Mission Software & Network Access" message
@@ -273,7 +293,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
 
         for (let i = 0; i < licenseCount; i++) {
             await licenseAttachments.nth(i).click();
-            await page.waitForTimeout(300);
+            await page.waitForTimeout(100);
         }
 
         console.log('✅ STEP 6: Software licenses activated (network address will be added after NAR installation)');
@@ -286,11 +306,11 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         const mailWindowAfterLicenses = page.locator('.window:has(.window-header:has-text("Mail"))');
         const mailCloseButton = mailWindowAfterLicenses.locator('.window-controls button:has-text("×")');
         await mailCloseButton.click();
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(100);
 
         // Open Portal
         await page.click('text=☰');
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(200);
 
         // Wait for menu to be visible and click Portal
         const portalMenuItem = page.locator('.app-launcher-menu >> text=OSNet Portal');
@@ -300,7 +320,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
 
         // Navigate to Software tab
         await page.click('button:has-text("Software")');
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(100);
 
         // Install licensed software (should show "Install" not "Purchase")
         // Look for VPN Client, Network Scanner, File Manager, NAR with Install buttons
@@ -312,12 +332,11 @@ test.describe('E2E: Tutorial Mission Flow', () => {
             if (buttonCount > 0) {
                 await expect(installButton).toBeEnabled({ timeout: 2000 }).catch(() => { });
                 await installButton.click({ timeout: 5000 });
-                await page.waitForTimeout(1000); // Increased wait to ensure state updates
             }
         }
 
-        // Wait longer for downloads to be queued
-        await page.waitForTimeout(1500);
+        // Wait for downloads to be queued
+        await page.waitForTimeout(500);
 
         // Set 100x speed for faster installation (downloads now use game time)
         await page.evaluate(() => {
@@ -330,13 +349,10 @@ test.describe('E2E: Tutorial Mission Flow', () => {
 
         // Wait for downloads to complete
         // Download manager updates progress every 100ms real time via setInterval
-        // Even though downloads complete quickly in game time at 100x speed,
-        // we need to wait for enough interval ticks in real time
-        // 45MB @ 31.25 MB/s = ~1.44s game time, at 100x = 14.4ms real time per download
-        // But progress updates every 100ms, so wait 5s to ensure plenty of ticks
+        // At 100x speed downloads complete very quickly
         console.log('⏳ Waiting for software downloads to complete at 100x speed...');
 
-        await page.waitForTimeout(5000);
+        await page.waitForTimeout(2000);
 
         // Return to 1x speed
         await page.evaluate(() => {
@@ -352,7 +368,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         // Now that NAR is installed, add the network address attachment to NAR
         // Open Mail
         await page.click('text=☰');
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(200);
         await page.click('text=SNet Mail');
         await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
 
@@ -360,7 +376,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         const backToInbox = page.locator('button:has-text("Back to inbox")');
         if (await backToInbox.isVisible()) {
             await backToInbox.click();
-            await page.waitForTimeout(300);
+            await page.waitForTimeout(100);
         }
 
         // Find and click the software/network message again
@@ -379,7 +395,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
 
         // Click the network address attachment to add it to NAR
         await networkAttachment.click();
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(200);
 
         // Verify it was added successfully
         await expect(page.locator('text=✓ Added to NAR')).toBeVisible({ timeout: 2000 });
@@ -390,7 +406,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         const mailWindow2 = page.locator('.window:has(.window-header:has-text("Mail"))');
         const mailCloseButton2 = mailWindow2.locator('.window-controls button:has-text("×")');
         await mailCloseButton2.click();
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(100);
 
         // ========================================
         // STEP 8: Accept Mission
@@ -400,11 +416,11 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         const portalWindow = page.locator('.window:has(.window-header:has-text("Portal"))');
         const portalCloseButton = portalWindow.locator('.window-controls button:has-text("×")');
         await portalCloseButton.click();
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(100);
 
         // Open Mission Board again
         await page.click('text=☰');
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(200);
 
         const missionBoardMenuItem = page.locator('.app-launcher-menu >> text=Mission Board');
         await expect(missionBoardMenuItem).toBeVisible();
@@ -435,7 +451,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         const acceptBtn = missionCardAfterInstall.locator('.accept-mission-btn');
         await expect(acceptBtn).toBeEnabled();
         await acceptBtn.click();
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(200);
 
         // Verify mission moved to Active tab
         const activeTab = page.locator('.tab:has-text("Active")');
@@ -462,11 +478,11 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         const missionBoardWindowAfterScanner = page.locator('.window:has(.window-header:has-text("SourceNet Mission Board"))');
         const missionBoardCloseButton3 = missionBoardWindowAfterScanner.locator('.window-controls button:has-text("×")');
         await missionBoardCloseButton3.click();
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(100);
 
         // Open VPN Client
         await page.click('text=☰');
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(200);
 
         const vpnMenuItem = page.locator('.app-launcher-menu >> text=VPN Client').or(
             page.locator('.app-launcher-menu >> text=SourceNet VPN')
@@ -491,7 +507,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
 
         // Select the ClientA-Corporate network (use value or index, not regex label)
         await networkDropdown.selectOption('clienta-corporate');
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(100);
 
         // Click Connect button
         const connectBtn = page.locator('button:has-text("Connect")');
@@ -502,7 +518,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await expect(page.locator('text=Connecting').first()).toBeVisible({ timeout: 2000 });
 
         // Wait for connection to complete (3 second connection time in VPN Client)
-        await page.waitForTimeout(3500);
+        await page.waitForTimeout(3200);
 
         // Verify connection established
         await expect(page.locator('text=Connected').first()).toBeVisible();
@@ -518,11 +534,11 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         const vpnWindowAfterConnect = page.locator('.window:has(.window-header:has-text("VPN Client"))');
         const vpnCloseButton = vpnWindowAfterConnect.locator('.window-controls button:has-text("×")');
         await vpnCloseButton.click();
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(100);
 
         // Open Mission Board to verify objective completion
         await page.click('text=☰');
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(200);
         await missionBoardMenuItem.click();
         await expect(page.locator('.window >> .window-header:has-text("SourceNet Mission Board")')).toBeVisible();
 
@@ -551,11 +567,11 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         const missionBoardWindow2 = page.locator('.window:has(.window-header:has-text("Mission Board"))');
         const missionBoardCloseButton2 = missionBoardWindow2.locator('.window-controls button:has-text("×")');
         await missionBoardCloseButton2.click();
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(100);
 
         // Open Network Scanner
         await page.click('text=☰');
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(200);
 
         const scannerMenuItem = page.locator('.app-launcher-menu >> text=Network Scanner').or(
             page.locator('.app-launcher-menu >> text=Scanner')
@@ -568,12 +584,12 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await expect(scannerWindow).toBeVisible();
 
         // Wait for scanner to be ready
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(200);
 
         // Select the network from dropdown (ClientA-Corporate should be there from VPN connection)
         const scannerNetworkDropdown = scannerWindow.locator('label:has-text("Network:") select');
         await scannerNetworkDropdown.selectOption('clienta-corporate');
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(100);
 
         // Click Scan Network button
         const scanButton = scannerWindow.locator('button:has-text("Scan")').or(
@@ -588,7 +604,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         ).first()).toBeVisible({ timeout: 2000 });
 
         // Wait for scan to complete (scan duration varies, give it time)
-        await page.waitForTimeout(5000);
+        await page.waitForTimeout(3500);
 
         // Verify fileserver-01 appears in scan results
         await expect(scannerWindow.locator('text=fileserver-01').first()).toBeVisible({ timeout: 5000 });
@@ -603,11 +619,11 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         const scannerWindow2 = page.locator('.window:has(.window-header:has-text("Network Scanner"))');
         const scannerCloseButton = scannerWindow2.locator('.window-controls button:has-text("×")');
         await scannerCloseButton.click();
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(100);
 
         // Open Mission Board to verify objective completion
         await page.click('text=☰');
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(200);
         const missionBoardMenuItem2 = page.locator('.app-launcher-menu >> text=Mission Board');
         await missionBoardMenuItem2.click();
         await expect(page.locator('.window >> .window-header:has-text("SourceNet Mission Board")')).toBeVisible();
@@ -639,16 +655,16 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         const missionBoardCloseBtn = missionBoardWindow.locator('.window-close-btn, .close-btn, button:has-text("×")').first();
         await missionBoardCloseBtn.click();
         await expect(missionBoardWindow).not.toBeVisible({ timeout: 2000 });
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(100);
 
         // Open File Manager from app launcher menu
         const topBarMenu = page.locator('text=☰');
         await topBarMenu.click();
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(200);
         const fileManagerMenuItem = page.locator('.app-launcher-menu >> text=File Manager');
         await expect(fileManagerMenuItem).toBeVisible();
         await fileManagerMenuItem.click();
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(200);
 
         // Wait for File Manager window
         const fileManagerWindow = page.locator('.window:has(.window-header:has-text("File Manager"))');
@@ -656,8 +672,8 @@ test.describe('E2E: Tutorial Mission Flow', () => {
 
         // Select the fileserver-01 file system from dropdown
         const fileSystemDropdown = fileManagerWindow.locator('select');
-        await fileSystemDropdown.selectOption('fs-001'); // 192.168.50.10 - fileserver-01
-        await page.waitForTimeout(500);
+        await fileSystemDropdown.selectOption('fs-clienta-01'); // 192.168.50.10 - fileserver-01
+        await page.waitForTimeout(200);
 
         // Verify files are displayed (connection successful)
         await expect(fileManagerWindow.locator('text=log_2024').first()).toBeVisible({ timeout: 3000 });
@@ -672,11 +688,11 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         const fileManagerWindowAfterConnect = page.locator('.window:has(.window-header:has-text("File Manager"))');
         const fileManagerCloseButton = fileManagerWindowAfterConnect.locator('.window-controls button:has-text("×")');
         await fileManagerCloseButton.click();
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(100);
 
         // Open Mission Board to verify objective completion
         await page.click('text=☰');
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(200);
         const missionBoardMenuItem3 = page.locator('.app-launcher-menu >> text=Mission Board');
         await missionBoardMenuItem3.click();
         await expect(page.locator('.window >> .window-header:has-text("SourceNet Mission Board")')).toBeVisible();

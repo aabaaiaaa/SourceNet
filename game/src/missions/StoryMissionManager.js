@@ -12,7 +12,7 @@
  */
 
 import triggerEventBus from '../core/triggerEventBus';
-import { scheduleGameTimeCallback, clearGameTimeCallback } from '../core/gameTimeScheduler';
+import { scheduleGameTimeCallback, clearGameTimeCallback, rescheduleAllTimers } from '../core/gameTimeScheduler';
 
 class StoryMissionManager {
   constructor() {
@@ -26,7 +26,12 @@ class StoryMissionManager {
    * @param {number} speed - Time speed multiplier (1 or 10)
    */
   setTimeSpeed(speed) {
+    console.log(`⏱️ StoryMissionManager.setTimeSpeed: ${this.timeSpeed} → ${speed}`);
     this.timeSpeed = speed;
+
+    // Reschedule all active timers with the new speed
+    // This allows delays to speed up/slow down mid-execution
+    rescheduleAllTimers(speed);
   }
 
   /**
@@ -98,7 +103,9 @@ class StoryMissionManager {
         }
 
         // Use game-time-aware scheduling
-        console.log(`⏰ Scheduling story event ${event.id} with delay=${delay}`);
+        console.log(`⏰ Scheduling story event ${event.id} with delay=${delay} at timeSpeed=${this.timeSpeed}`);
+        const realDelay = (delay || 0) / this.timeSpeed;
+        console.log(`   → Real-time delay will be ${realDelay}ms`);
         scheduleGameTimeCallback(() => {
           console.log(`🚀 Executing story event ${event.id}`);
           // For story events, we need to send the message

@@ -1,48 +1,106 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import triggerEventBus from '../../core/triggerEventBus';
 import './FileManager.css';
 
 const FileManager = () => {
   const game = useGame();
-  const setFileManagerConnections = game.setFileManagerConnections || (() => {});
-  const setLastFileOperation = game.setLastFileOperation || (() => {});
+  const { currentTime } = game;
+  const setFileManagerConnections = game.setFileManagerConnections || (() => { });
+  const setLastFileOperation = game.setLastFileOperation || (() => { });
   const registerBandwidthOperation = game.registerBandwidthOperation || (() => ({ operationId: null, estimatedTimeMs: 2000 }));
-  const completeBandwidthOperation = game.completeBandwidthOperation || (() => {});
+  const completeBandwidthOperation = game.completeBandwidthOperation || (() => { });
+  const narEntries = game.narEntries || [];
+  const activeConnections = game.activeConnections || [];
+
   const [selectedFileSystem, setSelectedFileSystem] = useState('');
   const [files, setFiles] = useState([]);
   const [clipboard, setClipboard] = useState(null);
   const [repairing, setRepairing] = useState(false);
   const [repairProgress, setRepairProgress] = useState(0);
-  const repairIntervalRef = useRef(null);
+  const [repairStartTime, setRepairStartTime] = useState(null);
+  const [estimatedDuration, setEstimatedDuration] = useState(0);
+  const animationFrameRef = useRef(null);
+  const repairOperationIdRef = useRef(null);
 
-  // Mock file systems (real implementation would come from scan results)
-  const availableFileSystems = [
-    { id: 'fs-001', label: '192.168.50.10 - fileserver-01' },
-    { id: 'fs-002', label: '192.168.50.20 - backup-server' },
-  ];
+  // Animation loop for repair progress using game time
+  useEffect(() => {
+    if (!repairing || !repairStartTime || !currentTime) return;
 
-  const handleConnect = () => {
-    if (!selectedFileSystem) return;
+    const animate = () => {
+      // Calculate elapsed GAME time (respects game speed)
+      const elapsedGameMs = currentTime.getTime() - repairStartTime;
+      const newProgress = Math.min(100, (elapsedGameMs / estimatedDuration) * 100);
+      setRepairProgress(newProgress);
 
-    // Mock files (real implementation would fetch from game state)
-    const mockFiles = [
-      { name: 'log_2024_01.txt', size: '2.5 KB', corrupted: true },
-      { name: 'log_2024_02.txt', size: '3.1 KB', corrupted: false },
-      { name: 'log_2024_03.txt', size: '2.8 KB', corrupted: true },
-      { name: 'log_2024_04.txt', size: '3.0 KB', corrupted: true },
-      { name: 'log_2024_05.txt', size: '2.7 KB', corrupted: true },
-      { name: 'log_2024_06.txt', size: '2.9 KB', corrupted: true },
-      { name: 'log_2024_07.txt', size: '3.2 KB', corrupted: true },
-      { name: 'log_2024_08.txt', size: '2.6 KB', corrupted: true },
-    ];
+      if (newProgress >= 100) {
+        // Repair complete
+        completeBandwidthOperation(repairOperationIdRef.current);
 
-    setFiles(mockFiles);
+        // Update files to mark as repaired
+        setFiles(files.map(f => ({ ...f, corrupted: false })));
+
+        // Track file operation for objective tracking
+        const operation = {
+          operation: 'repair',
+          filesAffected: files.filter(f => f.corrupted).length,
+          fileSystem: selectedFileSystem,
+        };
+
+        setLastFileOperation(operation);
+
+        // Emit file operation complete event
+        triggerEventBus.emit('fileOperationComplete', operation);
+
+        setRepairing(false);
+        setRepairProgress(0);
+        setRepairStartTime(null);
+      } else {
+        animationFrameRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [repairing, repairStartTime, currentTime, estimatedDuration, files, selectedFileSystem, completeBandwidthOperation, setLastFileOperation]);
+
+  // Get available file systems from connected networks
+  const availableFileSystems = [];
+  activeConnections.forEach((connection) => {
+    const narEntry = narEntries.find((entry) => entry.networkId === connection.networkId);
+    if (narEntry && narEntry.fileSystems) {
+      narEntry.fileSystems.forEach((fs) => {
+        availableFileSystems.push({
+          id: fs.id,
+          ip: fs.ip,
+          name: fs.name,
+          label: `${fs.ip} - ${fs.name}`,
+          files: fs.files || [],
+          networkId: narEntry.networkId,
+        });
+      });
+    }
+  });
+
+  const handleConnect = (fileSystemId = selectedFileSystem) => {
+    if (!fileSystemId) return;
+
+    // Find the selected file system
+    const fileSystem = availableFileSystems.find((fs) => fs.id === fileSystemId);
+    if (!fileSystem) return;
+
+    // Load files from the file system
+    setFiles(fileSystem.files.map(f => ({ ...f })));
 
     // Track file system connection for objective tracking
     const connection = {
-      fileSystemId: selectedFileSystem,
-      ip: selectedFileSystem.includes('192.168.50.10') ? '192.168.50.10' : '192.168.50.20',
+      fileSystemId: fileSystemId,
+      ip: fileSystem.ip,
       path: '/',
     };
 
@@ -51,7 +109,7 @@ const FileManager = () => {
     // Emit connection event
     triggerEventBus.emit('fileSystemConnected', connection);
 
-    console.log(`📁 Connected to file system: ${selectedFileSystem}`);
+    console.log(`📁 Connected to file system: ${fileSystem.label}`);
   };
 
   const handleCopy = () => {
@@ -64,7 +122,7 @@ const FileManager = () => {
 
   const handleRepair = () => {
     const corrupted = files.filter((f) => f.corrupted);
-    if (corrupted.length === 0 || repairing) return;
+    if (corrupted.length === 0 || repairing || !currentTime) return;
 
     // Register bandwidth operation (1 MB per file to repair)
     const sizeInMB = corrupted.length * 1;
@@ -74,49 +132,15 @@ const FileManager = () => {
       { fileSystem: selectedFileSystem, fileCount: corrupted.length }
     );
 
+    repairOperationIdRef.current = operationId;
+    setEstimatedDuration(estimatedTimeMs);
+    setRepairStartTime(currentTime.getTime());
     setRepairing(true);
     setRepairProgress(0);
-
-    // Update progress based on estimated time
-    const updateInterval = 100; // Update every 100ms
-    const progressIncrement = (100 / estimatedTimeMs) * updateInterval;
-    let currentProgress = 0;
-
-    repairIntervalRef.current = setInterval(() => {
-      currentProgress += progressIncrement;
-      setRepairProgress(Math.min(100, currentProgress));
-
-      if (currentProgress >= 100) {
-        clearInterval(repairIntervalRef.current);
-        repairIntervalRef.current = null;
-
-        // Complete the bandwidth operation
-        completeBandwidthOperation(operationId);
-
-        // Update files to mark as repaired
-        setFiles(files.map(f => ({ ...f, corrupted: false })));
-
-        // Track file operation for objective tracking
-        const operation = {
-          operation: 'repair',
-          filesAffected: corrupted.length,
-          fileSystem: selectedFileSystem,
-        };
-
-        setLastFileOperation(operation);
-
-        // Emit file operation complete event
-        triggerEventBus.emit('fileOperationComplete', operation);
-
-        setRepairing(false);
-        setRepairProgress(0);
-        console.log(`🔧 Repaired ${corrupted.length} files`);
-      }
-    }, updateInterval);
   };
 
-  // Check if connected to any network (game already declared at top)
-  const isConnected = (game.activeConnections || []).length > 0;
+  // Check if connected to any network
+  const isConnected = activeConnections.length > 0;
 
   return (
     <div className="file-manager">
@@ -137,7 +161,7 @@ const FileManager = () => {
               value={selectedFileSystem}
               onChange={(e) => {
                 setSelectedFileSystem(e.target.value);
-                if (e.target.value) handleConnect();
+                if (e.target.value) handleConnect(e.target.value);
               }}
             >
               <option value="">Select File System</option>
@@ -150,43 +174,43 @@ const FileManager = () => {
           </div>
 
           {selectedFileSystem && (
-        <>
-          <div className="fm-toolbar">
-            <button onClick={handleCopy} disabled={repairing}>Copy</button>
-            <button disabled={!clipboard || repairing}>Paste</button>
-            <button disabled={repairing}>Delete</button>
-            <button
-              onClick={handleRepair}
-              disabled={repairing || !files.some(f => f.corrupted)}
-              className={repairing ? 'repairing' : ''}
-            >
-              {repairing ? `Repairing... ${Math.floor(repairProgress)}%` : 'Repair'}
-            </button>
-          </div>
-          {repairing && (
-            <div className="repair-progress">
-              <div className="repair-progress-bar">
-                <div
-                  className="repair-progress-fill"
-                  style={{ width: `${repairProgress}%` }}
-                />
+            <>
+              <div className="fm-toolbar">
+                <button onClick={handleCopy} disabled={repairing}>Copy</button>
+                <button disabled={!clipboard || repairing}>Paste</button>
+                <button disabled={repairing}>Delete</button>
+                <button
+                  onClick={handleRepair}
+                  disabled={repairing || !files.some(f => f.corrupted)}
+                  className={repairing ? 'repairing' : ''}
+                >
+                  {repairing ? `Repairing... ${Math.floor(repairProgress)}%` : 'Repair'}
+                </button>
               </div>
-            </div>
-          )}
+              {repairing && (
+                <div className="repair-progress">
+                  <div className="repair-progress-bar">
+                    <div
+                      className="repair-progress-fill"
+                      style={{ width: `${repairProgress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
 
-          <div className="file-list">
-            {files.map((file, idx) => (
-              <div
-                key={idx}
-                className={`file-item ${file.corrupted ? 'file-corrupted' : ''}`}
-              >
-                {file.corrupted && <span className="corruption-icon">⚠</span>}
-                <span className="file-name">{file.name}</span>
-                <span className="file-size">{file.size}</span>
+              <div className="file-list">
+                {files.map((file, idx) => (
+                  <div
+                    key={idx}
+                    className={`file-item ${file.corrupted ? 'file-corrupted' : ''}`}
+                  >
+                    {file.corrupted && <span className="corruption-icon">⚠</span>}
+                    <span className="file-name">{file.name}</span>
+                    <span className="file-size">{file.size}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </>
+            </>
           )}
         </>
       )}

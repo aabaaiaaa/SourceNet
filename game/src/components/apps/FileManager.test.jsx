@@ -1,19 +1,28 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { GameProvider } from '../../contexts/GameContext';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import FileManager from './FileManager';
 import triggerEventBus from '../../core/triggerEventBus';
+import * as GameContext from '../../contexts/GameContext';
 
 const renderWithProvider = (component) => {
-  return render(<GameProvider>{component}</GameProvider>);
+  return render(component);
 };
 
-describe('FileManager Component', () => {
+describe('FileManager Component - Initial Rendering', () => {
   beforeEach(() => {
     triggerEventBus.clear();
+    // Mock useGame to return default game state with no active connections
+    vi.spyOn(GameContext, 'useGame').mockReturnValue({
+      activeConnections: [],
+      setFileManagerConnections: vi.fn(),
+      setLastFileOperation: vi.fn(),
+      registerBandwidthOperation: vi.fn(() => ({ operationId: 'test-op', estimatedTimeMs: 2000 })),
+      completeBandwidthOperation: vi.fn(),
+    });
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     triggerEventBus.clear();
   });
 
@@ -22,52 +31,150 @@ describe('FileManager Component', () => {
     expect(screen.getByText('File Manager')).toBeInTheDocument();
   });
 
-  it('should show not connected message when no network connection', () => {
-    renderWithProvider(<FileManager />);
-    expect(screen.getByText(/Not connected to any networks/i)).toBeInTheDocument();
-  });
-
   it('should render subtitle', () => {
     renderWithProvider(<FileManager />);
     expect(screen.getByText('Remote File System Access')).toBeInTheDocument();
+  });
+
+  it('should show not connected message when no network connection', () => {
+    renderWithProvider(<FileManager />);
+    expect(screen.getByText(/Not connected to any networks/i)).toBeInTheDocument();
   });
 
   it('should display VPN Client prompt when not connected', () => {
     renderWithProvider(<FileManager />);
     expect(screen.getByText(/Use VPN Client to connect/i)).toBeInTheDocument();
   });
+
+  it('should not show file system selector when not connected', () => {
+    renderWithProvider(<FileManager />);
+    expect(screen.queryByText('Select File System')).not.toBeInTheDocument();
+  });
 });
 
-describe('FileManager repair functionality', () => {
+describe('FileManager Component - Connected State', () => {
   beforeEach(() => {
     triggerEventBus.clear();
-    vi.useFakeTimers();
+    // Mock useGame to return game state with active connections
+    vi.spyOn(GameContext, 'useGame').mockReturnValue({
+      activeConnections: [{ networkId: 'test-network', networkName: 'Test Network' }],
+      setFileManagerConnections: vi.fn(),
+      setLastFileOperation: vi.fn(),
+      registerBandwidthOperation: vi.fn(() => ({ operationId: 'test-op', estimatedTimeMs: 2000 })),
+      completeBandwidthOperation: vi.fn(),
+    });
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    vi.restoreAllMocks();
     triggerEventBus.clear();
   });
 
-  it('should register bandwidth operation on repair', () => {
-    // Test the repair logic by verifying the operation is registered
-    const mockRegister = vi.fn(() => ({ operationId: 'test-op', estimatedTimeMs: 2000 }));
-    const mockComplete = vi.fn();
+  it('should show file system selector when connected to network', () => {
+    renderWithProvider(<FileManager />);
+    expect(screen.getByText('Select File System')).toBeInTheDocument();
+  });
 
-    // Create a mock game context
-    const mockGame = {
-      activeConnections: [{ networkId: 'test', networkName: 'Test' }],
+  it('should not show empty state when connected', () => {
+    renderWithProvider(<FileManager />);
+    expect(screen.queryByText(/Not connected to any networks/i)).not.toBeInTheDocument();
+  });
+
+  it('should render file system options in selector', () => {
+    renderWithProvider(<FileManager />);
+    const select = screen.getByRole('combobox');
+    expect(within(select).getByText('192.168.50.10 - fileserver-01')).toBeInTheDocument();
+    expect(within(select).getByText('192.168.50.20 - backup-server')).toBeInTheDocument();
+  });
+
+  it('should not show file list before selecting a file system', () => {
+    renderWithProvider(<FileManager />);
+    expect(screen.queryByText('log_2024_01.txt')).not.toBeInTheDocument();
+  });
+
+  it('should show toolbar buttons when file system is selected', () => {
+    renderWithProvider(<FileManager />);
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: 'fs-001' } });
+
+    expect(screen.getByRole('button', { name: /copy/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /paste/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /delete/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /repair/i })).toBeInTheDocument();
+  });
+});
+
+describe('FileManager Component - Button States', () => {
+  beforeEach(() => {
+    triggerEventBus.clear();
+    // Mock useGame to return game state with active connections
+    vi.spyOn(GameContext, 'useGame').mockReturnValue({
+      activeConnections: [{ networkId: 'test-network', networkName: 'Test Network' }],
       setFileManagerConnections: vi.fn(),
       setLastFileOperation: vi.fn(),
-      registerBandwidthOperation: mockRegister,
-      completeBandwidthOperation: mockComplete,
-    };
+      registerBandwidthOperation: vi.fn(() => ({ operationId: 'test-op', estimatedTimeMs: 2000 })),
+      completeBandwidthOperation: vi.fn(),
+    });
+  });
 
-    // The FileManager component uses these from useGame()
-    // Since we can't easily mock that, we just verify the component structure
+  afterEach(() => {
+    vi.restoreAllMocks();
+    triggerEventBus.clear();
+  });
+
+  it('should have paste button disabled when clipboard is empty', () => {
     renderWithProvider(<FileManager />);
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: 'fs-001' } });
 
-    // Verify the component renders correctly
-    expect(screen.getByText('File Manager')).toBeInTheDocument();
+    const pasteButton = screen.getByRole('button', { name: /paste/i });
+    expect(pasteButton).toBeDisabled();
+  });
+
+  it('should have copy button enabled initially', () => {
+    renderWithProvider(<FileManager />);
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: 'fs-001' } });
+
+    const copyButton = screen.getByRole('button', { name: /copy/i });
+    expect(copyButton).not.toBeDisabled();
+  });
+
+  it('should have delete button enabled initially', () => {
+    renderWithProvider(<FileManager />);
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: 'fs-001' } });
+
+    const deleteButton = screen.getByRole('button', { name: /delete/i });
+    expect(deleteButton).not.toBeDisabled();
+  });
+});
+
+describe('FileManager Component - Repair UI', () => {
+  beforeEach(() => {
+    triggerEventBus.clear();
+    // Mock useGame to return game state with active connections
+    vi.spyOn(GameContext, 'useGame').mockReturnValue({
+      activeConnections: [{ networkId: 'test-network', networkName: 'Test Network' }],
+      setFileManagerConnections: vi.fn(),
+      setLastFileOperation: vi.fn(),
+      registerBandwidthOperation: vi.fn(() => ({ operationId: 'test-op', estimatedTimeMs: 2000 })),
+      completeBandwidthOperation: vi.fn(),
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    triggerEventBus.clear();
+  });
+
+  it('should have repair button disabled when no corrupted files exist', () => {
+    renderWithProvider(<FileManager />);
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: 'fs-001' } });
+
+    // Repair button should be disabled initially since files array is empty
+    const repairButton = screen.getByRole('button', { name: /repair/i });
+    expect(repairButton).toBeDisabled();
   });
 });

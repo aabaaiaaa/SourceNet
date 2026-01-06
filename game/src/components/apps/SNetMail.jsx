@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import { formatDateTime } from '../../utils/helpers';
+import { getMissionById } from '../../missions/missionData';
 import './SNetMail.css';
 
 const SNetMail = () => {
@@ -65,10 +66,25 @@ const SNetMail = () => {
       return;
     }
 
+    // Resolve network data - either from attachment directly or from mission lookup
+    let networkData = attachment;
+
+    // If attachment references a mission, look up the mission's network definition
+    if (attachment.missionId && !attachment.networkId) {
+      const mission = getMissionById(attachment.missionId);
+      if (mission && mission.network) {
+        networkData = mission.network;
+        console.log('🔍 Resolved network data from mission:', attachment.missionId);
+      } else {
+        console.error('⚠️ Could not resolve mission network:', attachment.missionId);
+        return;
+      }
+    }
+
     // Use functional update to avoid stale closure issues
     setNarEntries((currentEntries) => {
       console.log('🔵 setNarEntries called with currentEntries:', currentEntries);
-      const alreadyAdded = currentEntries?.some(entry => entry.networkId === attachment.networkId);
+      const alreadyAdded = currentEntries?.some(entry => entry.networkId === networkData.networkId);
       if (alreadyAdded) {
         console.log('⚠️ Network already in NAR');
         return currentEntries;
@@ -77,16 +93,34 @@ const SNetMail = () => {
       // Add network entry to NAR
       const newEntry = {
         id: `nar-${Date.now()}`,
-        networkId: attachment.networkId,
-        networkName: attachment.networkName,
-        address: attachment.address || '10.0.0.0/8',
+        networkId: networkData.networkId,
+        networkName: networkData.networkName,
+        address: networkData.address || '10.0.0.0/8',
         status: 'active',
         dateAdded: new Date().toISOString(),
+        // Include file systems if provided (for mission-critical networks)
+        ...(networkData.fileSystems && {
+          fileSystems: networkData.fileSystems.map(fs => ({
+            id: fs.id,
+            ip: fs.ip,
+            name: fs.name,
+            files: fs.files || [],
+          })),
+        }),
       };
 
-      console.log('✅ Network added to NAR:', attachment.networkName, newEntry);
+      console.log('✅ Network added to NAR:', networkData.networkName, newEntry);
       return [...currentEntries, newEntry];
     });
+  };
+
+  // Helper to resolve network data for display (from mission if needed)
+  const resolveNetworkData = (attachment) => {
+    if (attachment.missionId && !attachment.networkId) {
+      const mission = getMissionById(attachment.missionId);
+      return mission?.network || attachment;
+    }
+    return attachment;
   };
 
   return (
@@ -227,8 +261,11 @@ const SNetMail = () => {
                       </div>
                     );
                   } else if (attachment.type === 'networkAddress') {
+                    // Resolve network data (from mission if needed)
+                    const networkData = resolveNetworkData(attachment);
+
                     const narInstalled = software?.some(s => (typeof s === 'string' ? s === 'network-address-register' : s.id === 'network-address-register'));
-                    const alreadyAdded = narEntries?.some(entry => entry.networkId === attachment.networkId);
+                    const alreadyAdded = narEntries?.some(entry => entry.networkId === networkData.networkId);
 
                     let statusText;
                     let isClickable = true;
@@ -246,14 +283,14 @@ const SNetMail = () => {
                         key={index}
                         className={`attachment-item ${alreadyAdded ? 'activated' : ''} ${!isClickable ? 'disabled' : ''}`}
                         onClick={isClickable ? () => handleNetworkAddressClick(selectedMessage, attachment) : undefined}
-                        data-testid={`network-attachment-${attachment.networkId}`}
+                        data-testid={`network-attachment-${networkData.networkId}`}
                         role="button"
                         tabIndex={0}
                       >
                         <div className="attachment-icon">🔒</div>
                         <div className="attachment-details">
                           <div className="attachment-name">
-                            Network Credentials: {attachment.networkName}
+                            Network Credentials: {networkData.networkName}
                           </div>
                           <div className="attachment-status">
                             {statusText}

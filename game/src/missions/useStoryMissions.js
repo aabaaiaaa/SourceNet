@@ -27,12 +27,7 @@ export const useStoryMissions = (gameState, actions) => {
   const desktopLoadedEmitted = useRef(false);
   const emittedConnectionsRef = useRef(new Set());
   const emittedMissionRef = useRef(null);
-  const actionsRef = useRef(actions); // Keep latest actions in ref
-
-  // Update actions ref on every render
-  useEffect(() => {
-    actionsRef.current = actions;
-  });
+  const messageHandlerRef = useRef(null);
 
   // Initialize missions once on mount
   useEffect(() => {
@@ -46,16 +41,16 @@ export const useStoryMissions = (gameState, actions) => {
     }
     eventsSubscribed = true;
 
-    // Subscribe to events (only happens once ever, even across strict mode remounts)
+    // Subscribe to mission available events (only happens once ever)
     console.log('📡 Subscribing to missionAvailable events...');
     triggerEventBus.on('missionAvailable', (data) => {
       console.log(`📥 Received missionAvailable event:`, data);
       const { mission } = data;
 
-      // Use actionsRef.current to get latest actions
-      if (actionsRef.current.setAvailableMissions) {
+      // Actions are accessed directly - they should be stable
+      if (actions.setAvailableMissions) {
         console.log(`📝 Calling setAvailableMissions for ${mission.title}`);
-        actionsRef.current.setAvailableMissions((prev) => {
+        actions.setAvailableMissions((prev) => {
           console.log(`📝 Previous missions:`, prev.length);
           // Avoid duplicates
           if (prev.some((m) => m.missionId === mission.missionId)) {
@@ -72,12 +67,22 @@ export const useStoryMissions = (gameState, actions) => {
       console.log(`📋 Mission available: ${mission.title}`);
     });
 
-    // Subscribe to story event triggered (for messages)
-    triggerEventBus.on('storyEventTriggered', (data) => {
+    // No cleanup - subscriptions persist for app lifetime
+  }, []); // Empty dependency array - only run once on first mount
+
+  // Message handler with current username and managerName
+  useEffect(() => {
+    // Remove old handler if it exists
+    if (messageHandlerRef.current) {
+      triggerEventBus.off('storyEventTriggered', messageHandlerRef.current);
+    }
+
+    // Create new handler with current username and managerName in closure
+    const handler = (data) => {
       const { message, eventId } = data;
 
-      if (message && actionsRef.current.addMessage) {
-        // Helper to replace placeholders
+      if (message && actions.addMessage) {
+        // Helper to replace placeholders using current gameState
         const replacePlaceholders = (text) => {
           if (!text) return text;
           return text
@@ -104,12 +109,21 @@ export const useStoryMissions = (gameState, actions) => {
           attachments: message.attachments || [],
         };
 
-        actionsRef.current.addMessage(newMessage);
+        actions.addMessage(newMessage);
       }
-    });
+    };
 
-    // No cleanup - subscriptions persist for app lifetime
-  }, []); // Empty dependency array - only run once on first mount
+    // Store handler ref and register it
+    messageHandlerRef.current = handler;
+    triggerEventBus.on('storyEventTriggered', handler);
+
+    // Cleanup on unmount
+    return () => {
+      if (messageHandlerRef.current) {
+        triggerEventBus.off('storyEventTriggered', messageHandlerRef.current);
+      }
+    };
+  }, [gameState.username, gameState.managerName, actions.addMessage]);
 
   // Emit desktop loaded event (once)
   useEffect(() => {

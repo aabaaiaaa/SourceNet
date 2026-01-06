@@ -76,9 +76,7 @@
           },
           {
             "type": "networkAddress",
-            "networkId": "clienta-corporate",
-            "networkName": "ClientA-Corporate",
-            "description": "TechCorp Industries corporate network"
+            "missionId": "tutorial-part-1"
           }
         ]
       }
