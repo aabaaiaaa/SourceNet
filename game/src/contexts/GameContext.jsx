@@ -102,12 +102,6 @@ export const GameProvider = ({ children }) => {
   // Auto-tracking control (can be disabled for testing)
   const [autoTrackingEnabled, setAutoTrackingEnabled] = useState(true);
 
-  // Initialize story mission system
-  useStoryMissions(
-    { gamePhase, username, currentTime, activeConnections, activeMission, timeSpeed },
-    { setAvailableMissions }
-  );
-
   // Download completion callback - adds software to installed list
   const handleDownloadComplete = useCallback((softwareId) => {
     setSoftware((prev) => {
@@ -116,12 +110,13 @@ export const GameProvider = ({ children }) => {
     });
   }, []);
 
-  // Download manager - handles real progress updates for downloads
+  // Download manager - handles progress updates for downloads based on game time
   useDownloadManager(
     downloadQueue,
     setDownloadQueue,
     hardware,
     handleDownloadComplete,
+    currentTime,
     gamePhase === 'desktop' // Only run when on desktop
   );
 
@@ -381,6 +376,12 @@ export const GameProvider = ({ children }) => {
     });
   }, []);
 
+  // Initialize story mission system
+  useStoryMissions(
+    { gamePhase, username, currentTime, activeConnections, activeMission, timeSpeed },
+    { setAvailableMissions, addMessage }
+  );
+
   // Window management
   const openWindow = useCallback((appId) => {
     setWindows((prev) => {
@@ -494,40 +495,10 @@ export const GameProvider = ({ children }) => {
     );
   }, []);
 
-  // Handle story event messages (listen for storyEventTriggered)
-  useEffect(() => {
-    if (!username) return; // Wait until username is set
-
-    const handleStoryEvent = (data) => {
-      const { message } = data;
-      if (message) {
-        // Replace placeholders with current values
-        const replacePlaceholders = (text) => {
-          if (!text) return text;
-          return text
-            .replace(/{username}/g, username)
-            .replace(/{managerName}/g, managerName);
-        };
-
-        const generateRandomId = () => {
-          return `${Math.random().toString(36).substring(2, 5).toUpperCase()}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
-        };
-
-        addMessage({
-          id: data.eventId,
-          from: replacePlaceholders(message.from),
-          fromId: message.fromId.replace(/{random}/g, generateRandomId()),
-          fromName: replacePlaceholders(message.fromName),
-          subject: replacePlaceholders(message.subject),
-          body: replacePlaceholders(message.body),
-          attachments: message.attachments || [],
-        });
-      }
-    };
-
-    const unsubscribe = triggerEventBus.on('storyEventTriggered', handleStoryEvent);
-    return () => unsubscribe();
-  }, [username, managerName]); // Include dependencies so placeholders update
+  // Set specific time speed (for testing)
+  const setSpecificTimeSpeed = useCallback((speed) => {
+    setTimeSpeed(speed);
+  }, []);
 
   // Get total credits
   const getTotalCredits = useCallback(() => {
@@ -949,6 +920,7 @@ export const GameProvider = ({ children }) => {
     bringToFront,
     moveWindow,
     toggleTimeSpeed,
+    setSpecificTimeSpeed,
     saveGame,
     loadGame,
     rebootSystem,

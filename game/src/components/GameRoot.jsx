@@ -7,9 +7,23 @@ import UsernameSelection from './boot/UsernameSelection';
 import Rebooting from './boot/Rebooting';
 import SleepAnimation from './boot/SleepAnimation';
 import Desktop from './ui/Desktop';
+import GameOverOverlay from './ui/GameOverOverlay';
 
 const GameRoot = () => {
-  const { gamePhase, setGamePhase } = useGame();
+  const gameContext = useGame();
+  const { gamePhase, setGamePhase } = gameContext;
+
+  // Expose game context globally for e2e testing
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.gameContext = gameContext;
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete window.gameContext;
+      }
+    };
+  }, [gameContext]);
 
   useEffect(() => {
     // Check for skipBoot parameter (for E2E tests)
@@ -51,6 +65,30 @@ const GameRoot = () => {
       return <UsernameSelection />;
     case 'desktop':
       return <Desktop />;
+    case 'gameOver-bankruptcy':
+      return (
+        <GameOverOverlay
+          type="bankruptcy"
+          onLoadSave={() => {
+            setGamePhase('login');
+          }}
+          onNewGame={() => {
+            setGamePhase('login');
+          }}
+        />
+      );
+    case 'gameOver-termination':
+      return (
+        <GameOverOverlay
+          type="termination"
+          onLoadSave={() => {
+            setGamePhase('login');
+          }}
+          onNewGame={() => {
+            setGamePhase('login');
+          }}
+        />
+      );
     default:
       return <div>Loading...</div>;
   }

@@ -117,6 +117,49 @@ export function createMessageWithLicense({
     };
 }
 
+/**
+ * Create a message with network address attachment
+ * @param {Object} options - Message configuration
+ * @param {string} options.id - Message ID
+ * @param {string} options.from - Sender
+ * @param {string} options.subject - Subject line
+ * @param {string} options.body - Message body
+ * @param {boolean} options.read - Whether message is read
+ * @param {string} options.networkId - ID of the network
+ * @param {string} options.networkName - Display name of the network
+ * @param {string} options.address - Network address (CIDR format)
+ * @returns {Object} Message object with network address attachment
+ */
+export function createMessageWithNetworkAddress({
+    id = 'msg-network-1',
+    from = 'Network Admin <admin@corp.local>',
+    subject = 'Network Access',
+    body = 'Please find your network credentials attached.',
+    read = false,
+    networkId = 'corp-network-1',
+    networkName = 'Corporate Network',
+    address = '10.0.0.0/16',
+} = {}) {
+    return {
+        id,
+        from,
+        to: 'test_user@sourcenet.local',
+        subject,
+        body,
+        timestamp: '2020-03-25T09:00:00.000Z',
+        read,
+        archived: false,
+        attachments: [
+            {
+                type: 'networkAddress',
+                networkId,
+                networkName,
+                address,
+            },
+        ],
+    };
+}
+
 // ============================================================================
 // BANK ACCOUNT BUILDERS
 // ============================================================================
@@ -155,6 +198,7 @@ export function createBankAccount({
  * @param {Array} options.messages - Array of message objects
  * @param {Array} options.bankAccounts - Array of bank account objects
  * @param {Array} options.transactions - Array of transaction objects
+ * @param {Array} options.narEntries - Array of NAR entries
  * @param {number} options.reputation - Reputation score
  * @param {Object} options.overrides - Any other state properties to override
  * @returns {Object} Complete save state object
@@ -164,7 +208,9 @@ export function createCompleteSaveState({
     messages = [],
     bankAccounts = [createBankAccount()],
     transactions = [],
+    narEntries = [],
     reputation = 9,
+    software = STARTING_SOFTWARE,
     overrides = {},
 } = {}) {
     return {
@@ -173,9 +219,10 @@ export function createCompleteSaveState({
         currentTime: '2020-03-25T09:00:00.000Z',
         timeSpeed: 1,
         hardware: STARTING_HARDWARE,
-        software: STARTING_SOFTWARE,
+        software,
         bankAccounts,
         messages,
+        narEntries,
         managerName: 'Emily Carter',
         windows: [],
         reputation,

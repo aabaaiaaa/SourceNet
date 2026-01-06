@@ -49,7 +49,8 @@ const Portal = () => {
       const downloadItem = createDownloadItem(
         selectedItem.id,
         selectedItem.name,
-        selectedItem.sizeInMB || 50 // Use actual size from catalog
+        selectedItem.sizeInMB || 50, // Use actual size from catalog
+        currentTime
       );
 
       setDownloadQueue(prev => [...prev, downloadItem]);
@@ -64,9 +65,13 @@ const Portal = () => {
     const downloadItem = createDownloadItem(
       item.id,
       item.name,
-      item.sizeInMB || 50
+      item.sizeInMB || 50,
+      currentTime
     );
-    setDownloadQueue(prev => [...prev, downloadItem]);
+    setDownloadQueue(prev => {
+      const newQueue = [...prev, downloadItem];
+      return newQueue;
+    });
   };
 
   const hardwareCategories = [

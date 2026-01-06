@@ -7,6 +7,7 @@ describe('useDownloadManager', () => {
   beforeEach(() => {
     triggerEventBus.clear();
     vi.useFakeTimers();
+    vi.setSystemTime(new Date('2020-03-25T09:00:00'));
   });
 
   afterEach(() => {
@@ -16,7 +17,8 @@ describe('useDownloadManager', () => {
 
   describe('createDownloadItem', () => {
     it('should create a download item with correct structure', () => {
-      const item = createDownloadItem('test-software', 'Test Software', 50);
+      const currentTime = new Date('2020-03-25T09:00:00');
+      const item = createDownloadItem('test-software', 'Test Software', 50, currentTime);
 
       expect(item.softwareId).toBe('test-software');
       expect(item.softwareName).toBe('Test Software');
@@ -28,7 +30,8 @@ describe('useDownloadManager', () => {
     });
 
     it('should use default size if not provided', () => {
-      const item = createDownloadItem('test-software', 'Test Software');
+      const currentTime = new Date('2020-03-25T09:00:00');
+      const item = createDownloadItem('test-software', 'Test Software', undefined, currentTime);
 
       expect(item.sizeInMB).toBe(50);
     });
@@ -39,8 +42,9 @@ describe('useDownloadManager', () => {
       const setDownloadQueue = vi.fn();
       const onDownloadComplete = vi.fn();
       const hardware = { networkAdapter: { speed: 250 } };
+      const currentTime = new Date('2020-03-25T09:00:00');
 
-      const downloadItem = createDownloadItem('test-software', 'Test Software', 25);
+      const downloadItem = createDownloadItem('test-software', 'Test Software', 25, currentTime);
       const downloadQueue = [downloadItem];
 
       renderHook(() =>
@@ -49,6 +53,7 @@ describe('useDownloadManager', () => {
           setDownloadQueue,
           hardware,
           onDownloadComplete,
+          currentTime,
           true
         )
       );
@@ -66,8 +71,9 @@ describe('useDownloadManager', () => {
       const setDownloadQueue = vi.fn();
       const onDownloadComplete = vi.fn();
       const hardware = { networkAdapter: { speed: 250 } };
+      const currentTime = new Date('2020-03-25T09:00:00');
 
-      const downloadItem = createDownloadItem('test-software', 'Test Software', 25);
+      const downloadItem = createDownloadItem('test-software', 'Test Software', 25, currentTime);
       const downloadQueue = [downloadItem];
 
       renderHook(() =>
@@ -76,6 +82,7 @@ describe('useDownloadManager', () => {
           setDownloadQueue,
           hardware,
           onDownloadComplete,
+          currentTime,
           false // Disabled
         )
       );
@@ -92,6 +99,7 @@ describe('useDownloadManager', () => {
       const setDownloadQueue = vi.fn();
       const onDownloadComplete = vi.fn();
       const hardware = { networkAdapter: { speed: 250 } };
+      const currentTime = new Date('2020-03-25T09:00:00');
 
       renderHook(() =>
         useDownloadManager(
@@ -99,6 +107,7 @@ describe('useDownloadManager', () => {
           setDownloadQueue,
           hardware,
           onDownloadComplete,
+          currentTime,
           true
         )
       );
@@ -119,6 +128,7 @@ describe('useDownloadManager', () => {
       });
       const onDownloadComplete = vi.fn();
       const hardware = { networkAdapter: { speed: 250 } };
+      const currentTime = new Date('2020-03-25T09:00:00');
 
       let eventEmitted = false;
       triggerEventBus.on('softwareInstalled', (data) => {
@@ -128,10 +138,10 @@ describe('useDownloadManager', () => {
 
       // Create an item that's almost complete
       const downloadItem = {
-        ...createDownloadItem('test-software', 'Test Software', 1), // Tiny file
+        ...createDownloadItem('test-software', 'Test Software', 1, currentTime), // Tiny file
         progress: 99,
         status: 'downloading',
-        startTime: Date.now() - 10000, // Started 10 seconds ago
+        startTime: currentTime.getTime() - 10000, // Started 10 seconds ago
       };
 
       const downloadQueue = [downloadItem];
@@ -142,6 +152,7 @@ describe('useDownloadManager', () => {
           setDownloadQueue,
           hardware,
           onDownloadComplete,
+          currentTime,
           true
         )
       );
@@ -157,6 +168,7 @@ describe('useDownloadManager', () => {
     it('should call onDownloadComplete callback', () => {
       const onDownloadComplete = vi.fn();
       const hardware = { networkAdapter: { speed: 250 } };
+      const currentTime = new Date('2020-03-25T09:00:00');
 
       // Track state updates
       let currentQueue = [];
@@ -176,8 +188,8 @@ describe('useDownloadManager', () => {
         sizeInMB: 1,
         progress: 100,
         status: 'installing',
-        startTime: Date.now() - 10000,
-        installStartTime: Date.now() - 2000, // Started installing 2 seconds ago
+        startTime: currentTime.getTime() - 10000,
+        installStartTime: currentTime.getTime() - 2000, // Started installing 2 seconds ago
       };
 
       currentQueue = [downloadItem];
@@ -188,6 +200,7 @@ describe('useDownloadManager', () => {
           setDownloadQueue,
           hardware,
           onDownloadComplete,
+          currentTime,
           true
         )
       );
@@ -205,10 +218,11 @@ describe('useDownloadManager', () => {
       const setDownloadQueue = vi.fn();
       const onDownloadComplete = vi.fn();
       const hardware = { networkAdapter: { speed: 250 } };
+      const currentTime = new Date('2020-03-25T09:00:00');
 
       // Create two downloads
-      const download1 = createDownloadItem('software-1', 'Software 1', 50);
-      const download2 = createDownloadItem('software-2', 'Software 2', 50);
+      const download1 = createDownloadItem('software-1', 'Software 1', 50, currentTime);
+      const download2 = createDownloadItem('software-2', 'Software 2', 50, currentTime);
       const downloadQueue = [download1, download2];
 
       renderHook(() =>
@@ -217,6 +231,7 @@ describe('useDownloadManager', () => {
           setDownloadQueue,
           hardware,
           onDownloadComplete,
+          currentTime,
           true
         )
       );

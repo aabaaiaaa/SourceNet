@@ -7,6 +7,7 @@ export const GAME_START_DATE = new Date('2020-03-25T09:00:00');
 export const TIME_SPEEDS = {
   NORMAL: 1,
   FAST: 10,
+  TEST: 100, // For automated testing only
 };
 
 // Starting hardware configuration

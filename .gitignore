@@ -3,3 +3,5 @@
 game/playwright-report/
 
 game/coverage/
+
+game/test-output.txt

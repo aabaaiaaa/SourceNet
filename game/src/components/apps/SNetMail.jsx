@@ -4,7 +4,7 @@ import { formatDateTime } from '../../utils/helpers';
 import './SNetMail.css';
 
 const SNetMail = () => {
-  const { playerMailId, messages, markMessageAsRead, archiveMessage, initiateChequeDeposit, activateLicense } = useGame();
+  const { playerMailId, messages, markMessageAsRead, archiveMessage, initiateChequeDeposit, activateLicense, narEntries, setNarEntries, software } = useGame();
   const [activeTab, setActiveTab] = useState('inbox');
   const [selectedMessage, setSelectedMessage] = useState(null);
 
@@ -52,6 +52,41 @@ const SNetMail = () => {
     if (!attachment.activated) {
       activateLicense(message.id, attachment.softwareId);
     }
+  };
+
+  const handleNetworkAddressClick = (message, attachment) => {
+    console.log('🔵 handleNetworkAddressClick called', { attachment, narEntries, software });
+
+    // Only add if NAR is installed and network not already added
+    const narInstalled = software?.some(s => (typeof s === 'string' ? s === 'network-address-register' : s.id === 'network-address-register'));
+
+    if (!narInstalled) {
+      console.log('⚠️ NAR not installed - cannot add network address');
+      return;
+    }
+
+    // Use functional update to avoid stale closure issues
+    setNarEntries((currentEntries) => {
+      console.log('🔵 setNarEntries called with currentEntries:', currentEntries);
+      const alreadyAdded = currentEntries?.some(entry => entry.networkId === attachment.networkId);
+      if (alreadyAdded) {
+        console.log('⚠️ Network already in NAR');
+        return currentEntries;
+      }
+
+      // Add network entry to NAR
+      const newEntry = {
+        id: `nar-${Date.now()}`,
+        networkId: attachment.networkId,
+        networkName: attachment.networkName,
+        address: attachment.address || '10.0.0.0/8',
+        status: 'active',
+        dateAdded: new Date().toISOString(),
+      };
+
+      console.log('✅ Network added to NAR:', attachment.networkName, newEntry);
+      return [...currentEntries, newEntry];
+    });
   };
 
   return (
@@ -192,15 +227,36 @@ const SNetMail = () => {
                       </div>
                     );
                   } else if (attachment.type === 'networkAddress') {
+                    const narInstalled = software?.some(s => (typeof s === 'string' ? s === 'network-address-register' : s.id === 'network-address-register'));
+                    const alreadyAdded = narEntries?.some(entry => entry.networkId === attachment.networkId);
+
+                    let statusText;
+                    let isClickable = true;
+                    if (alreadyAdded) {
+                      statusText = '✓ Added to NAR';
+                    } else if (!narInstalled) {
+                      statusText = 'Install Network Address Register to use this attachment';
+                      isClickable = false;
+                    } else {
+                      statusText = 'Click to add to Network Address Register';
+                    }
+
                     return (
-                      <div key={index} className="attachment-item">
+                      <div
+                        key={index}
+                        className={`attachment-item ${alreadyAdded ? 'activated' : ''} ${!isClickable ? 'disabled' : ''}`}
+                        onClick={isClickable ? () => handleNetworkAddressClick(selectedMessage, attachment) : undefined}
+                        data-testid={`network-attachment-${attachment.networkId}`}
+                        role="button"
+                        tabIndex={0}
+                      >
                         <div className="attachment-icon">🔒</div>
                         <div className="attachment-details">
                           <div className="attachment-name">
                             Network Credentials: {attachment.networkName}
                           </div>
                           <div className="attachment-status">
-                            Click to add to Network Address Register
+                            {statusText}
                           </div>
                         </div>
                       </div>

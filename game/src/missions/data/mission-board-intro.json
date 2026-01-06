@@ -17,7 +17,7 @@
         "fromId": "SNET-MGR-{random}",
         "fromName": "SourceNet Manager {managerName}",
         "subject": "Get Ready for Your First Mission",
-        "body": "Hey {username}!\n\nNow that you're all set up, it's time to get you started with actual work.\n\nI've attached a license for the SourceNet Mission Board application. This is where you'll find all available missions from our clients.\n\nTo get started:\n\n1. Click the attachment above to add the Mission Board license to your account\n2. Open the OSNet Portal from your app launcher\n3. Go to Software section - you'll see \"SourceNet Mission Board\" marked as \"Licensed\"\n4. Download and install it\n5. Once installed, open the Mission Board from your app launcher\n\nI've posted your first assignment there. It's a straightforward file repair job for one of our clients - perfect for learning the ropes.\n\nAfter you install the Mission Board and accept the mission, I'll send you the software licenses you'll need to complete it.\n\n- {managerName}",
+        "body": "Hey {username}!\n\nNow that you're all set up, it's time to get you started with actual work.\n\nI've attached a license for the SourceNet Mission Board application. This is where you'll find all available missions from our clients.\n\nTo get started:\n\n1. Click the attachment above to add the Mission Board license to your account\n2. Open the OSNet Portal from your app launcher\n3. Go to Software section - you'll see \"SourceNet Mission Board\" marked as \"Licensed\"\n4. Download and install it\n5. Once installed, open the Mission Board from your app launcher\n\nI've posted your first assignment there. It's a straightforward file repair job for one of our clients - perfect for learning the ropes.\n\nOnce you install the Mission Board, I'll send you the software licenses you'll need to complete the mission.\n\n- {managerName}",
         "attachments": [
           {
             "type": "softwareLicense",
@@ -25,6 +25,60 @@
             "softwareName": "SourceNet Mission Board",
             "price": 250,
             "size": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": "tutorial-software-licenses",
+      "trigger": {
+        "type": "timeSinceEvent",
+        "event": "softwareInstalled",
+        "condition": {
+          "softwareId": "mission-board"
+        },
+        "delay": 5000
+      },
+      "message": {
+        "from": "SourceNet Manager",
+        "fromId": "SNET-MGR-{random}",
+        "fromName": "SourceNet Manager {managerName}",
+        "subject": "Mission Software & Network Access",
+        "body": "Great! Now that you have the Mission Board installed, let me get you set up with the tools you'll need for your first mission.\n\nI've attached free licenses for the essential software (total value: $1,350):\n\n- SourceNet VPN Client ($500): Secure access to client networks\n- Network Address Register ($200): Manages your network connections\n- Network Scanner ($300): Finds machines and file systems on networks\n- File Manager ($350): Access and repair files on remote systems\n\nI've also attached the network credentials for ClientA-Corporate. Click that attachment to add it to your Network Address Register.\n\nInstallation steps:\n\n1. Click all the attachments above to add them to your account\n2. Open the Portal and install all four software applications\n3. Once installed, open the Mission Board and accept the \"Log File Repair\" mission\n\nThe mission objectives are straightforward:\n- Connect to ClientA-Corporate network via VPN\n- Scan the network to find their file server\n- Use File Manager to detect and repair corrupted log files\n\nYour Mission Board will track each objective as you complete them.\n\nGood luck!\n\n- {managerName}",
+        "attachments": [
+          {
+            "type": "softwareLicense",
+            "softwareId": "vpn-client",
+            "softwareName": "SourceNet VPN Client",
+            "price": 500,
+            "size": 45
+          },
+          {
+            "type": "softwareLicense",
+            "softwareId": "network-address-register",
+            "softwareName": "Network Address Register",
+            "price": 200,
+            "size": 15
+          },
+          {
+            "type": "softwareLicense",
+            "softwareId": "network-scanner",
+            "softwareName": "Network Scanner",
+            "price": 300,
+            "size": 30
+          },
+          {
+            "type": "softwareLicense",
+            "softwareId": "file-manager",
+            "softwareName": "File Manager",
+            "price": 350,
+            "size": 40
+          },
+          {
+            "type": "networkAddress",
+            "networkId": "clienta-corporate",
+            "networkName": "ClientA-Corporate",
+            "description": "TechCorp Industries corporate network"
           }
         ]
       }

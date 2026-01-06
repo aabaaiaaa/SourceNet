@@ -34,12 +34,13 @@ const INSTALLATION_DURATION = 1000;
 const COMPLETED_DISPLAY_DURATION = 2000;
 
 /**
- * Hook to manage download queue with real progress updates
+ * Hook to manage download queue with progress based on game time
  *
  * @param {array} downloadQueue - Current download queue
  * @param {function} setDownloadQueue - State setter for download queue
  * @param {object} hardware - Player's hardware (for network adapter speed)
  * @param {function} onDownloadComplete - Callback when download completes (receives softwareId)
+ * @param {Date} currentTime - Current game time
  * @param {boolean} enabled - Whether download management is enabled (default: true)
  */
 export const useDownloadManager = (
@@ -47,6 +48,7 @@ export const useDownloadManager = (
   setDownloadQueue,
   hardware,
   onDownloadComplete,
+  currentTime,
   enabled = true
 ) => {
   const intervalRef = useRef(null);
@@ -54,11 +56,11 @@ export const useDownloadManager = (
 
   // Update progress for all active downloads
   const updateDownloadProgress = useCallback(() => {
-    if (!enabled || !downloadQueue || downloadQueue.length === 0) {
+    if (!enabled || !downloadQueue || downloadQueue.length === 0 || !currentTime) {
       return;
     }
 
-    const now = Date.now();
+    const now = currentTime.getTime();
     const activeDownloads = downloadQueue.filter(
       (item) => item.status === 'downloading'
     );
@@ -86,7 +88,7 @@ export const useDownloadManager = (
           return item;
         }
 
-        // Calculate elapsed time
+        // Calculate elapsed time using game time
         const elapsedMs = now - item.startTime;
 
         // Calculate new progress
@@ -99,6 +101,7 @@ export const useDownloadManager = (
 
         // Check if download is complete
         if (newProgress >= 100) {
+          console.log(`✅ [DOWNLOAD] Download complete for ${item.softwareName}, transitioning to installing`);
           // Transition to installing
           return {
             ...item,
@@ -115,14 +118,16 @@ export const useDownloadManager = (
       })
     );
   }, [enabled, downloadQueue, hardware, setDownloadQueue]);
+  // NOTE: currentTime intentionally NOT in dependencies to prevent interval from restarting
+  // on every time change. We access it fresh each time the function runs.
 
   // Handle installation completion
   const handleInstallations = useCallback(() => {
-    if (!enabled || !downloadQueue || downloadQueue.length === 0) {
+    if (!enabled || !downloadQueue || downloadQueue.length === 0 || !currentTime) {
       return;
     }
 
-    const now = Date.now();
+    const now = currentTime.getTime();
     const installingItems = downloadQueue.filter(
       (item) => item.status === 'installing'
     );
@@ -131,6 +136,7 @@ export const useDownloadManager = (
       const installElapsed = now - (item.installStartTime || now);
 
       if (installElapsed >= INSTALLATION_DURATION) {
+        console.log(`🔧 [DOWNLOAD] Installation complete for ${item.softwareName}`);
         // Mark as complete
         setDownloadQueue((prevQueue) =>
           prevQueue.map((qItem) =>
@@ -158,14 +164,15 @@ export const useDownloadManager = (
       }
     });
   }, [enabled, downloadQueue, setDownloadQueue, onDownloadComplete]);
+  // NOTE: currentTime intentionally NOT in dependencies
 
   // Remove completed items after display duration
   const cleanupCompletedItems = useCallback(() => {
-    if (!enabled || !downloadQueue || downloadQueue.length === 0) {
+    if (!enabled || !downloadQueue || downloadQueue.length === 0 || !currentTime) {
       return;
     }
 
-    const now = Date.now();
+    const now = currentTime.getTime();
 
     setDownloadQueue((prevQueue) =>
       prevQueue.filter((item) => {
@@ -181,27 +188,45 @@ export const useDownloadManager = (
       })
     );
   }, [enabled, downloadQueue, setDownloadQueue]);
+  // NOTE: currentTime intentionally NOT in dependencies
 
-  // Main update loop
+  // Store latest versions of functions in refs to avoid stale closures
+  const updateDownloadProgressRef = useRef();
+  const handleInstallationsRef = useRef();
+  const cleanupCompletedItemsRef = useRef();
+
+  // Update refs whenever functions change
+  useEffect(() => {
+    updateDownloadProgressRef.current = updateDownloadProgress;
+    handleInstallationsRef.current = handleInstallations;
+    cleanupCompletedItemsRef.current = cleanupCompletedItems;
+  }, [updateDownloadProgress, handleInstallations, cleanupCompletedItems]);
+
+  // Main update loop using requestAnimationFrame instead of setInterval
+  // This ensures updates happen every frame and sync properly with game time
+  // We use refs to access the latest function versions without adding them to dependencies
   useEffect(() => {
     if (!enabled) {
       return;
     }
 
-    // Set up interval for progress updates
-    intervalRef.current = setInterval(() => {
-      updateDownloadProgress();
-      handleInstallations();
-      cleanupCompletedItems();
-    }, PROGRESS_UPDATE_INTERVAL);
+    let animationFrameId;
+    const animate = () => {
+      // Use refs to always call the latest versions of functions
+      updateDownloadProgressRef.current?.();
+      handleInstallationsRef.current?.();
+      cleanupCompletedItemsRef.current?.();
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    animationFrameId = requestAnimationFrame(animate);
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [enabled, updateDownloadProgress, handleInstallations, cleanupCompletedItems]);
+  }, [enabled]);
 
   // Reset completed tracking when queue is cleared
   useEffect(() => {
@@ -217,17 +242,19 @@ export const useDownloadManager = (
  * @param {string} softwareId - Software ID
  * @param {string} softwareName - Software display name
  * @param {number} sizeInMB - Download size in megabytes
+ * @param {Date} currentTime - Current game time to use as start time
  * @returns {object} Download queue item
  */
-export const createDownloadItem = (softwareId, softwareName, sizeInMB) => {
+export const createDownloadItem = (softwareId, softwareName, sizeInMB, currentTime) => {
+  const timestamp = currentTime ? currentTime.getTime() : Date.now();
   return {
-    id: `download-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: `download-${timestamp}-${Math.random().toString(36).substr(2, 9)}`,
     softwareId,
     softwareName,
     sizeInMB: sizeInMB || 50, // Default 50MB if not specified
     progress: 0,
     status: 'downloading',
-    startTime: Date.now(),
+    startTime: timestamp,
   };
 };
 

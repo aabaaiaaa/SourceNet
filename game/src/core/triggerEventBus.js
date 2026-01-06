@@ -71,15 +71,25 @@ class TriggerEventBus {
       this.eventHistory.shift();
     }
 
+    // Debug logging for mission events
+    if (eventType === 'missionAvailable') {
+      console.log(`📡 EVENT BUS: Emitting ${eventType}, listeners count: ${this.events[eventType]?.length || 0}`);
+    }
+
     // Call all subscribed callbacks
     if (this.events[eventType]) {
-      this.events[eventType].forEach((callback) => {
+      this.events[eventType].forEach((callback, index) => {
         try {
+          if (eventType === 'missionAvailable') {
+            console.log(`📡 EVENT BUS: Calling listener ${index + 1} of ${this.events[eventType].length}`);
+          }
           callback(event.data);
         } catch (error) {
           console.error(`Error in event handler for ${eventType}:`, error);
         }
       });
+    } else if (eventType === 'missionAvailable') {
+      console.warn(`⚠️ EVENT BUS: No listeners for ${eventType}!`);
     }
   }
 

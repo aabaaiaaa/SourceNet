@@ -12,8 +12,11 @@
 
 import { useEffect, useRef } from 'react';
 import storyMissionManager from './StoryMissionManager';
-import { initializeAllMissions } from './missionData';
+import { storyEvents, allMissions } from './missionData';
 import triggerEventBus from '../core/triggerEventBus';
+
+// Module-level state that persists across component remounts (including React Strict Mode)
+let eventsSubscribed = false;
 
 /**
  * Initialize story missions system
@@ -21,69 +24,92 @@ import triggerEventBus from '../core/triggerEventBus';
  * @param {object} actions - Game actions (addMessage, setAvailableMissions, etc.)
  */
 export const useStoryMissions = (gameState, actions) => {
-  const initialized = useRef(false);
   const desktopLoadedEmitted = useRef(false);
   const emittedConnectionsRef = useRef(new Set());
   const emittedMissionRef = useRef(null);
+  const actionsRef = useRef(actions); // Keep latest actions in ref
+
+  // Update actions ref on every render
+  useEffect(() => {
+    actionsRef.current = actions;
+  });
 
   // Initialize missions once on mount
   useEffect(() => {
-    if (initialized.current) return;
+    // Initialize missions in singleton (guard inside singleton prevents duplicates across HMR)
+    storyMissionManager.initializeAllMissions([...storyEvents, ...allMissions]);
 
-    // Load all mission definitions
-    initializeAllMissions(storyMissionManager);
-    initialized.current = true;
+    // Only subscribe once (module-level flag persists across remounts)
+    if (eventsSubscribed) {
+      console.log('📡 Already subscribed, skipping');
+      return; // Don't return cleanup
+    }
+    eventsSubscribed = true;
 
-    console.log('✅ Story mission system initialized');
-
-    // Subscribe to mission available events
-    const unsubscribeMission = triggerEventBus.on('missionAvailable', (data) => {
+    // Subscribe to events (only happens once ever, even across strict mode remounts)
+    console.log('📡 Subscribing to missionAvailable events...');
+    triggerEventBus.on('missionAvailable', (data) => {
+      console.log(`📥 Received missionAvailable event:`, data);
       const { mission } = data;
 
-      // Add mission to available missions
-      if (actions.setAvailableMissions) {
-        actions.setAvailableMissions((prev) => {
+      // Use actionsRef.current to get latest actions
+      if (actionsRef.current.setAvailableMissions) {
+        console.log(`📝 Calling setAvailableMissions for ${mission.title}`);
+        actionsRef.current.setAvailableMissions((prev) => {
+          console.log(`📝 Previous missions:`, prev.length);
           // Avoid duplicates
           if (prev.some((m) => m.missionId === mission.missionId)) {
+            console.log(`⚠️ Mission ${mission.title} already in available list`);
             return prev;
           }
+          console.log(`➕ Adding mission ${mission.title} to available list`);
           return [...prev, mission];
         });
+      } else {
+        console.error(`❌ setAvailableMissions action not available!`);
       }
 
       console.log(`📋 Mission available: ${mission.title}`);
     });
 
     // Subscribe to story event triggered (for messages)
-    const unsubscribeEvent = triggerEventBus.on('storyEventTriggered', (data) => {
+    triggerEventBus.on('storyEventTriggered', (data) => {
       const { message, eventId } = data;
 
-      if (message && actions.addMessage) {
-        // Create message object
+      if (message && actionsRef.current.addMessage) {
+        // Helper to replace placeholders
+        const replacePlaceholders = (text) => {
+          if (!text) return text;
+          return text
+            .replace(/{username}/g, gameState.username || '')
+            .replace(/{managerName}/g, gameState.managerName || '');
+        };
+
+        // Helper to generate random ID segments
+        const generateRandomId = () => {
+          return `${Math.random().toString(36).substring(2, 5).toUpperCase()}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+        };
+
+        // Create message object with placeholder replacement
         const newMessage = {
-          id: `msg-${eventId}-${Date.now()}`,
-          from: message.from,
-          fromId: message.fromId,
-          fromName: message.fromName,
-          subject: message.subject,
-          body: message.body,
+          id: eventId, // Use eventId directly as the message ID for trigger matching
+          from: replacePlaceholders(message.from),
+          fromId: message.fromId.replace(/{random}/g, generateRandomId()),
+          fromName: replacePlaceholders(message.fromName),
+          subject: replacePlaceholders(message.subject),
+          body: replacePlaceholders(message.body),
           timestamp: null, // Will be set by addMessage
           read: false,
           archived: false,
           attachments: message.attachments || [],
         };
 
-        actions.addMessage(newMessage);
-        console.log(`📧 Story event message: ${message.subject}`);
+        actionsRef.current.addMessage(newMessage);
       }
     });
 
-    // Cleanup on unmount
-    return () => {
-      unsubscribeMission();
-      unsubscribeEvent();
-    };
-  }, [actions]);
+    // No cleanup - subscriptions persist for app lifetime
+  }, []); // Empty dependency array - only run once on first mount
 
   // Emit desktop loaded event (once)
   useEffect(() => {
