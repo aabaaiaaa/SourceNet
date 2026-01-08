@@ -64,9 +64,11 @@ export const MESSAGE_TEMPLATES = {
 
 What just happened?! I was monitoring your mission and I saw you DELETE all the log files instead of repairing them!
 
-The client's network administrator had to forcibly disconnect you to prevent further damage. Those files were CRITICAL for their audit compliance!
+The client's network administrator had to forcibly disconnect you to prevent further damage and has REVOKED your network access credentials. Those files were CRITICAL for their audit compliance!
 
-The client is demanding 10,000 credits in compensation for the data loss and the emergency recovery procedures they now have to perform. SourceNet policy requires YOU to cover mission failures, so that amount has been deducted from your account.
+This is a critical lesson: network administrators can revoke your access at any time if they believe you're a security threat. Your NAR entry for ClientA-Corporate is now deauthorized and unusable. You'll need new credentials to reconnect.
+
+The client is demanding 10,000 credits in compensation for the data loss and emergency recovery. SourceNet policy requires YOU to cover mission failures, so that amount has been deducted from your account.
 
 Your reputation has taken a serious hit. You went from Superb to Accident Prone. I know you impressed us in the interview, but this is completely unacceptable.
 
@@ -75,6 +77,34 @@ You need to be EXTREMELY careful. DO NOT become bankrupt. If you're overdrawn by
 I'm giving you another chance, but you need to prove you can handle this work.
 
 - {managerName}`,
+  },
+
+  // Tutorial Part 2 - Network credentials update
+  'tutorial-2-network-update': {
+    from: 'SourceNet Manager',
+    fromId: 'SNET-MGR-{random}',
+    fromName: 'SourceNet Manager {managerName}',
+    subject: 'Updated Network Access - Backup Server',
+    body: `{username},
+
+I've negotiated with the client and secured NEW network credentials for you. Your old access was completely revoked, so this is a fresh NAR entry.
+
+They've restructured their network access - you'll now connect to a different subnet with access to their backup-server. The network credentials are attached to this message.
+
+Activate the credentials in your Network Address Register. This will give you access to both fileserver-01 and backup-server, but note that the network structure may be different than before.
+
+Good luck.
+
+- {managerName}`,
+    attachments: [
+      {
+        type: 'network-credentials',
+        networkId: 'clienta-corporate',
+        networkName: 'ClientA-Corporate',
+        address: '192.168.50.0/24',
+        bandwidth: 50,
+      }
+    ],
   },
 
   // Tutorial Part 2 - Recovery mission introduction

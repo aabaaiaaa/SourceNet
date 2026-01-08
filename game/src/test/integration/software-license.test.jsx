@@ -112,7 +112,9 @@ describe('Software License Integration', () => {
         // Step 8: Verify software is being downloaded/installed
         await waitFor(() => {
             // Check for download queue or installation indicator
-            expect(screen.queryByText(/Downloading|Installing/i)).toBeInTheDocument();
+            // Use getAllByText and check that at least one exists
+            const downloadingElements = screen.queryAllByText(/Downloading|Installing/i);
+            expect(downloadingElements.length).toBeGreaterThan(0);
         });
 
         // Step 9: Verify credits unchanged (100 - should not have been charged 250)

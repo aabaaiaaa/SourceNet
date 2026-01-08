@@ -32,7 +32,7 @@ test.describe('Complete Game Flow', () => {
 
     // Reputation should be Tier 9 (Superb) at start
     const repText = await page.locator('.reputation-badge').textContent();
-    expect(repText).toBe('★9');
+    expect(repText).toBe('Tier 9');
 
     console.log('✅ E2E: Boot complete, reputation indicator visible');
   });
@@ -107,7 +107,7 @@ test.describe('Complete Game Flow', () => {
 
     // Should show tier 9 at start
     const repText = await page.locator('.reputation-badge').textContent();
-    expect(repText).toBe('★9');
+    expect(repText).toBe('Tier 9');
 
     // Hover to see reputation preview
     await page.hover('.reputation-badge');

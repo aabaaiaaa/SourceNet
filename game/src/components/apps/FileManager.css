@@ -6,15 +6,68 @@
   overflow-y: auto;
 }
 
-.fm-header { border-bottom: 2px solid var(--osnet-border); padding-bottom: 10px; margin-bottom: 15px; }
-.fm-header h2 { margin: 0 0 5px 0; }
-.fm-subtitle { margin: 0; font-size: 12px; color: #666; }
+.fm-header {
+  border-bottom: 2px solid var(--osnet-border);
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.fm-header h2 {
+  margin: 0 0 5px 0;
+}
+
+.fm-subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: #666;
+}
 
 .fm-controls select {
   width: 100%;
   padding: 10px;
   font-family: inherit;
   margin-bottom: 15px;
+}
+
+/* Clipboard Panel */
+.clipboard-panel {
+  background: #FFF9E6;
+  border: 2px solid #FFD700;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+}
+
+.clipboard-header {
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.clipboard-source {
+  font-size: 11px;
+  color: #666;
+  font-style: italic;
+}
+
+.clipboard-files {
+  max-height: 100px;
+  overflow-y: auto;
+  font-size: 11px;
+  padding: 5px 0;
+}
+
+.clipboard-file-item {
+  padding: 3px 0;
+  border-bottom: 1px solid #FFE4A0;
+}
+
+.clipboard-file-item:last-child {
+  border-bottom: none;
+}
+
+.clipboard-file-size {
+  color: #999;
+  font-size: 10px;
 }
 
 .fm-toolbar {
@@ -51,11 +104,27 @@
   display: flex;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
+  transition: background 0.2s;
+}
+
+.file-item:hover:not(.file-operating) {
+  background: #f5f5f5;
 }
 
 .file-corrupted {
   background: #FFE4E4;
   color: #DC143C;
+}
+
+.file-selected {
+  background: #E3F2FD !important;
+  border-left: 3px solid #2196F3;
+}
+
+.file-operating {
+  opacity: 0.6;
+  cursor: default !important;
 }
 
 .corruption-icon {
@@ -65,14 +134,50 @@
 
 .file-name {
   flex: 1;
+  min-width: 150px;
 }
 
 .file-size {
   font-size: 11px;
   color: #666;
+  min-width: 60px;
 }
 
-/* Repair progress bar */
+/* Per-file progress bars */
+.file-progress {
+  flex-basis: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.file-progress-bar {
+  flex: 1;
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.file-progress-fill {
+  height: 100%;
+  background: #FF9800;
+  transition: width 0.1s ease;
+}
+
+.file-progress-fill.cross-network {
+  background: #2196F3;
+}
+
+.file-progress-text {
+  font-size: 10px;
+  color: #666;
+  white-space: nowrap;
+  min-width: 120px;
+}
+
+/* Old repair progress (remove) */
 .repair-progress {
   margin-bottom: 15px;
   padding: 0 10px;
@@ -95,4 +200,14 @@
   background: #FFF3E0;
   border-color: #FF9800;
   color: #E65100;
+}
+
+.empty-state {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}
+
+.empty-state p {
+  margin: 10px 0;
 }

@@ -53,7 +53,7 @@ const MissionBoard = () => {
 
           return (
             <div
-              key={mission.id}
+              key={mission.missionId || mission.id}
               className={`mission-card ${!canAccess ? 'mission-locked' : ''}`}
             >
               <div className="mission-header">
@@ -83,8 +83,8 @@ const MissionBoard = () => {
                 <div className="mission-requirements">
                   <strong>Requirements:</strong>
                   <ul>
-                    {mission.requirements.software.map((sw) => (
-                      <li key={sw}>
+                    {mission.requirements.software.map((sw, index) => (
+                      <li key={`${mission.missionId || mission.id}-sw-${index}`}>
                         {sw}
                         {!installedSoftwareIds.includes(sw) && (
                           <span className="requirement-missing"> (Missing)</span>
@@ -185,8 +185,62 @@ const MissionBoard = () => {
     );
   };
 
+  const renderFailedTab = () => {
+    const failedMissions = completedMissions?.filter(m => m.status === 'failed') || [];
+
+    if (failedMissions.length === 0) {
+      return (
+        <div className="empty-state">
+          <p>No failed missions.</p>
+          <p>Keep up the good work!</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="missions-list">
+        {failedMissions.map((mission) => (
+          <div
+            key={mission.missionId || mission.id}
+            className={`mission-card mission-${mission.status}`}
+          >
+            <div className="mission-header">
+              <h3>{mission.title}</h3>
+              <span className={`status-badge status-${mission.status}`}>
+                ✗ FAILED
+              </span>
+            </div>
+
+            <div className="mission-info">
+              <div className="mission-client">Client: {mission.client}</div>
+              <div className="mission-completion">
+                Failed: {new Date(mission.completionTime).toLocaleString()}
+              </div>
+              {mission.failureReason && (
+                <div className="mission-failure-reason">
+                  Reason: {mission.failureReason}
+                </div>
+              )}
+              <div className="mission-duration">Duration: {mission.duration} minutes</div>
+              <div className={`mission-payout ${mission.payout >= 0 ? 'payout-positive' : 'payout-negative'}`}>
+                Penalty: {mission.payout >= 0 ? '+' : ''}{mission.payout} credits
+              </div>
+              {mission.reputationChange !== 0 && (
+                <div className={`reputation-change ${mission.reputationChange > 0 ? 'rep-positive' : 'rep-negative'}`}>
+                  Reputation: {mission.reputationChange > 0 ? '+' : ''}{mission.reputationChange}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const renderCompletedTab = () => {
-    if (!completedMissions || completedMissions.length === 0) {
+    const successfulMissions = completedMissions?.filter(m => m.status === 'success') || [];
+
+    if (successfulMissions.length === 0) {
       return (
         <div className="empty-state">
           <p>No completed missions yet.</p>
@@ -197,9 +251,9 @@ const MissionBoard = () => {
 
     return (
       <div className="missions-list">
-        {completedMissions.map((mission) => (
+        {successfulMissions.map((mission) => (
           <div
-            key={mission.id}
+            key={mission.missionId || mission.id}
             className={`mission-card mission-${mission.status}`}
           >
             <div className="mission-header">
@@ -255,19 +309,31 @@ const MissionBoard = () => {
           {activeMission && <span className="tab-indicator">●</span>}
         </button>
         <button
+          className={`tab ${activeTab === 'failed' ? 'tab-active' : ''}`}
+          onClick={() => setActiveTab('failed')}
+        >
+          Failed
+          {(() => {
+            const failedCount = completedMissions?.filter(m => m.status === 'failed').length || 0;
+            return failedCount > 0 && <span className="tab-badge">{failedCount}</span>;
+          })()}
+        </button>
+        <button
           className={`tab ${activeTab === 'completed' ? 'tab-active' : ''}`}
           onClick={() => setActiveTab('completed')}
         >
           Completed
-          {completedMissions && completedMissions.length > 0 && (
-            <span className="tab-badge">{completedMissions.length}</span>
-          )}
+          {(() => {
+            const successCount = completedMissions?.filter(m => m.status === 'success').length || 0;
+            return successCount > 0 && <span className="tab-badge">{successCount}</span>;
+          })()}
         </button>
       </div>
 
       <div className="tab-content">
         {activeTab === 'available' && renderAvailableTab()}
         {activeTab === 'active' && renderActiveTab()}
+        {activeTab === 'failed' && renderFailedTab()}
         {activeTab === 'completed' && renderCompletedTab()}
       </div>
     </div>

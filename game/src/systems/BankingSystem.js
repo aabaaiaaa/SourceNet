@@ -111,8 +111,14 @@ export const getBankruptcyAudioWarning = (remaining, previousRemaining) => {
  * @returns {string|null} Message type to send
  */
 export const getBankingMessageType = (newBalance, oldBalance, bankruptcyCountdown) => {
-  // First overdraft
-  if (newBalance < 0 && oldBalance >= 0) {
+  // Bankruptcy countdown started (takes priority when going directly into bankruptcy)
+  // This happens when balance drops below -10k for the first time
+  if (newBalance <= -10000 && oldBalance > -10000 && !bankruptcyCountdown) {
+    return 'bankruptcyCountdownStart';
+  }
+
+  // First overdraft (only when not going into bankruptcy territory)
+  if (newBalance < 0 && newBalance > -10000 && oldBalance >= 0) {
     return 'firstOverdraft';
   }
 
@@ -122,11 +128,6 @@ export const getBankingMessageType = (newBalance, oldBalance, bankruptcyCountdow
     if (oldBalance >= -8000) {
       return 'approachingBankruptcy';
     }
-  }
-
-  // Bankruptcy countdown started
-  if (newBalance <= -10000 && !bankruptcyCountdown) {
-    return 'bankruptcyCountdownStart';
   }
 
   // Bankruptcy countdown cancelled (improved above -10k)

@@ -9,7 +9,13 @@
     "start": {
       "type": "afterMissionComplete",
       "missionId": "tutorial-part-1",
-      "delay": 30000
+      "delay": 30000,
+      "introMessage": {
+        "delay": 0,
+        "from": "manager",
+        "subject": "Let's try something simpler",
+        "templateId": "tutorial-2-intro"
+      }
     }
   },
   "requirements": {
@@ -25,6 +31,7 @@
     "networkId": "clienta-corporate",
     "networkName": "ClientA-Corporate",
     "address": "192.168.50.0/24",
+    "bandwidth": 50,
     "fileSystems": [
       {
         "id": "fs-clienta-01",
@@ -111,7 +118,7 @@
       "id": "obj-5",
       "description": "Copy all files from backup to original location",
       "type": "fileOperation",
-      "operation": "copy",
+      "operation": "paste",
       "count": 8
     }
   ],

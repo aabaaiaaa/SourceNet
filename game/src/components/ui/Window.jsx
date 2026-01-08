@@ -39,7 +39,7 @@ const Window = ({ window }) => {
     setIsDragging(true);
 
     // Bring window to front
-    bringToFront(window.appId);
+    bringToFront(window.id);
   };
 
   const handleMouseMove = useCallback((e) => {
@@ -55,8 +55,8 @@ const Window = ({ window }) => {
     const boundedX = Math.max(0, Math.min(newX, maxX));
     const boundedY = Math.max(40, Math.min(newY, maxY)); // Account for topbar
 
-    moveWindow(window.appId, { x: boundedX, y: boundedY });
-  }, [isDragging, size, window.appId, moveWindow]);
+    moveWindow(window.id, { x: boundedX, y: boundedY });
+  }, [isDragging, size, window.id, moveWindow]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -143,14 +143,14 @@ const Window = ({ window }) => {
         <div className="window-controls">
           <button
             className="window-control-btn"
-            onClick={() => minimizeWindow(window.appId)}
+            onClick={() => minimizeWindow(window.id)}
             title="Minimize"
           >
             _
           </button>
           <button
             className="window-control-btn"
-            onClick={() => closeWindow(window.appId)}
+            onClick={() => closeWindow(window.id)}
             title="Close"
           >
             ×

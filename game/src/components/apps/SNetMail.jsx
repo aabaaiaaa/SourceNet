@@ -84,10 +84,45 @@ const SNetMail = () => {
     // Use functional update to avoid stale closure issues
     setNarEntries((currentEntries) => {
       console.log('🔵 setNarEntries called with currentEntries:', currentEntries);
-      const alreadyAdded = currentEntries?.some(entry => entry.networkId === networkData.networkId);
-      if (alreadyAdded) {
-        console.log('⚠️ Network already in NAR');
-        return currentEntries;
+      const existingEntry = currentEntries?.find(entry => entry.networkId === networkData.networkId);
+
+      if (existingEntry) {
+        console.log('🔄 Network already in NAR, merging file systems');
+
+        // Merge file systems - update existing ones, add new ones
+        const existingFileSystems = existingEntry.fileSystems || [];
+        const newFileSystems = networkData.fileSystems || [];
+        const mergedFileSystems = [...existingFileSystems];
+
+        newFileSystems.forEach(newFs => {
+          const existingFsIndex = mergedFileSystems.findIndex(fs => fs.id === newFs.id);
+          if (existingFsIndex >= 0) {
+            // Update existing file system
+            mergedFileSystems[existingFsIndex] = {
+              id: newFs.id,
+              ip: newFs.ip,
+              name: newFs.name,
+              files: newFs.files || [],
+            };
+            console.log(`  📝 Updated file system: ${newFs.name}`);
+          } else {
+            // Add new file system
+            mergedFileSystems.push({
+              id: newFs.id,
+              ip: newFs.ip,
+              name: newFs.name,
+              files: newFs.files || [],
+            });
+            console.log(`  ➕ Added file system: ${newFs.name}`);
+          }
+        });
+
+        // Update the existing NAR entry
+        return currentEntries.map(entry =>
+          entry.networkId === networkData.networkId
+            ? { ...entry, fileSystems: mergedFileSystems, authorized: true, revokedReason: undefined }
+            : entry
+        );
       }
 
       // Add network entry to NAR
@@ -96,7 +131,9 @@ const SNetMail = () => {
         networkId: networkData.networkId,
         networkName: networkData.networkName,
         address: networkData.address || '10.0.0.0/8',
+        bandwidth: networkData.bandwidth || 50,
         status: 'active',
+        authorized: true,
         dateAdded: new Date().toISOString(),
         // Include file systems if provided (for mission-critical networks)
         ...(networkData.fileSystems && {
@@ -265,12 +302,19 @@ const SNetMail = () => {
                     const networkData = resolveNetworkData(attachment);
 
                     const narInstalled = software?.some(s => (typeof s === 'string' ? s === 'network-address-register' : s.id === 'network-address-register'));
-                    const alreadyAdded = narEntries?.some(entry => entry.networkId === networkData.networkId);
+                    const existingEntry = narEntries?.find(entry => entry.networkId === networkData.networkId);
+                    // Only consider it "already added" if the entry exists AND is authorized
+                    const alreadyAdded = existingEntry && existingEntry.authorized !== false;
 
                     let statusText;
                     let isClickable = true;
                     if (alreadyAdded) {
                       statusText = '✓ Added to NAR';
+                      isClickable = false;
+                    } else if (existingEntry && existingEntry.authorized === false) {
+                      // Entry exists but is revoked - allow re-authorization
+                      statusText = 'Click to re-authorize network access';
+                      isClickable = narInstalled;
                     } else if (!narInstalled) {
                       statusText = 'Install Network Address Register to use this attachment';
                       isClickable = false;

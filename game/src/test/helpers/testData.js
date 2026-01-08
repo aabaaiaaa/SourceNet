@@ -177,6 +177,7 @@ export function createNetworkWithFileSystem({
     networkId = 'corp-net-1',
     networkName = 'Corporate Network',
     address = '192.168.50.0/24',
+    bandwidth = 50,
     fileSystems = [],
 } = {}) {
     return {
@@ -184,6 +185,7 @@ export function createNetworkWithFileSystem({
         networkId,
         networkName,
         address,
+        bandwidth,
         addedAt: '2020-03-25T09:00:00.000Z',
         status: 'active',
         fileSystems: fileSystems.map(fs => ({

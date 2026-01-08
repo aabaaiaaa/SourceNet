@@ -14,6 +14,9 @@ describe('FileManager Component - Initial Rendering', () => {
     // Mock useGame to return default game state with no active connections
     vi.spyOn(GameContext, 'useGame').mockReturnValue({
       activeConnections: [],
+      narEntries: [],
+      fileClipboard: { files: [], sourceFileSystemId: '', sourceNetworkId: '' },
+      setFileClipboard: vi.fn(),
       setFileManagerConnections: vi.fn(),
       setLastFileOperation: vi.fn(),
       registerBandwidthOperation: vi.fn(() => ({ operationId: 'test-op', estimatedTimeMs: 2000 })),
@@ -55,9 +58,31 @@ describe('FileManager Component - Initial Rendering', () => {
 describe('FileManager Component - Connected State', () => {
   beforeEach(() => {
     triggerEventBus.clear();
-    // Mock useGame to return game state with active connections
+    // Mock useGame to return game state with active connections and NAR entries
     vi.spyOn(GameContext, 'useGame').mockReturnValue({
       activeConnections: [{ networkId: 'test-network', networkName: 'Test Network' }],
+      narEntries: [{
+        networkId: 'test-network',
+        networkName: 'Test Network',
+        address: '192.168.50.0/24',
+        bandwidth: 50,
+        fileSystems: [
+          {
+            id: 'fs-001',
+            ip: '192.168.50.10',
+            name: 'fileserver-01',
+            files: []
+          },
+          {
+            id: 'fs-002',
+            ip: '192.168.50.20',
+            name: 'backup-server',
+            files: []
+          }
+        ]
+      }],
+      fileClipboard: { files: [], sourceFileSystemId: '', sourceNetworkId: '' },
+      setFileClipboard: vi.fn(),
       setFileManagerConnections: vi.fn(),
       setLastFileOperation: vi.fn(),
       registerBandwidthOperation: vi.fn(() => ({ operationId: 'test-op', estimatedTimeMs: 2000 })),
@@ -107,9 +132,25 @@ describe('FileManager Component - Connected State', () => {
 describe('FileManager Component - Button States', () => {
   beforeEach(() => {
     triggerEventBus.clear();
-    // Mock useGame to return game state with active connections
+    // Mock useGame to return game state with active connections and NAR entries
     vi.spyOn(GameContext, 'useGame').mockReturnValue({
       activeConnections: [{ networkId: 'test-network', networkName: 'Test Network' }],
+      narEntries: [{
+        networkId: 'test-network',
+        networkName: 'Test Network',
+        address: '192.168.50.0/24',
+        bandwidth: 50,
+        fileSystems: [
+          {
+            id: 'fs-001',
+            ip: '192.168.50.10',
+            name: 'fileserver-01',
+            files: []
+          }
+        ]
+      }],
+      fileClipboard: { files: [], sourceFileSystemId: '', sourceNetworkId: '' },
+      setFileClipboard: vi.fn(),
       setFileManagerConnections: vi.fn(),
       setLastFileOperation: vi.fn(),
       registerBandwidthOperation: vi.fn(() => ({ operationId: 'test-op', estimatedTimeMs: 2000 })),
@@ -136,8 +177,8 @@ describe('FileManager Component - Button States', () => {
     const select = screen.getByRole('combobox');
     fireEvent.change(select, { target: { value: 'fs-001' } });
 
-    const copyButton = screen.getByRole('button', { name: /copy/i });
-    expect(copyButton).not.toBeDisabled();
+    const copyButton = screen.getByRole('button', { name: /copy \(0\)/i });
+    expect(copyButton).toBeDisabled(); // Disabled when no files selected
   });
 
   it('should have delete button enabled initially', () => {
@@ -145,17 +186,33 @@ describe('FileManager Component - Button States', () => {
     const select = screen.getByRole('combobox');
     fireEvent.change(select, { target: { value: 'fs-001' } });
 
-    const deleteButton = screen.getByRole('button', { name: /delete/i });
-    expect(deleteButton).not.toBeDisabled();
+    const deleteButton = screen.getByRole('button', { name: /delete \(0\)/i });
+    expect(deleteButton).toBeDisabled(); // Disabled when no files selected
   });
 });
 
 describe('FileManager Component - Repair UI', () => {
   beforeEach(() => {
     triggerEventBus.clear();
-    // Mock useGame to return game state with active connections
+    // Mock useGame to return game state with active connections and NAR entries
     vi.spyOn(GameContext, 'useGame').mockReturnValue({
       activeConnections: [{ networkId: 'test-network', networkName: 'Test Network' }],
+      narEntries: [{
+        networkId: 'test-network',
+        networkName: 'Test Network',
+        address: '192.168.50.0/24',
+        bandwidth: 50,
+        fileSystems: [
+          {
+            id: 'fs-001',
+            ip: '192.168.50.10',
+            name: 'fileserver-01',
+            files: []
+          }
+        ]
+      }],
+      fileClipboard: { files: [], sourceFileSystemId: '', sourceNetworkId: '' },
+      setFileClipboard: vi.fn(),
       setFileManagerConnections: vi.fn(),
       setLastFileOperation: vi.fn(),
       registerBandwidthOperation: vi.fn(() => ({ operationId: 'test-op', estimatedTimeMs: 2000 })),
@@ -173,8 +230,8 @@ describe('FileManager Component - Repair UI', () => {
     const select = screen.getByRole('combobox');
     fireEvent.change(select, { target: { value: 'fs-001' } });
 
-    // Repair button should be disabled initially since files array is empty
-    const repairButton = screen.getByRole('button', { name: /repair/i });
+    // Repair button should be disabled (0 corrupted files selected)
+    const repairButton = screen.getByRole('button', { name: /repair \(0\)/i });
     expect(repairButton).toBeDisabled();
   });
 });

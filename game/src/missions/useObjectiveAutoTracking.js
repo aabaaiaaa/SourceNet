@@ -60,19 +60,26 @@ export const useObjectiveAutoTracking = (
         lastCompletedRef.current = completedObjective.id;
         completeMissionObjective(completedObjective.id);
 
+        // Emit objectiveComplete event for scripted event triggers
+        triggerEventBus.emit('objectiveComplete', {
+          objectiveId: completedObjective.id,
+          missionId: activeMission.missionId,
+          objective: completedObjective
+        });
+
         // Check if all objectives now complete
         const updatedObjectives = activeMission.objectives.map((obj) =>
           obj.id === completedObjective.id ? { ...obj, status: 'complete' } : obj
         );
 
         if (areAllObjectivesComplete(updatedObjectives)) {
-          console.log(`🎉 All objectives complete - completing mission`);
+          console.log(`🎉 All objectives complete (including verification) - completing mission`);
           missionCompletedRef.current = missionId;
 
           // Calculate payout and reputation change
           const basePayout = activeMission.basePayout || 0;
           const payout = calculateMissionPayout(basePayout, reputation);
-          const reputationChange = activeMission.consequences?.success?.reputation || 1;
+          const reputationChange = activeMission.consequences?.success?.reputation ?? 1;
 
           // Small delay to allow state to settle before completing mission
           setTimeout(() => completeMission('success', payout, reputationChange), 100);
@@ -127,6 +134,32 @@ export const useObjectiveAutoTracking = (
     const timeoutId = setTimeout(checkAndCompleteObjective, 100);
     return () => clearTimeout(timeoutId);
   }, [enabled, activeMission?.missionId, checkAndCompleteObjective]);
+
+  // Watch for all objectives being complete (handles externally completed objectives like obj-verify)
+  useEffect(() => {
+    if (!enabled || !activeMission || !activeMission.objectives) return;
+
+    const missionId = activeMission.missionId || activeMission.id;
+
+    // Don't process if we already completed this mission
+    if (missionCompletedRef.current === missionId) {
+      return;
+    }
+
+    // Check if ALL objectives are complete
+    if (areAllObjectivesComplete(activeMission.objectives)) {
+      console.log(`🎉 All objectives complete (detected by watcher) - completing mission ${missionId}`);
+      missionCompletedRef.current = missionId;
+
+      // Calculate payout and reputation change
+      const basePayout = activeMission.basePayout || 0;
+      const payout = calculateMissionPayout(basePayout, reputation);
+      const reputationChange = activeMission.consequences?.success?.reputation ?? 1;
+
+      // Small delay to allow state to settle before completing mission
+      setTimeout(() => completeMission('success', payout, reputationChange), 100);
+    }
+  }, [enabled, activeMission, activeMission?.objectives, reputation, completeMission]);
 };
 
 export default useObjectiveAutoTracking;

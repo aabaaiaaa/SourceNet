@@ -6,7 +6,7 @@ import { createDownloadItem } from '../../systems/useDownloadManager';
 import './Portal.css';
 
 const Portal = () => {
-  const { hardware, software, bankAccounts, setBankAccounts, setTransactions, currentTime, getTotalCredits, setDownloadQueue, licensedSoftware } = useGame();
+  const { hardware, software, bankAccounts, setBankAccounts, setTransactions, currentTime, getTotalCredits, setDownloadQueue, downloadQueue, licensedSoftware } = useGame();
   const [activeCategory, setActiveCategory] = useState('processors');
   const [activeSection, setActiveSection] = useState('software');
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
@@ -20,16 +20,9 @@ const Portal = () => {
   const handleConfirmPurchase = () => {
     if (!selectedItem) return;
 
-    const totalCredits = getTotalCredits();
     const price = selectedItem.price;
 
-    if (totalCredits < price) {
-      alert(`Insufficient credits. Need ${price}, have ${totalCredits}`);
-      setShowPurchaseModal(false);
-      return;
-    }
-
-    // Deduct credits
+    // Deduct credits (overdraft is allowed, handled by game mechanics)
     const newAccounts = [...bankAccounts];
     if (newAccounts[0]) {
       newAccounts[0].balance -= price;
@@ -132,6 +125,7 @@ const Portal = () => {
             const installed = hardwareInstalled || softwareInstalled;
             const isLicensed = activeSection === 'software' && licensedSoftware && licensedSoftware.includes(item.id);
             const available = activeSection === 'software' ? item.available : true;
+            const isInQueue = downloadQueue && downloadQueue.some(d => d.softwareId === item.id);
 
             return (
               <div
@@ -164,12 +158,20 @@ const Portal = () => {
                   )}
                   {!installed && available && activeSection === 'software' && (
                     isLicensed ? (
-                      <button className="install-btn purchase-btn" onClick={() => handleInstallLicensed(item)}>
-                        Install (Licensed)
+                      <button
+                        className="install-btn purchase-btn"
+                        onClick={() => handleInstallLicensed(item)}
+                        disabled={isInQueue}
+                      >
+                        {isInQueue ? 'Downloading...' : 'Install (Licensed)'}
                       </button>
                     ) : (
-                      <button className="purchase-btn" onClick={() => handlePurchaseClick(item)}>
-                        Purchase
+                      <button
+                        className="purchase-btn"
+                        onClick={() => handlePurchaseClick(item)}
+                        disabled={isInQueue}
+                      >
+                        {isInQueue ? 'Downloading...' : 'Purchase'}
                       </button>
                     )
                   )}

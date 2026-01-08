@@ -1,9 +1,29 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { GameProvider } from '../../contexts/GameContext';
+import { useEffect } from 'react';
+import { GameProvider, useGame } from '../../contexts/GameContext';
 import Desktop from '../../components/ui/Desktop';
+import {
+  createCompleteSaveState,
+  setSaveInLocalStorage,
+} from '../helpers/testData';
+
+// Helper component to load game state on mount
+const GameLoader = ({ username }) => {
+  const { loadGame, setGamePhase } = useGame();
+
+  useEffect(() => {
+    loadGame(username);
+    setGamePhase('desktop');
+  }, [loadGame, setGamePhase, username]);
+
+  return null;
+};
 
 describe('Window Management Integration', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
   it('should handle complete window lifecycle: open → minimize → restore → close', async () => {
     const { container } = render(
       <GameProvider>
@@ -97,5 +117,73 @@ describe('Window Management Integration', () => {
     // Each window should have different position
     expect(positions[0]).not.toEqual(positions[1]);
     expect(positions[1]).not.toEqual(positions[2]);
+  });
+
+  it('should allow multiple instances of File Manager to be opened', async () => {
+    // Create save state with file-manager installed
+    const saveState = createCompleteSaveState({
+      username: 'test_user',
+      overrides: {
+        software: ['mail', 'banking', 'portal', 'file-manager'],
+      },
+    });
+
+    setSaveInLocalStorage('test_user', saveState);
+
+    const { container } = render(
+      <GameProvider>
+        <GameLoader username="test_user" />
+        <Desktop />
+      </GameProvider>
+    );
+
+    await waitFor(() => expect(screen.getByText('☰')).toBeInTheDocument(), { timeout: 10000 });
+
+    const appLauncher = screen.getByText('☰');
+
+    // Open first File Manager instance
+    fireEvent.mouseEnter(appLauncher.parentElement);
+    await waitFor(() => {
+      const menuButtons = screen.getAllByText('File Manager');
+      const menuButton = menuButtons.find(el => el.tagName === 'BUTTON');
+      expect(menuButton).toBeInTheDocument();
+    });
+    const menuButtons1 = screen.getAllByText('File Manager');
+    const fileManagerBtn1 = menuButtons1.find(el => el.tagName === 'BUTTON');
+    fireEvent.click(fileManagerBtn1);
+
+    // Wait for first window to appear
+    await waitFor(() => {
+      const windows = container.querySelectorAll('.window');
+      expect(windows).toHaveLength(1);
+    });
+
+    // Open second File Manager instance
+    fireEvent.mouseEnter(appLauncher.parentElement);
+    await waitFor(() => {
+      const menuButtons = screen.getAllByText('File Manager');
+      const menuButton = menuButtons.find(el => el.tagName === 'BUTTON');
+      expect(menuButton).toBeInTheDocument();
+    });
+    const menuButtons2 = screen.getAllByText('File Manager');
+    const fileManagerBtn2 = menuButtons2.find(el => el.tagName === 'BUTTON');
+    fireEvent.click(fileManagerBtn2);
+
+    // Should now have 2 File Manager windows
+    await waitFor(() => {
+      const windows = container.querySelectorAll('.window');
+      expect(windows).toHaveLength(2);
+    });
+
+    // Both should have File Manager content
+    const windowTitles = container.querySelectorAll('.window-title');
+    expect(windowTitles).toHaveLength(2);
+    expect(windowTitles[0].textContent).toBe('File Manager');
+    expect(windowTitles[1].textContent).toBe('File Manager');
+
+    // They should have different positions (cascaded)
+    const windows = container.querySelectorAll('.window');
+    expect(windows[0].style.left).not.toEqual(windows[1].style.left);
+    expect(windows[0].style.top).not.toEqual(windows[1].style.top);
   });
 });

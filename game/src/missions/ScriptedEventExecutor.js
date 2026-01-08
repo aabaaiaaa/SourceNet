@@ -78,9 +78,29 @@ export const executeForceDisconnectAction = (action, onComplete) => {
 export const executeSetMissionStatusAction = (action, onComplete) => {
   const { status, failureReason } = action;
 
+  console.log('🎭 Emitting missionStatusChanged:', { status, failureReason });
   triggerEventBus.emit('missionStatusChanged', {
     status,
     failureReason,
+  });
+  console.log('✅ missionStatusChanged event emitted');
+
+  if (onComplete) {
+    onComplete();
+  }
+};
+
+/**
+ * Execute NAR entry revocation
+ * @param {object} action - Action definition
+ * @param {function} onComplete - Completion callback
+ */
+export const executeRevokeNAREntryAction = (action, onComplete) => {
+  const { network, reason } = action;
+
+  triggerEventBus.emit('revokeNAREntry', {
+    networkId: network,
+    reason: reason || 'Access credentials revoked by network administrator',
   });
 
   if (onComplete) {
@@ -94,7 +114,7 @@ export const executeSetMissionStatusAction = (action, onComplete) => {
  * @param {object} callbacks - Callback functions {onProgress, onComplete}
  */
 export const executeScriptedEvent = async (scriptedEvent, callbacks = {}) => {
-  const { actions } = scriptedEvent;
+  const { actions, id } = scriptedEvent;
 
   for (const action of actions) {
     switch (action.type) {
@@ -112,6 +132,10 @@ export const executeScriptedEvent = async (scriptedEvent, callbacks = {}) => {
         executeForceDisconnectAction(action, null);
         break;
 
+      case 'revokeNAREntry':
+        executeRevokeNAREntryAction(action, null);
+        break;
+
       case 'setMissionStatus':
         executeSetMissionStatusAction(action, null);
         break;
@@ -120,6 +144,11 @@ export const executeScriptedEvent = async (scriptedEvent, callbacks = {}) => {
         console.warn(`Unknown scripted action type: ${action.type}`);
     }
   }
+
+  // Emit scripted event completion
+  triggerEventBus.emit('scriptedEventComplete', {
+    eventId: id,
+  });
 
   // Call completion callback after all actions
   if (callbacks.onComplete) {

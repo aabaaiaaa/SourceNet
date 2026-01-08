@@ -27,7 +27,7 @@ test.describe('Core Mechanics - Interest & Bankruptcy', () => {
     await expect(page.locator('.debug-panel')).not.toBeVisible();
 
     // Verify reputation shows low tier
-    await expect(page.locator('.reputation-badge')).toHaveText('★3');
+    await expect(page.locator('.reputation-badge')).toHaveText('Tier 3');
 
     console.log('✅ E2E: Bankruptcy state setup complete');
   });
@@ -45,7 +45,7 @@ test.describe('Core Mechanics - Interest & Bankruptcy', () => {
 
     // Should show tier 9 at start
     const tierText = await page.locator('.reputation-badge').textContent();
-    expect(tierText).toBe('★9');
+    expect(tierText).toBe('Tier 9');
 
     console.log('✅ E2E: Reputation badge displays correctly');
   });

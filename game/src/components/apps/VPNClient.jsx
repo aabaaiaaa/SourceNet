@@ -56,14 +56,22 @@ const VPNClient = () => {
     };
   }, [connecting, connectionStartTime, currentTime, pendingConnection, activeConnections, setActiveConnections]);
 
-  // Get available networks from NAR (non-expired only)
-  const availableNetworks = (narEntries || []).filter((entry) => entry.status !== 'expired');
+  // Get available networks from NAR (non-expired and authorized only)
+  const availableNetworks = (narEntries || []).filter((entry) =>
+    entry.status !== 'expired' && entry.authorized !== false
+  );
 
   const handleConnect = () => {
     if (!selectedNetwork || !currentTime) return;
 
     const networkEntry = narEntries.find((e) => e.networkId === selectedNetwork);
     if (!networkEntry) return;
+
+    // Check if network entry is authorized
+    if (networkEntry.authorized === false) {
+      console.warn(`Cannot connect to ${networkEntry.networkId}: Access revoked`);
+      return;
+    }
 
     // Start connection using game time
     setPendingConnection({

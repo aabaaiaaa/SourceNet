@@ -3,12 +3,19 @@ import { test, expect } from '@playwright/test';
 /**
  * Game Over Scenarios E2E Tests
  * 
- * This test suite covers all game over conditions:
+ * This test suite covers all game over conditions and their associated messages:
  * - Bankruptcy (negative balance for extended period)
- * - Reputation failure (reputation drops to 0)
+ *   - First Overdraft notice
+ *   - Approaching Bankruptcy warning  
+ *   - Bankruptcy Countdown Start notice
+ *   - Bankruptcy Cancelled notice (if recovered)
+ * - Reputation failure (reputation drops to Tier 1)
+ *   - Final Termination Warning (Tier 1)
+ *   - Performance Improved notice (if recovered)
  * 
  * Each test must be independent since game over is a terminal state.
  * These tests verify:
+ * - System messages are sent at appropriate state transitions
  * - Countdown systems trigger correctly
  * - Game over screen appears with appropriate messaging
  * - Player can start new game after game over
@@ -20,7 +27,78 @@ test.describe('E2E: Bankruptcy Game Over', () => {
         await page.evaluate(() => localStorage.clear());
     });
 
-    test('should trigger bankruptcy countdown and game over from negative balance', async ({ page }) => {
+    test('should send overdraft message when balance goes negative', async ({ page }) => {
+        test.setTimeout(60000);
+
+        // Helper to set game speed
+        const setSpeed = async (speed) => {
+            await page.evaluate((s) => window.gameContext.setSpecificTimeSpeed(s), speed);
+        };
+
+        // ========================================
+        // STEP 1: Setup New Game with Debug Mode
+        // ========================================
+        await page.goto('/?skipBoot=true&debug=true');
+
+        await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
+        await page.locator('input.username-input').fill('overdraft_test');
+        await page.click('button:has-text("Continue")');
+
+        await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
+
+        // Starting credits are 0 (before tutorial cheque)
+        await expect(page.locator('.topbar-credits:has-text("0 credits")')).toBeVisible({ timeout: 5000 });
+
+        // ========================================
+        // STEP 2: Trigger Overdraft via Debug Panel
+        // ========================================
+        await page.keyboard.press('Control+d');
+        await expect(page.locator('.debug-panel')).toBeVisible({ timeout: 2000 });
+
+        // Switch to State Controls tab
+        await page.click('.debug-tab:has-text("State Controls")');
+        await page.waitForTimeout(200);
+
+        // Click "Trigger Overdraft" button (sets to positive then negative after delay)
+        await page.click('[data-testid="debug-trigger-overdraft"]');
+        await page.waitForTimeout(300); // Wait for both state changes
+
+        // Close debug panel
+        await page.keyboard.press('Escape');
+
+        // Let message system process - overdraft message has a 5-second game-time delay
+        // At 100x speed, 5 seconds game time = 50ms real time, but add buffer for processing
+        await setSpeed(100);
+        await page.waitForTimeout(500);
+        await setSpeed(1);
+
+        // ========================================
+        // STEP 3: Verify Overdraft Message
+        // ========================================
+        await page.click('text=☰');
+        await page.click('text=SNet Mail');
+        await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
+
+        // Check for Overdraft Notice message
+        const overdraftMessage = page.locator('.message-item:has-text("Overdraft Notice")');
+        await expect(overdraftMessage).toBeVisible({ timeout: 5000 });
+
+        // Verify message content
+        await overdraftMessage.click();
+        await expect(page.locator('.message-view')).toBeVisible();
+        await expect(page.locator('.message-body:has-text("overdrawn")')).toBeVisible();
+        await expect(page.locator('.message-body:has-text("Interest")')).toBeVisible();
+        await expect(page.locator('.message-body:has-text("BANKRUPTCY WARNING")')).toBeVisible();
+    });
+
+    test('should send bankruptcy countdown message and trigger game over', async ({ page }) => {
+        test.setTimeout(60000);
+
+        // Helper to set game speed
+        const setSpeed = async (speed) => {
+            await page.evaluate((s) => window.gameContext.setSpecificTimeSpeed(s), speed);
+        };
+
         // ========================================
         // STEP 1: Setup New Game with Debug Mode
         // ========================================
@@ -32,131 +110,151 @@ test.describe('E2E: Bankruptcy Game Over', () => {
 
         await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
-        console.log('✅ STEP 1: Game started with debug mode enabled');
-
         // ========================================
-        // STEP 2: Open Debug Panel and Trigger Bankruptcy
+        // STEP 2: Trigger Bankruptcy Countdown via Debug Panel
         // ========================================
-
-        // Open debug panel with Ctrl+D
         await page.keyboard.press('Control+d');
         await expect(page.locator('.debug-panel')).toBeVisible({ timeout: 2000 });
 
-        // Should be on Scenarios tab by default, find Near Bankruptcy scenario
-        const bankruptcyButton = page.locator('button:has-text("Near Bankruptcy")');
-        await expect(bankruptcyButton).toBeVisible();
-        await bankruptcyButton.click();
+        // Switch to State Controls tab
+        await page.click('.debug-tab:has-text("State Controls")');
+        await page.waitForTimeout(200);
 
-        // Wait a moment for state to update
-        await page.waitForTimeout(1000);
+        // Click "Start Bankruptcy Countdown" button (sets to positive then bankruptcy level after delay)
+        await page.click('[data-testid="debug-trigger-bankruptcy"]');
+        await page.waitForTimeout(300); // Wait for both state changes
 
         // Close debug panel
         await page.keyboard.press('Escape');
-        await expect(page.locator('.debug-panel')).not.toBeVisible();
 
-        // Verify bankruptcy countdown is active
-        const creditsText = await page.locator('.topbar-credits').textContent();
-        const credits = parseInt(creditsText.match(/-?\d+/)?.[0] || '0');
-        expect(credits).toBeLessThan(0);
+        // Let message system process
+        await setSpeed(100);
+        await page.waitForTimeout(300);
+        await setSpeed(1);
 
-        console.log(`✅ STEP 2: Near Bankruptcy scenario loaded (${credits} credits)`);
+        // ========================================
+        // STEP 3: Verify Bankruptcy Messages
+        // ========================================
+        await page.click('text=☰');
+        await page.click('text=SNet Mail');
+        await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
 
-        // Check if bankruptcy countdown is actually set
-        const bankruptcyState = await page.evaluate(() => {
-            return {
-                bankruptcyCountdown: window.gameContext?.bankruptcyCountdown,
-                currentTime: window.gameContext?.currentTime,
+        // Check for Bankruptcy Proceedings message (countdown started)
+        // Should have both overdraft notice and bankruptcy message
+        const bankruptcyMessage = page.locator('.message-item:has-text("Bankruptcy Proceedings")').or(
+            page.locator('.message-item:has-text("URGENT")')
+        );
+        await expect(bankruptcyMessage.first()).toBeVisible({ timeout: 5000 });
+
+        // Verify message content
+        await bankruptcyMessage.first().click();
+        await expect(page.locator('.message-view')).toBeVisible();
+        await expect(page.locator('.message-body:has-text("URGENT")')).toBeVisible();
+        await expect(page.locator('.message-body:has-text("Financial authorities")')).toBeVisible();
+
+        // Close Mail
+        await page.locator('.window:has-text("SNet Mail") .window-controls button:has-text("×")').click();
+
+        // ========================================
+        // STEP 4: Speed Up Time to Trigger Game Over
+        // ========================================
+        await setSpeed(100);
+
+        // Wait for countdown to complete
+        for (let i = 0; i < 10; i++) {
+            await page.waitForTimeout(1000);
+            const progressState = await page.evaluate(() => ({
                 gamePhase: window.gameContext?.gamePhase
-            };
-        });
-        console.log('Bankruptcy state:', JSON.stringify(bankruptcyState, null, 2));
-
-        // ========================================
-        // STEP 3: Speed Up Time to Trigger Game Over
-        // ========================================
-
-        // Use 100x speed for testing (120 seconds game time = 1.2 seconds real time at 100x)
-        const speedSet = await page.evaluate(() => {
-            window.gameContext?.setSpecificTimeSpeed?.(100);
-            return { timeSpeed: window.gameContext?.timeSpeed };
-        });
-        console.log('Speed set to:', speedSet.timeSpeed);
-        await page.waitForTimeout(500);
-
-        console.log('✅ Set time speed to 100x for testing');
-
-        // Bankruptcy countdown scenario has 120 seconds remaining (2 minutes game time)
-        // At 100x speed: 120 / 100 = 1.2 seconds real time
-        // Wait and check progress every 2 seconds
-        for (let i = 0; i < 3; i++) {
-            await page.waitForTimeout(2000);
-            const progressState = await page.evaluate(() => {
-                return {
-                    currentTime: window.gameContext?.currentTime,
-                    remaining: window.gameContext?.bankruptcyCountdown?.remaining,
-                    gamePhase: window.gameContext?.gamePhase
-                };
-            });
-            console.log(`Progress check ${i + 1}:`, JSON.stringify(progressState, null, 2));
-
-            // If game over already triggered, break early
-            if (progressState.gamePhase !== 'desktop') {
-                console.log('Game over detected early!');
-                break;
-            }
+            }));
+            if (progressState.gamePhase !== 'desktop') break;
         }
 
-        console.log('✅ STEP 3: Waited for bankruptcy countdown to complete');
-
-        // Check state after waiting
-        const finalState = await page.evaluate(() => {
-            return {
-                bankruptcyCountdown: window.gameContext?.bankruptcyCountdown,
-                currentTime: window.gameContext?.currentTime,
-                gamePhase: window.gameContext?.gamePhase,
-                timeSpeed: window.gameContext?.timeSpeed,
-                isPaused: window.gameContext?.isPaused
-            };
-        });
-        console.log('Final state:', JSON.stringify(finalState, null, 2));
-
         // ========================================
-        // STEP 4: Verify Game Over Screen
+        // STEP 5: Verify Game Over Screen
         // ========================================
+        const gameOverState = await page.evaluate(() => ({
+            gamePhase: window.gameContext?.gamePhase
+        }));
 
-        // Check if game over state was triggered
-        const gameOverState = await page.evaluate(() => {
-            return {
-                gamePhase: window.gameContext?.gamePhase,
-                bankruptcyCountdown: window.gameContext?.bankruptcyCountdown
-            };
-        });
-
-        console.log('Game over state check:', JSON.stringify(gameOverState, null, 2));
-
-        // Verify game over was triggered
         expect(gameOverState.gamePhase).toBe('gameOver-bankruptcy');
 
-        // Game over overlay should now be visible
         await expect(page.locator('.game-over-overlay')).toBeVisible({ timeout: 5000 });
         await expect(page.locator('h1:has-text("BANKRUPTCY")')).toBeVisible();
 
-        console.log('✅ STEP 4: Bankruptcy game over screen displayed');
-
         // ========================================
-        // STEP 5: Test New Game After Game Over
+        // STEP 6: Test New Game After Game Over
         // ========================================
-
-        // Click Return to Main Menu button
         const returnButton = page.locator('button:has-text("Return to Main Menu")');
         await expect(returnButton).toBeVisible();
         await returnButton.click();
 
-        // Should return to login screen
         await expect(page.locator('.game-login-screen')).toBeVisible({ timeout: 10000 });
+    });
 
-        console.log('✅ STEP 5: New game option functional after bankruptcy');
-        console.log('✅ E2E: Bankruptcy Game Over - PASS');
+    test('should send bankruptcy cancelled message when balance improves', async ({ page }) => {
+        test.setTimeout(60000);
+
+        // Helper to set game speed
+        const setSpeed = async (speed) => {
+            await page.evaluate((s) => window.gameContext.setSpecificTimeSpeed(s), speed);
+        };
+
+        // ========================================
+        // STEP 1: Setup and Trigger Bankruptcy
+        // ========================================
+        await page.goto('/?skipBoot=true&debug=true');
+
+        await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
+        await page.locator('input.username-input').fill('recovery_test');
+        await page.click('button:has-text("Continue")');
+
+        await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
+
+        // Trigger bankruptcy countdown
+        await page.keyboard.press('Control+d');
+        await expect(page.locator('.debug-panel')).toBeVisible({ timeout: 2000 });
+
+        await page.click('.debug-tab:has-text("State Controls")');
+        await page.waitForTimeout(200);
+
+        await page.click('[data-testid="debug-trigger-bankruptcy"]');
+        await page.waitForTimeout(500);
+
+        // ========================================
+        // STEP 2: Cancel Bankruptcy
+        // ========================================
+        await page.click('[data-testid="debug-cancel-bankruptcy"]');
+        await page.waitForTimeout(500);
+
+        // Close debug panel
+        await page.keyboard.press('Escape');
+
+        // Let message system process
+        await setSpeed(100);
+        await page.waitForTimeout(200);
+        await setSpeed(1);
+
+        // ========================================
+        // STEP 3: Verify Bankruptcy Cancelled Message
+        // ========================================
+        await page.click('text=☰');
+        await page.click('text=SNet Mail');
+        await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
+
+        // Check for Bankruptcy Cancelled message
+        const cancelledMessage = page.locator('.message-item:has-text("Cancelled")').or(
+            page.locator('.message-item:has-text("improved")')
+        );
+        await expect(cancelledMessage.first()).toBeVisible({ timeout: 5000 });
+
+        // Verify game continues normally
+        const gameState = await page.evaluate(() => ({
+            bankruptcyCountdown: window.gameContext?.bankruptcyCountdown,
+            gamePhase: window.gameContext?.gamePhase
+        }));
+
+        expect(gameState.bankruptcyCountdown).toBeNull();
+        expect(gameState.gamePhase).toBe('desktop');
     });
 });
 
@@ -166,7 +264,14 @@ test.describe('E2E: Reputation Game Over', () => {
         await page.evaluate(() => localStorage.clear());
     });
 
-    test('should trigger reputation failure and game over from low reputation', async ({ page }) => {
+    test('should send termination warning message and trigger game over', async ({ page }) => {
+        test.setTimeout(60000);
+
+        // Helper to set game speed
+        const setSpeed = async (speed) => {
+            await page.evaluate((s) => window.gameContext.setSpecificTimeSpeed(s), speed);
+        };
+
         // ========================================
         // STEP 1: Setup New Game with Debug Mode
         // ========================================
@@ -179,111 +284,163 @@ test.describe('E2E: Reputation Game Over', () => {
         await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
         // Verify starting reputation (should be 9 - Superb)
-        await expect(page.locator('.reputation-badge:has-text("★9")')).toBeVisible();
-
-        console.log('✅ STEP 1: Game started with debug mode enabled');
+        await expect(page.locator('.reputation-badge:has-text("Tier 9")')).toBeVisible();
 
         // ========================================
-        // STEP 2: Open Debug Panel and Set Low Reputation
+        // STEP 2: Trigger Termination Countdown via Debug Panel
         // ========================================
-
-        // Open debug panel with Ctrl+D
         await page.keyboard.press('Control+d');
         await expect(page.locator('.debug-panel')).toBeVisible({ timeout: 2000 });
 
-        // Use the nearTermination scenario which has reputation 1
-        const terminationButton = page.locator('button:has-text("Near Termination")');
-        await expect(terminationButton).toBeVisible();
-        await terminationButton.click();
+        // Switch to State Controls tab
+        await page.click('.debug-tab:has-text("State Controls")');
+        await page.waitForTimeout(200);
 
-        // Wait a moment for state to update
-        await page.waitForTimeout(1000);
+        // Click "Start Termination Countdown" button
+        await page.click('[data-testid="debug-trigger-termination"]');
+        await page.waitForTimeout(500);
 
         // Close debug panel
         await page.keyboard.press('Escape');
-        await expect(page.locator('.debug-panel')).not.toBeVisible();
 
-        // Verify reputation is now 1
-        const repText = await page.locator('.reputation-badge').textContent();
-        const rep = parseInt(repText.match(/\d+/)?.[0] || '9');
-        expect(rep).toBe(1);
+        // Verify reputation changed to 1
+        await expect(page.locator('.reputation-badge:has-text("Tier 1")')).toBeVisible({ timeout: 3000 });
 
-        console.log(`✅ STEP 2: Reputation set to ${rep} via Near Termination scenario`);
+        // Let message system process
+        await setSpeed(100);
+        await page.waitForTimeout(200);
+        await setSpeed(1);
 
         // ========================================
-        // STEP 3: Speed Up Time to Trigger Game Over
+        // STEP 3: Verify Termination Warning Message
         // ========================================
+        await page.click('text=☰');
+        await page.click('text=SNet Mail');
+        await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
 
-        // Use 100x speed for testing (300 seconds game time = 3 seconds real time at 100x)
-        const speedSet = await page.evaluate(() => {
-            window.gameContext?.setSpecificTimeSpeed?.(100);
-            return { timeSpeed: window.gameContext?.timeSpeed };
-        });
-        console.log('Speed set to:', speedSet.timeSpeed);
-        await page.waitForTimeout(500);
+        // Check for Final Warning message
+        const warningMessage = page.locator('.message-item:has-text("FINAL WARNING")').or(
+            page.locator('.message-item:has-text("Termination")')
+        );
+        await expect(warningMessage.first()).toBeVisible({ timeout: 5000 });
 
-        console.log('✅ Set time speed to 100x for testing');
+        // Verify message content
+        await warningMessage.first().click();
+        await expect(page.locator('.message-view')).toBeVisible();
+        await expect(page.locator('.message-body:has-text("TERMINATED")')).toBeVisible();
+        await expect(page.locator('.message-body:has-text("10 MINUTES")')).toBeVisible();
+        await expect(page.locator('.message-body:has-text("final chance")')).toBeVisible();
 
-        // Reputation countdown has 300 seconds remaining (5 minutes game time) 
-        // At 100x speed: 300 / 100 = 3 seconds real time
-        // Wait and check progress every 2 seconds
-        for (let i = 0; i < 3; i++) {
-            await page.waitForTimeout(2000);
-            const progressState = await page.evaluate(() => {
-                return {
-                    currentTime: window.gameContext?.currentTime,
-                    remaining: window.gameContext?.reputationCountdown?.remaining,
-                    gamePhase: window.gameContext?.gamePhase
-                };
-            });
-            console.log(`Progress check ${i + 1}:`, JSON.stringify(progressState, null, 2));
+        // Close Mail
+        await page.locator('.window:has-text("SNet Mail") .window-controls button:has-text("×")').click();
 
-            // If game over already triggered, break early
-            if (progressState.gamePhase !== 'desktop') {
-                console.log('Game over detected early!');
-                break;
-            }
+        // ========================================
+        // STEP 4: Speed Up Time to Trigger Game Over
+        // ========================================
+        await setSpeed(100);
+
+        // Reputation countdown is 10 minutes (600 seconds)
+        // At 100x speed: 600 / 100 = 6 seconds real time
+        for (let i = 0; i < 10; i++) {
+            await page.waitForTimeout(1000);
+            const progressState = await page.evaluate(() => ({
+                gamePhase: window.gameContext?.gamePhase
+            }));
+            if (progressState.gamePhase !== 'desktop') break;
         }
 
-        console.log('✅ STEP 3: Waited for reputation countdown to complete');
-
         // ========================================
-        // STEP 4: Verify Game Over Screen
+        // STEP 5: Verify Game Over Screen
         // ========================================
+        const gameOverState = await page.evaluate(() => ({
+            gamePhase: window.gameContext?.gamePhase
+        }));
 
-        // Check if game over state was triggered
-        const gameOverState = await page.evaluate(() => {
-            return {
-                gamePhase: window.gameContext?.gamePhase,
-                reputationCountdown: window.gameContext?.reputationCountdown
-            };
-        });
-
-        console.log('Game over state check:', JSON.stringify(gameOverState, null, 2));
-
-        // Verify game over was triggered
         expect(gameOverState.gamePhase).toBe('gameOver-termination');
 
-        // Game over overlay should now be visible
         await expect(page.locator('.game-over-overlay')).toBeVisible({ timeout: 5000 });
         await expect(page.locator('h1:has-text("CONTRACT TERMINATED")')).toBeVisible();
 
-        console.log('✅ STEP 4: Reputation game over screen displayed');
-
         // ========================================
-        // STEP 5: Test New Game After Game Over
+        // STEP 6: Test New Game After Game Over
         // ========================================
-
-        // Click Return to Main Menu button
         const returnButton = page.locator('button:has-text("Return to Main Menu")');
         await expect(returnButton).toBeVisible();
         await returnButton.click();
 
-        // Should return to login screen
         await expect(page.locator('.game-login-screen')).toBeVisible({ timeout: 10000 });
+    });
 
-        console.log('✅ STEP 5: New game option functional after reputation failure');
-        console.log('✅ E2E: Reputation Game Over - PASS');
+    test('should send performance improved message when reputation recovers', async ({ page }) => {
+        test.setTimeout(60000);
+
+        // Helper to set game speed
+        const setSpeed = async (speed) => {
+            await page.evaluate((s) => window.gameContext.setSpecificTimeSpeed(s), speed);
+        };
+
+        // ========================================
+        // STEP 1: Setup and Trigger Termination
+        // ========================================
+        await page.goto('/?skipBoot=true&debug=true');
+
+        await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
+        await page.locator('input.username-input').fill('rep_recovery_test');
+        await page.click('button:has-text("Continue")');
+
+        await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
+
+        // Trigger termination countdown
+        await page.keyboard.press('Control+d');
+        await expect(page.locator('.debug-panel')).toBeVisible({ timeout: 2000 });
+
+        await page.click('.debug-tab:has-text("State Controls")');
+        await page.waitForTimeout(200);
+
+        await page.click('[data-testid="debug-trigger-termination"]');
+        await page.waitForTimeout(500);
+
+        // ========================================
+        // STEP 2: Cancel Termination
+        // ========================================
+        await page.click('[data-testid="debug-cancel-termination"]');
+        await page.waitForTimeout(500);
+
+        // Close debug panel
+        await page.keyboard.press('Escape');
+
+        // Let message system process
+        await setSpeed(100);
+        await page.waitForTimeout(200);
+        await setSpeed(1);
+
+        // ========================================
+        // STEP 3: Verify Performance Improved Message
+        // ========================================
+        await page.click('text=☰');
+        await page.click('text=SNet Mail');
+        await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
+
+        // Check for Performance Improved message
+        const improvedMessage = page.locator('.message-item:has-text("Improvement")').or(
+            page.locator('.message-item:has-text("Acknowledged")')
+        );
+        await expect(improvedMessage.first()).toBeVisible({ timeout: 5000 });
+
+        // Verify message content
+        await improvedMessage.first().click();
+        await expect(page.locator('.message-view')).toBeVisible();
+        await expect(page.locator('.message-body:has-text("improved")')).toBeVisible();
+        await expect(page.locator('.message-body:has-text("cancelled")')).toBeVisible();
+
+        // Verify game continues normally
+        const gameState = await page.evaluate(() => ({
+            reputationCountdown: window.gameContext?.reputationCountdown,
+            gamePhase: window.gameContext?.gamePhase
+        }));
+
+        expect(gameState.reputationCountdown).toBeNull();
+        expect(gameState.gamePhase).toBe('desktop');
     });
 });
 
@@ -293,9 +450,83 @@ test.describe('E2E: Game Over Recovery', () => {
         await page.evaluate(() => localStorage.clear());
     });
 
+    test('should display both bankruptcy and termination warnings simultaneously', async ({ page }) => {
+        test.setTimeout(60000);
+
+        // ========================================
+        // STEP 1: Setup New Game with Debug Mode
+        // ========================================
+        await page.goto('/?skipBoot=true&debug=true');
+
+        await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
+        await page.locator('input.username-input').fill('dual_warning_test');
+        await page.click('button:has-text("Continue")');
+
+        await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
+
+        // ========================================
+        // STEP 2: Trigger Both Countdowns via Debug Panel
+        // ========================================
+        await page.keyboard.press('Control+d');
+        await expect(page.locator('.debug-panel')).toBeVisible({ timeout: 2000 });
+
+        // Switch to State Controls tab
+        await page.click('.debug-tab:has-text("State Controls")');
+        await page.waitForTimeout(200);
+
+        // Trigger bankruptcy countdown first
+        await page.click('[data-testid="debug-trigger-bankruptcy"]');
+        await page.waitForTimeout(300);
+
+        // Trigger termination countdown
+        await page.click('[data-testid="debug-trigger-termination"]');
+        await page.waitForTimeout(300);
+
+        // Close debug panel
+        await page.keyboard.press('Escape');
+
+        // ========================================
+        // STEP 3: Verify Both Warning Banners Are Visible
+        // ========================================
+        // Check for bankruptcy warning banner
+        const bankruptcyBanner = page.locator('.bankruptcy-warning-banner');
+        await expect(bankruptcyBanner).toBeVisible({ timeout: 5000 });
+        await expect(bankruptcyBanner).toContainText('BANKRUPTCY WARNING');
+        await expect(bankruptcyBanner).toContainText('remaining');
+
+        // Check for termination warning banner
+        const terminationBanner = page.locator('.reputation-warning-banner');
+        await expect(terminationBanner).toBeVisible({ timeout: 5000 });
+        await expect(terminationBanner).toContainText('TERMINATION WARNING');
+        await expect(terminationBanner).toContainText('remaining');
+
+        // Verify both banners are visible at the same time
+        const bankruptcyVisible = await bankruptcyBanner.isVisible();
+        const terminationVisible = await terminationBanner.isVisible();
+        expect(bankruptcyVisible).toBe(true);
+        expect(terminationVisible).toBe(true);
+
+        // ========================================
+        // STEP 4: Verify Game State Has Both Countdowns Active
+        // ========================================
+        const gameState = await page.evaluate(() => ({
+            bankruptcyCountdown: window.gameContext?.bankruptcyCountdown,
+            reputationCountdown: window.gameContext?.reputationCountdown,
+            gamePhase: window.gameContext?.gamePhase
+        }));
+
+        expect(gameState.bankruptcyCountdown).not.toBeNull();
+        expect(gameState.reputationCountdown).not.toBeNull();
+        expect(gameState.gamePhase).toBe('desktop');
+
+        // Both countdowns should have remaining time
+        expect(gameState.bankruptcyCountdown.remaining).toBeGreaterThan(0);
+        expect(gameState.reputationCountdown.remaining).toBeGreaterThan(0);
+    });
+
     test('should allow full game restart after any game over', async ({ page }) => {
-        // This is a simpler test to verify game over screen basics
-        // without needing to trigger actual game over conditions
+        // This test verifies that after game over, the player can return to main menu
+        // and start a completely fresh game
 
         // Start a game
         await page.goto('/?skipBoot=true');
@@ -311,8 +542,6 @@ test.describe('E2E: Game Over Recovery', () => {
         await page.hover('text=⏻');
         await page.click('text=Save');
         await page.waitForTimeout(1000);
-
-        console.log('✅ Game saved successfully');
 
         // Verify game is still playable
         await expect(page.locator('.topbar-time')).toBeVisible();
@@ -335,15 +564,10 @@ test.describe('E2E: Game Over Recovery', () => {
             // Should return to game login screen
             await expect(page.locator('.game-login-screen')).toBeVisible({ timeout: 5000 });
 
-            console.log('✅ Exit to menu functional');
-
             // Start new game
             await page.click('.new-game-btn');
             await expect(page.locator('.username-selection')).toBeVisible({ timeout: 20000 });
-
-            console.log('✅ E2E: Game Over Recovery - PASS');
-        } else {
-            console.log('ℹ️ Exit to menu not available (testing game over flow only)');
         }
     });
 });
+

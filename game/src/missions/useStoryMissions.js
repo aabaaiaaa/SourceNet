@@ -14,6 +14,9 @@ import { useEffect, useRef } from 'react';
 import storyMissionManager from './StoryMissionManager';
 import { storyEvents, allMissions } from './missionData';
 import triggerEventBus from '../core/triggerEventBus';
+import messageTemplates from './messageTemplates';
+import { scheduleGameTimeCallback, clearGameTimeCallback } from '../core/gameTimeScheduler';
+import { VERIFICATION_DELAY_MS } from '../constants/gameConstants';
 
 // Module-level state that persists across component remounts (including React Strict Mode)
 let eventsSubscribed = false;
@@ -27,12 +30,27 @@ export const useStoryMissions = (gameState, actions) => {
   const desktopLoadedEmitted = useRef(false);
   const emittedConnectionsRef = useRef(new Set());
   const emittedMissionRef = useRef(null);
+  const completeMissionObjectiveRef = useRef(null);
+  const completeMissionRef = useRef(null);
   const messageHandlerRef = useRef(null);
+  const gameStateRef = useRef(gameState);
+  const verificationTimerRef = useRef(null);
+  const verificationScheduledForMissionRef = useRef(null); // Guard against re-scheduling
+
+  // Keep refs updated with latest values
+  useEffect(() => {
+    gameStateRef.current = gameState;
+    completeMissionObjectiveRef.current = actions.completeMissionObjective;
+    completeMissionRef.current = actions.completeMission;
+  }, [gameState, actions.completeMissionObjective, actions.completeMission]);
 
   // Initialize missions once on mount
   useEffect(() => {
     // Initialize missions in singleton (guard inside singleton prevents duplicates across HMR)
     storyMissionManager.initializeAllMissions([...storyEvents, ...allMissions]);
+
+    // Set game state getter for condition evaluation (uses ref to always get latest state)
+    storyMissionManager.setGameStateGetter(() => gameStateRef.current);
 
     // Only subscribe once (module-level flag persists across remounts)
     if (eventsSubscribed) {
@@ -82,6 +100,23 @@ export const useStoryMissions = (gameState, actions) => {
       const { message, eventId } = data;
 
       if (message && actions.addMessage) {
+        // Resolve template if templateId is specified
+        let resolvedMessage = message;
+        if (message.templateId && messageTemplates.MESSAGE_TEMPLATES[message.templateId]) {
+          const template = messageTemplates.MESSAGE_TEMPLATES[message.templateId];
+          // Template provides the canonical message content, message config only provides metadata
+          // (id, delay, etc.) - template fields take priority for from, fromId, fromName, subject, body
+          resolvedMessage = {
+            ...message, // First spread message config (id, delay, etc.)
+            from: template.from,
+            fromId: template.fromId,
+            fromName: template.fromName,
+            subject: template.subject,
+            body: template.body,
+            attachments: template.attachments || message.attachments || [],
+          };
+        }
+
         // Helper to replace placeholders using current gameState
         const replacePlaceholders = (text) => {
           if (!text) return text;
@@ -97,16 +132,16 @@ export const useStoryMissions = (gameState, actions) => {
 
         // Create message object with placeholder replacement
         const newMessage = {
-          id: eventId, // Use eventId directly as the message ID for trigger matching
-          from: replacePlaceholders(message.from),
-          fromId: message.fromId.replace(/{random}/g, generateRandomId()),
-          fromName: replacePlaceholders(message.fromName),
-          subject: replacePlaceholders(message.subject),
-          body: replacePlaceholders(message.body),
+          id: eventId.startsWith('msg-') ? eventId : `msg-${eventId}`, // Only add prefix if not already present
+          from: replacePlaceholders(resolvedMessage.from),
+          fromId: (resolvedMessage.fromId || '').replace(/{random}/g, generateRandomId()),
+          fromName: replacePlaceholders(resolvedMessage.fromName || resolvedMessage.from),
+          subject: replacePlaceholders(resolvedMessage.subject),
+          body: replacePlaceholders(resolvedMessage.body || ''),
           timestamp: null, // Will be set by addMessage
           read: false,
           archived: false,
-          attachments: message.attachments || [],
+          attachments: resolvedMessage.attachments || [],
         };
 
         actions.addMessage(newMessage);
@@ -174,6 +209,103 @@ export const useStoryMissions = (gameState, actions) => {
       storyMissionManager.setTimeSpeed(gameState.timeSpeed);
     }
   }, [gameState.timeSpeed]);
+
+  // Auto-complete verification objective with game-time delay:
+  // - For missions WITH scripted events: wait for scriptedEventComplete, then schedule verification
+  // - For missions WITHOUT scripted events: schedule verification immediately
+  useEffect(() => {
+    if (!gameState.activeMission || !gameState.activeMission.objectives) {
+      // Clear guard if no active mission
+      verificationScheduledForMissionRef.current = null;
+      return;
+    }
+
+    const verificationObj = gameState.activeMission.objectives.find(
+      obj => obj.id === 'obj-verify'
+    );
+
+    if (!verificationObj || verificationObj.status === 'complete') {
+      // Clear guard if verification is already complete
+      verificationScheduledForMissionRef.current = null;
+      return;
+    }
+
+    // Check if all non-verification objectives are complete
+    const otherObjectives = gameState.activeMission.objectives.filter(
+      obj => obj.id !== 'obj-verify'
+    );
+    const allOtherComplete = otherObjectives.every(obj => obj.status === 'complete');
+
+    if (!allOtherComplete) {
+      return;
+    }
+
+    const missionId = gameState.activeMission.missionId;
+    const missionDef = gameState.activeMission;
+
+    // Guard: Don't re-schedule if already scheduled for this mission
+    if (verificationScheduledForMissionRef.current === missionId && verificationTimerRef.current) {
+      console.log('[VERIFY] Already scheduled for', missionId);
+      return;
+    }
+
+    console.log('[VERIFY] Checking to schedule for', missionId, 'allOtherComplete:', allOtherComplete);
+
+    // Helper function to schedule verification with game-time delay
+    const scheduleVerification = () => {
+      // Clear any existing timer for a different mission
+      if (verificationTimerRef.current && verificationScheduledForMissionRef.current !== missionId) {
+        clearGameTimeCallback(verificationTimerRef.current);
+        verificationTimerRef.current = null;
+      }
+
+      verificationTimerRef.current = scheduleGameTimeCallback(() => {
+        console.log('[VERIFY] Timer fired for', missionId);
+        if (gameStateRef.current.activeMission?.missionId === missionId) {
+          completeMissionObjectiveRef.current?.('obj-verify');
+        }
+        verificationTimerRef.current = null;
+        verificationScheduledForMissionRef.current = null;
+      }, VERIFICATION_DELAY_MS, gameState.timeSpeed || 1);
+
+      verificationScheduledForMissionRef.current = missionId;
+      console.log('[VERIFY] Scheduled timer for', missionId, 'delay:', VERIFICATION_DELAY_MS, 'speed:', gameState.timeSpeed || 1);
+    };
+
+    // Check if this mission has scripted events triggered by objective completion
+    let hasScriptedEvents = false;
+    if (missionDef.scriptedEvents && missionDef.scriptedEvents.length > 0) {
+      hasScriptedEvents = missionDef.scriptedEvents.some(event =>
+        event.trigger?.type === 'afterObjectiveComplete'
+      );
+    }
+
+    // For missions with scripted events, listen for scriptedEventComplete then schedule verification
+    if (hasScriptedEvents) {
+      const handleScriptedComplete = () => {
+        // Check mission wasn't failed by the scripted event
+        if (gameStateRef.current.activeMission?.missionId === missionId) {
+          scheduleVerification();
+        }
+      };
+
+      triggerEventBus.on('scriptedEventComplete', handleScriptedComplete);
+      // Note: No cleanup that clears the timer - let it run to completion
+      return () => {
+        triggerEventBus.off('scriptedEventComplete', handleScriptedComplete);
+      };
+    }
+
+    // For missions WITHOUT scripted events, schedule verification immediately
+    console.log('[VERIFY] Calling scheduleVerification for', missionId, 'hasScriptedEvents:', hasScriptedEvents);
+    scheduleVerification();
+
+    // Note: No cleanup that clears the timer - guard pattern prevents re-scheduling
+  }, [
+    gameState.activeMission,
+    gameState.activeMission?.objectives?.map(obj => `${obj.id}:${obj.status}`).join(','),
+    gameState.timeSpeed
+  ]);
 };
 
 export default useStoryMissions;

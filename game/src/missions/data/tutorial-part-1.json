@@ -18,6 +18,7 @@
   "requirements": {
     "software": [
       "vpn-client",
+      "network-address-register",
       "network-scanner",
       "file-manager"
     ],
@@ -28,6 +29,7 @@
     "networkId": "clienta-corporate",
     "networkName": "ClientA-Corporate",
     "address": "192.168.50.0/24",
+    "bandwidth": 50,
     "fileSystems": [
       {
         "id": "fs-clienta-01",
@@ -143,6 +145,11 @@
           "type": "forceDisconnect",
           "network": "clienta-corporate",
           "reason": "Network administrator terminated connection"
+        },
+        {
+          "type": "revokeNAREntry",
+          "network": "clienta-corporate",
+          "reason": "Access credentials revoked by network administrator"
         },
         {
           "type": "setMissionStatus",

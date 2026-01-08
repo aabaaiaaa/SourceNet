@@ -47,7 +47,7 @@ const Desktop = () => {
         {windows
           .filter((w) => !w.minimized)
           .map((window) => (
-            <Window key={window.appId} window={window} />
+            <Window key={window.id} window={window} />
           ))}
       </div>
 

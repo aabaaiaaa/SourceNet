@@ -11,14 +11,27 @@
  * Story missions are data-driven (JSON) and separate from core game code.
  */
 
+console.log('🚀 StoryMissionManager.js module loaded!');
+
 import triggerEventBus from '../core/triggerEventBus';
-import { scheduleGameTimeCallback, clearGameTimeCallback, rescheduleAllTimers } from '../core/gameTimeScheduler';
+import { scheduleGameTimeCallback, rescheduleAllTimers } from '../core/gameTimeScheduler';
 
 class StoryMissionManager {
   constructor() {
     this.missions = new Map(); // missionId -> mission definition
     this.unsubscribers = new Map(); // missionId -> array of unsubscribe functions
     this.timeSpeed = 1; // Current time speed multiplier (1x or 10x)
+    this.gameStateGetter = null; // Function to get current game state
+    this.firedEvents = new Set(); // Track which events have already fired to prevent duplicates
+    this.consequencesSubscribed = false; // Track if we've subscribed to mission consequences
+  }
+
+  /**
+   * Set the game state getter function
+   * @param {function} getter - Function that returns current game state
+   */
+  setGameStateGetter(getter) {
+    this.gameStateGetter = getter;
   }
 
   /**
@@ -48,6 +61,78 @@ class StoryMissionManager {
     console.log('✅ Initializing story mission system...');
     missions.forEach((mission) => this.registerMission(mission));
     console.log(`✅ Loaded ${missions.length} missions/events`);
+
+    // Subscribe to mission completion to send consequence messages
+    this.subscribeMissionConsequences();
+  }
+
+  /**
+   * Subscribe to mission completion to send consequence messages
+   */
+  subscribeMissionConsequences() {
+    if (this.consequencesSubscribed) {
+      console.log('📡 Already subscribed to mission consequences, skipping');
+      return;
+    }
+
+    this.consequencesSubscribed = true;
+    const instanceId = Math.random().toString(36).substr(2, 9);
+    console.log(`📡 Subscribing to mission completion consequences... (instance: ${instanceId})`);
+    triggerEventBus.on('missionComplete', (data) => {
+      console.log(`📡 [${instanceId}] CALLBACK INVOKED for missionComplete`);
+      try {
+        const { missionId, status } = data;
+        console.log(`📡 [${instanceId}] Mission complete event received: ${missionId}, status=${status}`);
+        console.log(`🔍 About to call this.getMission for ${missionId}`);
+        const mission = this.getMission(missionId);
+        console.log(`🔍 Mission retrieved:`, mission ? 'EXISTS' : 'NULL');
+
+        console.log(`🔍 Mission object:`, mission ? `has ${Object.keys(mission).length} keys` : 'null');
+        console.log(`🔍 Mission has consequences?`, mission && mission.consequences ? 'YES' : 'NO');
+        console.log(`🔍 Checking condition: mission=${!!mission}, mission.consequences=${!!mission?.consequences}`);
+
+        if (!mission || !mission.consequences) {
+          console.log(`⚠️ No consequences found for ${missionId} (mission=${!!mission}, consequences=${!!mission?.consequences})`);
+          if (mission) {
+            console.log(`   Mission keys:`, Object.keys(mission).join(', '));
+          }
+          return;
+        }
+
+        console.log(`✅ Passed consequences check, getting status-specific consequences`);
+        console.log(`🔍 Getting consequences for status: ${status}`);
+        const consequences = status === 'failed' ? mission.consequences.failure : mission.consequences.success;
+        console.log(`🔍 Consequences object:`, consequences ? `has ${Object.keys(consequences).length} keys` : 'null');
+
+        if (!consequences || !consequences.messages || consequences.messages.length === 0) {
+          console.log(`⚠️ No messages in consequences for ${missionId}`);
+          if (consequences) {
+            console.log(`   Consequences keys:`, Object.keys(consequences).join(', '));
+            console.log(`   Messages:`, consequences.messages);
+          }
+          return;
+        }
+
+        console.log(`📨 Sending ${consequences.messages.length} ${status} consequence messages for ${missionId}`);
+
+        // Send each consequence message with its delay
+        consequences.messages.forEach((messageConfig, index) => {
+          const delay = messageConfig.delay || 0;
+          console.log(`   Message ${index + 1}/${consequences.messages.length}: ${messageConfig.subject}, delay=${delay}ms`);
+
+          scheduleGameTimeCallback(() => {
+            console.log(`✉️ Actually sending message: ${messageConfig.subject}`);
+            triggerEventBus.emit('storyEventTriggered', {
+              storyEventId: missionId,
+              eventId: messageConfig.id || `${missionId}-consequence`,
+              message: messageConfig,
+            });
+          }, delay, this.timeSpeed);
+        });
+      } catch (error) {
+        console.error(`❌ Error in subscribeMissionConsequences:`, error);
+      }
+    });
   }
 
   /**
@@ -55,6 +140,24 @@ class StoryMissionManager {
    * @param {object} missionDef - Mission definition object
    */
   registerMission(missionDef) {
+
+    // Automatically add final verification objective if mission has objectives
+    // This gives time for scripted events to execute and prevents instant completion
+    // Always add it (even without scripted events) to maintain consistency and suspense
+    if (missionDef.objectives && missionDef.objectives.length > 0) {
+      const hasVerificationObjective = missionDef.objectives.some(obj => obj.id === 'obj-verify');
+
+      if (!hasVerificationObjective) {
+        // Add verification objective at the end
+        missionDef.objectives.push({
+          id: 'obj-verify',
+          description: 'Verify mission completion',
+          type: 'verification',
+          autoComplete: false, // Manual completion only
+        });
+      }
+    }
+
     this.missions.set(missionDef.missionId, missionDef);
 
     // Handle story events (have events[] array)
@@ -72,7 +175,8 @@ class StoryMissionManager {
     }
 
     // Subscribe to scripted event triggers
-    if (missionDef.scriptedEvents) {
+    if (missionDef.scriptedEvents && Array.isArray(missionDef.scriptedEvents) && missionDef.scriptedEvents.length > 0) {
+      console.log(`✅ Subscribing to scripted events for ${missionDef.missionId}`);
       this.subscribeScriptedEventTriggers(missionDef);
     }
   }
@@ -92,14 +196,49 @@ class StoryMissionManager {
         // Check condition if specified
         if (condition) {
           console.log(`🔍 Checking condition:`, condition, 'against data:', data);
-          const conditionMet = Object.keys(condition).every(
-            (key) => data[key] === condition[key]
-          );
-          if (!conditionMet) {
-            console.log(`❌ Condition not met`);
-            return;
+          console.log(`   Has gameState?`, condition.gameState ? 'YES' : 'NO');
+          console.log(`   Has gameStateGetter?`, this.gameStateGetter ? 'YES' : 'NO');
+
+          // Check game state conditions (prefixed with 'gameState.')
+          if (this.gameStateGetter && condition.gameState) {
+            const gameState = this.gameStateGetter();
+            console.log(`🔍 Checking gameState conditions - keys:`, Object.keys(condition.gameState).join(', '));
+            console.log(`   Current gameState has messages?`, gameState && gameState.messages ? gameState.messages.length : 'NO');
+            console.log(`   Current gameState has software?`, gameState && gameState.software ? gameState.software.length : 'NO');
+            const gameStateConditionMet = Object.keys(condition.gameState).every((key) => {
+              if (key === 'softwareInstalled') {
+                const installed = gameState.software && gameState.software.includes(condition.gameState[key]);
+                console.log(`   software check: ${condition.gameState[key]} installed? ${installed}`);
+                return installed;
+              }
+              if (key === 'messageRead') {
+                const message = gameState.messages && gameState.messages.find(m => m.id === condition.gameState[key]);
+                const read = message && message.read;
+                console.log(`   message check: ${condition.gameState[key]} read? ${read}`, message ? `(found message)` : `(message not found)`);
+                return read;
+              }
+              return gameState[key] === condition.gameState[key];
+            });
+            if (!gameStateConditionMet) {
+              console.log(`❌ Game state condition not met`);
+              return;
+            }
+            console.log(`✅ Game state condition met`);
           }
-          console.log(`✅ Condition met`);
+
+          // Check event data conditions (non-gameState keys)
+          const eventConditions = { ...condition };
+          delete eventConditions.gameState;
+          if (Object.keys(eventConditions).length > 0) {
+            const conditionMet = Object.keys(eventConditions).every(
+              (key) => data[key] === eventConditions[key]
+            );
+            if (!conditionMet) {
+              console.log(`❌ Event condition not met`);
+              return;
+            }
+            console.log(`✅ Event condition met`);
+          }
         }
 
         // Use game-time-aware scheduling
@@ -108,6 +247,17 @@ class StoryMissionManager {
         console.log(`   → Real-time delay will be ${realDelay}ms`);
         scheduleGameTimeCallback(() => {
           console.log(`🚀 Executing story event ${event.id}`);
+
+          // Create a deduplication key based on message subject to prevent duplicate messages
+          const dedupKey = event.message?.subject || event.id;
+          if (this.firedEvents.has(dedupKey)) {
+            console.log(`⚠️ Event ${event.id} already fired (dedupKey: ${dedupKey}), skipping`);
+            return;
+          }
+
+          // Mark this event as fired
+          this.firedEvents.add(dedupKey);
+
           // For story events, we need to send the message
           // This would be handled by the game context
           triggerEventBus.emit('storyEventTriggered', {
@@ -127,7 +277,9 @@ class StoryMissionManager {
    * @param {object} missionDef - Mission definition
    */
   subscribeMissionTrigger(missionDef) {
-    const { type, event, delay, condition } = missionDef.triggers.start;
+    const { type, event, delay, condition, missionId: triggerMissionId } = missionDef.triggers.start;
+
+    console.log(`📡 Subscribing to mission trigger for ${missionDef.title}: type=${type}, trigger=${triggerMissionId || event}`);
 
     if (type === 'timeSinceEvent') {
       const unsubscribe = triggerEventBus.on(event, (data) => {
@@ -160,6 +312,30 @@ class StoryMissionManager {
       });
 
       this.addUnsubscriber(missionDef.missionId, unsubscribe);
+    } else if (type === 'afterMissionComplete') {
+      const unsubscribe = triggerEventBus.on('missionComplete', (data) => {
+        console.log(`🎯 missionComplete event received: ${data.missionId}, looking for: ${triggerMissionId}`);
+
+        // Check if this is the mission we're waiting for
+        if (data.missionId !== triggerMissionId) {
+          return;
+        }
+
+        console.log(`✅ Mission ${triggerMissionId} completed, scheduling ${missionDef.title} activation`);
+
+        // Use game-time-aware scheduling
+        const self = this; // Capture this for callback
+        scheduleGameTimeCallback(() => {
+          try {
+            console.log(`🚀 Executing scheduled activation for ${missionDef.title} after mission completion`);
+            self.activateMission(missionDef.missionId);
+          } catch (error) {
+            console.error(`❌ Error in scheduled activation for ${missionDef.title}:`, error);
+          }
+        }, delay || 0, this.timeSpeed);
+      });
+
+      this.addUnsubscriber(missionDef.missionId, unsubscribe);
     }
   }
 
@@ -168,12 +344,18 @@ class StoryMissionManager {
    * @param {object} missionDef - Mission definition
    */
   subscribeScriptedEventTriggers(missionDef) {
+    console.log(`✅ Setting up scripted event triggers for ${missionDef.missionId}`);
+
     missionDef.scriptedEvents.forEach((scriptedEvent) => {
       const { type, objectiveId, delay } = scriptedEvent.trigger;
+      console.log(`✅ Subscribing to trigger: type=${type}, objectiveId=${objectiveId}`);
 
       if (type === 'afterObjectiveComplete') {
         const unsubscribe = triggerEventBus.on('objectiveComplete', (data) => {
+          console.log(`✅ objectiveComplete: obj=${data.objectiveId}, mission=${data.missionId}`);
+
           if (data.objectiveId === objectiveId && data.missionId === missionDef.missionId) {
+            console.log(`✅ Scripted event triggered: ${scriptedEvent.id}`);
             // Use game-time-aware scheduling
             scheduleGameTimeCallback(() => {
               this.executeScriptedEvent(missionDef.missionId, scriptedEvent);
@@ -212,6 +394,21 @@ class StoryMissionManager {
 
     console.log(`📋 Activating mission: ${mission.title} (${missionId})`);
 
+    // Check if mission has an intro message
+    const introMessage = mission.triggers?.start?.introMessage;
+    if (introMessage) {
+      console.log(`📧 Scheduling intro message for ${mission.title}`);
+      const delay = introMessage.delay || 0;
+
+      scheduleGameTimeCallback(() => {
+        console.log(`📧 Sending intro message for ${mission.title}`);
+        triggerEventBus.emit('sendMissionIntroMessage', {
+          missionId: mission.missionId,
+          introMessage,
+        });
+      }, delay, this.timeSpeed);
+    }
+
     // Emit event that mission is now available
     console.log(`📡 Emitting missionAvailable event for ${mission.title}`);
     triggerEventBus.emit('missionAvailable', {
@@ -227,15 +424,29 @@ class StoryMissionManager {
    * @param {object} scriptedEvent - Scripted event definition
    */
   executeScriptedEvent(missionId, scriptedEvent) {
+    console.log(`🚀 Executing scripted event: ${scriptedEvent.id}`);
+
+    // Get mission definition to access consequences
+    const mission = this.getMission(missionId);
+
+    // Enrich actions with mission data (e.g., failure consequences)
+    const enrichedActions = scriptedEvent.actions.map(action => {
+      if (action.type === 'setMissionStatus' && action.status === 'failed' && mission?.consequences?.failure) {
+        return {
+          ...action,
+          failureConsequences: mission.consequences.failure
+        };
+      }
+      return action;
+    });
+
     // Emit event for scripted event execution
+    console.log(`📡 EMITTING scriptedEventStart: eventId=${scriptedEvent.id}, missionId=${missionId}, actions=${enrichedActions.length}`);
     triggerEventBus.emit('scriptedEventStart', {
       missionId,
       eventId: scriptedEvent.id,
-      actions: scriptedEvent.actions,
+      actions: enrichedActions,
     });
-
-    // The ScriptedEventExecutor will handle the actual execution
-    // This manager just triggers it
   }
 
   /**

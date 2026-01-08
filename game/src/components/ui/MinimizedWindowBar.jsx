@@ -37,9 +37,9 @@ const MinimizedWindowBar = () => {
     <div className="minimized-bar">
       {minimizedWindows.map((window) => (
         <div
-          key={window.appId}
+          key={window.id}
           className="minimized-window"
-          onClick={() => restoreWindow(window.appId)}
+          onClick={() => restoreWindow(window.id)}
           title={`Restore ${getAppTitle(window.appId)}`}
         >
           <span className="minimized-title">{getAppTitle(window.appId)}</span>

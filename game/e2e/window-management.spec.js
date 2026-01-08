@@ -312,20 +312,39 @@ test.describe('Window Management', () => {
                             bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance: 1000 }],
                             messages: [],
                             managerName: 'Test',
+                            reputation: 9,
+                            reputationCountdown: null,
+                            activeMission: null,
+                            completedMissions: [],
+                            availableMissions: [],
+                            missionCooldowns: { easy: null, medium: null, hard: null },
+                            narEntries: [],
+                            activeConnections: [],
+                            lastScanResults: null,
+                            fileManagerConnections: [],
+                            lastFileOperation: null,
+                            downloadQueue: [],
+                            transactions: [],
+                            licensedSoftware: [],
+                            bankruptcyCountdown: null,
+                            lastInterestTime: null,
                             windows: [
                                 {
+                                    id: 'window-1',
                                     appId: 'mail',
                                     zIndex: 1001,
                                     minimized: false,
                                     position: { x: 50, y: 100 },
                                 },
                                 {
+                                    id: 'window-2',
                                     appId: 'banking',
                                     zIndex: 1000,
                                     minimized: true,
                                     position: { x: 80, y: 130 },
                                 },
                                 {
+                                    id: 'window-3',
                                     appId: 'portal',
                                     zIndex: 1002,
                                     minimized: false,
@@ -352,9 +371,11 @@ test.describe('Window Management', () => {
             const openWindowsAfterLoad = await page.locator('.window').count();
             const minimizedWindowsAfterLoad = await page.locator('.minimized-window').count();
 
+
             // Verify we have 2 open windows and 1 minimized (as defined in save)
             expect(openWindowsAfterLoad).toBe(2); // Mail and Portal
             expect(minimizedWindowsAfterLoad).toBe(1); // Banking
+            console.log('TEST: Window counts verified');
 
             // Verify specific windows are present
             const mailWindow = page.locator('.window:has-text("SNet Mail")');
@@ -376,16 +397,29 @@ test.describe('Window Management', () => {
             // Verify minimized window can be restored
             await page.click('.minimized-window:has-text("SNet Banking")');
             await expect(page.locator('.window:has-text("SNet Banking App")')).toBeVisible();
+            await page.waitForTimeout(500); // Allow window to fully render after restore
 
             // Verify all windows are still functional
-            await page.click('.window:has-text("SNet Mail") button[title="Close"]');
-            await page.click('.window:has-text("SNet Banking") button[title="Close"]');
-            await page.click('.window:has-text("OSNet Portal") button[title="Close"]');
+            await page.locator('.window:has-text("SNet Mail")').locator('button:has-text("×")').click();
+
+
+            // List all window titles
+            const titles = await page.locator('.window .window-title').allTextContents();
+            console.log(`TEST: Remaining window titles: ${titles.join(', ')}`);
+
+
+            const bankingWindow = page.locator('.window').filter({ hasText: 'Banking' }).first();
+            await expect(bankingWindow).toBeVisible({ timeout: 5000 });
+            await bankingWindow.locator('button:has-text("×")').click();
+            await page.waitForTimeout(500);
+
+            await page.locator('.window:has-text("Portal")').locator('button:has-text("×")').click();
 
             // All windows should be closed
             await expect(page.locator('.window')).toHaveCount(0);
             await expect(page.locator('.minimized-window')).toHaveCount(0);
         });
+
 
         test('should persist window z-index order after save/load', async ({ page }) => {
             await page.goto('/?skipBoot=true');

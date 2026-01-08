@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { useGame } from '../../contexts/GameContext';
+import { useGame, MULTI_INSTANCE_APPS } from '../../contexts/GameContext';
 import { formatDateTime, getAllSaves } from '../../utils/helpers';
 import { getReputationTier } from '../../systems/ReputationSystem';
 import { calculateStorageUsed, formatStorage } from '../../systems/StorageSystem';
@@ -236,7 +236,7 @@ const TopBar = () => {
             className="reputation-badge"
             style={{ backgroundColor: getReputationTier(reputation).color, cursor: 'pointer' }}
           >
-            ★{reputation}
+            Tier {reputation}
           </span>
           {showReputationPreview && (
             <div className="notification-preview">
@@ -392,8 +392,11 @@ const TopBar = () => {
                     openWindow(app.id);
                     setShowAppLauncher(false);
                   }}
+                  className={MULTI_INSTANCE_APPS.includes(app.id) ? 'multi-instance-app' : ''}
+                  title={MULTI_INSTANCE_APPS.includes(app.id) ? `${app.name} (can open multiple)` : app.name}
                 >
                   {app.name}
+                  {MULTI_INSTANCE_APPS.includes(app.id) && <span className="multi-instance-badge">⊞</span>}
                 </button>
               ))}
               <div className="app-launcher-storage">

@@ -60,17 +60,21 @@ export const checkFileSystemConnectionObjective = (objective, fileManagerConnect
 /**
  * Check if file operation objective is complete
  * @param {object} objective - Objective definition
- * @param {object} operationData - File operation completion data
+ * @param {object} operationData - File operation completion data (last operation)
+ * @param {object} cumulativeOperations - Cumulative file operations {repair: 5, copy: 3}
  * @returns {boolean} Objective complete
  */
-export const checkFileOperationObjective = (objective, operationData) => {
+export const checkFileOperationObjective = (objective, operationData, cumulativeOperations = {}) => {
   const { operation, count } = objective;
 
-  // Check if operation matches and count met (if specified)
+  // Check if operation matches
   if (operationData.operation !== operation) return false;
 
   if (count !== undefined && count !== null) {
-    return operationData.filesAffected >= count;
+    // Use cumulative count if available, otherwise fall back to operationData
+    const totalCount = cumulativeOperations[operation] || operationData.filesAffected;
+    console.log(`🔍 checkFileOperationObjective: ${operation} count=${count}, cumulative=${totalCount}`);
+    return totalCount >= count;
   }
 
   return true; // Operation completed, no count requirement
@@ -132,8 +136,15 @@ export const checkMissionObjectives = (activeMission, gameState) => {
     case 'fileOperation':
       isComplete = checkFileOperationObjective(
         incompleteObjective,
-        gameState.lastFileOperation || {}
+        gameState.lastFileOperation || {},
+        gameState.missionFileOperations || {} // Pass cumulative operations
       );
+      break;
+
+    case 'verification':
+      // Verification objectives never auto-complete - they are completed manually
+      // after all scripted events finish or via explicit game logic
+      isComplete = false;
       break;
 
     default:

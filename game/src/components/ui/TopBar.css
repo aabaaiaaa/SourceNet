@@ -161,6 +161,24 @@
   left: auto;
 }
 
+.app-launcher-menu .multi-instance-app {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.multi-instance-badge {
+  display: inline-block;
+  font-size: 14px;
+  opacity: 0.6;
+  margin-left: auto;
+}
+
+.app-launcher-menu .multi-instance-app:hover .multi-instance-badge {
+  opacity: 1;
+}
+
 /* Load Game Modal */
 .modal-overlay {
   position: fixed;
@@ -258,13 +276,22 @@
 }
 
 .reputation-warning-banner {
-  top: 60px; /* Below bankruptcy if both active */
+  top: 75px;
+  /* Below bankruptcy if both active */
   background: #FF8C00;
 }
 
 @keyframes flash {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0.6; }
+
+  0%,
+  50% {
+    opacity: 1;
+  }
+
+  51%,
+  100% {
+    opacity: 0.6;
+  }
 }
 
 .app-launcher-storage {

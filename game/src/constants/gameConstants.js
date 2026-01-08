@@ -263,3 +263,6 @@ export const MESSAGE_TIMING = {
   FIRST_MESSAGE_DELAY: 2000, // 2 seconds after desktop loads
   SECOND_MESSAGE_DELAY: 2000, // 2 seconds after first message is read
 };
+
+// Mission verification delay (in game-time milliseconds)
+export const VERIFICATION_DELAY_MS = 3000;

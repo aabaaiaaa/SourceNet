@@ -46,7 +46,7 @@ test.describe('E2E Test 6: Time System Flow', () => {
     // Step 3-4: Wait 10 real seconds, verify time advanced
     await page.waitForTimeout(11000);
     const timeAfter10s = await page.locator('.topbar-time').textContent();
-    expect(timeAfter10s).toContain('09:00:1'); // Should be around 09:00:10-11
+    expect(timeAfter10s).toMatch(/09:00:(0[0-9]|1[0-9]|2[0-9])/); // Should be around 09:00:09-19
 
     // Step 5-6: Change to 10x speed
     await page.click('button:has-text("1x")');

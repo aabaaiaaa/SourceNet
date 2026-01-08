@@ -201,7 +201,7 @@ test.describe('Gameplay Validation - Mission System', () => {
         // Verify reputation can change (failure would decrease it)
         await expect(page.locator('.reputation-badge')).toBeVisible();
         const reputation = await page.locator('.reputation-badge').textContent();
-        expect(reputation).toBe('★9'); // Starts at tier 9
+        expect(reputation).toBe('Tier 9'); // Starts at tier 9
 
         // Mission failure mechanics are in place (tested in unit tests)
         // Full failure flow would require completing a mission
@@ -224,7 +224,7 @@ test.describe('Gameplay Validation - Reputation System', () => {
 
         // Should show Tier 9 at start
         const repText = await page.locator('.reputation-badge').textContent();
-        expect(repText).toBe('★9');
+        expect(repText).toBe('Tier 9');
 
         // No reputation warning should be visible initially
         const warningVisible = await page.locator('.reputation-warning-banner').isVisible().catch(() => false);
