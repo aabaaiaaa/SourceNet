@@ -65,6 +65,17 @@ export const useStoryMissions = (gameState, actions) => {
       console.log(`📥 Received missionAvailable event:`, data);
       const { mission } = data;
 
+      // Check if this is a one-time mission that has already been completed/failed
+      if (mission.oneTime) {
+        const currentState = gameStateRef.current;
+        const completedMissions = currentState?.completedMissions || [];
+        const alreadyCompleted = completedMissions.some(m => m.missionId === mission.missionId);
+        if (alreadyCompleted) {
+          console.log(`⚠️ One-time mission ${mission.title} already completed/failed, not adding to available list`);
+          return;
+        }
+      }
+
       // Actions are accessed directly - they should be stable
       if (actions.setAvailableMissions) {
         console.log(`📝 Calling setAvailableMissions for ${mission.title}`);

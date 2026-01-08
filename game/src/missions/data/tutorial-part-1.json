@@ -5,6 +5,7 @@
   "difficulty": "Beginner",
   "basePayout": 2000,
   "category": "story-tutorial",
+  "oneTime": true,
   "triggers": {
     "start": {
       "type": "timeSinceEvent",

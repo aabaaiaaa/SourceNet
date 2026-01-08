@@ -5,6 +5,7 @@
   "difficulty": "Beginner",
   "basePayout": 1000,
   "category": "story-tutorial",
+  "oneTime": true,
   "triggers": {
     "start": {
       "type": "afterMissionComplete",

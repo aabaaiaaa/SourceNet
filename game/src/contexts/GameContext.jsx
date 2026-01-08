@@ -699,6 +699,9 @@ export const GameProvider = ({ children }) => {
       objectives: mission.objectives.map(obj => ({ ...obj, status: 'pending' })),
     });
 
+    // Remove the accepted mission from available missions
+    setAvailableMissions(prev => prev.filter(m => m.missionId !== mission.missionId));
+
     // If mission has network file systems, add them to the NAR entry
     if (mission.network && mission.network.fileSystems && Array.isArray(mission.network.fileSystems)) {
       const networkId = mission.network.networkId;
@@ -830,7 +833,7 @@ export const GameProvider = ({ children }) => {
 
   // Initialize story mission system
   useStoryMissions(
-    { gamePhase, username, managerName, currentTime, activeConnections, activeMission, timeSpeed, software, messages, reputation },
+    { gamePhase, username, managerName, currentTime, activeConnections, activeMission, timeSpeed, software, messages, reputation, completedMissions },
     { setAvailableMissions, addMessage, completeMissionObjective, completeMission }
   );
 
