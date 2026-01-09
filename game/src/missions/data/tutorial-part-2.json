@@ -33,6 +33,8 @@
     "networkName": "ClientA-Corporate",
     "address": "192.168.50.0/24",
     "bandwidth": 50,
+    "revokeOnComplete": true,
+    "revokeReason": "Mission access expired",
     "fileSystems": [
       {
         "id": "fs-clienta-01",

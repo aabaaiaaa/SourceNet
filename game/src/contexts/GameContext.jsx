@@ -824,7 +824,47 @@ export const GameProvider = ({ children }) => {
 
     // Update reputation
     setReputation(prev => Math.max(1, Math.min(11, prev + reputationChange)));
-  }, [activeMission, currentTime, completedMissions, bankAccounts]);
+
+    // Schedule NAR entry revocation if mission has revokeOnComplete
+    if (activeMission.network?.revokeOnComplete) {
+      const networkId = activeMission.network.networkId;
+      const networkName = activeMission.network.networkName || networkId;
+      const revokeReason = activeMission.network.revokeReason || 'Mission access expired';
+
+      console.log(`🔒 Scheduling NAR revocation for ${networkId} in 5 seconds (game time)`);
+
+      scheduleGameTimeCallback(() => {
+        console.log(`🔒 Revoking NAR entry for ${networkId}`);
+
+        // Revoke the NAR entry
+        setNarEntries(prev => prev.map(entry => {
+          if (entry.networkId === networkId) {
+            return {
+              ...entry,
+              authorized: false,
+              revokedReason: revokeReason,
+            };
+          }
+          return entry;
+        }));
+
+        // Disconnect any active VPN connection to this network
+        setActiveConnections(prev => {
+          const wasConnected = prev.some(conn => conn.networkId === networkId);
+          if (wasConnected) {
+            console.log(`📡 Disconnecting from ${networkName} due to access revocation`);
+            // Emit networkDisconnected event for TopBar notification
+            triggerEventBus.emit('networkDisconnected', {
+              networkId,
+              networkName,
+              reason: revokeReason,
+            });
+          }
+          return prev.filter(conn => conn.networkId !== networkId);
+        });
+      }, 5000, timeSpeed);
+    }
+  }, [activeMission, currentTime, completedMissions, bankAccounts, timeSpeed]);
 
   // Keep completeMissionRef updated
   useEffect(() => {

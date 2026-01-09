@@ -1,8 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useGame, MULTI_INSTANCE_APPS } from '../../contexts/GameContext';
 import { formatDateTime, getAllSaves } from '../../utils/helpers';
 import { getReputationTier } from '../../systems/ReputationSystem';
 import { calculateStorageUsed, formatStorage } from '../../systems/StorageSystem';
+import triggerEventBus from '../../core/triggerEventBus';
+import { scheduleGameTimeCallback, clearGameTimeCallback } from '../../core/gameTimeScheduler';
 import './TopBar.css';
 
 const TopBar = () => {
@@ -39,10 +41,52 @@ const TopBar = () => {
   const [showNetworkPreview, setShowNetworkPreview] = useState(false);
   const [showMissionPreview, setShowMissionPreview] = useState(false);
   const [showBandwidthPreview, setShowBandwidthPreview] = useState(false);
+  const [disconnectionNotices, setDisconnectionNotices] = useState([]);
 
   // Timeout refs for delayed menu closing
   const powerMenuTimeout = useRef(null);
   const appLauncherTimeout = useRef(null);
+  const disconnectionTimerRef = useRef(null);
+
+  // Subscribe to network disconnection events
+  useEffect(() => {
+    const handleNetworkDisconnected = (data) => {
+      const { networkId, networkName, reason } = data;
+      console.log(`📡 TopBar received networkDisconnected: ${networkName} - ${reason}`);
+
+      // Add to notices (stacking)
+      setDisconnectionNotices(prev => [
+        ...prev,
+        { networkId, networkName, reason, id: Date.now() }
+      ]);
+
+      // Clear existing timer and start new 3-second timer (resets on new notices)
+      if (disconnectionTimerRef.current) {
+        clearGameTimeCallback(disconnectionTimerRef.current);
+      }
+      disconnectionTimerRef.current = scheduleGameTimeCallback(() => {
+        setDisconnectionNotices([]);
+        disconnectionTimerRef.current = null;
+      }, 3000, timeSpeed);
+    };
+
+    triggerEventBus.on('networkDisconnected', handleNetworkDisconnected);
+
+    return () => {
+      triggerEventBus.off('networkDisconnected', handleNetworkDisconnected);
+      if (disconnectionTimerRef.current) {
+        clearGameTimeCallback(disconnectionTimerRef.current);
+      }
+    };
+  }, [timeSpeed]);
+
+  const dismissDisconnectionNotices = () => {
+    setDisconnectionNotices([]);
+    if (disconnectionTimerRef.current) {
+      clearGameTimeCallback(disconnectionTimerRef.current);
+      disconnectionTimerRef.current = null;
+    }
+  };
 
   const unreadMessages = messages.filter((m) => !m.read);
   const totalCredits = getTotalCredits();
@@ -274,6 +318,25 @@ const TopBar = () => {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Network Disconnection Notices */}
+        {disconnectionNotices.length > 0 && (
+          <div className="topbar-network disconnection-indicator">
+            <span className="network-icon" style={{ color: '#DC143C' }}>📶</span>
+            <div className="notification-preview disconnection-notice">
+              <div className="preview-header">
+                Network Disconnected
+                <button className="dismiss-btn" onClick={dismissDisconnectionNotices}>×</button>
+              </div>
+              {disconnectionNotices.map((notice) => (
+                <div key={notice.id} className="preview-item">
+                  <strong>{notice.networkName}</strong>
+                  <div className="preview-item-small">{notice.reason}</div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

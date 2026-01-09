@@ -381,3 +381,55 @@
   background: linear-gradient(90deg, #4CAF50, #81C784);
   transition: width 0.2s ease;
 }
+
+/* Disconnection Notice Styles */
+.disconnection-indicator {
+  animation: pulse-red 1s ease-in-out 3;
+}
+
+@keyframes pulse-red {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.disconnection-notice {
+  display: block;
+}
+
+.disconnection-notice .preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #DC143C;
+}
+
+.disconnection-notice .dismiss-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #666;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.disconnection-notice .dismiss-btn:hover {
+  color: #333;
+}
+
+.disconnection-notice .preview-item {
+  border-left: 3px solid #DC143C;
+}
+
+.disconnection-notice .preview-item-small {
+  font-size: 11px;
+  color: #666;
+  margin-top: 4px;
+}

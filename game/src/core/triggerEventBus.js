@@ -140,4 +140,9 @@ class TriggerEventBus {
 // Singleton instance
 const triggerEventBus = new TriggerEventBus();
 
+// Expose for e2e testing
+if (typeof window !== 'undefined') {
+  window.triggerEventBus = triggerEventBus;
+}
+
 export default triggerEventBus;
