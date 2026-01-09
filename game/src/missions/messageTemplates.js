@@ -19,25 +19,53 @@ export const createMessageFromTemplate = (templateId, data) => {
     return null;
   }
 
-  let body = template.body;
+  // Helper to replace all placeholders in a string
+  const replacePlaceholders = (str) => {
+    let result = str;
+    Object.keys(data).forEach((key) => {
+      const placeholder = `{${key}}`;
+      result = result.replace(new RegExp(placeholder, 'g'), data[key]);
+    });
+    // Also replace {random} with generated ID
+    result = result.replace('{random}', generateRandomId());
+    return result;
+  };
 
-  // Replace placeholders
-  Object.keys(data).forEach((key) => {
-    const placeholder = `{${key}}`;
-    body = body.replace(new RegExp(placeholder, 'g'), data[key]);
-  });
+  // Replace placeholders in body
+  const body = replacePlaceholders(template.body);
+
+  // Replace placeholders in from/fromName/subject
+  const from = replacePlaceholders(template.from);
+  const fromId = replacePlaceholders(template.fromId);
+  const fromName = replacePlaceholders(template.fromName);
+  const subject = replacePlaceholders(template.subject);
+
+  // Process attachments - handle dynamic cheque amounts and descriptions
+  let attachments = template.attachments || [];
+  if (attachments.length > 0) {
+    attachments = attachments.map((att) => {
+      if (att.type === 'cheque') {
+        return {
+          ...att,
+          amount: data.chequeAmount !== undefined ? data.chequeAmount : att.amount,
+          description: att.description ? replacePlaceholders(att.description) : att.description,
+        };
+      }
+      return att;
+    });
+  }
 
   return {
     id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    from: template.from,
-    fromId: template.fromId.replace('{random}', generateRandomId()),
-    fromName: template.fromName.replace('{managerName}', data.managerName || 'Manager'),
-    subject: template.subject.replace('{managerName}', data.managerName || 'Manager'),
+    from,
+    fromId,
+    fromName,
+    subject,
     body,
     timestamp: null, // Will be set when added to game
     read: false,
     archived: false,
-    attachments: template.attachments || [],
+    attachments,
   };
 };
 
@@ -163,6 +191,48 @@ Your reputation is still "Accident Prone" after that first mission disaster. You
 Keep working.
 
 - {managerName}`,
+  },
+
+  // Tutorial Part 2 - NAR revocation info
+  'tutorial-2-nar-info': {
+    from: 'SourceNet Manager',
+    fromId: 'SNET-MGR-{random}',
+    fromName: 'SourceNet Manager {managerName}',
+    subject: 'About Network Access',
+    body: `{username},
+
+One more thing - you may have noticed your network access to ClientA-Corporate was revoked after the mission completed.
+
+This is standard procedure. Network credentials provided for missions are temporary - once a job is done (successfully or not), the client's access credentials are automatically invalidated. You'll see revoked entries in your Network Address Register (NAR) for record-keeping.
+
+Don't worry about losing access. Each new mission comes with fresh credentials. This keeps things clean and secure for both you and the clients.
+
+Just something to be aware of.
+
+- {managerName}`,
+  },
+
+  // Client payment for completed mission
+  'client-payment': {
+    from: '{clientName}',
+    fromId: 'CLIENT-{random}',
+    fromName: '{clientName}',
+    subject: 'Payment for {missionTitle}',
+    body: `{username},
+
+Thank you for completing the work on "{missionTitle}".
+
+Please find attached a digital cheque for {payoutAmount} credits as agreed.
+
+Regards,
+{clientName}`,
+    attachments: [
+      {
+        type: 'cheque',
+        amount: 0, // Will be replaced dynamically
+        description: 'Payment for {missionTitle}',
+      }
+    ],
   },
 
   // Player breaks even

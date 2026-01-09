@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { completeBoot, openApp, clearAndReload, waitForGameTime } from './helpers/common-actions.js';
-import { STARTING_SOFTWARE } from '../src/constants/gameConstants.js';
+import { completeBoot, openApp, clearAndReload, waitForGameTime } from '../helpers/common-actions.js';
+import { STARTING_SOFTWARE } from '../../src/constants/gameConstants.js';
 
 /**
  * Consolidated Save/Load Flow Tests

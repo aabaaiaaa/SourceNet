@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { completeBoot, openMail, readMessage } from './helpers/common-actions.js';
-import { createSaveWithCheque } from './helpers/test-data.js';
+import { completeBoot, openMail, readMessage } from '../helpers/common-actions.js';
+import { createSaveWithCheque } from '../helpers/test-data.js';
 
 /**
  * Banking & Cheque Flow E2E Tests

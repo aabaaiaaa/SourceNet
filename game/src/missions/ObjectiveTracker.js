@@ -58,6 +58,21 @@ export const checkFileSystemConnectionObjective = (objective, fileManagerConnect
 };
 
 /**
+ * Check if NAR entry added objective is complete
+ * @param {object} objective - Objective definition
+ * @param {array} narEntries - Current NAR entries
+ * @returns {boolean} Objective complete
+ */
+export const checkNarEntryAddedObjective = (objective, narEntries) => {
+  if (!narEntries || narEntries.length === 0) return false;
+
+  // Check if the target network has been added to NAR
+  return narEntries.some(
+    (entry) => entry.networkId === objective.target && entry.authorized !== false
+  );
+};
+
+/**
  * Check if file operation objective is complete
  * @param {object} objective - Objective definition
  * @param {object} operationData - File operation completion data (last operation)
@@ -138,6 +153,13 @@ export const checkMissionObjectives = (activeMission, gameState) => {
         incompleteObjective,
         gameState.lastFileOperation || {},
         gameState.missionFileOperations || {} // Pass cumulative operations
+      );
+      break;
+
+    case 'narEntryAdded':
+      isComplete = checkNarEntryAddedObjective(
+        incompleteObjective,
+        gameState.narEntries || []
       );
       break;
 

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { STARTING_SOFTWARE } from '../src/constants/gameConstants.js';
+import { STARTING_SOFTWARE } from '../../src/constants/gameConstants.js';
 
 test.describe('E2E Test 2: Game Login Screen (Multiple Saves)', () => {
   test('should handle multiple saves and new game creation', async ({ page }) => {

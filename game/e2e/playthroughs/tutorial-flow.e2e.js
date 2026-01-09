@@ -179,11 +179,9 @@ test.describe('E2E: Tutorial Mission Flow', () => {
             await page.waitForTimeout(100);
         }
 
-        const softwareMsg = page.locator('.message-item:has-text("Mission Software")').or(
-            page.locator('.message-item:has-text("Network Access")')
-        );
-        await expect(softwareMsg.first()).toBeVisible({ timeout: 3000 });
-        await softwareMsg.first().click();
+        const softwareMsg = page.locator('.message-item:has-text("Mission Software")').first();
+        await expect(softwareMsg).toBeVisible({ timeout: 3000 });
+        await softwareMsg.click();
         await expect(page.locator('text=VPN Client').or(page.locator('text=software')).first()).toBeVisible();
         // Verify message has body content
         const softwareMsgBody = await page.locator('.message-body').textContent();
@@ -286,7 +284,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await page.waitForTimeout(100);
 
         // ========================================
-        // STEP 9: Verify Objectives Displayed
+        // STEP 9: Verify Objectives Displayed (including new NAR objective)
         // ========================================
         const activeTab = page.locator('.tab:has-text("Active")');
         await expect(activeTab).toBeVisible();
@@ -294,6 +292,12 @@ test.describe('E2E: Tutorial Mission Flow', () => {
 
         const activeMissionCard = page.locator('.mission-card:has-text("Log File Repair")').or(page.locator('h3:has-text("Log File Repair")')).first();
         await expect(activeMissionCard).toBeVisible();
+
+        // Verify NAR objective is visible AND already complete (was completed when we clicked attachment)
+        const narObjective = page.locator('.objective-item:has-text("Add ClientA-Corporate credentials to NAR")').first();
+        await expect(narObjective).toBeVisible();
+        // Just check for the complete class on the objective item
+        await expect(narObjective).toHaveClass(/objective-complete/, { timeout: 3000 });
 
         await expect(page.locator('text=Connect to ClientA-Corporate network').first()).toBeVisible();
         await expect(page.locator('text=Scan network to find fileserver-01').first()).toBeVisible();
@@ -999,18 +1003,19 @@ test.describe('E2E: Tutorial Mission Flow', () => {
 
         await expect(page.locator('text=Log File Restoration').first()).toBeVisible({ timeout: 3000 });
 
-        await expect(page.locator('.topbar-credits:has-text("-8")').or(
-            page.locator('.topbar-credits:has-text("8,000")')
+        // Balance should still be -9000 because payment is now via cheque (not automatic)
+        await expect(page.locator('.topbar-credits:has-text("-9")').or(
+            page.locator('.topbar-credits:has-text("9,000")')
         ).first()).toBeVisible({ timeout: 3000 });
 
         // ========================================
-        // STEP 25: Read Final Message
+        // STEP 25: Wait for Client Payment Message and Deposit Cheque
         // ========================================
         await page.locator('.window:has(.window-header:has-text("SourceNet Mission Board"))').locator('.window-controls button:has-text("×")').click();
         await page.waitForTimeout(100);
 
         await setSpeed(100);
-        await page.waitForTimeout(100); // 5s game time for "Better" message
+        await page.waitForTimeout(100); // 5s game time for payment message (3s delay)
         await setSpeed(1);
 
         await page.click('text=☰');
@@ -1018,12 +1023,57 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await page.click('text=SNet Mail');
         await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
 
-        const backBtn2 = page.locator('button:has-text("Back")');
-        if (await backBtn2.isVisible()) {
-            await backBtn2.click();
+        const backBtnPayment = page.locator('button:has-text("Back")');
+        if (await backBtnPayment.isVisible()) {
+            await backBtnPayment.click();
             await page.waitForTimeout(100);
         }
 
+        // Check for client payment message
+        const paymentMessage = page.locator('.message-item:has-text("Payment for Log File Restoration")');
+        await expect(paymentMessage.first()).toBeVisible({ timeout: 5000 });
+        await paymentMessage.first().click();
+        await expect(page.locator('.message-view')).toBeVisible();
+
+        // Verify it's from the client and has a cheque
+        await expect(page.locator('.detail-row:has-text("From:") >> text=TechCorp')).toBeVisible();
+        const chequeAttachment = page.locator('.attachment-item:has-text("Cheque")').or(
+            page.locator('.attachment-item:has-text("1,000")')
+        );
+        await expect(chequeAttachment.first()).toBeVisible();
+
+        // Deposit the cheque
+        await chequeAttachment.first().click();
+        await page.click('.account-select-btn:has-text("First Bank Ltd")');
+
+        // Verify balance is now -8000 after depositing cheque
+        await expect(page.locator('.topbar-credits:has-text("-8")').or(
+            page.locator('.topbar-credits:has-text("8,000")')
+        ).first()).toBeVisible({ timeout: 5000 });
+
+        // ========================================
+        // STEP 26: Read Final Messages (Better + NAR Info)
+        // ========================================
+        // Speed up time for manager messages (5s and 15s delays)
+        await setSpeed(100);
+        await page.waitForTimeout(200); // 15s game time for both "Better" and "About Network Access" messages
+        await setSpeed(1);
+
+        // Close Banking window if open
+        const bankingWindowAfterCheque = page.locator('.window:has-text("SNet Banking")');
+        if (await bankingWindowAfterCheque.isVisible()) {
+            await bankingWindowAfterCheque.locator('.window-controls button:has-text("×")').click();
+            await page.waitForTimeout(100);
+        }
+
+        // Go back to inbox in mail
+        const backBtnFinal = page.locator('button:has-text("Back")');
+        if (await backBtnFinal.isVisible()) {
+            await backBtnFinal.click();
+            await page.waitForTimeout(100);
+        }
+
+        // Check for "Better" message
         const betterMessage = page.locator('.message-item:has-text("Better")').or(
             page.locator('.message-item:has-text("more like it")')
         );
@@ -1034,8 +1084,22 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         const betterMsgBody = await page.locator('.message-body').textContent();
         expect(betterMsgBody.length).toBeGreaterThan(50);
 
+        // Go back to inbox
+        await page.locator('button:has-text("Back")').click();
+        await page.waitForTimeout(100);
+
+        // Check for "About Network Access" NAR info message
+        const narInfoMessage = page.locator('.message-item').filter({ hasText: 'About Network Access' });
+        await expect(narInfoMessage.first()).toBeVisible({ timeout: 3000 });
+        await narInfoMessage.first().click();
+        await expect(page.locator('.message-view')).toBeVisible();
+        // Verify NAR info message mentions revocation
+        const narMsgBody = await page.locator('.message-body').textContent();
+        expect(narMsgBody).toContain('revoked');
+        expect(narMsgBody).toContain('Network Address Register');
+
         // ========================================
-        // STEP 26: Final Validation
+        // STEP 27: Final Validation
         // ========================================
         await page.locator('.window:has(.window-header:has-text("Mail"))').locator('.window-controls button:has-text("×")').click();
         await page.waitForTimeout(100);

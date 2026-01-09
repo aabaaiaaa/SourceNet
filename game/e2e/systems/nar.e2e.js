@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { completeBoot, openApp } from './helpers/common-actions.js';
+import { completeBoot, openApp } from '../helpers/common-actions.js';
 
 /**
  * NAR Revocation E2E Tests

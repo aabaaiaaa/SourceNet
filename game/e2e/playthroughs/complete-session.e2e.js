@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { waitForGameTime } from './helpers/common-actions.js';
+import { waitForGameTime } from '../helpers/common-actions.js';
 
 test.describe('E2E: Complete Gameplay Session', () => {
   test.beforeEach(async ({ page }) => {

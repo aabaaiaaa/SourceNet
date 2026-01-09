@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import { formatDateTime } from '../../utils/helpers';
 import { getMissionById } from '../../missions/missionData';
+import triggerEventBus from '../../core/triggerEventBus';
 import './SNetMail.css';
 
 const SNetMail = () => {
@@ -147,6 +148,16 @@ const SNetMail = () => {
       };
 
       console.log('✅ Network added to NAR:', networkData.networkName, newEntry);
+
+      // Emit event for objective tracking (deferred to allow state to update and re-render)
+      setTimeout(() => {
+        triggerEventBus.emit('narEntryAdded', {
+          networkId: networkData.networkId,
+          networkName: networkData.networkName,
+          entry: newEntry
+        });
+      }, 100);
+
       return [...currentEntries, newEntry];
     });
   };

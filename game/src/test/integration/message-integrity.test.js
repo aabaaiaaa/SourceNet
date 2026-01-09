@@ -19,6 +19,11 @@ import { storyEvents, allMissions } from '../../missions/missionData';
 const TEST_DATA = {
     username: 'test_agent_123',
     managerName: 'TestManager',
+    // For client-payment template
+    clientName: 'TestClient Corp',
+    missionTitle: 'Test Mission',
+    payoutAmount: '1,000',
+    chequeAmount: 1000,
 };
 
 /**
@@ -394,7 +399,7 @@ describe('Message Integrity', () => {
         });
 
         it('all fromId values should follow naming convention', () => {
-            const validPrefixes = ['SNET-MGR', 'SNET-HQ', 'SNET-'];
+            const validPrefixes = ['SNET-MGR', 'SNET-HQ', 'SNET-', 'CLIENT-'];
 
             // Check templates
             Object.entries(MESSAGE_TEMPLATES).forEach(([templateId, template]) => {

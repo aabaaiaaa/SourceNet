@@ -4,6 +4,7 @@ import {
   checkNetworkScanObjective,
   checkFileSystemConnectionObjective,
   checkFileOperationObjective,
+  checkNarEntryAddedObjective,
   checkMissionObjectives,
 } from './ObjectiveTracker';
 
@@ -126,6 +127,51 @@ describe('ObjectiveTracker', () => {
       const operationData = { operation: 'delete', filesAffected: 8 };
 
       expect(checkFileOperationObjective(objective, operationData)).toBe(false);
+    });
+  });
+
+  describe('checkNarEntryAddedObjective', () => {
+    it('should return true when target network is in NAR', () => {
+      const objective = { type: 'narEntryAdded', target: 'clienta-corporate' };
+      const narEntries = [
+        { networkId: 'clienta-corporate', networkName: 'ClientA-Corporate', authorized: true },
+      ];
+
+      expect(checkNarEntryAddedObjective(objective, narEntries)).toBe(true);
+    });
+
+    it('should return false when NAR is empty', () => {
+      const objective = { type: 'narEntryAdded', target: 'clienta-corporate' };
+
+      expect(checkNarEntryAddedObjective(objective, [])).toBe(false);
+      expect(checkNarEntryAddedObjective(objective, null)).toBe(false);
+    });
+
+    it('should return false when target network not in NAR', () => {
+      const objective = { type: 'narEntryAdded', target: 'clienta-corporate' };
+      const narEntries = [
+        { networkId: 'other-network', networkName: 'Other Network', authorized: true },
+      ];
+
+      expect(checkNarEntryAddedObjective(objective, narEntries)).toBe(false);
+    });
+
+    it('should return false when NAR entry is revoked (unauthorized)', () => {
+      const objective = { type: 'narEntryAdded', target: 'clienta-corporate' };
+      const narEntries = [
+        { networkId: 'clienta-corporate', networkName: 'ClientA-Corporate', authorized: false },
+      ];
+
+      expect(checkNarEntryAddedObjective(objective, narEntries)).toBe(false);
+    });
+
+    it('should return true when authorized is undefined (default authorized)', () => {
+      const objective = { type: 'narEntryAdded', target: 'clienta-corporate' };
+      const narEntries = [
+        { networkId: 'clienta-corporate', networkName: 'ClientA-Corporate' },
+      ];
+
+      expect(checkNarEntryAddedObjective(objective, narEntries)).toBe(true);
     });
   });
 

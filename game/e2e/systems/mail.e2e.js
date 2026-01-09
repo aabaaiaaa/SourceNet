@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { openMail, readMessage } from './helpers/common-actions.js';
-import { createBasicSave, createSaveWithCheque } from './helpers/test-data.js';
+import { openMail, readMessage } from '../helpers/common-actions.js';
+import { createBasicSave, createSaveWithCheque } from '../helpers/test-data.js';
 
 /**
  * Mail Functionality E2E Tests

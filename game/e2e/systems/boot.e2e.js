@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { completeBoot, openMail, waitForMessage, readMessage, verifyCredits } from './helpers/common-actions.js';
+import { completeBoot, openMail, waitForMessage, readMessage, verifyCredits } from '../helpers/common-actions.js';
 
 /**
  * E2E: Boot Flow Tests

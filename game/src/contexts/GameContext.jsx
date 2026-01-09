@@ -409,7 +409,7 @@ export const GameProvider = ({ children }) => {
         date: currentTime.toISOString(),
         type: 'income',
         amount: chequeAttachment.amount,
-        description: 'Cheque Deposit',
+        description: chequeAttachment.description || 'Cheque Deposit',
         balanceAfter: newBalance,
       },
     ]);
@@ -811,16 +811,35 @@ export const GameProvider = ({ children }) => {
       title: activeMission.title,
     });
 
-    // Update credits (use functional update with deep copy to avoid mutation issues in React Strict Mode)
-    setBankAccounts(prev => {
-      return prev.map((account, index) => {
-        if (index === 0) {
-          console.log(`BALANCE_LOG completeMission: ${account.balance} + ${payout} = ${account.balance + payout}`);
-          return { ...account, balance: account.balance + payout };
+    // Handle payment based on mission status
+    if (status === 'success' && payout > 0) {
+      // Success: Send client payment message with cheque (delayed)
+      scheduleGameTimeCallback(() => {
+        const paymentMessage = createMessageFromTemplate('client-payment', {
+          username,
+          clientName: activeMission.client,
+          missionTitle: activeMission.title,
+          payoutAmount: payout.toLocaleString(),
+          chequeAmount: payout,
+        });
+
+        if (paymentMessage) {
+          console.log(`💰 Sending payment message from ${activeMission.client} for ${payout} credits`);
+          addMessage(paymentMessage);
         }
-        return account;
+      }, 3000, timeSpeed);
+    } else if (payout < 0) {
+      // Failure penalty: Apply immediately
+      setBankAccounts(prev => {
+        return prev.map((account, index) => {
+          if (index === 0) {
+            console.log(`BALANCE_LOG completeMission penalty: ${account.balance} + ${payout} = ${account.balance + payout}`);
+            return { ...account, balance: account.balance + payout };
+          }
+          return account;
+        });
       });
-    });
+    }
 
     // Update reputation
     setReputation(prev => Math.max(1, Math.min(11, prev + reputationChange)));
@@ -1131,6 +1150,7 @@ export const GameProvider = ({ children }) => {
       fileManagerConnections,
       lastFileOperation,
       missionFileOperations, // Cumulative file operations for objectives with count requirements
+      narEntries, // For NAR entry added objectives
     },
     reputation,
     completeMissionObjective,

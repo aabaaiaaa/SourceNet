@@ -99,6 +99,7 @@ export const useObjectiveAutoTracking = (
       'networkScanComplete',
       'fileSystemConnected',
       'fileOperationComplete',
+      'narEntryAdded',
     ];
 
     const unsubscribers = events.map((eventType) =>

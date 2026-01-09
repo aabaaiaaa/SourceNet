@@ -259,7 +259,7 @@ describe('Network Address Integration', () => {
             id: 'msg-mission-network',
             from: 'SourceNet Manager <manager@sourcenet.local>',
             to: 'testuser@sourcenet.local',
-            subject: 'Mission Software & Network Access',
+            subject: 'Mission Software',
             body: 'Network credentials for your first mission.',
             timestamp: '2020-03-25T09:00:00.000Z',
             read: false,
@@ -328,7 +328,7 @@ describe('Network Address Integration', () => {
         });
 
         // Click the message to open it
-        await user.click(screen.getByText('Mission Software & Network Access'));
+        await user.click(screen.getByText('Mission Software'));
 
         await waitFor(() => {
             expect(screen.getByText(/Network Credentials: ClientA-Corporate/i)).toBeInTheDocument();
@@ -374,7 +374,7 @@ describe('Network Address Integration', () => {
             id: 'msg-mission-ref',
             from: 'SourceNet Manager <manager@sourcenet.local>',
             to: 'testuser@sourcenet.local',
-            subject: 'Mission Software & Network Access',
+            subject: 'Mission Software',
             body: 'Network credentials for your first mission.',
             timestamp: '2020-03-25T09:00:00.000Z',
             read: false,
@@ -406,7 +406,7 @@ describe('Network Address Integration', () => {
 
         const NarCapture = () => {
             const { narEntries } = useGame();
-            
+
             useEffect(() => {
                 if (narEntries && narEntries.length > 0) {
                     capturedNarEntries = narEntries;
@@ -430,7 +430,7 @@ describe('Network Address Integration', () => {
         });
 
         // Click the message to open it
-        await user.click(screen.getByText('Mission Software & Network Access'));
+        await user.click(screen.getByText('Mission Software'));
 
         await waitFor(() => {
             // Should display resolved network name from tutorial-part-1 mission
@@ -457,7 +457,7 @@ describe('Network Address Integration', () => {
         expect(narEntry.networkId).toBe('clienta-corporate');
         expect(narEntry.networkName).toBe('ClientA-Corporate');
         expect(narEntry.address).toBe('192.168.50.0/24');
-        
+
         // Most importantly: verify fileSystems were resolved from mission
         expect(narEntry.fileSystems).toBeDefined();
         expect(narEntry.fileSystems.length).toBe(1);

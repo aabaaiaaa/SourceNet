@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { STARTING_SOFTWARE } from '../src/constants/gameConstants.js';
+import { STARTING_SOFTWARE } from '../../src/constants/gameConstants.js';
 
 test.describe('E2E Test 5: App Interactions Flow', () => {
   test('should handle complete app interaction flow', async ({ page }) => {

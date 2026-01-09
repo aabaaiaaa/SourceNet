@@ -100,6 +100,12 @@
   },
   "objectives": [
     {
+      "id": "obj-nar",
+      "description": "Add ClientA-Corporate credentials to NAR",
+      "type": "narEntryAdded",
+      "target": "clienta-corporate"
+    },
+    {
       "id": "obj-1",
       "description": "Connect to ClientA-Corporate network",
       "type": "networkConnection",

@@ -77,7 +77,7 @@ describe('Mission JSON Validation', () => {
     });
 
     it('should have valid objective types', () => {
-      const validTypes = ['networkConnection', 'networkScan', 'fileSystemConnection', 'fileOperation'];
+      const validTypes = ['networkConnection', 'networkScan', 'fileSystemConnection', 'fileOperation', 'narEntryAdded', 'verification'];
       tutorialMissions.forEach((mission) => {
         mission.objectives.forEach((obj) => {
           expect(obj.type).toBeDefined();

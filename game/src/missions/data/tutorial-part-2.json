@@ -137,6 +137,13 @@
           "from": "manager",
           "subject": "Better",
           "templateId": "tutorial-2-success"
+        },
+        {
+          "id": "manager-nar-info",
+          "delay": 15000,
+          "from": "manager",
+          "subject": "About Network Access",
+          "templateId": "tutorial-2-nar-info"
         }
       ]
     },
