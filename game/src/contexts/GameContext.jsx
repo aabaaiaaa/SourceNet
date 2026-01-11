@@ -17,8 +17,9 @@ import {
 import useStoryMissions from '../missions/useStoryMissions';
 import { useObjectiveAutoTracking } from '../missions/useObjectiveAutoTracking';
 import { createMessageFromTemplate, MESSAGE_TEMPLATES } from '../missions/messageTemplates';
-import { scheduleGameTimeCallback } from '../core/gameTimeScheduler';
+import { scheduleGameTimeCallback, clearGameTimeCallback } from '../core/gameTimeScheduler';
 import { useDownloadManager } from '../systems/useDownloadManager';
+import storyMissionManager from '../missions/StoryMissionManager';
 import {
   getNetworkBandwidth,
   getAdapterSpeed,
@@ -77,10 +78,22 @@ export const GameProvider = ({ children }) => {
 
   // Banking message tracking
   const prevBalanceRef = useRef(null);
-  const pendingBankingMessageRef = useRef(null); // Track pending delayed banking messages
+  const bankingMessageQueueRef = useRef([]); // Queue of pending banking messages
+  const bankingMessageTimerRef = useRef(null); // Timer for current queued message
+  const [bankingMessagesSent, setBankingMessagesSent] = useState({
+    firstOverdraft: false,
+    approachingBankruptcy: false,
+    bankruptcyCountdownStart: false,
+    bankruptcyCancelled: false,
+  });
 
   // HR message tracking
   const prevReputationTierRef = useRef(null);
+  const [reputationMessagesSent, setReputationMessagesSent] = useState({
+    performancePlanWarning: false,
+    finalTerminationWarning: false,
+    performanceImproved: false,
+  });
 
   // ===== EXTENDED GAME STATE =====
 
@@ -273,6 +286,9 @@ export const GameProvider = ({ children }) => {
     );
   }, []);
 
+  // Ref to track if this is a new game (for emitting newGameStarted event)
+  const isNewGameRef = useRef(false);
+
   // Initialize player
   const initializePlayer = useCallback((name) => {
     setUsername(name);
@@ -282,6 +298,9 @@ export const GameProvider = ({ children }) => {
     // Set manager name
     const manager = getRandomManagerName(MANAGER_NAMES);
     setManagerName(manager);
+
+    // Mark this as a new game so useStoryMissions can emit newGameStarted
+    isNewGameRef.current = true;
 
     // Welcome messages now come from story mission system (no hardcoded messages)
   }, []);
@@ -892,7 +911,7 @@ export const GameProvider = ({ children }) => {
 
   // Initialize story mission system
   useStoryMissions(
-    { gamePhase, username, managerName, currentTime, activeConnections, activeMission, timeSpeed, software, messages, reputation, completedMissions },
+    { gamePhase, username, managerName, currentTime, activeConnections, activeMission, timeSpeed, software, messages, reputation, completedMissions, isNewGameRef },
     { setAvailableMissions, addMessage, completeMissionObjective, completeMission }
   );
 
@@ -1008,6 +1027,42 @@ export const GameProvider = ({ children }) => {
     console.log(`  📊 Reputation change: ${reputationChange}`);
   }, [activeMission, currentTime, bankAccounts, completedMissions, username, managerName, addMessage]);
 
+  // Helper to process the banking message queue (sends next message with 5s delay)
+  const processBankingMessageQueue = useCallback(() => {
+    if (bankingMessageQueueRef.current.length === 0) {
+      console.log(`💳 Banking message queue empty`);
+      return;
+    }
+
+    // If already processing, skip
+    if (bankingMessageTimerRef.current) {
+      console.log(`💳 Already processing banking message queue`);
+      return;
+    }
+
+    const nextMessage = bankingMessageQueueRef.current[0];
+    console.log(`💳 Processing banking message queue: ${nextMessage.type} (${bankingMessageQueueRef.current.length} in queue)`);
+
+    // Schedule the message with 5 second delay
+    bankingMessageTimerRef.current = scheduleGameTimeCallback(() => {
+      // Remove from queue
+      const messageToSend = bankingMessageQueueRef.current.shift();
+      bankingMessageTimerRef.current = null;
+
+      if (messageToSend) {
+        // Mark as sent
+        setBankingMessagesSent(prev => ({ ...prev, [messageToSend.type]: true }));
+
+        // Send the message
+        addMessage(messageToSend.message);
+        console.log(`💳 Banking message sent: ${messageToSend.message.subject}`);
+
+        // Process next in queue (if any)
+        processBankingMessageQueue();
+      }
+    }, 5000, timeSpeed);
+  }, [addMessage, timeSpeed]);
+
   // Banking messages - send automated messages for overdrafts and bankruptcy warnings
   useEffect(() => {
     if (!username || gamePhase !== 'desktop') return;
@@ -1022,67 +1077,102 @@ export const GameProvider = ({ children }) => {
 
     const prevBalance = prevBalanceRef.current;
 
-    // Check if a banking message should be sent
-    const messageType = getBankingMessageType(totalCredits, prevBalance, bankruptcyCountdown);
+    // Reset sent flags when conditions no longer apply
+    if (totalCredits >= 0 && bankingMessagesSent.firstOverdraft) {
+      setBankingMessagesSent(prev => ({ ...prev, firstOverdraft: false }));
+      console.log(`💳 Reset firstOverdraft flag (balance now positive)`);
+    }
+    if (totalCredits >= -8000 && bankingMessagesSent.approachingBankruptcy) {
+      setBankingMessagesSent(prev => ({ ...prev, approachingBankruptcy: false }));
+      console.log(`💳 Reset approachingBankruptcy flag (balance above -8000)`);
+    }
+    if (totalCredits > -10000 && bankingMessagesSent.bankruptcyCountdownStart) {
+      setBankingMessagesSent(prev => ({ ...prev, bankruptcyCountdownStart: false }));
+      console.log(`💳 Reset bankruptcyCountdownStart flag (balance above -10000)`);
+    }
+    if (bankruptcyCountdown && bankingMessagesSent.bankruptcyCancelled) {
+      setBankingMessagesSent(prev => ({ ...prev, bankruptcyCancelled: false }));
+      console.log(`💳 Reset bankruptcyCancelled flag (bankruptcy countdown active again)`);
+    }
 
-    if (messageType) {
-      console.log(`💳 Banking message triggered: ${messageType}`);
-      console.log(`  Previous balance: ${prevBalance}, Current balance: ${totalCredits}`);
+    // Determine which messages should be queued based on thresholds crossed
+    // Order by threshold: firstOverdraft (0) → approachingBankruptcy (-8000) → bankruptcyCountdownStart (-10000)
+    const messagesToQueue = [];
 
+    // Check each threshold in order
+    if (totalCredits < 0 && totalCredits > -10000 && prevBalance >= 0 && !bankingMessagesSent.firstOverdraft) {
+      messagesToQueue.push('firstOverdraft');
+    }
+    if (totalCredits < -8000 && totalCredits > -10000 && prevBalance >= -8000 && !bankingMessagesSent.approachingBankruptcy) {
+      messagesToQueue.push('approachingBankruptcy');
+    }
+    if (totalCredits <= -10000 && prevBalance > -10000 && !bankingMessagesSent.bankruptcyCountdownStart) {
+      messagesToQueue.push('bankruptcyCountdownStart');
+    }
+    if (totalCredits > -10000 && bankruptcyCountdown && !bankingMessagesSent.bankruptcyCancelled) {
+      messagesToQueue.push('bankruptcyCancelled');
+    }
+
+    // Queue each message
+    messagesToQueue.forEach(messageType => {
+      console.log(`💳 Queueing banking message: ${messageType}`);
       const template = BANKING_MESSAGES[messageType];
       if (template) {
-        // Helper to create and send the message
-        const sendBankingMessage = () => {
-          let body = '';
-          if (messageType === 'firstOverdraft' || messageType === 'approachingBankruptcy' || messageType === 'bankruptcyCancelled') {
-            body = template.bodyTemplate(totalCredits);
-          } else if (messageType === 'bankruptcyCountdownStart') {
-            const timeRemaining = bankruptcyCountdown ? bankruptcyCountdown.remaining : 5;
-            body = template.bodyTemplate(totalCredits, timeRemaining);
-          }
+        let body = '';
+        if (messageType === 'firstOverdraft' || messageType === 'approachingBankruptcy' || messageType === 'bankruptcyCancelled') {
+          body = template.bodyTemplate(totalCredits);
+        } else if (messageType === 'bankruptcyCountdownStart') {
+          const timeRemaining = bankruptcyCountdown ? bankruptcyCountdown.remaining : 5;
+          body = template.bodyTemplate(totalCredits, timeRemaining);
+        }
 
-          // Replace {username} placeholder
-          body = body.replace(/{username}/g, username);
+        // Replace {username} placeholder
+        body = body.replace(/{username}/g, username);
 
-          addMessage({
-            id: `bank-${messageType}-${Date.now()}`,
-            from: template.fromName,
-            fromId: template.fromId,
-            to: username,
-            toId: playerMailId,
-            subject: template.subject,
-            body,
-            timestamp: currentTime.toISOString(),
-            read: false,
-          });
-
-          console.log(`💳 Banking message sent: ${template.subject}`);
-          pendingBankingMessageRef.current = null;
+        const message = {
+          id: `bank-${messageType}-${Date.now()}`,
+          from: template.fromName,
+          fromId: template.fromId,
+          to: username,
+          toId: playerMailId,
+          subject: template.subject,
+          body,
+          timestamp: currentTime.toISOString(),
+          read: false,
         };
 
-        // First overdraft message has a 5-second delay
-        if (messageType === 'firstOverdraft') {
-          // Don't schedule another if one is already pending
-          if (!pendingBankingMessageRef.current) {
-            console.log(`💳 Scheduling overdraft message with 5 second delay`);
-            pendingBankingMessageRef.current = scheduleGameTimeCallback(sendBankingMessage, 5000);
-          }
-        } else {
-          // Other banking messages are sent immediately
-          sendBankingMessage();
-        }
+        bankingMessageQueueRef.current.push({ type: messageType, message });
       }
+    });
+
+    // Start processing queue if we added messages
+    if (messagesToQueue.length > 0) {
+      processBankingMessageQueue();
     }
 
     // Update previous balance
     prevBalanceRef.current = totalCredits;
-  }, [bankAccounts, username, gamePhase, getTotalCredits, bankruptcyCountdown, currentTime, playerMailId, addMessage]);
+  }, [bankAccounts, username, gamePhase, getTotalCredits, bankruptcyCountdown, currentTime, playerMailId, addMessage, bankingMessagesSent, processBankingMessageQueue, timeSpeed]);
 
   // HR messages - send automated messages for reputation changes and termination warnings
   useEffect(() => {
     if (!username || gamePhase !== 'desktop') return;
 
     const currentTier = reputation;
+
+    // Reset sent flags when conditions no longer apply (allows re-triggering if player drops again)
+    if (currentTier >= 3 && reputationMessagesSent.performancePlanWarning) {
+      setReputationMessagesSent(prev => ({ ...prev, performancePlanWarning: false }));
+      console.log(`👔 Reset performancePlanWarning flag (tier improved to ${currentTier})`);
+    }
+    if (currentTier >= 2 && reputationMessagesSent.finalTerminationWarning) {
+      setReputationMessagesSent(prev => ({ ...prev, finalTerminationWarning: false }));
+      console.log(`👔 Reset finalTerminationWarning flag (tier improved to ${currentTier})`);
+    }
+    if (currentTier === 1 && reputationMessagesSent.performanceImproved) {
+      setReputationMessagesSent(prev => ({ ...prev, performanceImproved: false }));
+      console.log(`👔 Reset performanceImproved flag (tier dropped back to 1)`);
+    }
 
     // Initialize prev reputation tier on first run
     if (prevReputationTierRef.current === null) {
@@ -1096,14 +1186,14 @@ export const GameProvider = ({ children }) => {
     if (currentTier !== prevTier) {
       let messageType = null;
 
-      // Check for reputation transitions that trigger messages
-      if (currentTier === 2 && prevTier > 2) {
+      // Check for reputation transitions that trigger messages (only if not already sent)
+      if (currentTier === 2 && prevTier > 2 && !reputationMessagesSent.performancePlanWarning) {
         // Dropped to Tier 2 - performance plan warning
         messageType = 'performancePlanWarning';
-      } else if (currentTier === 1 && prevTier > 1) {
+      } else if (currentTier === 1 && prevTier > 1 && !reputationMessagesSent.finalTerminationWarning) {
         // Dropped to Tier 1 - final termination warning
         messageType = 'finalTerminationWarning';
-      } else if (currentTier > 1 && prevTier === 1) {
+      } else if (currentTier > 1 && prevTier === 1 && !reputationMessagesSent.performanceImproved) {
         // Improved from Tier 1 - performance improved (saved from termination)
         messageType = 'performanceImproved';
       }
@@ -1111,6 +1201,9 @@ export const GameProvider = ({ children }) => {
       if (messageType) {
         console.log(`👔 HR message triggered: ${messageType}`);
         console.log(`  Previous tier: ${prevTier}, Current tier: ${currentTier}`);
+
+        // Mark as sent before sending
+        setReputationMessagesSent(prev => ({ ...prev, [messageType]: true }));
 
         const template = HR_MESSAGES[messageType];
         if (template) {
@@ -1139,7 +1232,7 @@ export const GameProvider = ({ children }) => {
 
     // Update previous tier
     prevReputationTierRef.current = currentTier;
-  }, [reputation, username, gamePhase, currentTime, playerMailId, addMessage]);
+  }, [reputation, username, gamePhase, currentTime, playerMailId, addMessage, reputationMessagesSent]);
 
   // Objective auto-tracking - automatically completes objectives when game events occur
   useObjectiveAutoTracking(
@@ -1449,13 +1542,21 @@ export const GameProvider = ({ children }) => {
       licensedSoftware,
       bankruptcyCountdown,
       lastInterestTime,
+      // Story progression (prevents duplicate messages)
+      processedEvents: storyMissionManager.getFiredEvents(),
+      // Pending story events (timers in progress)
+      pendingStoryEvents: storyMissionManager.getPendingEvents(),
+      // Banking message tracking
+      bankingMessagesSent,
+      // HR message tracking
+      reputationMessagesSent,
     };
 
     saveToLocalStorage(username, gameState, saveName);
   }, [username, playerMailId, currentTime, hardware, software, bankAccounts, messages, managerName, windows,
     reputation, reputationCountdown, activeMission, completedMissions, availableMissions, missionCooldowns,
     narEntries, activeConnections, lastScanResults, fileManagerConnections, lastFileOperation,
-    downloadQueue, transactions, licensedSoftware, bankruptcyCountdown, lastInterestTime]);
+    downloadQueue, transactions, licensedSoftware, bankruptcyCountdown, lastInterestTime, bankingMessagesSent, reputationMessagesSent]);
 
   // Reboot system
   const rebootSystem = useCallback(() => {
@@ -1502,6 +1603,24 @@ export const GameProvider = ({ children }) => {
     setLicensedSoftware([]);
     setBankruptcyCountdown(null);
     setLastInterestTime(null);
+    // Reset banking message tracking
+    setBankingMessagesSent({
+      firstOverdraft: false,
+      approachingBankruptcy: false,
+      bankruptcyCountdownStart: false,
+      bankruptcyCancelled: false,
+    });
+    bankingMessageQueueRef.current = [];
+    if (bankingMessageTimerRef.current) {
+      clearGameTimeCallback(bankingMessageTimerRef.current);
+      bankingMessageTimerRef.current = null;
+    }
+    // Reset HR message tracking
+    setReputationMessagesSent({
+      performancePlanWarning: false,
+      finalTerminationWarning: false,
+      performanceImproved: false,
+    });
     // Go to boot phase
     setGamePhase('boot');
   }, []);
@@ -1539,6 +1658,27 @@ export const GameProvider = ({ children }) => {
     setLicensedSoftware(gameState.licensedSoftware ?? []);
     setBankruptcyCountdown(gameState.bankruptcyCountdown ?? null);
     setLastInterestTime(gameState.lastInterestTime ?? null);
+
+    // Restore story progression (prevents duplicate messages)
+    storyMissionManager.setFiredEvents(gameState.processedEvents ?? []);
+
+    // Restore pending story events (timers in progress)
+    storyMissionManager.setPendingEvents(gameState.pendingStoryEvents ?? []);
+
+    // Restore banking message tracking
+    setBankingMessagesSent(gameState.bankingMessagesSent ?? {
+      firstOverdraft: false,
+      approachingBankruptcy: false,
+      bankruptcyCountdownStart: false,
+      bankruptcyCancelled: false,
+    });
+
+    // Restore HR message tracking
+    setReputationMessagesSent(gameState.reputationMessagesSent ?? {
+      performancePlanWarning: false,
+      finalTerminationWarning: false,
+      performanceImproved: false,
+    });
 
     // Validate and fix window positions when loading
     const loadedWindows = (gameState.windows || []).map((w, index) => {
@@ -1584,21 +1724,31 @@ export const GameProvider = ({ children }) => {
     gamePhase,
     setGamePhase,
     username,
+    setUsername,
     playerMailId,
+    setPlayerMailId,
     currentTime,
     setCurrentTime,
     timeSpeed,
+    setTimeSpeed,
     isPaused,
     setIsPaused,
     hardware,
+    setHardware,
     software,
     setSoftware,
     bankAccounts,
     setBankAccounts,
     messages,
+    setMessages,
     managerName,
+    setManagerName,
     windows,
+    setWindows,
     pendingChequeDeposit,
+
+    // New game tracking (for welcome messages)
+    isNewGameRef,
 
     // Extended State (missions, reputation, network, transactions)
     reputation,

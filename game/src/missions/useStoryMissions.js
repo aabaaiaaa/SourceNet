@@ -36,6 +36,23 @@ export const useStoryMissions = (gameState, actions) => {
   const gameStateRef = useRef(gameState);
   const verificationTimerRef = useRef(null);
   const verificationScheduledForMissionRef = useRef(null); // Guard against re-scheduling
+  const previousPhaseRef = useRef(gameState.gamePhase);
+
+  // Reset refs when transitioning TO desktop from a non-desktop phase (e.g., after loading a save)
+  useEffect(() => {
+    const previousPhase = previousPhaseRef.current;
+    const currentPhase = gameState.gamePhase;
+    previousPhaseRef.current = currentPhase;
+
+    // When entering desktop from login/boot (loading a save), reset tracking refs
+    if (currentPhase === 'desktop' && previousPhase !== 'desktop') {
+      console.log(`🔄 Entering desktop from ${previousPhase}, resetting story mission refs`);
+      desktopLoadedEmitted.current = false;
+      emittedConnectionsRef.current = new Set();
+      emittedMissionRef.current = null;
+      verificationScheduledForMissionRef.current = null;
+    }
+  }, [gameState.gamePhase]);
 
   // Keep refs updated with latest values
   useEffect(() => {
@@ -171,7 +188,7 @@ export const useStoryMissions = (gameState, actions) => {
     };
   }, [gameState.username, gameState.managerName, actions.addMessage]);
 
-  // Emit desktop loaded event (once)
+  // Emit desktop loaded event (once per session) and newGameStarted (once per new game)
   useEffect(() => {
     if (!gameState.username || desktopLoadedEmitted.current) return;
 
@@ -182,8 +199,18 @@ export const useStoryMissions = (gameState, actions) => {
       });
       desktopLoadedEmitted.current = true;
       console.log('📡 Desktop loaded event emitted');
+
+      // Only emit newGameStarted for truly new games (not loaded saves)
+      if (gameState.isNewGameRef?.current) {
+        triggerEventBus.emit('newGameStarted', {
+          username: gameState.username,
+          time: gameState.currentTime,
+        });
+        gameState.isNewGameRef.current = false;
+        console.log('📡 New game started event emitted');
+      }
     }
-  }, [gameState.gamePhase, gameState.username, gameState.currentTime]);
+  }, [gameState.gamePhase, gameState.username, gameState.currentTime, gameState.isNewGameRef]);
 
   // Emit network connection events (only new connections)
   useEffect(() => {

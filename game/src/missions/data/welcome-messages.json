@@ -6,7 +6,7 @@
       "id": "msg-welcome-hr",
       "trigger": {
         "type": "timeSinceEvent",
-        "event": "desktopLoaded",
+        "event": "newGameStarted",
         "delay": 2000
       },
       "message": {

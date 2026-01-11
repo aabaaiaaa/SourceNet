@@ -156,6 +156,15 @@
   background-color: #f0f0f0;
 }
 
+.dropdown-menu button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dropdown-menu button:disabled:hover {
+  background-color: transparent;
+}
+
 .app-launcher-menu {
   right: 0;
   left: auto;

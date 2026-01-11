@@ -39,6 +39,24 @@
   color: #00ff00;
 }
 
+.debug-status {
+  padding: 10px 20px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.debug-status.success {
+  background: #1a4d1a;
+  color: #00ff00;
+  border-bottom: 1px solid #00ff00;
+}
+
+.debug-status.error {
+  background: #4d1a1a;
+  color: #ff6666;
+  border-bottom: 1px solid #ff6666;
+}
+
 .close-btn {
   background: #ff0000;
   color: white;

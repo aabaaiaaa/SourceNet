@@ -11,20 +11,34 @@
  * - Software management (install instantly)
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useGame } from '../contexts/GameContext';
-import { DEBUG_SCENARIOS, loadScenario } from './scenarios';
+import { getDebugScenarios, loadScenario } from './scenarios';
 import './DebugPanel.css';
 
 const DebugPanel = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState('scenarios');
   const [creditsInput, setCreditsInput] = useState('');
   const [reputationInput, setReputationInput] = useState('');
+  const [statusMessage, setStatusMessage] = useState(null);
   const gameContext = useGame();
 
+  // Get available scenarios dynamically
+  const scenarios = useMemo(() => getDebugScenarios(), []);
+
+  // Show status message that auto-clears
+  const showStatus = (message, isError = false) => {
+    setStatusMessage({ message, isError });
+    setTimeout(() => setStatusMessage(null), 3000);
+  };
+
   const handleLoadScenario = (scenarioId) => {
-    loadScenario(scenarioId, gameContext);
-    alert(`Scenario loaded: ${DEBUG_SCENARIOS[scenarioId].name}`);
+    const success = loadScenario(scenarioId, gameContext);
+    if (success) {
+      showStatus(`✅ Scenario loaded: ${scenarios[scenarioId]?.name || scenarioId}`);
+    } else {
+      showStatus(`❌ Failed to load scenario: ${scenarioId}`, true);
+    }
   };
 
   // Set credits by updating bank account balance (triggers banking message system)
@@ -145,26 +159,39 @@ const DebugPanel = ({ onClose }) => {
   };
 
   const renderScenariosTab = () => {
+    const scenarioKeys = Object.keys(scenarios);
+
     return (
       <div className="debug-scenarios">
         <h3>Quick Load Scenarios</h3>
-        <p className="debug-hint">Load pre-configured game states for testing</p>
+        <p className="debug-hint">
+          Load pre-configured game states from fixtures.
+          {scenarioKeys.length === 0 && ' Run `npm run generate:scenarios` to create fixtures.'}
+        </p>
 
-        <div className="scenarios-grid">
-          {Object.keys(DEBUG_SCENARIOS).map((key) => {
-            const scenario = DEBUG_SCENARIOS[key];
-            return (
-              <button
-                key={key}
-                className="scenario-btn"
-                onClick={() => handleLoadScenario(key)}
-              >
-                <div className="scenario-name">{scenario.name}</div>
-                <div className="scenario-desc">{scenario.description}</div>
-              </button>
-            );
-          })}
-        </div>
+        {scenarioKeys.length === 0 ? (
+          <div className="no-scenarios">
+            <p>No scenario fixtures found.</p>
+            <p>Generate them by running:</p>
+            <code>npm run generate:scenarios</code>
+          </div>
+        ) : (
+          <div className="scenarios-grid">
+            {scenarioKeys.map((key) => {
+              const scenario = scenarios[key];
+              return (
+                <button
+                  key={key}
+                  className="scenario-btn"
+                  onClick={() => handleLoadScenario(key)}
+                >
+                  <div className="scenario-name">{scenario.name}</div>
+                  <div className="scenario-desc">{scenario.description}</div>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   };
@@ -275,6 +302,12 @@ const DebugPanel = ({ onClose }) => {
             ✕
           </button>
         </div>
+
+        {statusMessage && (
+          <div className={`debug-status ${statusMessage.isError ? 'error' : 'success'}`} data-testid="debug-status">
+            {statusMessage.message}
+          </div>
+        )}
 
         <div className="debug-tabs">
           <button

@@ -314,4 +314,37 @@ describe('localStorage save/load functions', () => {
       expect(hasSaves()).toBe(true);
     });
   });
+
+  describe('corrupted localStorage handling', () => {
+    it('should return empty object when localStorage contains invalid JSON', () => {
+      localStorage.setItem('sourcenet_saves', '{ invalid json }}}');
+      const saves = getAllSaves();
+      expect(saves).toEqual({});
+    });
+
+    it('should return empty object when localStorage contains non-object JSON', () => {
+      localStorage.setItem('sourcenet_saves', '"just a string"');
+      const saves = getAllSaves();
+      expect(saves).toEqual({});
+    });
+
+    it('should return empty object when localStorage contains array JSON', () => {
+      localStorage.setItem('sourcenet_saves', '[1, 2, 3]');
+      const saves = getAllSaves();
+      expect(saves).toEqual({});
+    });
+
+    it('should allow saving after corrupted data is detected', () => {
+      localStorage.setItem('sourcenet_saves', '{ invalid json }}}');
+
+      // This should not throw
+      const result = saveGameState('agent_1234', { username: 'agent_1234', currentTime: '2020-03-25T09:00:00' });
+      expect(result).toBeDefined();
+      expect(result.username).toBe('agent_1234');
+
+      // Verify save worked
+      const saves = getAllSaves();
+      expect(saves['agent_1234']).toBeDefined();
+    });
+  });
 });

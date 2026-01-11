@@ -1,53 +1,61 @@
-import { describe, it, expect } from 'vitest';
-import { DEBUG_SCENARIOS, loadScenario } from './scenarios';
+import { describe, it, expect, vi } from 'vitest';
+import { getDebugScenarios, loadScenario } from './scenarios';
+import { getScenarioFixture, getAvailableScenarios } from './fixtures';
 
 describe('scenarios', () => {
-  describe('DEBUG_SCENARIOS', () => {
-    it('should have 9 scenarios', () => {
-      const scenarioCount = Object.keys(DEBUG_SCENARIOS).length;
-      expect(scenarioCount).toBe(9);
+  describe('getDebugScenarios', () => {
+    it('should return an object', () => {
+      const scenarios = getDebugScenarios();
+      expect(typeof scenarios).toBe('object');
     });
 
-    it('should have freshStart scenario', () => {
-      expect(DEBUG_SCENARIOS.freshStart).toBeDefined();
-      expect(DEBUG_SCENARIOS.freshStart.state.credits).toBe(1000);
-      expect(DEBUG_SCENARIOS.freshStart.state.reputation).toBe(9);
+    it('should have name and description for each scenario', () => {
+      const scenarios = getDebugScenarios();
+      Object.keys(scenarios).forEach(key => {
+        expect(scenarios[key].name).toBeDefined();
+        expect(typeof scenarios[key].name).toBe('string');
+        expect(scenarios[key].description).toBeDefined();
+        expect(typeof scenarios[key].description).toBe('string');
+      });
     });
 
-    it('should have tutorialPart1Failed scenario', () => {
-      expect(DEBUG_SCENARIOS.tutorialPart1Failed).toBeDefined();
-      expect(DEBUG_SCENARIOS.tutorialPart1Failed.state.credits).toBe(-9000);
-      expect(DEBUG_SCENARIOS.tutorialPart1Failed.state.reputation).toBe(3);
+    it('should return scenarios from available fixtures', () => {
+      const scenarios = getDebugScenarios();
+      const available = getAvailableScenarios();
+
+      // Each available fixture should have a corresponding scenario
+      available.forEach(name => {
+        expect(scenarios[name]).toBeDefined();
+      });
+    });
+  });
+
+  describe('fixtures', () => {
+    it('getAvailableScenarios should return an array', () => {
+      const available = getAvailableScenarios();
+      expect(Array.isArray(available)).toBe(true);
     });
 
-    it('should have postTutorial scenario', () => {
-      expect(DEBUG_SCENARIOS.postTutorial).toBeDefined();
-      expect(DEBUG_SCENARIOS.postTutorial.state.credits).toBe(-8000);
+    it('getScenarioFixture should return null for unknown scenarios', () => {
+      const fixture = getScenarioFixture('nonexistent-scenario');
+      expect(fixture).toBeNull();
     });
 
-    it('should have nearBankruptcy scenario', () => {
-      expect(DEBUG_SCENARIOS.nearBankruptcy).toBeDefined();
-      expect(DEBUG_SCENARIOS.nearBankruptcy.state.credits).toBe(-10500);
-      expect(DEBUG_SCENARIOS.nearBankruptcy.state.bankruptcyCountdown).toBeDefined();
-    });
+    it('each available fixture should have required fields', () => {
+      const available = getAvailableScenarios();
 
-    it('should have nearTermination scenario', () => {
-      expect(DEBUG_SCENARIOS.nearTermination).toBeDefined();
-      expect(DEBUG_SCENARIOS.nearTermination.state.reputation).toBe(1);
-      expect(DEBUG_SCENARIOS.nearTermination.state.reputationCountdown).toBeDefined();
-    });
+      available.forEach(name => {
+        const fixture = getScenarioFixture(name);
+        expect(fixture).not.toBeNull();
 
-    it('should have highPerformer scenario', () => {
-      expect(DEBUG_SCENARIOS.highPerformer).toBeDefined();
-      expect(DEBUG_SCENARIOS.highPerformer.state.credits).toBe(50000);
-      expect(DEBUG_SCENARIOS.highPerformer.state.reputation).toBe(10);
-    });
-
-    it('all scenarios should have name and description', () => {
-      Object.keys(DEBUG_SCENARIOS).forEach(key => {
-        expect(DEBUG_SCENARIOS[key].name).toBeDefined();
-        expect(DEBUG_SCENARIOS[key].description).toBeDefined();
-        expect(DEBUG_SCENARIOS[key].state).toBeDefined();
+        // Required fields for a valid save
+        expect(fixture.username).toBeDefined();
+        expect(fixture.playerMailId).toBeDefined();
+        expect(fixture.currentTime).toBeDefined();
+        expect(fixture.bankAccounts).toBeDefined();
+        expect(Array.isArray(fixture.bankAccounts)).toBe(true);
+        expect(fixture.messages).toBeDefined();
+        expect(Array.isArray(fixture.messages)).toBe(true);
       });
     });
   });
@@ -57,21 +65,57 @@ describe('scenarios', () => {
       expect(typeof loadScenario).toBe('function');
     });
 
-    it('should accept scenario ID and game context', () => {
-      const mockContext = {
-        bankAccounts: [{ id: 'acc-1', balance: 0 }],
-        setBankAccounts: () => {},
-        setReputation: () => {},
-        setSoftware: () => {},
-        setActiveMission: () => {},
-        setCompletedMissions: () => {},
-        setTransactions: () => {},
-        setBankruptcyCountdown: () => {},
-        setReputationCountdown: () => {},
-        setCurrentTime: () => {},
-      };
+    it('should return false for unknown scenario', () => {
+      const mockContext = createMockContext();
+      const result = loadScenario('nonexistent-scenario', mockContext);
+      expect(result).toBe(false);
+    });
 
-      expect(() => loadScenario('freshStart', mockContext)).not.toThrow();
+    it('should return true when loading an available scenario', () => {
+      const available = getAvailableScenarios();
+      if (available.length === 0) {
+        // Skip if no fixtures generated yet
+        return;
+      }
+
+      const mockContext = createMockContext();
+      const result = loadScenario(available[0], mockContext);
+      expect(result).toBe(true);
     });
   });
 });
+
+/**
+ * Create a mock game context for testing
+ */
+function createMockContext() {
+  return {
+    bankAccounts: [{ id: 'acc-1', balance: 0 }],
+    setUsername: vi.fn(),
+    setPlayerMailId: vi.fn(),
+    setCurrentTime: vi.fn(),
+    setHardware: vi.fn(),
+    setSoftware: vi.fn(),
+    setBankAccounts: vi.fn(),
+    setMessages: vi.fn(),
+    setManagerName: vi.fn(),
+    setReputation: vi.fn(),
+    setReputationCountdown: vi.fn(),
+    setActiveMission: vi.fn(),
+    setCompletedMissions: vi.fn(),
+    setAvailableMissions: vi.fn(),
+    setMissionCooldowns: vi.fn(),
+    setNarEntries: vi.fn(),
+    setActiveConnections: vi.fn(),
+    setLastScanResults: vi.fn(),
+    setFileManagerConnections: vi.fn(),
+    setLastFileOperation: vi.fn(),
+    setDownloadQueue: vi.fn(),
+    setTransactions: vi.fn(),
+    setLicensedSoftware: vi.fn(),
+    setBankruptcyCountdown: vi.fn(),
+    setLastInterestTime: vi.fn(),
+    setWindows: vi.fn(),
+    setTimeSpeed: vi.fn(),
+  };
+}

@@ -5,6 +5,7 @@ import { getReputationTier } from '../../systems/ReputationSystem';
 import { calculateStorageUsed, formatStorage } from '../../systems/StorageSystem';
 import triggerEventBus from '../../core/triggerEventBus';
 import { scheduleGameTimeCallback, clearGameTimeCallback } from '../../core/gameTimeScheduler';
+import storyMissionManager from '../../missions/StoryMissionManager';
 import './TopBar.css';
 
 const TopBar = () => {
@@ -25,6 +26,7 @@ const TopBar = () => {
     // Extended state
     reputation,
     activeConnections,
+    setActiveConnections,
     activeMission,
     bankruptcyCountdown,
     reputationCountdown,
@@ -137,8 +139,21 @@ const TopBar = () => {
   };
 
   const handleSleep = () => {
+    // Check if user has active connections - warn them they will be disconnected
+    if (activeConnections?.length > 0) {
+      const confirmed = window.confirm('Sleeping will disconnect you from all networks. Continue?');
+      if (!confirmed) {
+        return;
+      }
+      // Clear all active connections
+      setActiveConnections([]);
+    }
+
     // Auto-save before sleeping (uses in-game time as default name, like manual save)
     saveGame(null);
+
+    // Clear pending story events (they will be restored from save on next load)
+    storyMissionManager.clearPendingEvents();
 
     // Go to sleep animation
     setGamePhase('sleeping');
@@ -197,7 +212,11 @@ const TopBar = () => {
               ) : (
                 <button onClick={() => setIsPaused(false)}>Resume</button>
               )}
-              <button onClick={handleSave}>Save</button>
+              <button
+                onClick={handleSave}
+                disabled={activeConnections?.length > 0}
+                title={activeConnections?.length > 0 ? 'Disconnect from all networks to save your game' : undefined}
+              >Save</button>
               <button onClick={handleLoad}>Load</button>
               <button onClick={handleReboot}>Reboot</button>
               <button onClick={handleSleep}>Sleep</button>

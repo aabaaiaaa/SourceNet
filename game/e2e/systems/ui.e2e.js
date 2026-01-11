@@ -177,7 +177,7 @@ test.describe('Debug System', () => {
         console.log('✅ E2E: Debug panel opens and closes');
     });
 
-    test('should load debug scenario', async ({ page }) => {
+    test('should load debug state via State Controls tab', async ({ page }) => {
         await page.goto('/?debug=true&skipBoot=true');
 
         // Complete boot
@@ -190,17 +190,21 @@ test.describe('Debug System', () => {
         await page.keyboard.press('Control+d');
         await expect(page.locator('.debug-panel')).toBeVisible({ timeout: 2000 });
 
-        // Load the "Tutorial Part 1 Failed" scenario
-        await page.click('button:has-text("Tutorial Part 1 Failed")');
+        // Switch to State Controls tab
+        await page.click('.debug-tab:has-text("State Controls")');
+
+        // Set reputation to tier 3 (Accident Prone)
+        await page.fill('[data-testid="debug-reputation-input"]', '3');
+        await page.click('[data-testid="debug-set-reputation"]');
 
         // Close debug panel
         await page.keyboard.press('Escape');
         await expect(page.locator('.debug-panel')).not.toBeVisible();
 
-        // Verify scenario loaded - reputation should show low tier
+        // Verify state changed - reputation should show low tier
         await expect(page.locator('.reputation-badge')).toHaveText('Tier 3');
 
-        console.log('✅ E2E: Debug scenario loaded successfully');
+        console.log('✅ E2E: Debug state modified successfully');
     });
 });
 

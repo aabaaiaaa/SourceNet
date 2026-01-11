@@ -18,16 +18,20 @@ const completeBoot = async (page, username = 'download_test') => {
 };
 
 /**
- * Load a debug scenario with credits
+ * Set credits using debug panel's State Controls tab
  */
-const loadScenarioWithCredits = async (page, scenarioName = 'Fresh Start') => {
+const setCreditsViaDebug = async (page, credits = 1000) => {
   // Open debug panel
   await page.keyboard.press('Control+d');
   await expect(page.locator('.debug-panel')).toBeVisible({ timeout: 2000 });
 
-  // Load scenario (Fresh Start gives 1,000 credits)
-  // Playwright auto-dismisses alerts
-  await page.click(`button:has-text("${scenarioName}")`);
+  // Switch to State Controls tab
+  await page.click('.debug-tab:has-text("State Controls")');
+  await expect(page.locator('[data-testid="debug-credits-input"]')).toBeVisible();
+
+  // Enter credits amount
+  await page.fill('[data-testid="debug-credits-input"]', String(credits));
+  await page.click('[data-testid="debug-set-credits"]');
 
   // Close debug panel
   await page.keyboard.press('Escape');
@@ -91,8 +95,8 @@ test.describe('Download Queue Widget - With Credits', () => {
   test('should show download widget when software purchased', async ({ page }) => {
     await completeBoot(page, 'download_credits_test');
 
-    // Load scenario with credits (Fresh Start = 1,000 credits)
-    await loadScenarioWithCredits(page, 'Fresh Start');
+    // Set credits using debug panel
+    await setCreditsViaDebug(page, 1000);
 
     // Open Portal Software tab
     await openPortalSoftware(page);
@@ -113,8 +117,8 @@ test.describe('Download Queue Widget - With Credits', () => {
   test('should show progress bar during download', async ({ page }) => {
     await completeBoot(page, 'progress_test');
 
-    // Load scenario with credits
-    await loadScenarioWithCredits(page, 'Fresh Start');
+    // Set credits using debug panel
+    await setCreditsViaDebug(page, 1000);
 
     // Open Portal Software tab
     await openPortalSoftware(page);
@@ -140,8 +144,8 @@ test.describe('Download Queue Widget - With Credits', () => {
   test('should update progress over time', async ({ page }) => {
     await completeBoot(page, 'progress_update_test');
 
-    // Load scenario with credits
-    await loadScenarioWithCredits(page, 'Fresh Start');
+    // Set credits using debug panel
+    await setCreditsViaDebug(page, 1000);
 
     // Open Portal Software tab
     await openPortalSoftware(page);
@@ -171,8 +175,8 @@ test.describe('Download Queue Widget - With Credits', () => {
   test('should hide widget after download completes', async ({ page }) => {
     await completeBoot(page, 'complete_test');
 
-    // Load scenario with credits (Fresh Start = 1,000 credits, not all software)
-    await loadScenarioWithCredits(page, 'Fresh Start');
+    // Set credits using debug panel
+    await setCreditsViaDebug(page, 1000);
 
     // Open Portal Software tab
     await openPortalSoftware(page);
@@ -194,8 +198,8 @@ test.describe('Download Queue Widget - With Credits', () => {
   test('should show software as installed after download', async ({ page }) => {
     await completeBoot(page, 'install_test');
 
-    // Load scenario with credits (Fresh Start = 1,000 credits, not all software)
-    await loadScenarioWithCredits(page, 'Fresh Start');
+    // Set credits using debug panel
+    await setCreditsViaDebug(page, 1000);
 
     // Open Portal Software tab
     await openPortalSoftware(page);

@@ -12,7 +12,8 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage --no-watch",
     "test:e2e": "playwright test",
-    "test:e2e:headed": "playwright test --headed"
+    "test:e2e:headed": "playwright test --headed",
+    "generate:scenarios": "playwright test e2e/generators/ --project=chromium"
   },
   "dependencies": {
     "react": "^19.2.0",

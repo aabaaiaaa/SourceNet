@@ -14,7 +14,7 @@
 console.log('🚀 StoryMissionManager.js module loaded!');
 
 import triggerEventBus from '../core/triggerEventBus';
-import { scheduleGameTimeCallback, rescheduleAllTimers } from '../core/gameTimeScheduler';
+import { scheduleGameTimeCallback, rescheduleAllTimers, clearGameTimeCallback } from '../core/gameTimeScheduler';
 
 class StoryMissionManager {
   constructor() {
@@ -24,6 +24,159 @@ class StoryMissionManager {
     this.gameStateGetter = null; // Function to get current game state
     this.firedEvents = new Set(); // Track which events have already fired to prevent duplicates
     this.consequencesSubscribed = false; // Track if we've subscribed to mission consequences
+    this.pendingEvents = new Map(); // Track pending scheduled events for save/load persistence
+    this.pendingEventCounter = 0; // Counter for generating unique event IDs
+  }
+
+  /**
+   * Get the list of fired events (for save game)
+   * @returns {string[]} Array of fired event dedup keys
+   */
+  getFiredEvents() {
+    return Array.from(this.firedEvents);
+  }
+
+  /**
+   * Set the fired events (for load game)
+   * @param {string[]} events - Array of fired event dedup keys
+   */
+  setFiredEvents(events) {
+    this.firedEvents = new Set(events || []);
+    console.log(`🔧 Restored ${this.firedEvents.size} fired events`);
+  }
+
+  /**
+   * Get pending events for save game
+   * Returns serializable array with remaining delays
+   * @returns {Array} Array of pending event data
+   */
+  getPendingEvents() {
+    const now = Date.now();
+    const events = [];
+
+    this.pendingEvents.forEach((event, id) => {
+      // Calculate remaining game time
+      const elapsedRealTime = now - event.startTime;
+      const elapsedGameTime = elapsedRealTime * event.timeSpeed;
+      const remainingGameTime = Math.max(0, event.originalDelayMs - elapsedGameTime);
+
+      events.push({
+        id,
+        type: event.type,
+        payload: event.payload,
+        remainingDelayMs: remainingGameTime,
+      });
+    });
+
+    console.log(`📦 Getting ${events.length} pending events for save`);
+    return events;
+  }
+
+  /**
+   * Set pending events from loaded game state
+   * Restores timers with remaining delay + 3s buffer (minimum 1s)
+   * @param {Array} events - Array of pending event data from save
+   */
+  setPendingEvents(events) {
+    if (!events || events.length === 0) {
+      console.log(`📦 No pending events to restore`);
+      return;
+    }
+
+    console.log(`📦 Restoring ${events.length} pending events`);
+
+    events.forEach((event) => {
+      // Add 3 second buffer, with minimum 1 second delay
+      const bufferMs = 3000;
+      const delayMs = Math.max(1000, event.remainingDelayMs + bufferMs);
+
+      console.log(`  Restoring ${event.type} event (${event.id}): ${event.remainingDelayMs}ms remaining + ${bufferMs}ms buffer = ${delayMs}ms`);
+
+      // Re-schedule based on event type
+      this.restorePendingEvent(event, delayMs);
+    });
+  }
+
+  /**
+   * Restore a single pending event by re-scheduling it
+   * @param {Object} event - Event data from save
+   * @param {number} delayMs - Delay in game time ms
+   */
+  restorePendingEvent(event, delayMs) {
+    const { type, payload } = event;
+
+    if (type === 'storyEvent') {
+      // Story event message
+      this.schedulePendingEvent(type, payload, delayMs, () => {
+        console.log(`🚀 Restored story event firing: ${payload.eventId}`);
+        triggerEventBus.emit('storyEventTriggered', payload);
+      });
+    } else if (type === 'consequenceMessage') {
+      // Mission consequence message
+      this.schedulePendingEvent(type, payload, delayMs, () => {
+        console.log(`✉️ Restored consequence message firing: ${payload.message?.subject}`);
+        triggerEventBus.emit('storyEventTriggered', payload);
+      });
+    } else if (type === 'missionActivation') {
+      // Mission activation
+      this.schedulePendingEvent(type, payload, delayMs, () => {
+        console.log(`🚀 Restored mission activation: ${payload.missionId}`);
+        this.activateMission(payload.missionId);
+      });
+    } else if (type === 'introMessage') {
+      // Mission intro message
+      this.schedulePendingEvent(type, payload, delayMs, () => {
+        console.log(`📧 Restored intro message: ${payload.missionId}`);
+        triggerEventBus.emit('sendMissionIntroMessage', payload);
+      });
+    } else if (type === 'scriptedEvent') {
+      // Scripted event execution
+      this.schedulePendingEvent(type, payload, delayMs, () => {
+        console.log(`🚀 Restored scripted event: ${payload.eventId}`);
+        this.executeScriptedEvent(payload.missionId, payload.scriptedEvent);
+      });
+    }
+  }
+
+  /**
+   * Schedule a pending event and track it
+   * @param {string} type - Event type
+   * @param {Object} payload - Event payload
+   * @param {number} delayMs - Delay in game time ms
+   * @param {Function} callback - Callback to execute
+   * @returns {string} Event ID
+   */
+  schedulePendingEvent(type, payload, delayMs, callback) {
+    const eventId = `${type}-${++this.pendingEventCounter}`;
+
+    const timerId = scheduleGameTimeCallback(() => {
+      // Remove from pending events when fired
+      this.pendingEvents.delete(eventId);
+      callback();
+    }, delayMs, this.timeSpeed);
+
+    // Track the pending event
+    this.pendingEvents.set(eventId, {
+      type,
+      payload,
+      timerId,
+      startTime: Date.now(),
+      originalDelayMs: delayMs,
+      timeSpeed: this.timeSpeed,
+    });
+
+    return eventId;
+  }
+
+  /**
+   * Clear all pending events (used when sleeping/logging out)
+   */
+  clearPendingEvents() {
+    console.log(`🧹 Clearing ${this.pendingEvents.size} pending story events`);
+    this.pendingEvents.forEach((event) => {
+      clearGameTimeCallback(event.timerId);
+    });
+    this.pendingEvents.clear();
   }
 
   /**
@@ -120,14 +273,16 @@ class StoryMissionManager {
           const delay = messageConfig.delay || 0;
           console.log(`   Message ${index + 1}/${consequences.messages.length}: ${messageConfig.subject}, delay=${delay}ms`);
 
-          scheduleGameTimeCallback(() => {
+          const payload = {
+            storyEventId: missionId,
+            eventId: messageConfig.id || `${missionId}-consequence-${index}`,
+            message: messageConfig,
+          };
+
+          this.schedulePendingEvent('consequenceMessage', payload, delay, () => {
             console.log(`✉️ Actually sending message: ${messageConfig.subject}`);
-            triggerEventBus.emit('storyEventTriggered', {
-              storyEventId: missionId,
-              eventId: messageConfig.id || `${missionId}-consequence`,
-              message: messageConfig,
-            });
-          }, delay, this.timeSpeed);
+            triggerEventBus.emit('storyEventTriggered', payload);
+          });
         });
       } catch (error) {
         console.error(`❌ Error in subscribeMissionConsequences:`, error);
@@ -241,11 +396,18 @@ class StoryMissionManager {
           }
         }
 
-        // Use game-time-aware scheduling
+        // Use game-time-aware scheduling with persistence tracking
         console.log(`⏰ Scheduling story event ${event.id} with delay=${delay} at timeSpeed=${this.timeSpeed}`);
         const realDelay = (delay || 0) / this.timeSpeed;
         console.log(`   → Real-time delay will be ${realDelay}ms`);
-        scheduleGameTimeCallback(() => {
+
+        const payload = {
+          storyEventId: storyEventDef.missionId,
+          eventId: event.id,
+          message: event.message,
+        };
+
+        this.schedulePendingEvent('storyEvent', payload, delay || 0, () => {
           console.log(`🚀 Executing story event ${event.id}`);
 
           // Create a deduplication key based on message subject to prevent duplicate messages
@@ -260,12 +422,8 @@ class StoryMissionManager {
 
           // For story events, we need to send the message
           // This would be handled by the game context
-          triggerEventBus.emit('storyEventTriggered', {
-            storyEventId: storyEventDef.missionId,
-            eventId: event.id,
-            message: event.message,
-          });
-        }, delay || 0, this.timeSpeed);
+          triggerEventBus.emit('storyEventTriggered', payload);
+        });
       });
 
       this.addUnsubscriber(storyEventDef.missionId, unsubscribe);
@@ -297,10 +455,11 @@ class StoryMissionManager {
           console.log(`✅ Condition met for ${missionDef.title}`);
         }
 
-        // Use game-time-aware scheduling
+        // Use game-time-aware scheduling with persistence tracking
         console.log(`⏰ Scheduling mission activation for ${missionDef.title} with delay=${delay}, speed=${this.timeSpeed}`);
         const self = this; // Capture this for callback
-        scheduleGameTimeCallback(() => {
+
+        self.schedulePendingEvent('missionActivation', { missionId: missionDef.missionId }, delay || 0, () => {
           try {
             console.log(`🚀 Executing scheduled activation for ${missionDef.title}`);
             console.log(`   self=${typeof self}, self.activateMission=${typeof self?.activateMission}`);
@@ -308,7 +467,7 @@ class StoryMissionManager {
           } catch (error) {
             console.error(`❌ Error in scheduled activation for ${missionDef.title}:`, error);
           }
-        }, delay || 0, this.timeSpeed);
+        });
       });
 
       this.addUnsubscriber(missionDef.missionId, unsubscribe);
@@ -323,16 +482,16 @@ class StoryMissionManager {
 
         console.log(`✅ Mission ${triggerMissionId} completed, scheduling ${missionDef.title} activation`);
 
-        // Use game-time-aware scheduling
+        // Use game-time-aware scheduling with persistence tracking
         const self = this; // Capture this for callback
-        scheduleGameTimeCallback(() => {
+        self.schedulePendingEvent('missionActivation', { missionId: missionDef.missionId }, delay || 0, () => {
           try {
             console.log(`🚀 Executing scheduled activation for ${missionDef.title} after mission completion`);
             self.activateMission(missionDef.missionId);
           } catch (error) {
             console.error(`❌ Error in scheduled activation for ${missionDef.title}:`, error);
           }
-        }, delay || 0, this.timeSpeed);
+        });
       });
 
       this.addUnsubscriber(missionDef.missionId, unsubscribe);
@@ -356,10 +515,11 @@ class StoryMissionManager {
 
           if (data.objectiveId === objectiveId && data.missionId === missionDef.missionId) {
             console.log(`✅ Scripted event triggered: ${scriptedEvent.id}`);
-            // Use game-time-aware scheduling
-            scheduleGameTimeCallback(() => {
+            // Use game-time-aware scheduling with persistence tracking
+            const payload = { missionId: missionDef.missionId, eventId: scriptedEvent.id, scriptedEvent };
+            this.schedulePendingEvent('scriptedEvent', payload, delay || 0, () => {
               this.executeScriptedEvent(missionDef.missionId, scriptedEvent);
-            }, delay || 0, this.timeSpeed);
+            });
           }
         });
 
@@ -400,13 +560,11 @@ class StoryMissionManager {
       console.log(`📧 Scheduling intro message for ${mission.title}`);
       const delay = introMessage.delay || 0;
 
-      scheduleGameTimeCallback(() => {
+      const payload = { missionId: mission.missionId, introMessage };
+      this.schedulePendingEvent('introMessage', payload, delay, () => {
         console.log(`📧 Sending intro message for ${mission.title}`);
-        triggerEventBus.emit('sendMissionIntroMessage', {
-          missionId: mission.missionId,
-          introMessage,
-        });
-      }, delay, this.timeSpeed);
+        triggerEventBus.emit('sendMissionIntroMessage', payload);
+      });
     }
 
     // Emit event that mission is now available

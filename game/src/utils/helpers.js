@@ -113,10 +113,30 @@ export const calculateChecksum = (str) => {
 };
 
 /**
+ * Safely parse saves from localStorage, returning empty object on error
+ */
+const safeParseSaves = () => {
+  try {
+    const raw = localStorage.getItem('sourcenet_saves');
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    // Validate it's an object
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      console.warn('Invalid saves format in localStorage, resetting');
+      return {};
+    }
+    return parsed;
+  } catch (e) {
+    console.error('Failed to parse saves from localStorage:', e);
+    return {};
+  }
+};
+
+/**
  * Save game state to localStorage
  */
 export const saveGameState = (username, gameState, saveName = null) => {
-  const saves = JSON.parse(localStorage.getItem('sourcenet_saves') || '{}');
+  const saves = safeParseSaves();
 
   if (!saves[username]) {
     saves[username] = [];
@@ -138,7 +158,7 @@ export const saveGameState = (username, gameState, saveName = null) => {
  * Load latest game state for username from localStorage
  */
 export const loadGameState = (username) => {
-  const saves = JSON.parse(localStorage.getItem('sourcenet_saves') || '{}');
+  const saves = safeParseSaves();
 
   if (!saves[username] || saves[username].length === 0) {
     return null;
@@ -156,15 +176,14 @@ export const loadGameState = (username) => {
  * Get all saved games
  */
 export const getAllSaves = () => {
-  const saves = JSON.parse(localStorage.getItem('sourcenet_saves') || '{}');
-  return saves;
+  return safeParseSaves();
 };
 
 /**
  * Delete a save
  */
 export const deleteSave = (username) => {
-  const saves = JSON.parse(localStorage.getItem('sourcenet_saves') || '{}');
+  const saves = safeParseSaves();
   delete saves[username];
   localStorage.setItem('sourcenet_saves', JSON.stringify(saves));
 };
