@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useGame } from '../contexts/GameContext';
+import { useGame } from '../contexts/useGame';
 import { hasSaves } from '../utils/helpers';
 import { getScenarioFixture } from '../debug/fixtures';
 import { TIME_SPEEDS } from '../constants/gameConstants';
@@ -130,7 +130,7 @@ const GameRoot = () => {
     if (savesExist && gamePhase === 'boot') {
       setGamePhase('login');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []); // Empty deps = only run on mount
 
   // Render appropriate component based on game phase

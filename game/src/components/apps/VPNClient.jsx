@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useGame } from '../../contexts/GameContext';
+import { useGame } from '../../contexts/useGame';
 import triggerEventBus from '../../core/triggerEventBus';
 import './VPNClient.css';
 

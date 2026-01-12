@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import FileManager from './FileManager';
 import triggerEventBus from '../../core/triggerEventBus';
-import * as GameContext from '../../contexts/GameContext';
+import * as useGameModule from '../../contexts/useGame';
 
 const renderWithProvider = (component) => {
   return render(component);
@@ -12,7 +12,7 @@ describe('FileManager Component - Initial Rendering', () => {
   beforeEach(() => {
     triggerEventBus.clear();
     // Mock useGame to return default game state with no active connections
-    vi.spyOn(GameContext, 'useGame').mockReturnValue({
+    vi.spyOn(useGameModule, 'useGame').mockReturnValue({
       activeConnections: [],
       narEntries: [],
       fileClipboard: { files: [], sourceFileSystemId: '', sourceNetworkId: '' },
@@ -59,7 +59,7 @@ describe('FileManager Component - Connected State', () => {
   beforeEach(() => {
     triggerEventBus.clear();
     // Mock useGame to return game state with active connections and NAR entries
-    vi.spyOn(GameContext, 'useGame').mockReturnValue({
+    vi.spyOn(useGameModule, 'useGame').mockReturnValue({
       activeConnections: [{ networkId: 'test-network', networkName: 'Test Network' }],
       narEntries: [{
         networkId: 'test-network',
@@ -133,7 +133,7 @@ describe('FileManager Component - Button States', () => {
   beforeEach(() => {
     triggerEventBus.clear();
     // Mock useGame to return game state with active connections and NAR entries
-    vi.spyOn(GameContext, 'useGame').mockReturnValue({
+    vi.spyOn(useGameModule, 'useGame').mockReturnValue({
       activeConnections: [{ networkId: 'test-network', networkName: 'Test Network' }],
       narEntries: [{
         networkId: 'test-network',
@@ -195,7 +195,7 @@ describe('FileManager Component - Repair UI', () => {
   beforeEach(() => {
     triggerEventBus.clear();
     // Mock useGame to return game state with active connections and NAR entries
-    vi.spyOn(GameContext, 'useGame').mockReturnValue({
+    vi.spyOn(useGameModule, 'useGame').mockReturnValue({
       activeConnections: [{ networkId: 'test-network', networkName: 'Test Network' }],
       narEntries: [{
         networkId: 'test-network',

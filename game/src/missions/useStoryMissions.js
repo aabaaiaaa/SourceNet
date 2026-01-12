@@ -206,11 +206,12 @@ export const useStoryMissions = (gameState, actions) => {
           username: gameState.username,
           time: gameState.currentTime,
         });
-        gameState.isNewGameRef.current = false;
+        // Use the provided action to clear the flag instead of direct mutation
+        actions.clearNewGameFlag();
         console.log('📡 New game started event emitted');
       }
     }
-  }, [gameState.gamePhase, gameState.username, gameState.currentTime, gameState.isNewGameRef]);
+  }, [gameState.gamePhase, gameState.username, gameState.currentTime, gameState.isNewGameRef, actions]);
 
   // Emit network connection events (only new connections)
   useEffect(() => {

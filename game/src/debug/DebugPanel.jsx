@@ -12,7 +12,7 @@
  */
 
 import { useState, useMemo } from 'react';
-import { useGame } from '../contexts/GameContext';
+import { useGame } from '../contexts/useGame';
 import { getDebugScenarios, loadScenario } from './scenarios';
 import './DebugPanel.css';
 

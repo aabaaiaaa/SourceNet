@@ -1,11 +1,12 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { render, waitFor, act } from '@testing-library/react';
-import { GameProvider, useGame } from '../../contexts/GameContext';
+import { GameProvider } from '../../contexts/GameContext';
+import { useGame } from '../../contexts/useGame';
 import triggerEventBus from '../../core/triggerEventBus';
 
 // Mock the game time scheduler to execute callbacks immediately
 vi.mock('../../core/gameTimeScheduler', () => ({
-    scheduleGameTimeCallback: vi.fn((callback, delay, speed) => {
+    scheduleGameTimeCallback: vi.fn((callback, _delay, _speed) => {
         // Execute immediately for testing
         setTimeout(callback, 10); // Small delay to allow state to settle
         return Date.now();

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useGame } from '../../contexts/GameContext';
+import { useGame } from '../../contexts/useGame';
 import TopBar from './TopBar';
 import Window from './Window';
 import MinimizedWindowBar from './MinimizedWindowBar';

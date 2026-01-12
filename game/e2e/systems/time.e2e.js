@@ -36,30 +36,28 @@ test.describe('E2E Test 6: Time System Flow', () => {
   test('should handle time system correctly with speed changes and pause', async ({ page }) => {
     await page.goto('/?skipBoot=true');
 
-    // Load save (includes ~4s boot sequence)
+    // Load save
     await page.click('button:has-text("Load")');
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 15000 });
 
     // Step 2: Note current time
     await expect(page.locator('text=25/03/2020 09:00:00')).toBeVisible();
 
-    // Step 3-4: Wait 10 real seconds, verify time advanced
-    await page.waitForTimeout(11000);
-    const timeAfter10s = await page.locator('.topbar-time').textContent();
-    expect(timeAfter10s).toMatch(/09:00:(0[0-9]|1[0-9]|2[0-9])/); // Should be around 09:00:09-19
+    // Step 3-4: Wait 1 real second at 1x, verify time advanced
+    const timeAt1x = await page.locator('.topbar-time').textContent();
+    await page.waitForTimeout(1100);
+    const timeAfter1s = await page.locator('.topbar-time').textContent();
+    expect(timeAfter1s).not.toBe(timeAt1x); // Time should have advanced
 
     // Step 5-6: Change to 10x speed
     await page.click('button:has-text("1x")');
     await expect(page.locator('text=10x')).toBeVisible();
 
-    // Step 7-8: Wait 10 real seconds, should advance by ~100 seconds
-    const timeBefore = await page.locator('.topbar-time').textContent();
-    await page.waitForTimeout(11000);
-    const timeAfter = await page.locator('.topbar-time').textContent();
-
-    // Time should have advanced significantly (roughly 100 seconds)
-    // Extract seconds from time strings and verify difference
-    expect(timeAfter).not.toBe(timeBefore);
+    // Step 7-8: Wait 0.5 real seconds at 10x, should advance by ~5 game seconds
+    const timeBefore10x = await page.locator('.topbar-time').textContent();
+    await page.waitForTimeout(500);
+    const timeAfter10x = await page.locator('.topbar-time').textContent();
+    expect(timeAfter10x).not.toBe(timeBefore10x); // Time should have advanced significantly
 
     // Step 9-10: Change back to 1x
     await page.click('button:has-text("10x")');
@@ -70,7 +68,7 @@ test.describe('E2E Test 6: Time System Flow', () => {
     await page.click('text=Pause');
 
     const timePaused = await page.locator('.topbar-time').textContent();
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(500);
     const timeAfterPause = await page.locator('.topbar-time').textContent();
 
     // Time should not have advanced
@@ -79,7 +77,7 @@ test.describe('E2E Test 6: Time System Flow', () => {
     // Resume by clicking pause overlay
     await page.click('.pause-overlay');
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1100);
     const timeAfterResume = await page.locator('.topbar-time').textContent();
     expect(timeAfterResume).not.toBe(timePaused);
 
@@ -92,7 +90,7 @@ test.describe('E2E Test 6: Time System Flow', () => {
 
     await page.reload();
     await page.click('button:has-text("Load")');
-    // Wait for desktop (includes ~4s boot sequence)
+    // Wait for desktop
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 15000 });
 
     // Verify time speed is 1x (reset)

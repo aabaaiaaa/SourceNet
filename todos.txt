@@ -87,13 +87,14 @@ The tutorial part 1 mission should have an initial objective of adding the NAR e
 Instead of payment being autmatically applied on mission completion, a templated message from the client of the mission with a digital cheque to that value. Reputation should still be applied on mission completion as that's linked who you are working for at the time (SourceNet).
 
 
+(think this is already done?)
 When saving game state and reloading, it seems that the active connections are still connected. If it's easier to force the user to manually disconnect from any networks before they are allowed to save, then that should be the change, but the save button should not be enabled and a tooltip should tell them why they cannot save yet.
 
 
 Review the systems in place for handling missions and scripted events and objective tracking as I need to understand how to picture these systems and how best they should integrate with each other as the biggest issues have come from changes in these areas. Each system needs to have a role and individual responsibility so there's not internal variables being changed by external systems. It will then aid in writing test cases for each system.
 
 
-
+(done - needs testing)
 The network scanner progress bar animation needs to use in game time to function so the user speeding up the game will also speed up the scanning.
 
 
@@ -129,3 +130,11 @@ Review all e2e tests and reorganise them into better groupings as there are some
 (done)
 make a process for generating scenario game states that the debug panel can use - allows mid-game states to be maintained throughout development as core pieces change.
 But this might need the save system to be updated to store all expected game state.
+
+
+(done)
+Update linting config to ignore any errors that aren't important so only errors show up.
+
+
+(done)
+Can any e2e tests have any waitForTimeouts removed to speed up test runs.

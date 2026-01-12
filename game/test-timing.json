@@ -1,0 +1,4318 @@
+﻿{
+  "config": {
+    "configFile": "C:\\Users\\jeastaugh\\source\\repos\\Experiments\\SourceNet\\game\\playwright.config.js",
+    "rootDir": "C:/Users/jeastaugh/source/repos/Experiments/SourceNet/game/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 11
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/jeastaugh/source/repos/Experiments/SourceNet/game/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 11
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/jeastaugh/source/repos/Experiments/SourceNet/game/e2e",
+        "testIgnore": [
+          "/generators\\/.*/"
+        ],
+        "testMatch": [
+          "/.*\\.e2e\\.js$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.57.0",
+    "workers": 11,
+    "webServer": {
+      "command": "npm run dev",
+      "url": "http://localhost:5173",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "playthroughs\\app-interactions.e2e.js",
+      "file": "playthroughs/app-interactions.e2e.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "E2E Test 5: App Interactions Flow",
+          "file": "playthroughs/app-interactions.e2e.js",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should handle complete app interaction flow",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 15820,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E Test 5: App Interactions - PASS\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:10.681Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "542ff3eb7d61047ff7b9-190621d1228525496e3d",
+              "file": "playthroughs/app-interactions.e2e.js",
+              "line": 5,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "playthroughs\\complete-session.e2e.js",
+      "file": "playthroughs/complete-session.e2e.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "E2E: Complete Gameplay Session",
+          "file": "playthroughs/complete-session.e2e.js",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should complete full gameplay session from start to finish",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 22974,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Complete Gameplay Session - PASS\n"
+                        },
+                        {
+                          "text": "   All 14 steps validated successfully!\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:10.682Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d25a9e8ebb13d239b922-9d3a861a7b3c19c926ca",
+              "file": "playthroughs/complete-session.e2e.js",
+              "line": 11,
+              "column": 3
+            },
+            {
+              "title": "should handle multiple complete gameplay sessions independently",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 31282,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Multiple Independent Sessions - PASS\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:10.679Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d25a9e8ebb13d239b922-d9d90877ed40670bc4eb",
+              "file": "playthroughs/complete-session.e2e.js",
+              "line": 348,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "playthroughs\\tutorial-flow.e2e.js",
+      "file": "playthroughs/tutorial-flow.e2e.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "E2E: Tutorial Mission Flow",
+          "file": "playthroughs/tutorial-flow.e2e.js",
+          "line": 14,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should complete 2-part tutorial missions with all objectives",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 52848,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:10.687Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e4a8efd36b99df26a8a2-a446fbc82e8aa1855e4d",
+              "file": "playthroughs/tutorial-flow.e2e.js",
+              "line": 15,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "systems\\banking.e2e.js",
+      "file": "systems/banking.e2e.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Banking & Cheque Flow",
+          "file": "systems/banking.e2e.js",
+          "line": 11,
+          "column": 6,
+          "specs": [],
+          "suites": [
+            {
+              "title": "Cheque Deposit Manual Flow",
+              "file": "systems/banking.e2e.js",
+              "line": 13,
+              "column": 10,
+              "specs": [
+                {
+                  "title": "should only show deposit prompt when user clicks attachment, not auto-deposit",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 15542,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "Ô£à Manual cheque deposit flow verified\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-01-12T10:12:10.697Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e76cb64b9ce0fee0e66b-de824579122b85ff79f4",
+                  "file": "systems/banking.e2e.js",
+                  "line": 14,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Cheque Status Updates",
+              "file": "systems/banking.e2e.js",
+              "line": 87,
+              "column": 10,
+              "specs": [
+                {
+                  "title": "should update attachment status to deposited when cheque is deposited",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 5,
+                          "parallelIndex": 5,
+                          "status": "passed",
+                          "duration": 15329,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "Ô£à Cheque status update verified\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-01-12T10:12:10.697Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e76cb64b9ce0fee0e66b-75eb8037d948129b9c7c",
+                  "file": "systems/banking.e2e.js",
+                  "line": 88,
+                  "column": 9
+                },
+                {
+                  "title": "should persist deposited status after save/load",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 6,
+                          "parallelIndex": 6,
+                          "status": "passed",
+                          "duration": 16447,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "Ô£à Cheque deposited status persists across save/load\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-01-12T10:12:10.697Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e76cb64b9ce0fee0e66b-cabb6a4df5b387dddc99",
+                  "file": "systems/banking.e2e.js",
+                  "line": 135,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Banking App Functionality",
+              "file": "systems/banking.e2e.js",
+              "line": 195,
+              "column": 10,
+              "specs": [
+                {
+                  "title": "should display account information correctly",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 7,
+                          "parallelIndex": 7,
+                          "status": "passed",
+                          "duration": 6211,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "Ô£à Banking app displays account information correctly\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-01-12T10:12:10.697Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "e76cb64b9ce0fee0e66b-f51c5522db21b01f5437",
+                  "file": "systems/banking.e2e.js",
+                  "line": 196,
+                  "column": 9
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "systems\\boot.e2e.js",
+      "file": "systems/boot.e2e.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Boot Flow: Boot Sequence Timing",
+          "file": "systems/boot.e2e.js",
+          "line": 12,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should complete boot sequence successfully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 8,
+                      "status": "passed",
+                      "duration": 19284,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Boot Sequence Completes - PASS\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:10.696Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d40ba70c5c91cdfa1ddd-6f033e4f6a3c196c097d",
+              "file": "systems/boot.e2e.js",
+              "line": 20,
+              "column": 5
+            },
+            {
+              "title": "should show different boot sequences for first vs subsequent boot",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 9,
+                      "status": "passed",
+                      "duration": 27671,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "First boot took 13.1s (long boot with installation)\n"
+                        },
+                        {
+                          "text": "Subsequent boot took 6.9s (should be <10s)\n"
+                        },
+                        {
+                          "text": "Ô£à E2E: Different Boot Sequences - PASS\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:10.667Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d40ba70c5c91cdfa1ddd-ede2642088edb12252f0",
+              "file": "systems/boot.e2e.js",
+              "line": 38,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "Boot Flow: First Boot & Welcome Messages",
+          "file": "systems/boot.e2e.js",
+          "line": 93,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should complete first boot sequence and receive welcome messages",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 10,
+                      "status": "passed",
+                      "duration": 26840,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: First Boot Sequence & Welcome Messages - PASS\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:10.984Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d40ba70c5c91cdfa1ddd-677eeab5208e33dbd542",
+              "file": "systems/boot.e2e.js",
+              "line": 100,
+              "column": 5
+            },
+            {
+              "title": "should generate unique usernames for each first boot",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 28652,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "First suggested username: agent_4670\n"
+                        },
+                        {
+                          "text": "Second suggested username: agent_7479\n"
+                        },
+                        {
+                          "text": "Ô£à E2E: Unique Username Generation - PASS\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:18.224Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d40ba70c5c91cdfa1ddd-faf4b99f515e166d28ed",
+              "file": "systems/boot.e2e.js",
+              "line": 164,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "Boot Flow: Boot Screen Visual Elements",
+          "file": "systems/boot.e2e.js",
+          "line": 196,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display all required boot screen elements",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 2471,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Boot screen displayed 1 boot lines\n"
+                        },
+                        {
+                          "text": "Ô£à E2E: Boot Screen Visual Elements - PASS\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:27.441Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d40ba70c5c91cdfa1ddd-8accea58a37590f26c9c",
+              "file": "systems/boot.e2e.js",
+              "line": 204,
+              "column": 5
+            },
+            {
+              "title": "should display boot text progressively",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 2848,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Boot display changed from 1 to 2 over 2s\n"
+                        },
+                        {
+                          "text": "Ô£à E2E: Progressive Boot Display - PASS\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:27.663Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d40ba70c5c91cdfa1ddd-b88c0eb40e63468d72c5",
+              "file": "systems/boot.e2e.js",
+              "line": 223,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "Boot Flow: Username Selection",
+          "file": "systems/boot.e2e.js",
+          "line": 255,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should allow custom username entry",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 15232,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Custom Username Entry (test_62949) - PASS\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:27.908Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d40ba70c5c91cdfa1ddd-95743e65d9aff41fbe3b",
+              "file": "systems/boot.e2e.js",
+              "line": 263,
+              "column": 5
+            },
+            {
+              "title": "should validate username format",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 15095,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Username Validation - PASS\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:28.704Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d40ba70c5c91cdfa1ddd-ccbe8a94407ee30b2d9c",
+              "file": "systems/boot.e2e.js",
+              "line": 288,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "systems\\download-install.e2e.js",
+      "file": "systems/download-install.e2e.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Download Queue Widget",
+          "file": "systems/download-install.e2e.js",
+          "line": 66,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should not show widget when no downloads active",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 1986,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Download queue hidden when empty\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:29.947Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7845804e0c7ba968b039-1f2e46489487948c0b2a",
+              "file": "systems/download-install.e2e.js",
+              "line": 67,
+              "column": 3
+            },
+            {
+              "title": "should show portal software section with purchasable apps",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 2500,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Found 5 purchasable software items\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:30.564Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7845804e0c7ba968b039-45e37a65aee44725aef2",
+              "file": "systems/download-install.e2e.js",
+              "line": 77,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Download Queue Widget - With Credits",
+          "file": "systems/download-install.e2e.js",
+          "line": 94,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show download widget when software purchased",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 8,
+                      "status": "passed",
+                      "duration": 2930,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Download queue widget appeared after purchase\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:31.423Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7845804e0c7ba968b039-bf38e66abbf82ebcf18c",
+              "file": "systems/download-install.e2e.js",
+              "line": 95,
+              "column": 3
+            },
+            {
+              "title": "should show progress bar during download",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 2901,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Progress bar visible during download\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:31.955Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7845804e0c7ba968b039-21faafb7ce05e627a575",
+              "file": "systems/download-install.e2e.js",
+              "line": 117,
+              "column": 3
+            },
+            {
+              "title": "should update progress over time",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 3982,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Download progress updates over time\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:33.078Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7845804e0c7ba968b039-f815609845adb351b953",
+              "file": "systems/download-install.e2e.js",
+              "line": 144,
+              "column": 3
+            },
+            {
+              "title": "should hide widget after download completes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 8,
+                      "status": "passed",
+                      "duration": 9011,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Download queue widget hidden after completion\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:34.372Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7845804e0c7ba968b039-0ce5c13989ae368053eb",
+              "file": "systems/download-install.e2e.js",
+              "line": 183,
+              "column": 3
+            },
+            {
+              "title": "should show software as installed after download",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 9470,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Software \"SourceNet Mission Board\" installed and shows as installed\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:34.883Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7845804e0c7ba968b039-f2831e34ef08f29d8057",
+              "file": "systems/download-install.e2e.js",
+              "line": 206,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "systems\\gameover.e2e.js",
+      "file": "systems/gameover.e2e.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "E2E: Bankruptcy Game Over",
+          "file": "systems/gameover.e2e.js",
+          "line": 24,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should send overdraft message when balance goes negative",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 3356,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:35.240Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "18d72a51d5a65f68fe40-620e574111cbac2a8da0",
+              "file": "systems/gameover.e2e.js",
+              "line": 30,
+              "column": 5
+            },
+            {
+              "title": "should send bankruptcy countdown message and trigger game over",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 6334,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:37.092Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "18d72a51d5a65f68fe40-8674252657707dd36f96",
+              "file": "systems/gameover.e2e.js",
+              "line": 94,
+              "column": 5
+            },
+            {
+              "title": "should send bankruptcy cancelled message when balance improves",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 8896,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:38.616Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "18d72a51d5a65f68fe40-7ed8be74d72711e9267e",
+              "file": "systems/gameover.e2e.js",
+              "line": 194,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "E2E: Reputation Game Over",
+          "file": "systems/gameover.e2e.js",
+          "line": 261,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should send termination warning message and trigger game over",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 10,
+                      "status": "passed",
+                      "duration": 10941,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:39.367Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "18d72a51d5a65f68fe40-b2479130a9da0c725776",
+              "file": "systems/gameover.e2e.js",
+              "line": 267,
+              "column": 5
+            },
+            {
+              "title": "should send performance improved message when reputation recovers",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 9,
+                      "status": "passed",
+                      "duration": 4020,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:39.759Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "18d72a51d5a65f68fe40-825b93a84221cf608d85",
+              "file": "systems/gameover.e2e.js",
+              "line": 374,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "E2E: Game Over Recovery",
+          "file": "systems/gameover.e2e.js",
+          "line": 447,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display both bankruptcy and termination warnings simultaneously",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3448,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:43.180Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "18d72a51d5a65f68fe40-95cc46b8e1b705e7b6c7",
+              "file": "systems/gameover.e2e.js",
+              "line": 453,
+              "column": 5
+            },
+            {
+              "title": "should allow full game restart after any game over",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 3712,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:43.409Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "18d72a51d5a65f68fe40-81be3a6409a04d2776a5",
+              "file": "systems/gameover.e2e.js",
+              "line": 527,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "systems\\login-screen.e2e.js",
+      "file": "systems/login-screen.e2e.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "E2E Test 2: Game Login Screen (Multiple Saves)",
+          "file": "systems/login-screen.e2e.js",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should handle multiple saves and new game creation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 8,
+                      "status": "passed",
+                      "duration": 12189,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E Test 2: Game Login Screen - PASS\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:43.429Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "dfb06e32f62d37560be4-7cb3ccf841af85a0f287",
+              "file": "systems/login-screen.e2e.js",
+              "line": 5,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "systems\\mail.e2e.js",
+      "file": "systems/mail.e2e.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Mail Functionality",
+          "file": "systems/mail.e2e.js",
+          "line": 11,
+          "column": 6,
+          "specs": [],
+          "suites": [
+            {
+              "title": "Message List Display",
+              "file": "systems/mail.e2e.js",
+              "line": 13,
+              "column": 10,
+              "specs": [
+                {
+                  "title": "should display all message text visibly in inbox",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 2655,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "Ô£à Message list text visibility verified\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-01-12T10:12:43.474Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "db1da02ab4c97950a104-dab7f441dc0b422226f7",
+                  "file": "systems/mail.e2e.js",
+                  "line": 14,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Message Detail View",
+              "file": "systems/mail.e2e.js",
+              "line": 81,
+              "column": 10,
+              "specs": [
+                {
+                  "title": "should display all message details with readable text",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 9,
+                          "parallelIndex": 9,
+                          "status": "passed",
+                          "duration": 2725,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "Ô£à Message detail view visibility verified\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-01-12T10:12:43.832Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "db1da02ab4c97950a104-31ccc08117ea2231ab08",
+                  "file": "systems/mail.e2e.js",
+                  "line": 82,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Message Attachments",
+              "file": "systems/mail.e2e.js",
+              "line": 143,
+              "column": 10,
+              "specs": [
+                {
+                  "title": "should display cheque attachments correctly",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 6,
+                          "parallelIndex": 6,
+                          "status": "passed",
+                          "duration": 2600,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "Ô£à Cheque attachment display verified\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-01-12T10:12:43.847Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "db1da02ab4c97950a104-e0b39130c2cc35574822",
+                  "file": "systems/mail.e2e.js",
+                  "line": 144,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Message Interactions",
+              "file": "systems/mail.e2e.js",
+              "line": 175,
+              "column": 10,
+              "specs": [
+                {
+                  "title": "should mark messages as read when opened",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 5,
+                          "parallelIndex": 5,
+                          "status": "passed",
+                          "duration": 2696,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "Ô£à Message read status functionality verified\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-01-12T10:12:44.393Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "db1da02ab4c97950a104-34b75b9a662cb45a3721",
+                  "file": "systems/mail.e2e.js",
+                  "line": 176,
+                  "column": 9
+                },
+                {
+                  "title": "should allow archiving messages",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 3256,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "Ô£à Message archiving functionality verified\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-01-12T10:12:46.149Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "db1da02ab4c97950a104-42a11827258df8217a52",
+                  "file": "systems/mail.e2e.js",
+                  "line": 222,
+                  "column": 9
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "systems\\nar-attachment.e2e.js",
+      "file": "systems/nar-attachment.e2e.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "E2E: Network Address Attachment Flow",
+          "file": "systems/nar-attachment.e2e.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should install NAR software then activate network address attachment",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 13598,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:46.503Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "99c53b4343b5f7d5d48a-4c774301de13b211cacb",
+              "file": "systems/nar-attachment.e2e.js",
+              "line": 10,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "systems\\nar.e2e.js",
+      "file": "systems/nar.e2e.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "E2E: NAR Revocation & Disconnection Notice",
+          "file": "systems/nar.e2e.js",
+          "line": 18,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show disconnection notice when networkDisconnected event is emitted",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 9,
+                      "status": "passed",
+                      "duration": 3545,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:46.591Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "028b0707868049e51596-a8587ff833bb356ec49e",
+              "file": "systems/nar.e2e.js",
+              "line": 24,
+              "column": 5
+            },
+            {
+              "title": "disconnection notices should stack and be dismissible",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3758,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:46.683Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "028b0707868049e51596-581c39818f24567518e1",
+              "file": "systems/nar.e2e.js",
+              "line": 44,
+              "column": 5
+            },
+            {
+              "title": "should show NAR revoked entries in Revoked tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 3679,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:46.932Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "028b0707868049e51596-410fde1a308809fae0df",
+              "file": "systems/nar.e2e.js",
+              "line": 73,
+              "column": 5
+            },
+            {
+              "title": "Revoked tab should only appear when there are revoked entries",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 3615,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:47.136Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "028b0707868049e51596-9b606ce928d206307934",
+              "file": "systems/nar.e2e.js",
+              "line": 128,
+              "column": 5
+            },
+            {
+              "title": "should NOT show disconnection notice for mission without revokeOnComplete",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 4021,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:47.183Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "028b0707868049e51596-76ead6a4f1c17fa90dfc",
+              "file": "systems/nar.e2e.js",
+              "line": 163,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "systems\\save-load.e2e.js",
+      "file": "systems/save-load.e2e.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Basic Save/Load from Login Screen",
+          "file": "systems/save-load.e2e.js",
+          "line": 111,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should save game state and restore it correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 7344,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:47.593Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-918431c11f5953efe7e4",
+              "file": "systems/save-load.e2e.js",
+              "line": 117,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "Save/Load with Windows Open",
+          "file": "systems/save-load.e2e.js",
+          "line": 171,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should preserve Mail window state and message timestamps after save/load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 4861,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:49.521Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-fdf9899a92b4ec8f90ab",
+              "file": "systems/save-load.e2e.js",
+              "line": 177,
+              "column": 5
+            },
+            {
+              "title": "should open Mail window after loading a save with other windows open",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 9,
+                      "status": "passed",
+                      "duration": 4354,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:50.271Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-76075c9155c163216408",
+              "file": "systems/save-load.e2e.js",
+              "line": 252,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "Power Menu Load (In-Game)",
+          "file": "systems/save-load.e2e.js",
+          "line": 301,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should load game from power menu",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 10,
+                      "status": "passed",
+                      "duration": 3383,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:50.428Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-cc5e5996bd51ce14096b",
+              "file": "systems/save-load.e2e.js",
+              "line": 313,
+              "column": 5
+            },
+            {
+              "title": "should preserve message timestamps when loading via power menu",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4136,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:50.553Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-b23b07d2c6932440a26e",
+              "file": "systems/save-load.e2e.js",
+              "line": 354,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "Load Modal Interactions",
+          "file": "systems/save-load.e2e.js",
+          "line": 449,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should close load modal when clicking Cancel",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 3290,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:50.702Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-5210991d5aa2a9f9c6fc",
+              "file": "systems/save-load.e2e.js",
+              "line": 460,
+              "column": 5
+            },
+            {
+              "title": "should close load modal when clicking overlay",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 3206,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:50.847Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-0036cc520520d1851132",
+              "file": "systems/save-load.e2e.js",
+              "line": 483,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "Pending Events and Banking Message Persistence",
+          "file": "systems/save-load.e2e.js",
+          "line": 507,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should persist banking message sent flags across save/load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 3895,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:51.285Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-129ceac1bc693acc2398",
+              "file": "systems/save-load.e2e.js",
+              "line": 513,
+              "column": 5
+            },
+            {
+              "title": "should reset banking flags when balance improves",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 10,
+                      "status": "passed",
+                      "duration": 3564,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:53.888Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-af927bfa6190e354155c",
+              "file": "systems/save-load.e2e.js",
+              "line": 558,
+              "column": 5
+            },
+            {
+              "title": "should persist pending story events in save data",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 2970,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:54.029Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-e9852cd5d914e89bd5da",
+              "file": "systems/save-load.e2e.js",
+              "line": 580,
+              "column": 5
+            },
+            {
+              "title": "should queue banking messages in threshold order when multiple thresholds crossed",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 2921,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:54.083Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-d2533581e0299365b7b7",
+              "file": "systems/save-load.e2e.js",
+              "line": 607,
+              "column": 5
+            },
+            {
+              "title": "should persist reputation message sent flags across save/load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 3522,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:54.413Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-c99c4ad597ed89a08d3b",
+              "file": "systems/save-load.e2e.js",
+              "line": 628,
+              "column": 5
+            },
+            {
+              "title": "should reset reputation flags when tier improves",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 9,
+                      "status": "passed",
+                      "duration": 3783,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:54.655Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-a339a0a38a4193d75d72",
+              "file": "systems/save-load.e2e.js",
+              "line": 664,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "Save Restriction During Network Connections",
+          "file": "systems/save-load.e2e.js",
+          "line": 694,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should disable Save button when connected to a network",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3852,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:54.715Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-ebefccd1dafdf38ff364",
+              "file": "systems/save-load.e2e.js",
+              "line": 700,
+              "column": 5
+            },
+            {
+              "title": "should enable Save button when not connected to any network",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 3469,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:54.955Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-44d8e296aae75b995f11",
+              "file": "systems/save-load.e2e.js",
+              "line": 729,
+              "column": 5
+            },
+            {
+              "title": "should prompt user before Sleep when connected to networks",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 3518,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:55.200Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-a45a9a845d82dd935bc4",
+              "file": "systems/save-load.e2e.js",
+              "line": 748,
+              "column": 5
+            },
+            {
+              "title": "should proceed with Sleep without prompt when not connected",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 8,
+                      "status": "passed",
+                      "duration": 3647,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:55.691Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-cb3c6e7c22582e095b88",
+              "file": "systems/save-load.e2e.js",
+              "line": 783,
+              "column": 5
+            },
+            {
+              "title": "should disconnect all connections and sleep when user confirms",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 5030,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:57.039Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-2e8763a9ef629a5f31a1",
+              "file": "systems/save-load.e2e.js",
+              "line": 809,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "Countdown Timer Persistence",
+          "file": "systems/save-load.e2e.js",
+          "line": 844,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should persist bankruptcy countdown across save/load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 3462,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:57.039Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-b8d30cc099e7ae98489d",
+              "file": "systems/save-load.e2e.js",
+              "line": 850,
+              "column": 5
+            },
+            {
+              "title": "should persist reputation countdown across save/load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 10,
+                      "status": "passed",
+                      "duration": 4798,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:57.488Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-57bb7fd1b8ab1c9e954c",
+              "file": "systems/save-load.e2e.js",
+              "line": 869,
+              "column": 5
+            },
+            {
+              "title": "should continue bankruptcy countdown from saved remaining time",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 4188,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:57.969Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-16965e6d4ab3d55d647a",
+              "file": "systems/save-load.e2e.js",
+              "line": 889,
+              "column": 5
+            },
+            {
+              "title": "should continue reputation countdown from saved remaining time",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 4157,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:58.454Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-04e205829c7be2625184",
+              "file": "systems/save-load.e2e.js",
+              "line": 912,
+              "column": 5
+            },
+            {
+              "title": "should handle null countdowns correctly after load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 9,
+                      "status": "passed",
+                      "duration": 4625,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:58.467Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-00c52d600edf743feaef",
+              "file": "systems/save-load.e2e.js",
+              "line": 936,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "Mission State Persistence",
+          "file": "systems/save-load.e2e.js",
+          "line": 958,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should persist active mission across save/load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4631,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:58.595Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-cced91eaab6a4883d505",
+              "file": "systems/save-load.e2e.js",
+              "line": 964,
+              "column": 5
+            },
+            {
+              "title": "should preserve completed objectives within active mission",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 3942,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:58.741Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-17d940a0f803dc7c29d7",
+              "file": "systems/save-load.e2e.js",
+              "line": 996,
+              "column": 5
+            },
+            {
+              "title": "should persist completed missions array across save/load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 8,
+                      "status": "passed",
+                      "duration": 4391,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:12:59.366Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-2e1604baeda77dd87da1",
+              "file": "systems/save-load.e2e.js",
+              "line": 1029,
+              "column": 5
+            },
+            {
+              "title": "should persist mission cooldowns across save/load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 3759,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:00.238Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-a5f8f849a9ff5c288f42",
+              "file": "systems/save-load.e2e.js",
+              "line": 1062,
+              "column": 5
+            },
+            {
+              "title": "should handle null active mission correctly after load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 3743,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:00.533Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-77b654a5b02cc995c7f8",
+              "file": "systems/save-load.e2e.js",
+              "line": 1086,
+              "column": 5
+            },
+            {
+              "title": "should preserve mission progress percentage after load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 3793,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:02.108Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-1ee31f5a2d755a54d458",
+              "file": "systems/save-load.e2e.js",
+              "line": 1105,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "Transaction History Persistence",
+          "file": "systems/save-load.e2e.js",
+          "line": 1151,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should persist transaction history across save/load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 3997,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:02.195Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-2fd2ed57a835fc43e9c7",
+              "file": "systems/save-load.e2e.js",
+              "line": 1157,
+              "column": 5
+            },
+            {
+              "title": "should preserve transaction timestamps after load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 10,
+                      "status": "passed",
+                      "duration": 4822,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:02.341Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-0902bfe7b7f226ad81f2",
+              "file": "systems/save-load.e2e.js",
+              "line": 1201,
+              "column": 5
+            },
+            {
+              "title": "should handle empty transactions array after load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 3821,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:02.645Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-019d44b4ce512395e388",
+              "file": "systems/save-load.e2e.js",
+              "line": 1228,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "Hardware, Software and License Persistence",
+          "file": "systems/save-load.e2e.js",
+          "line": 1252,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should persist hardware configuration across save/load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 3886,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:02.725Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-ec67d2ae30c3ba7eb51a",
+              "file": "systems/save-load.e2e.js",
+              "line": 1258,
+              "column": 5
+            },
+            {
+              "title": "should persist partial hardware upgrades across save/load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 9,
+                      "status": "passed",
+                      "duration": 4585,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:03.124Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-a67a87761cbb94ff557b",
+              "file": "systems/save-load.e2e.js",
+              "line": 1287,
+              "column": 5
+            },
+            {
+              "title": "should persist installed software across save/load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4268,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:03.267Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-e62d1c8c87f2562a0a5d",
+              "file": "systems/save-load.e2e.js",
+              "line": 1309,
+              "column": 5
+            },
+            {
+              "title": "should persist licensed software across save/load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 8,
+                      "status": "passed",
+                      "duration": 4140,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:03.787Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-763d1cecb17c184a2f10",
+              "file": "systems/save-load.e2e.js",
+              "line": 1332,
+              "column": 5
+            },
+            {
+              "title": "should handle empty licensedSoftware array after load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 3861,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:04.042Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-0cb80d3972d79f9893f9",
+              "file": "systems/save-load.e2e.js",
+              "line": 1348,
+              "column": 5
+            },
+            {
+              "title": "should persist combined hardware, software, and licenses across save/load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 3764,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:04.309Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-fe2f236065dc4144efaa",
+              "file": "systems/save-load.e2e.js",
+              "line": 1361,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "Save Data Error Handling",
+          "file": "systems/save-load.e2e.js",
+          "line": 1407,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should handle missing optional fields with defaults",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 4875,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:05.202Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-b01a4f05b223ea5915b7",
+              "file": "systems/save-load.e2e.js",
+              "line": 1413,
+              "column": 5
+            },
+            {
+              "title": "should handle corrupted JSON in localStorage gracefully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 4160,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:05.963Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-ba5b1f07267dcb07292c",
+              "file": "systems/save-load.e2e.js",
+              "line": 1459,
+              "column": 5
+            },
+            {
+              "title": "should handle save with missing required fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 3516,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:06.229Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-0cd8c163c13363cc8cc4",
+              "file": "systems/save-load.e2e.js",
+              "line": 1479,
+              "column": 5
+            },
+            {
+              "title": "should not crash when loading save with unknown fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 3861,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:06.504Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e93185aaf6f9d7c75530-a79a3e52000deae801b2",
+              "file": "systems/save-load.e2e.js",
+              "line": 1500,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "systems\\scenario-loading.e2e.js",
+      "file": "systems/scenario-loading.e2e.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Scenario Loading",
+          "file": "systems/scenario-loading.e2e.js",
+          "line": 9,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should load fresh-start scenario via URL parameter",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 4011,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Scenario loaded successfully via URL parameter\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:06.662Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "38eb817a81dc03cbaaa1-e41dea43ff6e7b997e43",
+              "file": "systems/scenario-loading.e2e.js",
+              "line": 10,
+              "column": 5
+            },
+            {
+              "title": "should handle invalid scenario name gracefully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 10,
+                      "status": "passed",
+                      "duration": 3869,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Invalid scenario handled gracefully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:07.221Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "38eb817a81dc03cbaaa1-5aba899566db68b73033",
+              "file": "systems/scenario-loading.e2e.js",
+              "line": 39,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "systems\\time.e2e.js",
+      "file": "systems/time.e2e.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "E2E Test 6: Time System Flow",
+          "file": "systems/time.e2e.js",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should handle time system correctly with speed changes and pause",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 31718,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E Test 6: Time System - PASS\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:07.581Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "64874522914e50cfb8e1-3d645433535e43acd51d",
+              "file": "systems/time.e2e.js",
+              "line": 36,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "systems\\ui.e2e.js",
+      "file": "systems/ui.e2e.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "TopBar Display",
+          "file": "systems/ui.e2e.js",
+          "line": 21,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display reputation badge with correct starting tier",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 9,
+                      "status": "passed",
+                      "duration": 4048,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Reputation badge displays correctly\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:07.758Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "50ee054b7c7f995bd377-09ec02ad89765f96ecb7",
+              "file": "systems/ui.e2e.js",
+              "line": 27,
+              "column": 5
+            },
+            {
+              "title": "should show reputation preview on hover",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 4143,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Reputation hover preview works\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:07.964Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "50ee054b7c7f995bd377-4d050023513bed931518",
+              "file": "systems/ui.e2e.js",
+              "line": 40,
+              "column": 5
+            },
+            {
+              "title": "should display credits in TopBar",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 8,
+                      "status": "passed",
+                      "duration": 3974,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Credits display in TopBar\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:07.983Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "50ee054b7c7f995bd377-88a2b6cfc333729741b9",
+              "file": "systems/ui.e2e.js",
+              "line": 53,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "App Launcher",
+          "file": "systems/ui.e2e.js",
+          "line": 63,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show basic apps available at start",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 3977,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Basic apps available in launcher\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:08.139Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "50ee054b7c7f995bd377-9479adf5260c8c9a12c9",
+              "file": "systems/ui.e2e.js",
+              "line": 69,
+              "column": 5
+            },
+            {
+              "title": "should display storage usage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "passed",
+                      "duration": 3702,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Storage display in launcher\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:09.816Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "50ee054b7c7f995bd377-dff5e91dc73be3825aa3",
+              "file": "systems/ui.e2e.js",
+              "line": 84,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "Portal Navigation",
+          "file": "systems/ui.e2e.js",
+          "line": 98,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should show Hardware and Software tabs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 4163,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Portal tabs visible\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:10.143Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "50ee054b7c7f995bd377-29a33bcc7719a9d91f3e",
+              "file": "systems/ui.e2e.js",
+              "line": 104,
+              "column": 5
+            },
+            {
+              "title": "should display purchasable software items",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 4106,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Portal shows purchasable software\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:10.190Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "50ee054b7c7f995bd377-92281819081974fe25c8",
+              "file": "systems/ui.e2e.js",
+              "line": 120,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "Debug System",
+          "file": "systems/ui.e2e.js",
+          "line": 143,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should enable debug mode with query parameter",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 3229,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Debug mode enabled\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:10.424Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "50ee054b7c7f995bd377-e1f3ef91801f7ae35820",
+              "file": "systems/ui.e2e.js",
+              "line": 144,
+              "column": 5
+            },
+            {
+              "title": "should open debug panel with keyboard shortcut",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 3344,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Debug panel opens and closes\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:10.721Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "50ee054b7c7f995bd377-27cc6a785b0482e84a45",
+              "file": "systems/ui.e2e.js",
+              "line": 160,
+              "column": 5
+            },
+            {
+              "title": "should load debug state via State Controls tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 10,
+                      "status": "passed",
+                      "duration": 3458,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Debug state modified successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:11.141Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "50ee054b7c7f995bd377-25d450a0a0abef183d0d",
+              "file": "systems/ui.e2e.js",
+              "line": 180,
+              "column": 5
+            }
+          ]
+        },
+        {
+          "title": "Banking App Display",
+          "file": "systems/ui.e2e.js",
+          "line": 211,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display Transaction History tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 9,
+                      "status": "passed",
+                      "duration": 3776,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Ô£à E2E: Transaction History tab working\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-12T10:13:11.833Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "50ee054b7c7f995bd377-b0297d819e386f22aedd",
+              "file": "systems/ui.e2e.js",
+              "line": 217,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "systems\\window-management.e2e.js",
+      "file": "systems/window-management.e2e.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Window Management",
+          "file": "systems/window-management.e2e.js",
+          "line": 13,
+          "column": 6,
+          "specs": [],
+          "suites": [
+            {
+              "title": "Window Lifecycle & Cascading",
+              "file": "systems/window-management.e2e.js",
+              "line": 18,
+              "column": 10,
+              "specs": [
+                {
+                  "title": "should handle complete window management flow",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 8,
+                          "parallelIndex": 8,
+                          "status": "passed",
+                          "duration": 4198,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-01-12T10:13:12.013Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "57420836584cc94f45cf-524ab704fc03317e3d0c",
+                  "file": "systems/window-management.e2e.js",
+                  "line": 50,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Window Dragging",
+              "file": "systems/window-management.e2e.js",
+              "line": 113,
+              "column": 10,
+              "specs": [
+                {
+                  "title": "should drag windows to new positions",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 6,
+                          "parallelIndex": 6,
+                          "status": "passed",
+                          "duration": 3658,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-01-12T10:13:12.160Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "57420836584cc94f45cf-c27de0d2bdb7c453176e",
+                  "file": "systems/window-management.e2e.js",
+                  "line": 145,
+                  "column": 9
+                },
+                {
+                  "title": "should keep dragged window within viewport bounds",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 7,
+                          "parallelIndex": 7,
+                          "status": "passed",
+                          "duration": 4031,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-01-12T10:13:12.197Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "57420836584cc94f45cf-0c3fd1a0628a6278b766",
+                  "file": "systems/window-management.e2e.js",
+                  "line": 188,
+                  "column": 9
+                },
+                {
+                  "title": "should actually drag windows and update positions",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 4,
+                          "parallelIndex": 4,
+                          "status": "passed",
+                          "duration": 3639,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-01-12T10:13:13.590Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "57420836584cc94f45cf-46aaee34bd7b35322ca3",
+                  "file": "systems/window-management.e2e.js",
+                  "line": 228,
+                  "column": 9
+                }
+              ]
+            },
+            {
+              "title": "Window State Persistence",
+              "file": "systems/window-management.e2e.js",
+              "line": 278,
+              "column": 10,
+              "specs": [
+                {
+                  "title": "should persist open windows and their positions after save/load",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 1,
+                          "parallelIndex": 1,
+                          "status": "passed",
+                          "duration": 3556,
+                          "errors": [],
+                          "stdout": [
+                            {
+                              "text": "TEST: Window counts verified\n"
+                            },
+                            {
+                              "text": "TEST: Remaining window titles: SNet Banking App, OSNet Portal\n"
+                            }
+                          ],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-01-12T10:13:13.718Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "57420836584cc94f45cf-295e71c7d845802b924e",
+                  "file": "systems/window-management.e2e.js",
+                  "line": 284,
+                  "column": 9
+                },
+                {
+                  "title": "should persist window z-index order after save/load",
+                  "ok": true,
+                  "tags": [],
+                  "tests": [
+                    {
+                      "timeout": 60000,
+                      "annotations": [],
+                      "expectedStatus": "passed",
+                      "projectId": "chromium",
+                      "projectName": "chromium",
+                      "results": [
+                        {
+                          "workerIndex": 2,
+                          "parallelIndex": 2,
+                          "status": "passed",
+                          "duration": 5652,
+                          "errors": [],
+                          "stdout": [],
+                          "stderr": [],
+                          "retry": 0,
+                          "startTime": "2026-01-12T10:13:14.153Z",
+                          "annotations": [],
+                          "attachments": []
+                        }
+                      ],
+                      "status": "expected"
+                    }
+                  ],
+                  "id": "57420836584cc94f45cf-7c1914053f5040417e36",
+                  "file": "systems/window-management.e2e.js",
+                  "line": 415,
+                  "column": 9
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-01-12T10:12:02.580Z",
+    "duration": 98747.02,
+    "expected": 104,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useGame } from '../../contexts/GameContext';
+import { useGame } from '../../contexts/useGame';
 import './SleepAnimation.css';
 
 const SleepAnimation = () => {

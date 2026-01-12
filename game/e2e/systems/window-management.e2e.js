@@ -206,8 +206,6 @@ test.describe('Window Management', () => {
             await page.mouse.move(5000, 100, { steps: 10 }); // Far beyond viewport width
             await page.mouse.up();
 
-            await page.waitForTimeout(500);
-
             // Verify window stayed within bounds
             const position = await mailWindow.boundingBox();
             const viewportSize = page.viewportSize();
@@ -220,8 +218,6 @@ test.describe('Window Management', () => {
             await page.mouse.down();
             await page.mouse.move(100, -100, { steps: 10 }); // Above viewport
             await page.mouse.up();
-
-            await page.waitForTimeout(500);
 
             const position2 = await mailWindow.boundingBox();
 
@@ -255,19 +251,15 @@ test.describe('Window Management', () => {
 
             // Move to center of header
             await page.mouse.move(headerBox.x + headerBox.width / 2, headerBox.y + headerBox.height / 2);
-            await page.waitForTimeout(100);
 
             // Press mouse down
             await page.mouse.down();
-            await page.waitForTimeout(100);
 
             // Move mouse to new position (100px right, 50px down)
             await page.mouse.move(headerBox.x + headerBox.width / 2 + 100, headerBox.y + headerBox.height / 2 + 50, { steps: 10 });
-            await page.waitForTimeout(100);
 
             // Release mouse
             await page.mouse.up();
-            await page.waitForTimeout(500);
 
             // Check if window moved
             const newBox = await mailWindow.boundingBox();
@@ -397,7 +389,6 @@ test.describe('Window Management', () => {
             // Verify minimized window can be restored
             await page.click('.minimized-window:has-text("SNet Banking")');
             await expect(page.locator('.window:has-text("SNet Banking App")')).toBeVisible();
-            await page.waitForTimeout(500); // Allow window to fully render after restore
 
             // Verify all windows are still functional
             await page.locator('.window:has-text("SNet Mail")').locator('button:has-text("×")').click();
@@ -411,7 +402,7 @@ test.describe('Window Management', () => {
             const bankingWindow = page.locator('.window').filter({ hasText: 'Banking' }).first();
             await expect(bankingWindow).toBeVisible({ timeout: 5000 });
             await bankingWindow.locator('button:has-text("×")').click();
-            await page.waitForTimeout(500);
+            await expect(bankingWindow).not.toBeVisible();
 
             await page.locator('.window:has-text("Portal")').locator('button:has-text("×")').click();
 

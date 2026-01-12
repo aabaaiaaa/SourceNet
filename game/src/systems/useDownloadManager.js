@@ -51,7 +51,7 @@ export const useDownloadManager = (
   currentTime,
   enabled = true
 ) => {
-  const intervalRef = useRef(null);
+  const _intervalRef = useRef(null); // Reserved for future interval-based updates
   const completedItemsRef = useRef(new Set());
 
   // Update progress for all active downloads

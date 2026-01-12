@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useGame } from '../../contexts/GameContext';
+import { useGame } from '../../contexts/useGame';
 import triggerEventBus from '../../core/triggerEventBus';
 import { generateDevicesForNetwork } from '../../systems/NetworkDeviceGenerator';
 import './NetworkScanner.css';
@@ -25,59 +25,46 @@ const NetworkScanner = () => {
   const [scanResults, setScanResults] = useState(null);
   const [scanStartTime, setScanStartTime] = useState(null);
   const [estimatedDuration, setEstimatedDuration] = useState(0);
-  const animationFrameRef = useRef(null);
   const operationIdRef = useRef(null);
 
-  // Animation loop for scan progress using game time
+  // Update scan progress based on game time (respects game speed)
   useEffect(() => {
     if (!scanning || !scanStartTime || !currentTime) return;
 
-    const animate = () => {
-      // Calculate elapsed GAME time (respects game speed)
-      const elapsedGameMs = currentTime.getTime() - scanStartTime;
-      const newProgress = Math.min(100, (elapsedGameMs / estimatedDuration) * 100);
-      setScanProgress(newProgress);
+    // Calculate elapsed GAME time (respects game speed)
+    const elapsedGameMs = currentTime.getTime() - scanStartTime;
+    const newProgress = Math.min(100, (elapsedGameMs / estimatedDuration) * 100);
+    setScanProgress(newProgress);
 
-      if (newProgress >= 100) {
-        // Scan complete
-        completeBandwidthOperation(operationIdRef.current);
+    if (newProgress >= 100) {
+      // Scan complete
+      completeBandwidthOperation(operationIdRef.current);
 
-        // Find the NAR entry for this network
-        const narEntry = narEntries.find(entry => entry.networkId === selectedNetwork);
+      // Find the NAR entry for this network
+      const narEntry = narEntries.find(entry => entry.networkId === selectedNetwork);
 
-        // Generate devices using the device generator
-        const machines = generateDevicesForNetwork(narEntry, scanType);
+      // Generate devices using the device generator
+      const machines = generateDevicesForNetwork(narEntry, scanType);
 
-        const results = {
-          network: selectedNetwork,
-          machines,
-        };
+      const results = {
+        network: selectedNetwork,
+        machines,
+      };
 
-        setScanResults(results);
-        setLastScanResults(results);
+      setScanResults(results);
+      setLastScanResults(results);
 
-        // Emit scan complete event
-        triggerEventBus.emit('networkScanComplete', {
-          network: selectedNetwork,
-          results: results,
-        });
+      // Emit scan complete event
+      triggerEventBus.emit('networkScanComplete', {
+        network: selectedNetwork,
+        results: results,
+      });
 
-        setScanning(false);
-        setScanProgress(0);
-        setScanStartTime(null);
-        console.log(`🔍 Scan complete: Found ${results.machines.length} machines`);
-      } else {
-        animationFrameRef.current = requestAnimationFrame(animate);
-      }
-    };
-
-    animationFrameRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
+      setScanning(false);
+      setScanProgress(0);
+      setScanStartTime(null);
+      console.log(`🔍 Scan complete: Found ${results.machines.length} machines`);
+    }
   }, [scanning, scanStartTime, currentTime, estimatedDuration, selectedNetwork, scanType, narEntries, completeBandwidthOperation, setLastScanResults]);
 
   const handleScan = () => {

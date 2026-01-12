@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
-import { GameProvider, useGame } from '../../contexts/GameContext';
+import { GameProvider } from '../../contexts/GameContext';
+import { useGame } from '../../contexts/useGame';
 import { calculateInterest, shouldTriggerBankruptcy } from '../../systems/BankingSystem';
 import { calculateReputationChange, getReputationWarning } from '../../systems/ReputationSystem';
 

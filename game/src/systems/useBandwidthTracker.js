@@ -16,7 +16,6 @@ import { useState, useCallback, useMemo } from 'react';
 import {
   getNetworkBandwidth,
   getAdapterSpeed,
-  calculateAvailableBandwidth,
   calculateTransferSpeed,
   calculateOperationTime,
 } from './NetworkBandwidthSystem';

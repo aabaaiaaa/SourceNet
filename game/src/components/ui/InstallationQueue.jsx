@@ -1,11 +1,11 @@
-import { useGame } from '../../contexts/GameContext';
+import { useGame } from '../../contexts/useGame';
 import {
   getNetworkBandwidth,
   getAdapterSpeed,
   calculateAvailableBandwidth,
   calculateTransferSpeed,
 } from '../../systems/NetworkBandwidthSystem';
-import { calculateBandwidthShare, estimateDownloadTime } from '../../systems/InstallationSystem';
+import { calculateBandwidthShare } from '../../systems/InstallationSystem';
 import './InstallationQueue.css';
 
 /**

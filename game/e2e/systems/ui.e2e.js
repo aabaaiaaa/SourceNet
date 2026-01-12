@@ -138,6 +138,34 @@ test.describe('Portal Navigation', () => {
 
         console.log('✅ E2E: Portal shows purchasable software');
     });
+
+    test('should browse hardware categories in Portal', async ({ page }) => {
+        await completeBoot(page, 'portal_hardware_test');
+
+        // Open Portal
+        await page.hover('text=☰');
+        await page.waitForTimeout(200);
+        await page.click('button:has-text("OSNet Portal")');
+        await expect(page.locator('.portal')).toBeVisible();
+
+        // Switch to Hardware tab
+        await page.click('button:has-text("Hardware")');
+
+        // Browse Memory category
+        await page.click('button:has-text("Memory")');
+        await expect(page.locator('.item-name:has-text("2GB RAM")').first()).toBeVisible();
+        await expect(page.locator('.installed-badge').first()).toBeVisible();
+
+        // Browse Storage category
+        await page.click('button:has-text("Storage")');
+        await expect(page.locator('.item-name:has-text("90GB SSD")').first()).toBeVisible();
+
+        // Browse Motherboards category
+        await page.click('button:has-text("Motherboards")');
+        await expect(page.locator('text=Basic Board')).toBeVisible();
+
+        console.log('✅ E2E: Portal hardware categories browsing');
+    });
 });
 
 test.describe('Debug System', () => {

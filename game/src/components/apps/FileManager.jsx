@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useGame } from '../../contexts/GameContext';
+import { useGame } from '../../contexts/useGame';
 import triggerEventBus from '../../core/triggerEventBus';
 import './FileManager.css';
 

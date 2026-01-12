@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { GameProvider, useGame } from '../../contexts/GameContext';
+import { GameProvider } from '../../contexts/GameContext';
+import { useGame } from '../../contexts/useGame';
 import NetworkScanner from '../../components/apps/NetworkScanner';
 import TopBar from '../../components/ui/TopBar';
 import triggerEventBus from '../../core/triggerEventBus';
@@ -728,7 +729,7 @@ describe('Network Scanner Integration', () => {
         );
         expect(fileServerEl).toBeTruthy();
         expect(fileServerEl.textContent).toContain(missionFileSystem.ip);
-        
+
         // Verify file systems are correctly mapped
         const fileSystemsEl = fileServerEl.querySelector('.machine-filesystems');
         expect(fileSystemsEl).toBeTruthy();

@@ -5,7 +5,8 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, act } from '@testing-library/react';
-import { GameProvider, useGame } from '../../contexts/GameContext';
+import { GameProvider } from '../../contexts/GameContext';
+import { useGame } from '../../contexts/useGame';
 import triggerEventBus from '../../core/triggerEventBus';
 import storyMissionManager from '../../missions/StoryMissionManager';
 import { VERIFICATION_DELAY_MS } from '../../constants/gameConstants';

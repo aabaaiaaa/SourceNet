@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useGame } from '../../contexts/GameContext';
+import { useGame } from '../../contexts/useGame';
 import { WINDOW_SIZES } from '../../constants/gameConstants';
 import SNetMail from '../apps/SNetMail';
 import BankingApp from '../apps/BankingApp';

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useGame } from '../../contexts/GameContext';
+import { useGame } from '../../contexts/useGame';
 import './BootSequence.css';
 
 const BootSequence = () => {

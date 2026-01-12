@@ -101,7 +101,7 @@ async function saveGameWithPrompt(page, saveName) {
     page.once('dialog', (dialog) => dialog.accept(saveName));
     await page.hover('text=⏻');
     await page.click('text=Save');
-    await page.waitForTimeout(1000);
+    // Save completes synchronously after dialog acceptance
 }
 
 // ============================================================================
@@ -286,7 +286,7 @@ test.describe('Save/Load with Windows Open', () => {
 
         // Try to open Mail after loading - this tests the window opening bug fix
         await page.click('text=☰');
-        await page.waitForTimeout(500);
+        await expect(page.locator('.app-launcher-menu')).toBeVisible();
         await page.click('text=SNet Mail');
 
         // Verify Mail window opens successfully after load
@@ -543,7 +543,7 @@ test.describe('Pending Events and Banking Message Persistence', () => {
 
         // Open mail to check
         await openApp(page, 'SNet Mail');
-        await page.waitForTimeout(500);
+        await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
 
         // The original message should exist, but no duplicate
         const allOverdraftMessages = await page.evaluate(() => {
@@ -571,7 +571,7 @@ test.describe('Pending Events and Banking Message Persistence', () => {
         await expect(page.locator('.desktop')).toBeVisible({ timeout: 10000 });
 
         // Wait for effect to run and reset the flag
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(200);
 
         // Now if balance goes negative again, a new overdraft message should be sent
         // (We can't easily trigger this without more complex setup, but the flag should be reset)
@@ -600,9 +600,7 @@ test.describe('Pending Events and Banking Message Persistence', () => {
         await expect(page.locator('.desktop')).toBeVisible({ timeout: 10000 });
 
         // The pending event should be restored with a buffer
-        // We can verify by waiting and checking console or messages
         // For now, just verify the game loads without errors
-        await page.waitForTimeout(1000);
         await expect(page.locator('.desktop')).toBeVisible();
     });
 
@@ -651,8 +649,8 @@ test.describe('Pending Events and Banking Message Persistence', () => {
         await page.click('.save-item:has-text("rep_msg_test") button:has-text("Load")');
         await expect(page.locator('.desktop')).toBeVisible({ timeout: 10000 });
 
-        // Wait some time - no duplicate HR message should appear since flag is persisted
-        await page.waitForTimeout(2000);
+        // Wait briefly - no duplicate HR message should appear since flag is persisted
+        await page.waitForTimeout(500);
 
         // Verify only one performance plan message exists
         const allHrMessages = await page.evaluate(() => {
@@ -680,7 +678,7 @@ test.describe('Pending Events and Banking Message Persistence', () => {
         await expect(page.locator('.desktop')).toBeVisible({ timeout: 10000 });
 
         // Wait for flag reset logic to run
-        await page.waitForTimeout(1000);
+        await page.waitForTimeout(200);
 
         // The flag should have been reset - verify by checking that the system is ready
         // to send the message again if tier drops back to 2

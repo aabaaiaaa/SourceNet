@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useEffect } from 'react';
-import { GameProvider, useGame } from '../../contexts/GameContext';
+import { GameProvider } from '../../contexts/GameContext';
+import { useGame } from '../../contexts/useGame';
 import SNetMail from '../../components/apps/SNetMail';
 import TopBar from '../../components/ui/TopBar';
 import {

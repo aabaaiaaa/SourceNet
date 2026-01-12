@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { useGame, MULTI_INSTANCE_APPS } from '../../contexts/GameContext';
+import { useGame } from '../../contexts/useGame';
+import { MULTI_INSTANCE_APPS } from '../../constants/gameConstants';
 import { formatDateTime, getAllSaves } from '../../utils/helpers';
 import { getReputationTier } from '../../systems/ReputationSystem';
 import { calculateStorageUsed, formatStorage } from '../../systems/StorageSystem';

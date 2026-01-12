@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import {
   GAME_START_DATE,
   TIME_SPEEDS,
@@ -6,6 +6,7 @@ import {
   STARTING_SOFTWARE,
   STARTING_BANK_ACCOUNT,
   MANAGER_NAMES,
+  MULTI_INSTANCE_APPS,
 } from '../constants/gameConstants';
 import {
   generateMailId,
@@ -26,24 +27,13 @@ import {
   calculateTransferSpeed,
   calculateOperationTime,
 } from '../systems/NetworkBandwidthSystem';
-import { updateBankruptcyCountdown, shouldTriggerBankruptcy, startBankruptcyCountdown, getBankingMessageType } from '../systems/BankingSystem';
+import { updateBankruptcyCountdown, shouldTriggerBankruptcy, startBankruptcyCountdown } from '../systems/BankingSystem';
 import { updateReputationCountdown, startReputationCountdown } from '../systems/ReputationSystem';
 import { BANKING_MESSAGES, HR_MESSAGES } from '../core/systemMessages';
 import { getReputationTier } from '../systems/ReputationSystem';
 import triggerEventBus from '../core/triggerEventBus';
 
-const GameContext = createContext();
-
-// Apps that allow multiple instances to be opened
-export const MULTI_INSTANCE_APPS = ['fileManager'];
-
-export const useGame = () => {
-  const context = useContext(GameContext);
-  if (!context) {
-    throw new Error('useGame must be used within a GameProvider');
-  }
-  return context;
-};
+export const GameContext = createContext();
 
 export const GameProvider = ({ children }) => {
   // Game state
@@ -80,6 +70,7 @@ export const GameProvider = ({ children }) => {
   const prevBalanceRef = useRef(null);
   const bankingMessageQueueRef = useRef([]); // Queue of pending banking messages
   const bankingMessageTimerRef = useRef(null); // Timer for current queued message
+  const processBankingMessageQueueRef = useRef(null); // Ref for recursive call
   const [bankingMessagesSent, setBankingMessagesSent] = useState({
     firstOverdraft: false,
     approachingBankruptcy: false,
@@ -289,6 +280,11 @@ export const GameProvider = ({ children }) => {
   // Ref to track if this is a new game (for emitting newGameStarted event)
   const isNewGameRef = useRef(false);
 
+  // Function to clear the new game flag (called by useStoryMissions after emitting event)
+  const clearNewGameFlag = useCallback(() => {
+    isNewGameRef.current = false;
+  }, []);
+
   // Initialize player
   const initializePlayer = useCallback((name) => {
     setUsername(name);
@@ -376,11 +372,52 @@ export const GameProvider = ({ children }) => {
     );
   }, []);
 
+  // Window management (defined before initiateChequeDeposit which uses it)
+  const openWindow = useCallback((appId) => {
+    setWindows((prev) => {
+      // Check if app allows multiple instances
+      const allowsMultipleInstances = MULTI_INSTANCE_APPS.includes(appId);
+
+      if (!allowsMultipleInstances) {
+        // Check if window is already open for single-instance apps
+        const existing = prev.find((w) => w.appId === appId);
+
+        if (existing) {
+          // Bring existing window to front with new z-index
+          const newZ = nextZIndexRef.current++;
+          return prev.map((w) =>
+            w.id === existing.id ? { ...w, zIndex: newZ, minimized: false } : w
+          );
+        }
+      }
+
+      // Create new window instance
+      const CASCADE_OFFSET = 30;
+      const BASE_X = 50;
+      const BASE_Y = 100;
+      const openWindows = prev.filter((w) => !w.minimized);
+      const offset = openWindows.length * CASCADE_OFFSET;
+
+      const newWindow = {
+        id: `window-${nextWindowIdRef.current++}`, // Unique ID for this window instance
+        appId, // App type (for rendering the correct component)
+        zIndex: nextZIndexRef.current++,
+        minimized: false,
+        position: {
+          x: BASE_X + offset,
+          y: BASE_Y + offset,
+        },
+      };
+
+      return [...prev, newWindow];
+    });
+  }, []);
+
   // Initiate cheque deposit (called when user clicks attachment in Mail)
   const initiateChequeDeposit = useCallback((messageId) => {
     setPendingChequeDeposit(messageId);
     openWindow('banking');
-  }, []);
+  }, [openWindow]);
 
   // Deposit cheque
   const depositCheque = useCallback((messageId, accountId) => {
@@ -466,47 +503,6 @@ export const GameProvider = ({ children }) => {
     setLicensedSoftware((prev) => {
       if (prev.includes(softwareId)) return prev;
       return [...prev, softwareId];
-    });
-  }, []);
-
-  // Window management
-  const openWindow = useCallback((appId) => {
-    setWindows((prev) => {
-      // Check if app allows multiple instances
-      const allowsMultipleInstances = MULTI_INSTANCE_APPS.includes(appId);
-
-      if (!allowsMultipleInstances) {
-        // Check if window is already open for single-instance apps
-        const existing = prev.find((w) => w.appId === appId);
-
-        if (existing) {
-          // Bring existing window to front with new z-index
-          const newZ = nextZIndexRef.current++;
-          return prev.map((w) =>
-            w.id === existing.id ? { ...w, zIndex: newZ, minimized: false } : w
-          );
-        }
-      }
-
-      // Create new window instance
-      const CASCADE_OFFSET = 30;
-      const BASE_X = 50;
-      const BASE_Y = 100;
-      const openWindows = prev.filter((w) => !w.minimized);
-      const offset = openWindows.length * CASCADE_OFFSET;
-
-      const newWindow = {
-        id: `window-${nextWindowIdRef.current++}`, // Unique ID for this window instance
-        appId, // App type (for rendering the correct component)
-        zIndex: nextZIndexRef.current++,
-        minimized: false,
-        position: {
-          x: BASE_X + offset,
-          y: BASE_Y + offset,
-        },
-      };
-
-      return [...prev, newWindow];
     });
   }, []);
 
@@ -912,7 +908,7 @@ export const GameProvider = ({ children }) => {
   // Initialize story mission system
   useStoryMissions(
     { gamePhase, username, managerName, currentTime, activeConnections, activeMission, timeSpeed, software, messages, reputation, completedMissions, isNewGameRef },
-    { setAvailableMissions, addMessage, completeMissionObjective, completeMission }
+    { setAvailableMissions, addMessage, completeMissionObjective, completeMission, clearNewGameFlag }
   );
 
   // Auto-complete mission when status changes to 'failed'
@@ -1057,11 +1053,16 @@ export const GameProvider = ({ children }) => {
         addMessage(messageToSend.message);
         console.log(`💳 Banking message sent: ${messageToSend.message.subject}`);
 
-        // Process next in queue (if any)
-        processBankingMessageQueue();
+        // Process next in queue (if any) - use ref to avoid accessing before declaration
+        processBankingMessageQueueRef.current?.();
       }
     }, 5000, timeSpeed);
   }, [addMessage, timeSpeed]);
+
+  // Keep processBankingMessageQueueRef updated for recursive calls
+  useEffect(() => {
+    processBankingMessageQueueRef.current = processBankingMessageQueue;
+  }, [processBankingMessageQueue]);
 
   // Banking messages - send automated messages for overdrafts and bankruptcy warnings
   useEffect(() => {

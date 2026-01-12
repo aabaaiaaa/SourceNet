@@ -12,6 +12,9 @@ test.describe('E2E Test 5: App Interactions Flow', () => {
     await page.click('button:has-text("Continue")');
     await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
+    // Speed up game time to get welcome messages faster
+    await page.evaluate(() => window.gameContext.setSpecificTimeSpeed(100));
+
     // Step 2-3: Hover over App Launcher → verify menu appears
     await page.hover('text=☰');
     await expect(page.locator('text=OSNet Portal')).toBeVisible();
@@ -30,12 +33,13 @@ test.describe('E2E Test 5: App Interactions Flow', () => {
     await page.click('.app-launcher-menu button:has-text("SNet Mail")');
     await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
 
-    // Step 6-7: Hover over mail notification and click
-    await page.waitForTimeout(4000); // Wait for first message
+    // Step 6-7: Wait for first message notification and click
+    await expect(page.locator('text=✉')).toBeVisible({ timeout: 5000 });
     await page.hover('text=✉');
     await page.click('text=✉');
 
     // Step 8-11: Read and archive Message 1
+    await expect(page.locator('.message-item:has-text("Welcome to SourceNet!")')).toBeVisible({ timeout: 5000 });
     await page.click('.message-item:has-text("Welcome to SourceNet!")');
     await expect(page.locator('.message-view')).toBeVisible();
 
@@ -52,10 +56,13 @@ test.describe('E2E Test 5: App Interactions Flow', () => {
     // Switch back to Inbox
     await page.click('.tab:has-text("Inbox")');
 
-    // Step 12-14: Wait for and deposit cheque
-    await page.waitForTimeout(5000); // Wait for second message after reading first
+    // Step 12-14: Wait for second message and deposit cheque
+    await expect(page.locator('.message-item:has-text("Hi from your manager")')).toBeVisible({ timeout: 5000 });
     await page.click('.message-item:has-text("Hi from your manager")');
     await page.click('.attachment-item');
+
+    // Reset game speed
+    await page.evaluate(() => window.gameContext.setSpecificTimeSpeed(1));
 
     // Banking app should open with deposit prompt
     await expect(page.locator('text=Cheque Deposit')).toBeVisible();

@@ -10,6 +10,9 @@ export const TIME_SPEEDS = {
   TEST: 100, // For automated testing only
 };
 
+// Apps that allow multiple instances to be opened
+export const MULTI_INSTANCE_APPS = ['fileManager'];
+
 // Starting hardware configuration
 export const STARTING_HARDWARE = {
   cpu: {

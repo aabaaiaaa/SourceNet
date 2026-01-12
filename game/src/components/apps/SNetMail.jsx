@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useGame } from '../../contexts/GameContext';
+import { useGame } from '../../contexts/useGame';
 import { formatDateTime } from '../../utils/helpers';
 import { getMissionById } from '../../missions/missionData';
 import triggerEventBus from '../../core/triggerEventBus';

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGame } from '../../contexts/GameContext';
+import { useGame } from '../../contexts/useGame';
 import { HARDWARE_CATALOG, SOFTWARE_CATALOG } from '../../constants/gameConstants';
 import { isHardwareInstalled } from '../../utils/helpers';
 import { createDownloadItem } from '../../systems/useDownloadManager';

@@ -392,13 +392,14 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await expect(scanButton).toBeEnabled({ timeout: 2000 });
         await scanButton.click();
 
+        await setSpeed(100);
         await expect(scannerWindow.locator('text=Scanning').or(
             scannerWindow.locator('text=Scan in progress')
         ).first()).toBeVisible({ timeout: 2000 });
 
-        await page.waitForTimeout(3500);
-
-        await expect(scannerWindow.locator('text=fileserver-01').first()).toBeVisible({ timeout: 5000 });
+        // Wait for scan to complete (uses game time, so completes quickly at 100x)
+        await expect(scannerWindow.locator('text=fileserver-01').first()).toBeVisible({ timeout: 2000 });
+        await setSpeed(1);
 
         // Verify objective complete
         const scannerWindow2 = page.locator('.window:has(.window-header:has-text("Network Scanner"))');
@@ -819,11 +820,11 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await scanButton2.click();
 
         await setSpeed(100);
-        await page.waitForTimeout(200);
+        // Wait for scan to complete (uses game time, so completes quickly at 100x)
+        await expect(scannerWindow3.locator('text=fileserver-01').first()).toBeVisible({ timeout: 2000 });
         await setSpeed(1);
 
-        await expect(scannerWindow3.locator('text=fileserver-01').first()).toBeVisible({ timeout: 3000 });
-        await expect(scannerWindow3.locator('text=backup-server').first()).toBeVisible({ timeout: 3000 });
+        await expect(scannerWindow3.locator('text=backup-server').first()).toBeVisible({ timeout: 1000 });
         await expect(scannerWindow3.locator('text=192.168.50.10').first()).toBeVisible();
         await expect(scannerWindow3.locator('text=192.168.50.20').first()).toBeVisible();
 

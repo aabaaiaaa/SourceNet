@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGame } from '../../contexts/GameContext';
+import { useGame } from '../../contexts/useGame';
 import { canAcceptMission, calculateMissionPayout } from '../../systems/MissionSystem';
 import { getReputationTier } from '../../systems/ReputationSystem';
 import './MissionBoard.css';

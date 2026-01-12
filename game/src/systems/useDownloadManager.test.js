@@ -130,9 +130,7 @@ describe('useDownloadManager', () => {
       const hardware = { networkAdapter: { speed: 250 } };
       const currentTime = new Date('2020-03-25T09:00:00');
 
-      let eventEmitted = false;
       triggerEventBus.on('softwareInstalled', (data) => {
-        eventEmitted = true;
         expect(data.softwareId).toBe('test-software');
       });
 

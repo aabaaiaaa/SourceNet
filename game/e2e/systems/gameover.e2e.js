@@ -28,8 +28,6 @@ test.describe('E2E: Bankruptcy Game Over', () => {
     });
 
     test('should send overdraft message when balance goes negative', async ({ page }) => {
-        test.setTimeout(60000);
-
         // Helper to set game speed
         const setSpeed = async (speed) => {
             await page.evaluate((s) => window.gameContext.setSpecificTimeSpeed(s), speed);
@@ -92,8 +90,6 @@ test.describe('E2E: Bankruptcy Game Over', () => {
     });
 
     test('should send bankruptcy countdown message and trigger game over', async ({ page }) => {
-        test.setTimeout(60000);
-
         // Helper to set game speed
         const setSpeed = async (speed) => {
             await page.evaluate((s) => window.gameContext.setSpecificTimeSpeed(s), speed);
@@ -192,8 +188,6 @@ test.describe('E2E: Bankruptcy Game Over', () => {
     });
 
     test('should send bankruptcy cancelled message when balance improves', async ({ page }) => {
-        test.setTimeout(60000);
-
         // Helper to set game speed
         const setSpeed = async (speed) => {
             await page.evaluate((s) => window.gameContext.setSpecificTimeSpeed(s), speed);
@@ -265,8 +259,6 @@ test.describe('E2E: Reputation Game Over', () => {
     });
 
     test('should send termination warning message and trigger game over', async ({ page }) => {
-        test.setTimeout(60000);
-
         // Helper to set game speed
         const setSpeed = async (speed) => {
             await page.evaluate((s) => window.gameContext.setSpecificTimeSpeed(s), speed);
@@ -372,8 +364,6 @@ test.describe('E2E: Reputation Game Over', () => {
     });
 
     test('should send performance improved message when reputation recovers', async ({ page }) => {
-        test.setTimeout(60000);
-
         // Helper to set game speed
         const setSpeed = async (speed) => {
             await page.evaluate((s) => window.gameContext.setSpecificTimeSpeed(s), speed);
@@ -451,8 +441,6 @@ test.describe('E2E: Game Over Recovery', () => {
     });
 
     test('should display both bankruptcy and termination warnings simultaneously', async ({ page }) => {
-        test.setTimeout(60000);
-
         // ========================================
         // STEP 1: Setup New Game with Debug Mode
         // ========================================

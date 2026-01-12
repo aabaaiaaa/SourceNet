@@ -10,10 +10,10 @@
 
 /**
  * Get network connection bandwidth limit
- * @param {string} networkId - Network ID
+ * @param {string} _networkId - Network ID (unused, for future network-specific limits)
  * @returns {number} Bandwidth limit in Mbps
  */
-export const getNetworkBandwidth = (networkId) => {
+export const getNetworkBandwidth = (_networkId) => {
   // Most networks have 50 Mbps typical limit
   // Could be enhanced with network-specific limits
   return 50; // Mbps
