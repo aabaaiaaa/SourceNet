@@ -301,7 +301,7 @@ describe('StoryMissionManager', () => {
       expect(subscriptions.softwareInstalled).toBe(1);
     });
 
-    it('should fire event when all conditions are met', (done) => {
+    it('should fire event when all conditions are met', async () => {
       const storyEvent = {
         missionId: 'test-story',
         events: [
@@ -322,16 +322,20 @@ describe('StoryMissionManager', () => {
 
       storyMissionManager.registerMission(storyEvent);
 
-      triggerEventBus.once('storyEventTriggered', (data) => {
-        expect(data.eventId).toBe('multi-condition-event');
-        done();
+      const eventPromise = new Promise((resolve) => {
+        triggerEventBus.once('storyEventTriggered', (data) => {
+          resolve(data);
+        });
       });
 
       // Trigger one of the subscribed events - conditions are already met via gameStateGetter
       triggerEventBus.emit('messageRead', { messageId: 'msg-1' });
+
+      const data = await eventPromise;
+      expect(data.eventId).toBe('multi-condition-event');
     });
 
-    it('should not fire event when not all conditions are met', (done) => {
+    it('should not fire event when not all conditions are met', async () => {
       // Set up game state where software is NOT installed
       storyMissionManager.setGameStateGetter(() => ({
         messages: [{ id: 'msg-1', read: true }],
@@ -367,10 +371,8 @@ describe('StoryMissionManager', () => {
       triggerEventBus.emit('messageRead', { messageId: 'msg-1' });
 
       // Wait a bit and verify event didn't fire
-      setTimeout(() => {
-        expect(eventFired).toBe(false);
-        done();
-      }, 50);
+      await new Promise(resolve => setTimeout(resolve, 50));
+      expect(eventFired).toBe(false);
     });
   });
 });

@@ -303,3 +303,33 @@ export async function waitForGameTime(page, gameTimeMs) {
     // Set back to 1x
     await setTimeTo1x(page);
 }
+
+// ============================================================================
+// OVERLAY OPERATIONS
+// ============================================================================
+
+/**
+ * Dismiss the forced disconnection overlay if visible
+ * @param {Page} page - Playwright page object
+ * @param {number} timeout - Timeout to wait for overlay (default 5000ms)
+ */
+export async function dismissForcedDisconnectionOverlay(page, timeout = 5000) {
+    const overlay = page.locator('.forced-disconnect-overlay');
+    const isVisible = await overlay.isVisible({ timeout }).catch(() => false);
+
+    if (isVisible) {
+        await page.click('.acknowledge-btn');
+        await expect(overlay).not.toBeVisible({ timeout: 2000 });
+    }
+}
+
+/**
+ * Wait for and dismiss the forced disconnection overlay
+ * @param {Page} page - Playwright page object
+ * @param {number} timeout - Timeout to wait for overlay (default 10000ms)
+ */
+export async function waitForAndDismissForcedDisconnection(page, timeout = 10000) {
+    await expect(page.locator('.forced-disconnect-overlay')).toBeVisible({ timeout });
+    await page.click('.acknowledge-btn');
+    await expect(page.locator('.forced-disconnect-overlay')).not.toBeVisible({ timeout: 2000 });
+}

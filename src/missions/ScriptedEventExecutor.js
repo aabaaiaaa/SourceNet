@@ -17,8 +17,9 @@ import triggerEventBus from '../core/triggerEventBus';
  * @param {object} action - Action definition from mission JSON
  * @param {function} onProgress - Progress callback (for UI updates)
  * @param {function} onComplete - Completion callback
+ * @param {array} fileNames - Optional array of file names being deleted (for activity log)
  */
-export const executeFileDeleteAction = async (action, onProgress, onComplete) => {
+export const executeFileDeleteAction = async (action, onProgress, onComplete, fileNames = []) => {
   const { files, duration, playerControl } = action;
 
   // Block player control if specified
@@ -28,10 +29,22 @@ export const executeFileDeleteAction = async (action, onProgress, onComplete) =>
 
   // Simulate file deletion with progress
   const fileCount = typeof files === 'number' ? files : 8; // Default 8 files for tutorial
+
+  // Generate default file names if not provided
+  const actualFileNames = fileNames.length > 0 ? fileNames :
+    Array.from({ length: fileCount }, (_, i) => `file_${i + 1}.dat`);
+
   const timePerFile = duration / fileCount;
 
   for (let i = 0; i < fileCount; i++) {
     await new Promise((resolve) => setTimeout(resolve, timePerFile));
+
+    // Emit sabotage file operation event for File Manager activity log
+    triggerEventBus.emit('sabotageFileOperation', {
+      fileName: actualFileNames[i] || `file_${i + 1}.dat`,
+      operation: 'delete',
+      source: 'UNKNOWN',
+    });
 
     if (onProgress) {
       onProgress({
@@ -58,8 +71,16 @@ export const executeFileDeleteAction = async (action, onProgress, onComplete) =>
  * @param {function} onComplete - Completion callback
  */
 export const executeForceDisconnectAction = (action, onComplete) => {
-  const { network, reason } = action;
+  const { network, reason, administratorMessage } = action;
 
+  // Emit forcedDisconnection event for dramatic overlay (distinct from normal disconnect)
+  triggerEventBus.emit('forcedDisconnection', {
+    networkId: network,
+    reason: reason || 'Network administrator terminated connection',
+    administratorMessage: administratorMessage || null,
+  });
+
+  // Also emit the regular disconnect to actually disconnect the VPN
   triggerEventBus.emit('forceNetworkDisconnect', {
     networkId: network,
     reason: reason || 'Network administrator terminated connection',

@@ -161,7 +161,7 @@ export const GameProvider = ({ children }) => {
 
   // Clear clipboard when disconnecting from source network
   useEffect(() => {
-    if (fileClipboard.sourceNetworkId && activeConnections.length > 0) {
+    if (fileClipboard.sourceNetworkId) {
       const stillConnected = activeConnections.some(conn => conn.networkId === fileClipboard.sourceNetworkId);
       if (!stillConnected) {
         console.log('📋 Clipboard cleared - disconnected from source network');
@@ -328,6 +328,48 @@ export const GameProvider = ({ children }) => {
       console.log('🔔 Notification chime played');
     } catch {
       console.log('🔔 Notification chime (audio unavailable)');
+    }
+  }, []);
+
+  // Play alarm sound for forced disconnections (1-2 second warning)
+  const playAlarmSound = useCallback(() => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const now = audioContext.currentTime;
+
+      // Create multiple oscillators for a more alarming sound
+      // Sweep from 400Hz to 800Hz and back, repeated twice
+      for (let i = 0; i < 2; i++) {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.type = 'sawtooth'; // Harsher than sine for alarm effect
+
+        const startTime = now + (i * 0.6);
+        const midTime = startTime + 0.25;
+        const endTime = startTime + 0.5;
+
+        // Frequency sweep: 400Hz -> 800Hz -> 400Hz
+        oscillator.frequency.setValueAtTime(400, startTime);
+        oscillator.frequency.linearRampToValueAtTime(800, midTime);
+        oscillator.frequency.linearRampToValueAtTime(400, endTime);
+
+        // Volume envelope
+        gainNode.gain.setValueAtTime(0, startTime);
+        gainNode.gain.linearRampToValueAtTime(0.4, startTime + 0.05);
+        gainNode.gain.setValueAtTime(0.4, endTime - 0.05);
+        gainNode.gain.linearRampToValueAtTime(0, endTime);
+
+        oscillator.start(startTime);
+        oscillator.stop(endTime);
+      }
+
+      console.log('🚨 Alarm sound played');
+    } catch {
+      console.log('🚨 Alarm sound (audio unavailable)');
     }
   }, []);
 
@@ -1848,6 +1890,7 @@ export const GameProvider = ({ children }) => {
     rebootSystem,
     resetGame,
     generateUsername,
+    playAlarmSound,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

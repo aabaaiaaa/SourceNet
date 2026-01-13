@@ -147,13 +147,14 @@
           "operation": "delete",
           "files": "all-repaired",
           "visual": "progressBar",
-          "duration": 10000,
+          "duration": 15000,
           "playerControl": false
         },
         {
           "type": "forceDisconnect",
           "network": "clienta-corporate",
-          "reason": "Network administrator terminated connection"
+          "reason": "Network administrator terminated connection",
+          "administratorMessage": "Intrusion detected. Unauthorized file deletion activity flagged. Connection terminated by security administrator."
         },
         {
           "type": "revokeNAREntry",

@@ -15,25 +15,44 @@ const SleepOverlay = () => {
     const [disconnectedNetworks, setDisconnectedNetworks] = useState([]);
     const [currentStatus, setCurrentStatus] = useState('Preparing to sleep...');
     const [isComplete, setIsComplete] = useState(false);
-    const initialConnectionsRef = useRef(null);
+    const [initialConnections, setInitialConnections] = useState(null);
+    const hasInitialized = useRef(false);
+
+    const completeSleep = () => {
+        setIsComplete(true);
+        setCurrentStatus('Game saved');
+
+        // Save game (connections are now cleared)
+        saveGame(null);
+
+        // Clear pending story events (they will be restored from save on next load)
+        storyMissionManager.clearPendingEvents();
+
+        // Brief delay to show "Saved" then go to login
+        setTimeout(() => {
+            setGamePhase('login');
+        }, 500);
+    };
 
     // Capture initial connections on mount
     useEffect(() => {
-        if (initialConnectionsRef.current === null) {
-            initialConnectionsRef.current = [...(activeConnections || [])];
-            setNetworksToDisconnect([...(activeConnections || [])]);
+        if (!hasInitialized.current) {
+            hasInitialized.current = true;
+            const connections = [...(activeConnections || [])];
+            setInitialConnections(connections);
+            setNetworksToDisconnect(connections);
         }
     }, [activeConnections]);
 
     // Handle sequential disconnection
     useEffect(() => {
-        if (networksToDisconnect.length === 0 && initialConnectionsRef.current !== null) {
-            if (initialConnectionsRef.current.length === 0) {
+        if (networksToDisconnect.length === 0 && initialConnections !== null) {
+            if (initialConnections.length === 0) {
                 // No networks to disconnect, proceed after minimum delay
                 setCurrentStatus('Saving game state...');
                 const timer = setTimeout(() => completeSleep(), 3500);
                 return () => clearTimeout(timer);
-            } else if (disconnectedNetworks.length === initialConnectionsRef.current.length) {
+            } else if (disconnectedNetworks.length === initialConnections.length) {
                 // All done disconnecting
                 setCurrentStatus('Saving game state...');
                 const timer = setTimeout(() => completeSleep(), 500);
@@ -61,23 +80,7 @@ const SleepOverlay = () => {
 
             return () => clearTimeout(timer);
         }
-    }, [networksToDisconnect, disconnectedNetworks, setActiveConnections]);
-
-    const completeSleep = () => {
-        setIsComplete(true);
-        setCurrentStatus('Game saved');
-
-        // Save game (connections are now cleared)
-        saveGame(null);
-
-        // Clear pending story events (they will be restored from save on next load)
-        storyMissionManager.clearPendingEvents();
-
-        // Brief delay to show "Saved" then go to login
-        setTimeout(() => {
-            setGamePhase('login');
-        }, 500);
-    };
+    }, [networksToDisconnect, disconnectedNetworks, setActiveConnections, initialConnections]);
 
     return (
         <div className="sleep-overlay">
@@ -86,9 +89,9 @@ const SleepOverlay = () => {
 
                 <div className="sleep-status">{currentStatus}</div>
 
-                {initialConnectionsRef.current && initialConnectionsRef.current.length > 0 && (
+                {initialConnections && initialConnections.length > 0 && (
                     <div className="sleep-network-list">
-                        {initialConnectionsRef.current.map((network) => {
+                        {initialConnections.map((network) => {
                             const isDisconnected = disconnectedNetworks.some(
                                 (n) => n.networkId === network.networkId
                             );

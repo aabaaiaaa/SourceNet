@@ -26,7 +26,6 @@ const TopBar = () => {
     // Extended state
     reputation,
     activeConnections,
-    setActiveConnections,
     activeMission,
     bankruptcyCountdown,
     reputationCountdown,
@@ -490,7 +489,7 @@ const TopBar = () => {
               {getAllSavesFlat().length === 0 ? (
                 <p>No saved games found.</p>
               ) : (
-                getAllSavesFlat().map((save, index) => {
+                getAllSavesFlat().map((save, _index) => {
                   // Find the save index within this user's saves (sorted by savedAt desc)
                   const userSaves = getAllSavesFlat().filter(s => s.username === save.username);
                   const saveIndex = userSaves.findIndex(s => s.savedAt === save.savedAt);

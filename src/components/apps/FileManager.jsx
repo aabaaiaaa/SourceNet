@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useGame } from '../../contexts/useGame';
 import triggerEventBus from '../../core/triggerEventBus';
 import './FileManager.css';
@@ -21,8 +21,64 @@ const FileManager = () => {
   const [operatingFiles, setOperatingFiles] = useState(new Set()); // Files currently being operated on
   const [fileProgress, setFileProgress] = useState({}); // Progress for each file operation
   const [fileOperations, setFileOperations] = useState({}); // Track operation type per file
+  const [activityLog, setActivityLog] = useState([]); // Ephemeral activity log (clears on unmount)
+  const [isLogCollapsed, setIsLogCollapsed] = useState(false);
   const animationFrameRef = useRef(null);
   const activeOperationsRef = useRef(new Map()); // Map of fileIndex -> {startTime, duration, operation, operationId}
+  const logEndRef = useRef(null);
+  const currentTimeRef = useRef(currentTime);
+  const logIdCounterRef = useRef(0);
+
+  // Keep currentTimeRef up to date
+  useEffect(() => {
+    currentTimeRef.current = currentTime;
+  }, [currentTime]);
+
+  // Add entry to activity log
+  const addLogEntry = useCallback((entry) => {
+    logIdCounterRef.current += 1;
+    const logEntry = {
+      id: `${Date.now()}-${logIdCounterRef.current}`,
+      timestamp: currentTimeRef.current ? new Date(currentTimeRef.current).toLocaleTimeString() : new Date().toLocaleTimeString(),
+      ...entry,
+    };
+    setActivityLog(prev => [...prev, logEntry]);
+  }, []);
+
+  // Refs to track current values for use in event handlers
+  const availableFileSystemsRef = useRef([]);
+  const selectedFileSystemRef = useRef('');
+
+  // Subscribe to sabotage file operations from scripted events
+  useEffect(() => {
+    const handleSabotageOperation = (data) => {
+      // Find target file system if specified, otherwise use current
+      const fileSystems = availableFileSystemsRef.current;
+      const targetFs = data.fileSystemId
+        ? fileSystems.find(fs => fs.id === data.fileSystemId)
+        : fileSystems.find(fs => fs.id === selectedFileSystemRef.current);
+      addLogEntry({
+        fileName: data.fileName,
+        operation: data.operation,
+        source: data.source || 'UNKNOWN',
+        isSabotage: true,
+        location: targetFs ? `${targetFs.ip} (${targetFs.name})` : (data.fileSystemId || 'UNKNOWN'),
+      });
+    };
+
+    triggerEventBus.on('sabotageFileOperation', handleSabotageOperation);
+
+    return () => {
+      triggerEventBus.off('sabotageFileOperation', handleSabotageOperation);
+    };
+  }, [addLogEntry]);
+
+  // Auto-scroll log to bottom when new entries added
+  useEffect(() => {
+    if (logEndRef.current && !isLogCollapsed && logEndRef.current.scrollIntoView) {
+      logEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [activityLog, isLogCollapsed]);
 
   // Animation loop for file operation progress using game time
   useEffect(() => {
@@ -39,7 +95,7 @@ const FileManager = () => {
         updates[fileIndex] = progress;
 
         if (progress >= 100) {
-          completedOps.push({ fileIndex, operation: opData.operation, operationId: opData.operationId });
+          completedOps.push({ fileIndex, operation: opData.operation, operationId: opData.operationId, fileName: opData.fileName });
         }
       });
 
@@ -54,7 +110,7 @@ const FileManager = () => {
       });
 
       // Handle completed operations
-      sortedCompletedOps.forEach(({ fileIndex, operation, operationId }) => {
+      sortedCompletedOps.forEach(({ fileIndex, operation, operationId, fileName }) => {
         activeOperationsRef.current.delete(fileIndex);
 
         if (operationId) {
@@ -94,6 +150,17 @@ const FileManager = () => {
           delete next[fileIndex];
           return next;
         });
+
+        // Log completed operation (after all state updates)
+        // Find the file system for location info (use refs since this runs in useEffect)
+        const currentFs = availableFileSystemsRef.current.find(fs => fs.id === selectedFileSystemRef.current);
+        addLogEntry({
+          fileName: fileName,
+          operation: operation.replace('-cross', ''),
+          source: 'USER',
+          isSabotage: false,
+          location: currentFs ? `${currentFs.ip} (${currentFs.name})` : selectedFileSystemRef.current,
+        });
       });
 
       // Emit events for completed operations
@@ -121,7 +188,7 @@ const FileManager = () => {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [operatingFiles.size, currentTime, selectedFileSystem, completeBandwidthOperation, setLastFileOperation]);
+  }, [operatingFiles.size, currentTime, selectedFileSystem, completeBandwidthOperation, setLastFileOperation, addLogEntry]);
 
   // Parse file size string to MB (e.g., "2.5 KB" -> 0.0025, "150 MB" -> 150)
   const parseFileSizeToMB = (sizeStr) => {
@@ -177,6 +244,12 @@ const FileManager = () => {
       });
     }
   });
+
+  // Keep refs updated for use in event handlers (must be in useEffect, not during render)
+  useEffect(() => {
+    availableFileSystemsRef.current = availableFileSystems;
+    selectedFileSystemRef.current = selectedFileSystem;
+  }, [availableFileSystems, selectedFileSystem]);
 
   const handleConnect = (fileSystemId = selectedFileSystem) => {
     if (!fileSystemId) return;
@@ -252,6 +325,7 @@ const FileManager = () => {
         duration,
         operation: 'copy',
         operationId,
+        fileName: file.name,
       });
 
       setOperatingFiles(prev => new Set([...prev, index]));
@@ -324,12 +398,16 @@ const FileManager = () => {
         operationId,
         crossNetwork: isCrossNetwork,
         sourceNetworkId: fileClipboard.sourceNetworkId,
+        fileName: file.name,
       });
 
       setOperatingFiles(prev => new Set([...prev, absoluteIndex]));
       setFileProgress(prev => ({ ...prev, [absoluteIndex]: 0 }));
       setFileOperations(prev => ({ ...prev, [absoluteIndex]: isCrossNetwork ? 'paste-cross' : 'paste' }));
     });
+
+    // Clear clipboard after paste (one-time use for game purposes)
+    setFileClipboard({ files: [], sourceFileSystemId: '', sourceNetworkId: '' });
 
     console.log(`📥 Pasting ${filesToPaste.length} file(s)${isCrossNetwork ? ' from ' + fileClipboard.sourceNetworkId : ''}`);
   };
@@ -366,6 +444,7 @@ const FileManager = () => {
         duration,
         operation: 'delete',
         operationId,
+        fileName: file.name,
       });
 
       setOperatingFiles(prev => new Set([...prev, index]));
@@ -406,6 +485,7 @@ const FileManager = () => {
         duration,
         operation: 'repair',
         operationId,
+        fileName: file.name,
       });
 
       setOperatingFiles(prev => new Set([...prev, index]));
@@ -550,6 +630,39 @@ const FileManager = () => {
           )}
         </>
       )}
+
+      {/* Activity Log Panel */}
+      <div className={`activity-log-panel ${isLogCollapsed ? 'collapsed' : ''}`}>
+        <div className="activity-log-header" onClick={() => setIsLogCollapsed(!isLogCollapsed)}>
+          <span className="activity-log-title">
+            📋 Activity Log ({activityLog.length})
+          </span>
+          <span className="activity-log-toggle">{isLogCollapsed ? '▲' : '▼'}</span>
+        </div>
+        {!isLogCollapsed && (
+          <div className="activity-log-content">
+            {activityLog.length === 0 ? (
+              <div className="activity-log-empty">No activity yet</div>
+            ) : (
+              activityLog.map((entry) => (
+                <div
+                  key={entry.id}
+                  className={`activity-log-entry ${entry.isSabotage ? 'sabotage-entry' : ''}`}
+                >
+                  <span className="log-timestamp">{entry.timestamp}</span>
+                  <span className="log-operation">{entry.operation.toUpperCase()}</span>
+                  <span className="log-filename">{entry.fileName}</span>
+                  <span className="log-location">@ {entry.location}</span>
+                  <span className={`log-source ${entry.isSabotage ? 'source-unknown' : ''}`}>
+                    {entry.isSabotage ? '⚠️ ' : ''}{entry.source}
+                  </span>
+                </div>
+              ))
+            )}
+            <div ref={logEndRef} />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

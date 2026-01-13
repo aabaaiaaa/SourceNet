@@ -189,6 +189,51 @@ describe('FileManager Component - Button States', () => {
     const deleteButton = screen.getByRole('button', { name: /delete \(0\)/i });
     expect(deleteButton).toBeDisabled(); // Disabled when no files selected
   });
+
+  it('should clear clipboard after paste', () => {
+    const mockSetFileClipboard = vi.fn();
+    vi.spyOn(useGameModule, 'useGame').mockReturnValue({
+      currentTime: new Date(),
+      activeConnections: [{ networkId: 'test-network', networkName: 'Test Network' }],
+      narEntries: [{
+        networkId: 'test-network',
+        networkName: 'Test Network',
+        address: '192.168.50.0/24',
+        bandwidth: 50,
+        fileSystems: [
+          {
+            id: 'fs-001',
+            ip: '192.168.50.10',
+            name: 'fileserver-01',
+            files: [{ name: 'existing.txt', size: '1 KB', corrupted: false }]
+          }
+        ]
+      }],
+      fileClipboard: {
+        files: [{ name: 'newfile.txt', size: '1 KB', corrupted: false }],
+        sourceFileSystemId: 'fs-other',
+        sourceNetworkId: 'test-network'
+      },
+      setFileClipboard: mockSetFileClipboard,
+      setFileManagerConnections: vi.fn(),
+      setLastFileOperation: vi.fn(),
+      registerBandwidthOperation: vi.fn(() => ({ operationId: 'test-op', estimatedTimeMs: 2000 })),
+      completeBandwidthOperation: vi.fn(),
+    });
+
+    renderWithProvider(<FileManager />);
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: 'fs-001' } });
+
+    const pasteButton = screen.getByRole('button', { name: /paste \(1\)/i });
+    fireEvent.click(pasteButton);
+
+    expect(mockSetFileClipboard).toHaveBeenCalledWith({
+      files: [],
+      sourceFileSystemId: '',
+      sourceNetworkId: ''
+    });
+  });
 });
 
 describe('FileManager Component - Repair UI', () => {

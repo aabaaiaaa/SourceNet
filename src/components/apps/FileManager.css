@@ -211,3 +211,111 @@
 .empty-state p {
   margin: 10px 0;
 }
+
+/* Activity Log Panel */
+.activity-log-panel {
+  margin-top: 15px;
+  border: 2px solid var(--osnet-border);
+  background: #FAFAFA;
+}
+
+.activity-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--osnet-secondary);
+  cursor: pointer;
+  border-bottom: 1px solid var(--osnet-border);
+  user-select: none;
+}
+
+.activity-log-header:hover {
+  background: #E8E8E8;
+}
+
+.activity-log-title {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.activity-log-toggle {
+  font-size: 10px;
+  color: #666;
+}
+
+.activity-log-panel.collapsed .activity-log-header {
+  border-bottom: none;
+}
+
+.activity-log-content {
+  max-height: 150px;
+  overflow-y: auto;
+  padding: 5px;
+}
+
+.activity-log-empty {
+  padding: 15px;
+  text-align: center;
+  color: #999;
+  font-size: 11px;
+  font-style: italic;
+}
+
+.activity-log-entry {
+  display: flex;
+  gap: 8px;
+  padding: 4px 8px;
+  font-size: 11px;
+  border-bottom: 1px solid #EEE;
+  align-items: center;
+}
+
+.activity-log-entry:last-of-type {
+  border-bottom: none;
+}
+
+.activity-log-entry.sabotage-entry {
+  background: #FFE4E4;
+  color: #DC143C;
+  font-weight: bold;
+}
+
+.log-timestamp {
+  color: #888;
+  font-size: 10px;
+  min-width: 70px;
+}
+
+.log-operation {
+  font-weight: bold;
+  min-width: 60px;
+  text-transform: uppercase;
+}
+
+.log-filename {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.log-location {
+  color: #888;
+  font-style: italic;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.log-source {
+  font-size: 10px;
+  color: #666;
+  padding: 2px 6px;
+  background: #E8E8E8;
+  border-radius: 3px;
+}
+
+.log-source.source-unknown {
+  background: #DC143C;
+  color: white;
+}

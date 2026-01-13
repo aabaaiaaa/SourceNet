@@ -547,8 +547,8 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await expect(fileManagerWindowStep17).toBeVisible();
 
         await setSpeed(100);
-        await page.waitForTimeout(100); // 5s game time for sabotage
-        await page.waitForTimeout(150); // 10s game time deletion
+        await page.waitForTimeout(100); // 5s game time for sabotage delay
+        await page.waitForTimeout(200); // 15s game time deletion (increased from 10s)
         await page.waitForTimeout(50);  // 3s game time pause
 
         const remainingFiles = await fileManagerWindowStep17.locator('.file-item').count();
@@ -556,6 +556,13 @@ test.describe('E2E: Tutorial Mission Flow', () => {
 
         await setSpeed(1);
         await page.waitForTimeout(500);
+
+        // Dismiss forced disconnection overlay
+        const forcedDisconnectOverlay = page.locator('.forced-disconnect-overlay');
+        if (await forcedDisconnectOverlay.isVisible({ timeout: 2000 }).catch(() => false)) {
+            await page.click('.acknowledge-btn');
+            await expect(forcedDisconnectOverlay).not.toBeVisible({ timeout: 2000 });
+        }
 
         // Verify VPN disconnected
         await page.click('text=☰');

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useEffect } from 'react';
 import { GameProvider } from '../../contexts/GameContext';
@@ -713,12 +713,16 @@ describe('File Manager Integration', () => {
 
         // Wait for delete to complete (fast operation with game time)
         await waitFor(() => {
-            expect(screen.queryByText('old1.txt')).not.toBeInTheDocument();
-            expect(screen.queryByText('old2.txt')).not.toBeInTheDocument();
+            // Check file-list specifically (not activity log)
+            const fileList = screen.getByRole('combobox').closest('.file-manager').querySelector('.file-list');
+            expect(fileList).toBeInTheDocument();
+            expect(within(fileList).queryByText('old1.txt')).not.toBeInTheDocument();
+            expect(within(fileList).queryByText('old2.txt')).not.toBeInTheDocument();
         }, { timeout: 3000 });
 
-        // Only keep.txt should remain
-        expect(screen.getByText('keep.txt')).toBeInTheDocument();
+        // Only keep.txt should remain in file list
+        const fileList = screen.getByRole('combobox').closest('.file-manager').querySelector('.file-list');
+        expect(within(fileList).getByText('keep.txt')).toBeInTheDocument();
     }, 20000);
 
     it('should paste files from clipboard', async () => {
@@ -791,6 +795,91 @@ describe('File Manager Integration', () => {
         }, { timeout: 3000 });
     }, 20000);
 
+    it('should clear clipboard after paste operation', async () => {
+        const user = userEvent.setup({ delay: null });
+
+        const network = createNetworkWithFileSystem({
+            networkId: 'test-net',
+            networkName: 'Test Network',
+            fileSystems: [
+                {
+                    id: 'fs-source',
+                    ip: '192.168.1.10',
+                    name: 'source-server',
+                    files: [
+                        { name: 'file-to-copy.txt', size: '5.0 KB', corrupted: false },
+                    ],
+                },
+                {
+                    id: 'fs-dest',
+                    ip: '192.168.1.20',
+                    name: 'dest-server',
+                    files: [],
+                },
+            ],
+        });
+
+        const saveState = createCompleteSaveState({
+            username: 'test_user',
+            overrides: {
+                narEntries: [network],
+                activeConnections: [{ networkId: network.networkId, networkName: network.networkName }],
+            },
+        });
+
+        setSaveInLocalStorage('test_user', saveState);
+
+        render(
+            <GameProvider>
+                <GameLoader username="test_user" />
+                <FileManager />
+            </GameProvider>
+        );
+
+        await waitFor(() => expect(screen.getByRole('combobox')).toBeInTheDocument(), { timeout: 10000 });
+
+        const select = screen.getByRole('combobox');
+
+        // Select source file system and copy file
+        await user.selectOptions(select, 'fs-source');
+        await waitFor(() => expect(screen.getByText('file-to-copy.txt')).toBeInTheDocument());
+
+        const sourceFile = screen.getByText('file-to-copy.txt').closest('.file-item');
+        await user.click(sourceFile);
+
+        await waitFor(() => {
+            const copyButton = screen.getByRole('button', { name: /copy \(1\)/i });
+            expect(copyButton).not.toBeDisabled();
+        });
+
+        await user.click(screen.getByRole('button', { name: /copy \(1\)/i }));
+
+        // Verify clipboard populated
+        await waitFor(() => {
+            expect(screen.getByText(/📋 Clipboard/i)).toBeInTheDocument();
+        }, { timeout: 2000 });
+
+        // Switch to destination and paste
+        await user.selectOptions(select, 'fs-dest');
+
+        await waitFor(() => {
+            expect(screen.getByRole('button', { name: /paste \(1\)/i })).not.toBeDisabled();
+        });
+
+        await user.click(screen.getByRole('button', { name: /paste \(1\)/i }));
+
+        // Verify clipboard is cleared immediately
+        await waitFor(() => {
+            expect(screen.queryByText(/📋 Clipboard/i)).not.toBeInTheDocument();
+        }, { timeout: 2000 });
+
+        // Verify paste button shows 0 and is disabled
+        await waitFor(() => {
+            const pasteButton = screen.getByRole('button', { name: /paste \(0\)/i });
+            expect(pasteButton).toBeDisabled();
+        });
+    }, 20000);
+
     it('should clear clipboard when disconnecting from source network', async () => {
         const user = userEvent.setup({ delay: null });
 
@@ -859,10 +948,27 @@ describe('File Manager Integration', () => {
         }, { timeout: 3000 });
 
         // Clipboard should be cleared (check by absence of clipboard panel)
-        expect(screen.queryByText(/📋 Clipboard/i)).not.toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.queryByText(/📋 Clipboard/i)).not.toBeInTheDocument();
+        }, { timeout: 2000 });
 
         // FileManager should show not connected
         expect(screen.getByText(/Not connected to any networks/i)).toBeInTheDocument();
+
+        // Reconnect to the same network - first select the network from dropdown
+        const vpnDropdown = screen.getAllByRole('combobox')[0]; // VPN network dropdown
+        await user.selectOptions(vpnDropdown, 'test-net');
+
+        const reconnectButton = screen.getByRole('button', { name: /connect/i });
+        await user.click(reconnectButton);
+
+        // Wait for reconnection
+        await waitFor(() => {
+            expect(screen.getByRole('button', { name: /disconnect/i })).toBeInTheDocument();
+        }, { timeout: 3000 });
+
+        // Clipboard should still be cleared after reconnecting
+        expect(screen.queryByText(/📋 Clipboard/i)).not.toBeInTheDocument();
     }, 20000);
 
     it('should allow copy/paste between two File Manager instances on same network', async () => {
