@@ -25,7 +25,38 @@ const NetworkScanner = () => {
   const [scanResults, setScanResults] = useState(null);
   const [scanStartTime, setScanStartTime] = useState(null);
   const [estimatedDuration, setEstimatedDuration] = useState(0);
+  const [disconnectionMessage, setDisconnectionMessage] = useState(null);
   const operationIdRef = useRef(null);
+
+  // Check if selected network is still connected
+  const isNetworkConnected = selectedNetwork && activeConnections.some(
+    conn => conn.networkId === selectedNetwork
+  );
+
+  // Clear selection and stop scan if network gets disconnected
+  useEffect(() => {
+    if (selectedNetwork && !isNetworkConnected) {
+      // Network was disconnected
+      if (scanning) {
+        // Cancel ongoing scan
+        if (operationIdRef.current) {
+          completeBandwidthOperation(operationIdRef.current);
+        }
+        setScanning(false);
+        setScanProgress(0);
+        setScanStartTime(null);
+        setDisconnectionMessage('Scan cancelled - disconnected from network');
+      } else {
+        setDisconnectionMessage('Disconnected from network');
+      }
+      setSelectedNetwork('');
+      setScanResults(null);
+
+      // Clear message after 3 seconds
+      const timer = setTimeout(() => setDisconnectionMessage(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedNetwork, isNetworkConnected, scanning, completeBandwidthOperation]);
 
   // Update scan progress based on game time (respects game speed)
   useEffect(() => {
@@ -92,12 +123,22 @@ const NetworkScanner = () => {
         <p className="scanner-subtitle">Discover machines and file systems</p>
       </div>
 
+      {disconnectionMessage && (
+        <div className="scanner-disconnection-message">
+          ⚠️ {disconnectionMessage}
+        </div>
+      )}
+
       <div className="scan-controls">
         <label>
           Network:
           <select
             value={selectedNetwork}
-            onChange={(e) => setSelectedNetwork(e.target.value)}
+            onChange={(e) => {
+              setSelectedNetwork(e.target.value);
+              setDisconnectionMessage(null);
+              setScanResults(null);
+            }}
             disabled={scanning}
           >
             <option value="">Select connected network</option>
@@ -109,25 +150,35 @@ const NetworkScanner = () => {
           </select>
         </label>
 
-        <label>
-          Scan Type:
-          <select
-            value={scanType}
-            onChange={(e) => setScanType(e.target.value)}
-            disabled={scanning}
-          >
-            <option value="quick">Quick Scan (5s - machines only)</option>
-            <option value="deep">Deep Scan (15s - machines + file systems)</option>
-          </select>
-        </label>
+        {activeConnections.length === 0 && (
+          <div className="scanner-no-networks">
+            No networks connected. Use the VPN Client to connect to a network first.
+          </div>
+        )}
 
-        <button
-          className={`scan-btn ${scanning ? 'scanning' : ''}`}
-          onClick={handleScan}
-          disabled={!selectedNetwork || scanning}
-        >
-          {scanning ? `Scanning... ${Math.floor(scanProgress)}%` : 'Start Scan'}
-        </button>
+        {isNetworkConnected && (
+          <>
+            <label>
+              Scan Type:
+              <select
+                value={scanType}
+                onChange={(e) => setScanType(e.target.value)}
+                disabled={scanning}
+              >
+                <option value="quick">Quick Scan (5s - machines only)</option>
+                <option value="deep">Deep Scan (15s - machines + file systems)</option>
+              </select>
+            </label>
+
+            <button
+              className={`scan-btn ${scanning ? 'scanning' : ''}`}
+              onClick={handleScan}
+              disabled={scanning}
+            >
+              {scanning ? `Scanning... ${Math.floor(scanProgress)}%` : 'Start Scan'}
+            </button>
+          </>
+        )}
       </div>
 
       {scanning && (
@@ -141,7 +192,7 @@ const NetworkScanner = () => {
         </div>
       )}
 
-      {scanResults && (
+      {isNetworkConnected && scanResults && (
         <div className="scan-results">
           <h3>Scan Results</h3>
           {scanResults.machines.map((machine) => (

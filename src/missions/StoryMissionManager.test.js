@@ -173,4 +173,204 @@ describe('StoryMissionManager', () => {
       expect(Object.keys(triggerEventBus.getSubscriptions()).length).toBe(0);
     });
   });
+
+  describe('Multi-Condition Triggers', () => {
+    beforeEach(() => {
+      // Set up game state getter for condition checking
+      storyMissionManager.setGameStateGetter(() => ({
+        messages: [
+          { id: 'msg-1', read: true },
+          { id: 'msg-2', read: false },
+        ],
+        software: ['app-1', 'app-2'],
+      }));
+    });
+
+    it('should evaluate messageRead condition correctly', () => {
+      const result1 = storyMissionManager.evaluateCondition(
+        { type: 'messageRead', messageId: 'msg-1' },
+        {},
+        { messages: [{ id: 'msg-1', read: true }] }
+      );
+      expect(result1).toBe(true);
+
+      const result2 = storyMissionManager.evaluateCondition(
+        { type: 'messageRead', messageId: 'msg-2' },
+        {},
+        { messages: [{ id: 'msg-2', read: false }] }
+      );
+      expect(result2).toBe(false);
+    });
+
+    it('should evaluate softwareInstalled condition correctly', () => {
+      const result1 = storyMissionManager.evaluateCondition(
+        { type: 'softwareInstalled', softwareId: 'app-1' },
+        {},
+        { software: ['app-1', 'app-2'] }
+      );
+      expect(result1).toBe(true);
+
+      const result2 = storyMissionManager.evaluateCondition(
+        { type: 'softwareInstalled', softwareId: 'app-3' },
+        {},
+        { software: ['app-1', 'app-2'] }
+      );
+      expect(result2).toBe(false);
+    });
+
+    it('should evaluate eventData condition correctly', () => {
+      const result1 = storyMissionManager.evaluateCondition(
+        { type: 'eventData', match: { missionId: 'test-mission' } },
+        { missionId: 'test-mission' },
+        {}
+      );
+      expect(result1).toBe(true);
+
+      const result2 = storyMissionManager.evaluateCondition(
+        { type: 'eventData', match: { missionId: 'other-mission' } },
+        { missionId: 'test-mission' },
+        {}
+      );
+      expect(result2).toBe(false);
+    });
+
+    it('should check all conditions with AND logic', () => {
+      const conditions = [
+        { type: 'messageRead', messageId: 'msg-1' },
+        { type: 'softwareInstalled', softwareId: 'app-1' },
+      ];
+
+      // Both conditions met
+      const result1 = storyMissionManager.checkAllConditions(conditions, {});
+      expect(result1).toBe(true);
+
+      // Change game state so one condition fails
+      storyMissionManager.setGameStateGetter(() => ({
+        messages: [{ id: 'msg-1', read: false }],
+        software: ['app-1'],
+      }));
+
+      const result2 = storyMissionManager.checkAllConditions(conditions, {});
+      expect(result2).toBe(false);
+    });
+
+    it('should auto-detect events from conditions', () => {
+      const conditions = [
+        { type: 'messageRead', messageId: 'msg-1' },
+        { type: 'softwareInstalled', softwareId: 'app-1' },
+      ];
+
+      const events = storyMissionManager.getEventsFromConditions(conditions, null);
+      expect(events).toContain('messageRead');
+      expect(events).toContain('softwareInstalled');
+      expect(events.length).toBe(2);
+    });
+
+    it('should use explicit event when provided', () => {
+      const conditions = [
+        { type: 'eventData', match: { missionId: 'test' } },
+      ];
+
+      const events = storyMissionManager.getEventsFromConditions(conditions, 'missionAccepted');
+      expect(events).toEqual(['missionAccepted']);
+    });
+
+    it('should subscribe to multiple events for multi-condition triggers', () => {
+      const storyEvent = {
+        missionId: 'test-story',
+        events: [
+          {
+            id: 'multi-condition-event',
+            trigger: {
+              type: 'timeSinceEvent',
+              conditions: [
+                { type: 'messageRead', messageId: 'msg-1' },
+                { type: 'softwareInstalled', softwareId: 'app-1' },
+              ],
+              delay: 0,
+            },
+            message: { subject: 'Test' },
+          },
+        ],
+      };
+
+      storyMissionManager.registerMission(storyEvent);
+
+      const subscriptions = triggerEventBus.getSubscriptions();
+      expect(subscriptions.messageRead).toBe(1);
+      expect(subscriptions.softwareInstalled).toBe(1);
+    });
+
+    it('should fire event when all conditions are met', (done) => {
+      const storyEvent = {
+        missionId: 'test-story',
+        events: [
+          {
+            id: 'multi-condition-event',
+            trigger: {
+              type: 'timeSinceEvent',
+              conditions: [
+                { type: 'messageRead', messageId: 'msg-1' },
+                { type: 'softwareInstalled', softwareId: 'app-1' },
+              ],
+              delay: 10,
+            },
+            message: { subject: 'Multi-Condition Test' },
+          },
+        ],
+      };
+
+      storyMissionManager.registerMission(storyEvent);
+
+      triggerEventBus.once('storyEventTriggered', (data) => {
+        expect(data.eventId).toBe('multi-condition-event');
+        done();
+      });
+
+      // Trigger one of the subscribed events - conditions are already met via gameStateGetter
+      triggerEventBus.emit('messageRead', { messageId: 'msg-1' });
+    });
+
+    it('should not fire event when not all conditions are met', (done) => {
+      // Set up game state where software is NOT installed
+      storyMissionManager.setGameStateGetter(() => ({
+        messages: [{ id: 'msg-1', read: true }],
+        software: [], // app-1 NOT installed
+      }));
+
+      const storyEvent = {
+        missionId: 'test-story',
+        events: [
+          {
+            id: 'multi-condition-event',
+            trigger: {
+              type: 'timeSinceEvent',
+              conditions: [
+                { type: 'messageRead', messageId: 'msg-1' },
+                { type: 'softwareInstalled', softwareId: 'app-1' },
+              ],
+              delay: 10,
+            },
+            message: { subject: 'Multi-Condition Test' },
+          },
+        ],
+      };
+
+      storyMissionManager.registerMission(storyEvent);
+
+      let eventFired = false;
+      triggerEventBus.once('storyEventTriggered', () => {
+        eventFired = true;
+      });
+
+      // Trigger the event - but conditions not met
+      triggerEventBus.emit('messageRead', { messageId: 'msg-1' });
+
+      // Wait a bit and verify event didn't fire
+      setTimeout(() => {
+        expect(eventFired).toBe(false);
+        done();
+      }, 50);
+    });
+  });
 });

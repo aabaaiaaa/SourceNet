@@ -23,7 +23,14 @@ const SNetMail = () => {
   const inboxMessages = messages.filter((m) => !m.archived);
   const archivedMessages = messages.filter((m) => m.archived);
 
-  const displayMessages = activeTab === 'inbox' ? inboxMessages : archivedMessages;
+  // Sort messages by timestamp descending (newest first)
+  const sortByNewest = (msgs) => [...msgs].sort((a, b) => {
+    const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+    const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+    return timeB - timeA;
+  });
+
+  const displayMessages = sortByNewest(activeTab === 'inbox' ? inboxMessages : archivedMessages);
 
   const handleMessageClick = (message) => {
     setSelectedMessage(message);
@@ -150,13 +157,13 @@ const SNetMail = () => {
       console.log('✅ Network added to NAR:', networkData.networkName, newEntry);
 
       // Emit event for objective tracking (deferred to allow state to update and re-render)
-      setTimeout(() => {
+      queueMicrotask(() => {
         triggerEventBus.emit('narEntryAdded', {
           networkId: networkData.networkId,
           networkName: networkData.networkName,
           entry: newEntry
         });
-      }, 100);
+      });
 
       return [...currentEntries, newEntry];
     });

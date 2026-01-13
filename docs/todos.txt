@@ -1,71 +1,4 @@
-
-NEED TO CHECK THE INT TESTS FOR FILE MANAHER....
-
-
-(done)
-The "What happened?!" message from your manager doesn't seem to have any message body nor does it follow the same From naming like the other manager messages.
-
-(done)
-Once you have accepted a NAR entry from a message attachment, it should no longer be clickable - it currently still handles the click and will add network data linked to it (which it should not).
-
-
-
-
-(done)
-the e2e gameover tests should really be testing any messages that are sent too as they belong to that system - so any mission that casuses this state to happen shouldn't need to test for them (duplicated and disconnected work).
-
-
-(done)
-When going into your overdraft, the banking message should not appear straightaway, but be delayed by 5 seconds.
-
-
-(done)
-When the bankruptcy warning appears, i am seeing this error for every frame render:
-Maximum update depth exceeded. This can happen when a component calls setState inside useEffect, but useEffect either doesn't have a dependency array, or one of the dependencies changes on every render.
-(anonymous)	@	GameContext.jsx:612
-
-
-
-(?)
-VPN client should show networks that are not authorised anymore (if the NAR entry is kept after deauth)
-
-
-the sabotage event is not very obvious to the user (I have manually tested) - the deleting process happens so fast that the user cannot actually see what has happened. It could be that the File Manager app also has a log at the bottom listing all operations performed. We need enough time for the user to think, "oh what is happening, that's not me doing that". Then the administrator disconnecting you should appear more dramatic, like a red warning popup that tells you the details of the network you are being forceibly disconnected from and by the network administrator - maybe also a description of the reason (that being deleting critical files), and that it's a popup that the user has to acknowledge by clicking a dismiss button.
-
-
-(done)
-The log file repair tutorial mission should not be available once it has been failed - it's a one time only mission. The same is true with the log file restoration mission - once completed, it will not be available in the mission board again.
-In a similar vein, once you accept any mission, they should immediately disappear from the available missions tab and only show in the active tab. Missions will eventually respawn, but that might not be implemented yet.
-
-
-(done)
-In SNet Mail, the message body should have the height set to the size of the message in it and then use the scroll bar that's within the app instead of having scroll bars within scroll bars.
-
-
-(check this...)
-The message that comes through for the 2nd part of the tutorial mission should show that the NAR entry attachment can re-authorise your existing NAR enty - currently it says "Added to NAR", which is true, but because the NAR entry is now deauthorised, it's not a NAR entry you can use.
-
-
-(done - needs trying)
-The Mission Software & Network Access message shouldn't be about network access now as the NAR entry is sent once you accept the 1st mission.
-
-
-(done)
-The SourceNet VPN client window could do with being a bit taller so the connection log can be seen when opening the app.
-
-
-
-In File Manager app, the repair progress bar doesn't show any progress being made, it just shows 0% and an emtpy bar. If the process is happening so quickly there's no progress bar render, then the process (all File Manager operations) might need to be artificially extended for game play purposes.
-
-
-(fixed?)
-If you don't repair all corrupt files in one operation (selecting them all), then it appears the objective doesn't complete.
-
-
-
-
-When repairing corrupt files, once they have been repaired, relisting the files should also show the files have been repaired - currently they are showing as corrupt again - maybe the data that drives this is not being updated?
-
+TODOs
 
 (done - needs trying)
 The Network Address Register app should show that any NAR entry that is not autorised now is not authorised (revoked access).
@@ -91,14 +24,8 @@ Instead of payment being autmatically applied on mission completion, a templated
 When saving game state and reloading, it seems that the active connections are still connected. If it's easier to force the user to manually disconnect from any networks before they are allowed to save, then that should be the change, but the save button should not be enabled and a tooltip should tell them why they cannot save yet.
 
 
-Review the systems in place for handling missions and scripted events and objective tracking as I need to understand how to picture these systems and how best they should integrate with each other as the biggest issues have come from changes in these areas. Each system needs to have a role and individual responsibility so there's not internal variables being changed by external systems. It will then aid in writing test cases for each system.
-
-
 (done - needs testing)
 The network scanner progress bar animation needs to use in game time to function so the user speeding up the game will also speed up the scanning.
-
-
-Once the tutorial part 2 mission is completed, there should be other missions then made available (they should be similar beginner missions). There should be some mission types already created in the phase 2 spec, or some will need to be created. At least there should be missions like the tutorial missions where you need to repair files or copy files or delete files.
 
 
 (done - needs testing)
@@ -121,20 +48,43 @@ does this save and loading e2e test suite give enough test coverage for the savi
 the banking system was updated to save which messages have been sent as the player passes warning thresholds for negative credit, but the same needs to happen for reputation as there are messages sent for bad reputation - specifically to do with the timers being saved and loaded to make sure the player doesn't miss out on any warning messages.
 
 
-(done)
-Review all e2e tests and reorganise them into better groupings as there are some that test software purchasing, banking, gameover conditions, save and loading, but I need a better grouping that will allow these e2e tests to be more discoverable and to make more sense as to where pieces of functionality and testing should live. I prefer grouping by systems, but also there are some e2e tests that are like play throughs, I think they might live separately as they are very scripted and wouldn't necessarily test very deeply or the edge cases for example.
+(done - needs testing)
+In File Manager app, the repair progress bar doesn't show any progress being made, it just shows 0% and an emtpy bar. If the process is happening so quickly there's no progress bar render, then the process (all File Manager operations) might need to be artificially extended for game play purposes.
 
 
+(check this...)
+The message that comes through for the 2nd part of the tutorial mission should show that the NAR entry attachment can re-authorise your existing NAR enty - currently it says "Added to NAR", which is true, but because the NAR entry is now deauthorised, it's not a NAR entry you can use.
 
 
-(done)
-make a process for generating scenario game states that the debug panel can use - allows mid-game states to be maintained throughout development as core pieces change.
-But this might need the save system to be updated to store all expected game state.
-
-
-(done)
-Update linting config to ignore any errors that aren't important so only errors show up.
+(done - needs testing)
+NAR app has a connect button but it just runs an alert saying it's not implemented. Really this connect button should open the VPN client and make a connection through to that network. Obvisouly if you are already connected to that netowrk, the NAR app should show this and give you a disconnect option.
 
 
 (done)
-Can any e2e tests have any waitForTimeouts removed to speed up test runs.
+The Network Scanner can still be used without a valid network being selected. Really you should have no options other than to select a network before you can do anything else in the app. Also, if you were to get disconnected from the network it was using, that should behave in the same limiting way.
+
+
+
+(done)
+When using the sleep function, it will say that it will disconnect you from all connections, but it doesn't. So when loading that save back up, I'm still connected to the networks still.
+
+
+(done - needs testing)
+Not happy there's a tutorial-software-licenses-alt and tutorial-software-licenses events in mission board intro. Ideally there can just be multiple triggers required and for this example the triggers are that BOTH the message msg-mission-board-license has been read AND the mission-board software has been installed. The reason there's two events with different triggers, is that the player could already have installed the mission board BEFORE receiving the msg-mission-board-license message.
+It's important that triggers can have multiple conditions so that more complex story telling can happen later in the game.
+
+
+Once the tutorial part 2 mission is completed, there should be other missions then made available (they should be similar beginner missions). There should be some mission types already created in the phase 2 spec, or some will need to be created. At least there should be missions like the tutorial missions where you need to repair files or copy files or delete files.
+
+
+Review the systems in place for handling missions and scripted events and objective tracking as I need to understand how to picture these systems and how best they should integrate with each other as the biggest issues have come from changes in these areas. Each system needs to have a role and individual responsibility so there's not internal variables being changed by external systems. It will then aid in writing test cases for each system.
+
+
+When repairing corrupt files, once they have been repaired, relisting the files should also show the files have been repaired - currently they are showing as corrupt again - maybe the data that drives this is not being updated?
+
+
+(?)
+VPN client should show networks that are not authorised anymore (if the NAR entry is kept after deauth)
+
+
+the sabotage event is not very obvious to the user (I have manually tested) - the deleting process happens so fast that the user cannot actually see what has happened. It could be that the File Manager app also has a log at the bottom listing all operations performed. We need enough time for the user to think, "oh what is happening, that's not me doing that". Then the administrator disconnecting you should appear more dramatic, like a red warning popup that tells you the details of the network you are being forceibly disconnected from and by the network administrator - maybe also a description of the reason (that being deleting critical files), and that it's a popup that the user has to acknowledge by clicking a dismiss button.

@@ -802,7 +802,7 @@ test.describe('Save Restriction During Network Connections', () => {
         await page.click('.dropdown-menu button:has-text("Sleep")');
 
         // Should go to sleep animation without dialog
-        await expect(page.locator('.sleep-screen')).toBeVisible({ timeout: 5000 });
+        await expect(page.locator('.sleep-overlay')).toBeVisible({ timeout: 5000 });
         expect(dialogShown).toBe(false);
     });
 
@@ -833,7 +833,7 @@ test.describe('Save Restriction During Network Connections', () => {
         await page.click('.dropdown-menu button:has-text("Sleep")');
 
         // Should go to sleep animation
-        await expect(page.locator('.sleep-screen')).toBeVisible({ timeout: 5000 });
+        await expect(page.locator('.sleep-overlay')).toBeVisible({ timeout: 5000 });
     });
 });
 

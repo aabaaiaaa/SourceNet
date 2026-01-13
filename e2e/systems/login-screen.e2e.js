@@ -50,10 +50,10 @@ test.describe('E2E Test 2: Game Login Screen (Multiple Saves)', () => {
     );
     expect(bgColor).toContain('0, 0, 0'); // Black background
 
-    // Step 5: Verify all 3 usernames listed
-    await expect(page.locator('text=agent_1111')).toBeVisible();
-    await expect(page.locator('text=agent_2222')).toBeVisible();
-    await expect(page.locator('text=agent_3333')).toBeVisible();
+    // Step 5: Verify all 3 usernames listed (use .save-username class to avoid matching saveName)
+    await expect(page.locator('.save-username:has-text("agent_1111")')).toBeVisible();
+    await expect(page.locator('.save-username:has-text("agent_2222")')).toBeVisible();
+    await expect(page.locator('.save-username:has-text("agent_3333")')).toBeVisible();
 
     // Step 6: Verify "New Game" button at bottom
     await expect(page.locator('text=New Game')).toBeVisible();

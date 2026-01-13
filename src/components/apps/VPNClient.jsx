@@ -4,12 +4,37 @@ import triggerEventBus from '../../core/triggerEventBus';
 import './VPNClient.css';
 
 const VPNClient = () => {
-  const { narEntries, activeConnections, setActiveConnections, currentTime } = useGame();
+  const { narEntries, activeConnections, setActiveConnections, currentTime, pendingVpnConnection, clearPendingVpnConnection } = useGame();
   const [selectedNetwork, setSelectedNetwork] = useState('');
   const [connecting, setConnecting] = useState(false);
   const [connectionStartTime, setConnectionStartTime] = useState(null);
   const [pendingConnection, setPendingConnection] = useState(null);
   const animationFrameRef = useRef(null);
+
+  // Auto-connect when initiated from NAR
+  useEffect(() => {
+    if (pendingVpnConnection && !connecting) {
+      const networkEntry = narEntries.find((e) => e.networkId === pendingVpnConnection);
+      if (networkEntry && networkEntry.authorized !== false && networkEntry.status !== 'expired') {
+        // Check if already connected
+        const alreadyConnected = (activeConnections || []).some(
+          conn => conn.networkId === pendingVpnConnection
+        );
+        if (!alreadyConnected && currentTime) {
+          setSelectedNetwork(pendingVpnConnection);
+          // Start connection
+          setPendingConnection({
+            networkId: networkEntry.networkId,
+            networkName: networkEntry.networkName,
+            address: networkEntry.address,
+          });
+          setConnectionStartTime(currentTime.getTime());
+          setConnecting(true);
+        }
+      }
+      clearPendingVpnConnection();
+    }
+  }, [pendingVpnConnection, narEntries, activeConnections, connecting, currentTime, clearPendingVpnConnection]);
 
   // Monitor game time for connection completion
   useEffect(() => {

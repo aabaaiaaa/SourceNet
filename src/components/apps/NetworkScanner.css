@@ -12,8 +12,15 @@
   margin-bottom: 15px;
 }
 
-.scanner-header h2 { margin: 0 0 5px 0; }
-.scanner-subtitle { margin: 0; font-size: 12px; color: #666; }
+.scanner-header h2 {
+  margin: 0 0 5px 0;
+}
+
+.scanner-subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: #666;
+}
 
 .scan-controls {
   display: flex;
@@ -61,9 +68,19 @@
   background: #f9f9f9;
 }
 
-.machine-ip { font-weight: bold; }
-.machine-hostname { font-size: 12px; color: #666; }
-.machine-filesystems { font-size: 12px; margin-top: 5px; }
+.machine-ip {
+  font-weight: bold;
+}
+
+.machine-hostname {
+  font-size: 12px;
+  color: #666;
+}
+
+.machine-filesystems {
+  font-size: 12px;
+  margin-top: 5px;
+}
 
 /* Scan progress bar */
 .scan-progress {
@@ -85,4 +102,24 @@
 
 .scan-btn.scanning {
   background: #FF9800;
+}
+
+.scanner-disconnection-message {
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  color: #856404;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.scanner-no-networks {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  color: #6c757d;
+  padding: 15px;
+  text-align: center;
+  font-size: 13px;
+  border-radius: 4px;
 }

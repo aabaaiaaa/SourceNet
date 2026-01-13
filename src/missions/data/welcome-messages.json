@@ -22,10 +22,12 @@
       "id": "msg-welcome-manager",
       "trigger": {
         "type": "timeSinceEvent",
-        "event": "messageRead",
-        "condition": {
-          "messageId": "msg-welcome-hr"
-        },
+        "conditions": [
+          {
+            "type": "messageRead",
+            "messageId": "msg-welcome-hr"
+          }
+        ],
         "delay": 2000
       },
       "message": {

@@ -3,8 +3,18 @@ import { useGame } from '../../contexts/useGame';
 import './NetworkAddressRegister.css';
 
 const NetworkAddressRegister = () => {
-  const { narEntries } = useGame();
+  const { narEntries, activeConnections, setActiveConnections, initiateVpnConnection } = useGame();
   const [activeTab, setActiveTab] = useState('active');
+
+  // Check if a network is currently connected
+  const isConnected = (networkId) => {
+    return (activeConnections || []).some(conn => conn.networkId === networkId);
+  };
+
+  // Disconnect from a network
+  const handleDisconnect = (networkId) => {
+    setActiveConnections((activeConnections || []).filter(conn => conn.networkId !== networkId));
+  };
 
   // Filter entries by authorization status
   const activeEntries = (narEntries || []).filter(entry => entry.authorized !== false);
@@ -59,9 +69,26 @@ const NetworkAddressRegister = () => {
                 Status: {entry.authorized === false ? 'Revoked' : (entry.status || 'Active')}
               </div>
               {entry.authorized !== false && entry.status !== 'expired' && (
-                <button className="nar-connect-btn" onClick={() => alert('Quick connect pending')}>
-                  Connect
-                </button>
+                <div className="nar-connection-actions">
+                  {isConnected(entry.networkId) ? (
+                    <div className="nar-connection-status">
+                      <span className="nar-connected-badge">✓ Connected</span>
+                      <button
+                        className="nar-disconnect-btn"
+                        onClick={() => handleDisconnect(entry.networkId)}
+                      >
+                        Disconnect
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      className="nar-connect-btn"
+                      onClick={() => initiateVpnConnection(entry.networkId)}
+                    >
+                      Connect
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           ))

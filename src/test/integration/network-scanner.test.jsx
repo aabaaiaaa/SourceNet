@@ -64,9 +64,9 @@ describe('Network Scanner Integration', () => {
         const select = screen.getByRole('combobox', { name: /network/i });
         expect(select).toHaveTextContent('Select connected network');
 
-        // Scan button should be disabled
-        const scanButton = screen.getByRole('button', { name: /start scan/i });
-        expect(scanButton).toBeDisabled();
+        // Should show no-networks message and hide scan button
+        expect(screen.getByText(/No networks connected/i)).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /start scan/i })).not.toBeInTheDocument();
     });
 
     it('should discover devices from connected network', async () => {

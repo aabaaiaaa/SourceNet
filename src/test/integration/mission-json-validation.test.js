@@ -40,11 +40,26 @@ describe('Mission JSON Validation', () => {
       });
     });
 
-    it('should have valid event names', () => {
+    it('should have valid event or conditions', () => {
       storyEvents.forEach((storyEvent) => {
         storyEvent.events.forEach((event) => {
-          expect(event.trigger.event).toBeDefined();
-          expect(typeof event.trigger.event).toBe('string');
+          // Must have either explicit event OR conditions array
+          const hasExplicitEvent = event.trigger.event !== undefined;
+          const hasConditions = Array.isArray(event.trigger.conditions);
+          expect(hasExplicitEvent || hasConditions).toBe(true);
+
+          // If has explicit event, it must be a string
+          if (hasExplicitEvent) {
+            expect(typeof event.trigger.event).toBe('string');
+          }
+
+          // If has conditions, each must have a type
+          if (hasConditions) {
+            event.trigger.conditions.forEach(condition => {
+              expect(condition.type).toBeDefined();
+              expect(['messageRead', 'softwareInstalled', 'eventData']).toContain(condition.type);
+            });
+          }
         });
       });
     });

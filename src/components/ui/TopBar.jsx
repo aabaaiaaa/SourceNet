@@ -1,12 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useGame } from '../../contexts/useGame';
 import { MULTI_INSTANCE_APPS } from '../../constants/gameConstants';
-import { formatDateTime, getAllSaves } from '../../utils/helpers';
+import { formatDateTime, getAllSavesFlat } from '../../utils/helpers';
 import { getReputationTier } from '../../systems/ReputationSystem';
 import { calculateStorageUsed, formatStorage } from '../../systems/StorageSystem';
 import triggerEventBus from '../../core/triggerEventBus';
 import { scheduleGameTimeCallback, clearGameTimeCallback } from '../../core/gameTimeScheduler';
-import storyMissionManager from '../../missions/StoryMissionManager';
 import './TopBar.css';
 
 const TopBar = () => {
@@ -123,8 +122,8 @@ const TopBar = () => {
     setShowLoadMenu(true);
   };
 
-  const handleLoadSave = (username) => {
-    const success = loadGame(username);
+  const handleLoadSave = (username, saveIndex) => {
+    const success = loadGame(username, saveIndex);
     if (success) {
       setShowLoadMenu(false);
     } else {
@@ -146,19 +145,11 @@ const TopBar = () => {
       if (!confirmed) {
         return;
       }
-      // Clear all active connections
-      setActiveConnections([]);
     }
 
-    // Auto-save before sleeping (uses in-game time as default name, like manual save)
-    saveGame(null);
-
-    // Clear pending story events (they will be restored from save on next load)
-    storyMissionManager.clearPendingEvents();
-
-    // Go to sleep animation
-    setGamePhase('sleeping');
+    // Go to sleep phase - SleepOverlay handles disconnection, save, and transition
     setShowPowerMenu(false);
+    setGamePhase('sleeping');
   };
 
   return (
@@ -493,21 +484,29 @@ const TopBar = () => {
       {/* Load Game Modal */}
       {showLoadMenu && (
         <div className="modal-overlay" onClick={() => setShowLoadMenu(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content load-game-modal" onClick={(e) => e.stopPropagation()}>
             <h3>Load Game</h3>
             <div className="load-saves-list">
-              {Object.keys(getAllSaves()).length === 0 ? (
+              {getAllSavesFlat().length === 0 ? (
                 <p>No saved games found.</p>
               ) : (
-                Object.keys(getAllSaves()).map((username) => (
-                  <button
-                    key={username}
-                    className="load-save-btn"
-                    onClick={() => handleLoadSave(username)}
-                  >
-                    {username}
-                  </button>
-                ))
+                getAllSavesFlat().map((save, index) => {
+                  // Find the save index within this user's saves (sorted by savedAt desc)
+                  const userSaves = getAllSavesFlat().filter(s => s.username === save.username);
+                  const saveIndex = userSaves.findIndex(s => s.savedAt === save.savedAt);
+
+                  return (
+                    <button
+                      key={`${save.username}-${save.savedAt}`}
+                      className="load-save-btn"
+                      onClick={() => handleLoadSave(save.username, saveIndex)}
+                    >
+                      <span className="load-save-username">{save.username}</span>
+                      <span className="load-save-name">{save.saveName}</span>
+                      <span className="load-save-date">{new Date(save.savedAt).toLocaleString()}</span>
+                    </button>
+                  );
+                })
               )}
             </div>
             <button

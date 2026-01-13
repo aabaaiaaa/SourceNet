@@ -202,6 +202,10 @@ export const useStoryMissions = (gameState, actions) => {
 
       // Only emit newGameStarted for truly new games (not loaded saves)
       if (gameState.isNewGameRef?.current) {
+        // Reset fired events for new game so welcome messages fire again
+        storyMissionManager.setFiredEvents([]);
+        console.log('🔄 Reset fired events for new game');
+
         triggerEventBus.emit('newGameStarted', {
           username: gameState.username,
           time: gameState.currentTime,

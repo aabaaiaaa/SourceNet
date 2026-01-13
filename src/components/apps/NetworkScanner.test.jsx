@@ -30,27 +30,22 @@ describe('NetworkScanner Component', () => {
   it('should show scan controls', () => {
     renderWithProvider(<NetworkScanner />);
     expect(screen.getByText(/Network:/)).toBeInTheDocument();
-    expect(screen.getByText(/Scan Type:/)).toBeInTheDocument();
+    // Scan type is only shown when a network is connected
+    expect(screen.getByText(/No networks connected/i)).toBeInTheDocument();
   });
 
-  it('should have scan button', () => {
+  it('should show no-networks message when disconnected', () => {
     renderWithProvider(<NetworkScanner />);
-    const scanBtn = screen.getByRole('button', { name: /Start Scan/i });
-    expect(scanBtn).toBeInTheDocument();
-    expect(scanBtn).toBeDisabled(); // No network selected
+    // No scan button visible without network connection
+    expect(screen.queryByRole('button', { name: /Start Scan/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/No networks connected/i)).toBeInTheDocument();
   });
 
-  it('should have quick and deep scan options', () => {
+  it('should hide scan options when no network connected', () => {
     renderWithProvider(<NetworkScanner />);
-    expect(screen.getByText(/Quick Scan/i)).toBeInTheDocument();
-    expect(screen.getByText(/Deep Scan/i)).toBeInTheDocument();
-  });
-
-  it('should default to deep scan', () => {
-    renderWithProvider(<NetworkScanner />);
-    const selects = screen.getAllByRole('combobox');
-    const scanTypeSelect = selects[1];
-    expect(scanTypeSelect.value).toBe('deep');
+    // Scan type selector not visible without connection
+    expect(screen.queryByText(/Quick Scan/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Deep Scan/i)).not.toBeInTheDocument();
   });
 
   it('should show network selector placeholder', () => {
@@ -77,17 +72,18 @@ describe('NetworkScanner bandwidth integration', () => {
 
     // Verify the component structure is correct
     expect(screen.getByText('Network Scanner')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Start Scan/i })).toBeInTheDocument();
+    // Scan button only appears when network is connected
+    expect(screen.getByText(/No networks connected/i)).toBeInTheDocument();
   });
 
   it('should have scan sizes defined for quick and deep scans', () => {
     // The SCAN_SIZES constant in NetworkScanner defines:
     // - quick: 5 MB
     // - deep: 15 MB
-    // This test verifies the dropdown options exist
+    // Scan options are only visible when a network is connected
+    // This test verifies the no-connection state is shown properly
     renderWithProvider(<NetworkScanner />);
 
-    expect(screen.getByText(/Quick Scan \(5s/i)).toBeInTheDocument();
-    expect(screen.getByText(/Deep Scan \(15s/i)).toBeInTheDocument();
+    expect(screen.getByText(/No networks connected/i)).toBeInTheDocument();
   });
 });

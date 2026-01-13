@@ -177,7 +177,7 @@ test.describe('Banking & Cheque Flow', () => {
             // Reload and load the save
             await page.goto('/?skipBoot=true');
             await expect(page.locator('.game-login-screen')).toBeVisible({ timeout: 20000 });
-            await page.locator('text=persist_test').locator('..').locator('button:has-text("Load")').click();
+            await page.click('.save-item:has-text("persist_test") button:has-text("Load")');
             await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
             // Open mail and verify cheque is still marked as deposited

@@ -8,7 +8,7 @@ import GameLoginScreen from './GameLoginScreen';
 import BootSequence from './boot/BootSequence';
 import UsernameSelection from './boot/UsernameSelection';
 import Rebooting from './boot/Rebooting';
-import SleepAnimation from './boot/SleepAnimation';
+import SleepOverlay from './ui/SleepOverlay';
 import Desktop from './ui/Desktop';
 import GameOverOverlay from './ui/GameOverOverlay';
 
@@ -140,7 +140,12 @@ const GameRoot = () => {
     case 'rebooting':
       return <Rebooting />;
     case 'sleeping':
-      return <SleepAnimation />;
+      return (
+        <>
+          <Desktop />
+          <SleepOverlay />
+        </>
+      );
     case 'boot':
       return <BootSequence />;
     case 'username':

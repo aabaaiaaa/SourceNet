@@ -58,6 +58,9 @@ export const GameProvider = ({ children }) => {
   // Cheque deposit
   const [pendingChequeDeposit, setPendingChequeDeposit] = useState(null);
 
+  // VPN quick connect (from NAR)
+  const [pendingVpnConnection, setPendingVpnConnection] = useState(null);
+
   // Windows
   const [windows, setWindows] = useState([]);
   const nextZIndexRef = useRef(1000);
@@ -418,6 +421,17 @@ export const GameProvider = ({ children }) => {
     setPendingChequeDeposit(messageId);
     openWindow('banking');
   }, [openWindow]);
+
+  // Initiate VPN connection (called when user clicks Connect in NAR)
+  const initiateVpnConnection = useCallback((networkId) => {
+    setPendingVpnConnection(networkId);
+    openWindow('vpnClient');
+  }, [openWindow]);
+
+  // Clear pending VPN connection
+  const clearPendingVpnConnection = useCallback(() => {
+    setPendingVpnConnection(null);
+  }, []);
 
   // Deposit cheque
   const depositCheque = useCallback((messageId, accountId) => {
@@ -888,10 +902,13 @@ export const GameProvider = ({ children }) => {
           if (wasConnected) {
             console.log(`📡 Disconnecting from ${networkName} due to access revocation`);
             // Emit networkDisconnected event for TopBar notification
-            triggerEventBus.emit('networkDisconnected', {
-              networkId,
-              networkName,
-              reason: revokeReason,
+            // Use queueMicrotask to defer emission until after render completes
+            queueMicrotask(() => {
+              triggerEventBus.emit('networkDisconnected', {
+                networkId,
+                networkName,
+                reason: revokeReason,
+              });
             });
           }
           return prev.filter(conn => conn.networkId !== networkId);
@@ -1627,8 +1644,8 @@ export const GameProvider = ({ children }) => {
   }, []);
 
   // Load game
-  const loadGame = useCallback((usernameToLoad) => {
-    const gameState = loadFromLocalStorage(usernameToLoad);
+  const loadGame = useCallback((usernameToLoad, saveIndex = null) => {
+    const gameState = loadFromLocalStorage(usernameToLoad, saveIndex);
 
     if (!gameState) {
       return false;
@@ -1703,6 +1720,13 @@ export const GameProvider = ({ children }) => {
     // Reset nextZIndex to be higher than any loaded window z-index
     const maxZIndex = loadedWindows.reduce((max, w) => Math.max(max, w.zIndex || 0), 1000);
     nextZIndexRef.current = maxZIndex + 1;
+
+    // Reset nextWindowId to be higher than any loaded window id
+    const maxWindowId = loadedWindows.reduce((max, w) => {
+      const match = w.id?.match(/^window-(\d+)$/);
+      return match ? Math.max(max, parseInt(match[1], 10)) : max;
+    }, 0);
+    nextWindowIdRef.current = maxWindowId + 1;
 
     setTimeSpeed(TIME_SPEEDS.NORMAL); // Always reset to 1x
 
@@ -1803,6 +1827,9 @@ export const GameProvider = ({ children }) => {
     initiateChequeDeposit,
     depositCheque,
     cancelChequeDeposit,
+    initiateVpnConnection,
+    pendingVpnConnection,
+    clearPendingVpnConnection,
     activateLicense,
     getTotalCredits,
     acceptMission,

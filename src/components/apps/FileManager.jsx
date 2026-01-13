@@ -142,14 +142,16 @@ const FileManager = () => {
     const sizeInMB = parseFileSizeToMB(file.size);
     // Base: 1MB takes 1 second at 50 Mbps bandwidth
     // Adjust for actual bandwidth and operation type
-    const multipliers = { repair: 0.5, delete: 0.1, copy: 0.05, paste: 1 };
+    // Multipliers set higher for gameplay feel - operations should be visible
+    const multipliers = { repair: 2, delete: 0.5, copy: 0.3, paste: 1.5 };
     const multiplier = multipliers[operation] || 1;
 
     // bandwidth in Mbps, convert to MB/s: bandwidth / 8
     const transferSpeedMBps = bandwidth / 8;
     // Time = size / speed, then apply multiplier
     const baseTimeSeconds = sizeInMB / transferSpeedMBps;
-    return Math.max(100, baseTimeSeconds * 1000 * multiplier); // Minimum 100ms
+    // Minimum 2 seconds (2000ms) so progress bar is always visible
+    return Math.max(2000, baseTimeSeconds * 1000 * multiplier);
   };
 
   // Get network bandwidth from NAR entry

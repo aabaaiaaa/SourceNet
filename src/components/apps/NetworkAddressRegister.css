@@ -133,6 +133,36 @@
   background: #45a049;
 }
 
+.nar-connection-actions {
+  margin-top: 10px;
+}
+
+.nar-connection-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nar-connected-badge {
+  color: #4CAF50;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.nar-disconnect-btn {
+  padding: 5px 10px;
+  background: #888;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+}
+
+.nar-disconnect-btn:hover {
+  background: #666;
+}
+
 .empty-state {
   text-align: center;
   padding: 40px 20px;

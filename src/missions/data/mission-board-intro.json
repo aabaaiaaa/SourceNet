@@ -6,10 +6,12 @@
       "id": "mission-board-license",
       "trigger": {
         "type": "timeSinceEvent",
-        "event": "messageRead",
-        "condition": {
-          "messageId": "msg-welcome-manager"
-        },
+        "conditions": [
+          {
+            "type": "messageRead",
+            "messageId": "msg-welcome-manager"
+          }
+        ],
         "delay": 20000
       },
       "message": {
@@ -33,64 +35,16 @@
       "id": "tutorial-software-licenses",
       "trigger": {
         "type": "timeSinceEvent",
-        "event": "messageRead",
-        "condition": {
-          "messageId": "msg-mission-board-license",
-          "gameState": {
-            "softwareInstalled": "mission-board"
-          }
-        },
-        "delay": 5000
-      },
-      "message": {
-        "from": "SourceNet Manager",
-        "fromId": "SNET-MGR-{random}",
-        "fromName": "SourceNet Manager {managerName}",
-        "subject": "Mission Software",
-        "body": "Great! Now that you have the Mission Board installed, let me get you set up with the tools you'll need for your first mission.\n\nI've attached free licenses for the essential software (total value: $1,350):\n\n- SourceNet VPN Client ($500): Secure access to client networks\n- Network Address Register ($200): Manages your network connections\n- Network Scanner ($300): Finds machines and file systems on networks\n- File Manager ($350): Access and repair files on remote systems\n\nInstallation steps:\n\n1. Click all the attachments above to add them to your account\n2. Open the Portal and install all four software applications\n3. Once installed, open the Mission Board and accept the \"Log File Repair\" mission\n\nWhen you accept the mission, you'll receive the network credentials for ClientA-Corporate as an attachment. Use the Network Address Register to add them to your NAR.\n\nThe mission objectives are straightforward:\n- Connect to ClientA-Corporate network via VPN\n- Scan the network to find their file server\n- Use File Manager to detect and repair corrupted log files\n\nYour Mission Board will track each objective as you complete them.\n\nGood luck!\n\n- {managerName}",
-        "attachments": [
+        "conditions": [
           {
-            "type": "softwareLicense",
-            "softwareId": "vpn-client",
-            "softwareName": "SourceNet VPN Client",
-            "price": 500,
-            "size": 45
+            "type": "messageRead",
+            "messageId": "msg-mission-board-license"
           },
           {
-            "type": "softwareLicense",
-            "softwareId": "network-address-register",
-            "softwareName": "Network Address Register",
-            "price": 200,
-            "size": 15
-          },
-          {
-            "type": "softwareLicense",
-            "softwareId": "network-scanner",
-            "softwareName": "Network Scanner",
-            "price": 300,
-            "size": 30
-          },
-          {
-            "type": "softwareLicense",
-            "softwareId": "file-manager",
-            "softwareName": "File Manager",
-            "price": 350,
-            "size": 40
+            "type": "softwareInstalled",
+            "softwareId": "mission-board"
           }
-        ]
-      }
-    },
-    {
-      "id": "tutorial-software-licenses-alt",
-      "trigger": {
-        "type": "timeSinceEvent",
-        "event": "softwareInstalled",
-        "condition": {
-          "softwareId": "mission-board",
-          "gameState": {
-            "messageRead": "msg-mission-board-license"
-          }
-        },
+        ],
         "delay": 5000
       },
       "message": {
@@ -136,9 +90,14 @@
       "trigger": {
         "type": "timeSinceEvent",
         "event": "missionAccepted",
-        "condition": {
-          "missionId": "tutorial-part-1"
-        },
+        "conditions": [
+          {
+            "type": "eventData",
+            "match": {
+              "missionId": "tutorial-part-1"
+            }
+          }
+        ],
         "delay": 3000
       },
       "message": {
@@ -160,9 +119,14 @@
       "trigger": {
         "type": "timeSinceEvent",
         "event": "missionAccepted",
-        "condition": {
-          "missionId": "tutorial-part-2"
-        },
+        "conditions": [
+          {
+            "type": "eventData",
+            "match": {
+              "missionId": "tutorial-part-2"
+            }
+          }
+        ],
         "delay": 3000
       },
       "message": {

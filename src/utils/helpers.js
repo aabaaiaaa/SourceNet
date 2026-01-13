@@ -157,34 +157,100 @@ export const saveGameState = (username, gameState, saveName = null) => {
 /**
  * Load latest game state for username from localStorage
  */
-export const loadGameState = (username) => {
+export const loadGameState = (username, saveIndex = null) => {
   const saves = safeParseSaves();
 
   if (!saves[username] || saves[username].length === 0) {
     return null;
   }
 
-  // Sort by savedAt (real-time) and return latest
-  const sortedSaves = saves[username].sort(
+  // Sort by savedAt (real-time), newest first
+  const sortedSaves = [...saves[username]].sort(
     (a, b) => new Date(b.savedAt) - new Date(a.savedAt)
   );
 
+  // If saveIndex provided, return that specific save
+  if (saveIndex !== null && saveIndex >= 0 && saveIndex < sortedSaves.length) {
+    return sortedSaves[saveIndex];
+  }
+
+  // Default to latest
   return sortedSaves[0];
 };
 
 /**
- * Get all saved games
+ * Get all saves for a specific username, sorted by savedAt (newest first)
+ */
+export const getSavesForUser = (username) => {
+  const saves = safeParseSaves();
+
+  if (!saves[username] || saves[username].length === 0) {
+    return [];
+  }
+
+  return [...saves[username]].sort(
+    (a, b) => new Date(b.savedAt) - new Date(a.savedAt)
+  );
+};
+
+/**
+ * Get all saves flattened into a single array with username attached, sorted by savedAt (newest first)
+ */
+export const getAllSavesFlat = () => {
+  const saves = safeParseSaves();
+  const flatSaves = [];
+
+  Object.entries(saves).forEach(([username, userSaves]) => {
+    // userSaves should be an array; if not, skip this entry
+    if (!Array.isArray(userSaves)) {
+      console.warn(`Invalid saves format for user ${username}, expected array`);
+      return;
+    }
+    userSaves.forEach((save, index) => {
+      flatSaves.push({
+        ...save,
+        username,
+        _originalIndex: index,
+      });
+    });
+  });
+
+  // Sort by savedAt, newest first
+  return flatSaves.sort(
+    (a, b) => new Date(b.savedAt) - new Date(a.savedAt)
+  );
+};
+
+/**
+ * Get all saved games (raw structure)
  */
 export const getAllSaves = () => {
   return safeParseSaves();
 };
 
 /**
- * Delete a save
+ * Delete a save - if saveIndex provided, delete specific save; otherwise delete all saves for username
  */
-export const deleteSave = (username) => {
+export const deleteSave = (username, saveIndex = null) => {
   const saves = safeParseSaves();
-  delete saves[username];
+
+  if (saveIndex !== null && saves[username]) {
+    // Sort to match the order used elsewhere
+    const sortedSaves = [...saves[username]].sort(
+      (a, b) => new Date(b.savedAt) - new Date(a.savedAt)
+    );
+    // Remove the specific save
+    sortedSaves.splice(saveIndex, 1);
+
+    if (sortedSaves.length === 0) {
+      delete saves[username];
+    } else {
+      saves[username] = sortedSaves;
+    }
+  } else {
+    delete saves[username];
+  }
+
   localStorage.setItem('sourcenet_saves', JSON.stringify(saves));
 };
 

@@ -337,96 +337,153 @@ class StoryMissionManager {
   }
 
   /**
+   * Evaluate a single condition against game state and event data
+   * @param {object} condition - Condition to evaluate
+   * @param {object} eventData - Data from the triggering event
+   * @param {object} gameState - Current game state
+   * @returns {boolean} Whether condition is met
+   */
+  evaluateCondition(condition, eventData, gameState) {
+    const { type } = condition;
+
+    switch (type) {
+      case 'messageRead': {
+        // Check if this is the message that was just read (from event data)
+        // OR if it's already marked as read in gameState
+        if (eventData?.messageId === condition.messageId) {
+          return true; // The message is being read right now
+        }
+        const message = gameState?.messages?.find(m => m.id === condition.messageId);
+        return message?.read === true;
+      }
+      case 'softwareInstalled': {
+        // Check if this is the software that was just installed (from event data)
+        // OR if it's already installed in gameState
+        if (eventData?.softwareId === condition.softwareId) {
+          return true; // The software is being installed right now
+        }
+        return gameState?.software?.includes(condition.softwareId) === true;
+      }
+      case 'eventData': {
+        // Check that all specified keys in match object equal their values in eventData
+        return Object.entries(condition.match || {}).every(
+          ([key, value]) => eventData[key] === value
+        );
+      }
+      default:
+        console.warn(`⚠️ Unknown condition type: ${type}`);
+        return false;
+    }
+  }
+
+  /**
+   * Check if all conditions are met
+   * @param {array} conditions - Array of conditions to check
+   * @param {object} eventData - Data from the triggering event
+   * @returns {boolean} Whether all conditions are met
+   */
+  checkAllConditions(conditions, eventData) {
+    if (!conditions || conditions.length === 0) return true;
+    if (!this.gameStateGetter) return true;
+
+    const gameState = this.gameStateGetter();
+    return conditions.every(cond => this.evaluateCondition(cond, eventData, gameState));
+  }
+
+  /**
+   * Get the event names to subscribe to based on conditions
+   * @param {array} conditions - Array of conditions
+   * @param {string} explicitEvent - Explicit event name (for special cases like newGameStarted)
+   * @returns {string[]} Array of event names to subscribe to
+   */
+  getEventsFromConditions(conditions, explicitEvent) {
+    // If explicit event is provided (special cases), use that
+    if (explicitEvent) {
+      return [explicitEvent];
+    }
+
+    if (!conditions || conditions.length === 0) return [];
+
+    const events = new Set();
+    conditions.forEach(condition => {
+      switch (condition.type) {
+        case 'messageRead':
+          events.add('messageRead');
+          break;
+        case 'softwareInstalled':
+          events.add('softwareInstalled');
+          break;
+        case 'eventData':
+          // eventData conditions need an explicit event specified
+          break;
+      }
+    });
+    return Array.from(events);
+  }
+
+  /**
    * Subscribe to story event trigger (for events with messages)
    * @param {object} storyEventDef - Story event definition
    * @param {object} event - Individual event within the story event
    */
   subscribeStoryEventTrigger(storyEventDef, event) {
-    const { type, event: eventName, delay, condition } = event.trigger;
+    const { type, conditions, delay, event: explicitEvent } = event.trigger;
 
     if (type === 'timeSinceEvent') {
-      console.log(`📡 Subscribing to story event: ${eventName} for ${event.id}`);
-      const unsubscribe = triggerEventBus.on(eventName, (data) => {
-        console.log(`📥 Story event received: ${eventName}`, data);
-        // Check condition if specified
-        if (condition) {
-          console.log(`🔍 Checking condition:`, condition, 'against data:', data);
-          console.log(`   Has gameState?`, condition.gameState ? 'YES' : 'NO');
-          console.log(`   Has gameStateGetter?`, this.gameStateGetter ? 'YES' : 'NO');
+      // Get events to subscribe to from conditions (or explicit event for special cases)
+      const eventsToSubscribe = this.getEventsFromConditions(conditions, explicitEvent);
 
-          // Check game state conditions (prefixed with 'gameState.')
-          if (this.gameStateGetter && condition.gameState) {
-            const gameState = this.gameStateGetter();
-            console.log(`🔍 Checking gameState conditions - keys:`, Object.keys(condition.gameState).join(', '));
-            console.log(`   Current gameState has messages?`, gameState && gameState.messages ? gameState.messages.length : 'NO');
-            console.log(`   Current gameState has software?`, gameState && gameState.software ? gameState.software.length : 'NO');
-            const gameStateConditionMet = Object.keys(condition.gameState).every((key) => {
-              if (key === 'softwareInstalled') {
-                const installed = gameState.software && gameState.software.includes(condition.gameState[key]);
-                console.log(`   software check: ${condition.gameState[key]} installed? ${installed}`);
-                return installed;
-              }
-              if (key === 'messageRead') {
-                const message = gameState.messages && gameState.messages.find(m => m.id === condition.gameState[key]);
-                const read = message && message.read;
-                console.log(`   message check: ${condition.gameState[key]} read? ${read}`, message ? `(found message)` : `(message not found)`);
-                return read;
-              }
-              return gameState[key] === condition.gameState[key];
-            });
-            if (!gameStateConditionMet) {
-              console.log(`❌ Game state condition not met`);
-              return;
-            }
-            console.log(`✅ Game state condition met`);
-          }
+      if (eventsToSubscribe.length === 0) {
+        console.warn(`⚠️ No events to subscribe to for ${event.id} - conditions may be misconfigured`);
+        return;
+      }
 
-          // Check event data conditions (non-gameState keys)
-          const eventConditions = { ...condition };
-          delete eventConditions.gameState;
-          if (Object.keys(eventConditions).length > 0) {
-            const conditionMet = Object.keys(eventConditions).every(
-              (key) => data[key] === eventConditions[key]
-            );
-            if (!conditionMet) {
-              console.log(`❌ Event condition not met`);
-              return;
-            }
-            console.log(`✅ Event condition met`);
-          }
-        }
+      console.log(`📡 Subscribing to story event: ${eventsToSubscribe.join(', ')} for ${event.id}`);
 
-        // Use game-time-aware scheduling with persistence tracking
-        console.log(`⏰ Scheduling story event ${event.id} with delay=${delay} at timeSpeed=${this.timeSpeed}`);
-        const realDelay = (delay || 0) / this.timeSpeed;
-        console.log(`   → Real-time delay will be ${realDelay}ms`);
+      // Subscribe to each relevant event
+      eventsToSubscribe.forEach(eventName => {
+        const unsubscribe = triggerEventBus.on(eventName, (data) => {
+          console.log(`📥 Story event received: ${eventName} for ${event.id}`, data);
 
-        const payload = {
-          storyEventId: storyEventDef.missionId,
-          eventId: event.id,
-          message: event.message,
-        };
-
-        this.schedulePendingEvent('storyEvent', payload, delay || 0, () => {
-          console.log(`🚀 Executing story event ${event.id}`);
-
-          // Create a deduplication key based on message subject to prevent duplicate messages
-          const dedupKey = event.message?.subject || event.id;
-          if (this.firedEvents.has(dedupKey)) {
-            console.log(`⚠️ Event ${event.id} already fired (dedupKey: ${dedupKey}), skipping`);
+          // Check ALL conditions are met (AND logic)
+          if (!this.checkAllConditions(conditions, data)) {
+            console.log(`❌ Not all conditions met for ${event.id}`);
             return;
           }
+          console.log(`✅ All conditions met for ${event.id}`);
 
-          // Mark this event as fired
-          this.firedEvents.add(dedupKey);
+          // Use game-time-aware scheduling with persistence tracking
+          console.log(`⏰ Scheduling story event ${event.id} with delay=${delay} at timeSpeed=${this.timeSpeed}`);
+          const realDelay = (delay || 0) / this.timeSpeed;
+          console.log(`   → Real-time delay will be ${realDelay}ms`);
 
-          // For story events, we need to send the message
-          // This would be handled by the game context
-          triggerEventBus.emit('storyEventTriggered', payload);
+          const payload = {
+            storyEventId: storyEventDef.missionId,
+            eventId: event.id,
+            message: event.message,
+          };
+
+          this.schedulePendingEvent('storyEvent', payload, delay || 0, () => {
+            console.log(`🚀 Executing story event ${event.id}`);
+
+            // Create a deduplication key based on message subject to prevent duplicate messages
+            const dedupKey = event.message?.subject || event.id;
+            if (this.firedEvents.has(dedupKey)) {
+              console.log(`⚠️ Event ${event.id} already fired (dedupKey: ${dedupKey}), skipping`);
+              return;
+            }
+
+            // Mark this event as fired
+            this.firedEvents.add(dedupKey);
+
+            // For story events, we need to send the message
+            // This would be handled by the game context
+            triggerEventBus.emit('storyEventTriggered', payload);
+          });
         });
-      });
 
-      this.addUnsubscriber(storyEventDef.missionId, unsubscribe);
+        this.addUnsubscriber(storyEventDef.missionId, unsubscribe);
+      });
     }
   }
 

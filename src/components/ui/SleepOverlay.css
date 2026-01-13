@@ -1,0 +1,82 @@
+.sleep-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: all;
+}
+
+.sleep-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    max-width: 400px;
+}
+
+.sleep-watermark {
+    font-size: 72px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.3);
+    font-family: 'Courier New', Courier, monospace;
+    letter-spacing: 10px;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+}
+
+.sleep-status {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.9);
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.sleep-network-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.sleep-network-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    transition: all 0.3s ease;
+}
+
+.sleep-network-item.disconnecting {
+    background: rgba(255, 165, 0, 0.2);
+    color: #ffa500;
+}
+
+.sleep-network-item.disconnected {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+}
+
+.network-name {
+    flex: 1;
+}
+
+.network-status {
+    min-width: 100px;
+    text-align: right;
+}
+
+.sleep-saved {
+    font-size: 16px;
+    color: #4CAF50;
+    font-family: 'Courier New', Courier, monospace;
+    margin-top: 10px;
+}
