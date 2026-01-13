@@ -105,16 +105,27 @@
   font-weight: bold;
 }
 
-.difficulty-easy { background: #90EE90; color: #006400; }
-.difficulty-medium { background: #FFD700; color: #8B4500; }
-.difficulty-hard { background: #FF6347; color: white; }
+.difficulty-easy {
+  background: #90EE90;
+  color: #006400;
+}
+
+.difficulty-medium {
+  background: #FFD700;
+  color: #8B4500;
+}
+
+.difficulty-hard {
+  background: #FF6347;
+  color: white;
+}
 
 .mission-info {
   margin: 10px 0;
   font-size: 13px;
 }
 
-.mission-info > div {
+.mission-info>div {
   margin: 5px 0;
 }
 
@@ -222,6 +233,12 @@
   margin-left: 10px;
 }
 
+.objective-progress {
+  color: #666;
+  font-size: 0.9em;
+  margin-left: 4px;
+}
+
 .mission-completing {
   padding: 15px;
   background: #FFF8DC;
@@ -246,10 +263,30 @@
   font-weight: bold;
 }
 
-.status-success { background: #90EE90; color: #006400; }
-.status-failed { background: #FFB6C1; color: #8B0000; }
+.status-success {
+  background: #90EE90;
+  color: #006400;
+}
 
-.payout-positive { color: #006400; font-weight: bold; }
-.payout-negative { color: #8B0000; font-weight: bold; }
-.rep-positive { color: #006400; }
-.rep-negative { color: #8B0000; }
+.status-failed {
+  background: #FFB6C1;
+  color: #8B0000;
+}
+
+.payout-positive {
+  color: #006400;
+  font-weight: bold;
+}
+
+.payout-negative {
+  color: #8B0000;
+  font-weight: bold;
+}
+
+.rep-positive {
+  color: #006400;
+}
+
+.rep-negative {
+  color: #8B0000;
+}

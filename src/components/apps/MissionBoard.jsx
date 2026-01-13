@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGame } from '../../contexts/useGame';
 import { canAcceptMission, calculateMissionPayout } from '../../systems/MissionSystem';
 import { getReputationTier } from '../../systems/ReputationSystem';
+import { getFileOperationProgress } from '../../missions/ObjectiveTracker';
 import './MissionBoard.css';
 
 const MissionBoard = () => {
@@ -12,6 +13,7 @@ const MissionBoard = () => {
     software,
     reputation,
     acceptMission,
+    missionFileOperations,
   } = useGame();
 
   const [activeTab, setActiveTab] = useState('available'); // 'available', 'active', 'completed'
@@ -149,23 +151,34 @@ const MissionBoard = () => {
         <div className="objectives-section">
           <h4>Objectives:</h4>
           <ul className="objectives-list">
-            {activeMission.objectives?.map((objective) => (
-              <li
-                key={objective.id}
-                className={`objective-item objective-${objective.status}`}
-              >
-                <span className="objective-checkbox">
-                  {objective.status === 'complete' ? '☑' : '☐'}
-                </span>
-                <span className="objective-description">{objective.description}</span>
-                {objective.status === 'complete' && (
-                  <span className="objective-status-complete"> ✓</span>
-                )}
-                {objective.status === 'failed' && (
-                  <span className="objective-status-failed"> ✗</span>
-                )}
-              </li>
-            ))}
+            {activeMission.objectives?.map((objective) => {
+              const progress = objective.type === 'fileOperation'
+                ? getFileOperationProgress(objective, missionFileOperations)
+                : null;
+
+              return (
+                <li
+                  key={objective.id}
+                  className={`objective-item objective-${objective.status}`}
+                >
+                  <span className="objective-checkbox">
+                    {objective.status === 'complete' ? '☑' : '☐'}
+                  </span>
+                  <span className="objective-description">
+                    {objective.description}
+                    {progress && objective.status !== 'complete' && (
+                      <span className="objective-progress"> ({progress.current}/{progress.total})</span>
+                    )}
+                  </span>
+                  {objective.status === 'complete' && (
+                    <span className="objective-status-complete"> ✓</span>
+                  )}
+                  {objective.status === 'failed' && (
+                    <span className="objective-status-failed"> ✗</span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </div>
 

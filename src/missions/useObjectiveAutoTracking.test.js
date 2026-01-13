@@ -216,7 +216,7 @@ describe('useObjectiveAutoTracking', () => {
       expect(completeMissionObjective).toHaveBeenCalledWith('obj-1');
     });
 
-    it('should not complete objective when count not met', () => {
+    it('should not complete objective when targetFiles not all completed', () => {
       const completeMissionObjective = vi.fn();
       const completeMission = vi.fn();
 
@@ -224,7 +224,7 @@ describe('useObjectiveAutoTracking', () => {
         missionId: 'test-mission',
         basePayout: 1000,
         objectives: [
-          { id: 'obj-1', type: 'fileOperation', operation: 'copy', count: 10, status: 'pending' },
+          { id: 'obj-1', type: 'fileOperation', operation: 'paste', targetFiles: ['file1.txt', 'file2.txt', 'file3.txt'], status: 'pending' },
         ],
       };
 
@@ -232,14 +232,15 @@ describe('useObjectiveAutoTracking', () => {
         activeConnections: [],
         lastScanResults: null,
         fileManagerConnections: [],
-        lastFileOperation: { operation: 'copy', filesAffected: 5 },
+        lastFileOperation: { operation: 'paste', filesAffected: 1, fileNames: ['file1.txt'] },
+        missionFileOperations: { paste: new Set(['file1.txt']) },
       };
 
       renderHook(() =>
         useObjectiveAutoTracking(
           mission,
           gameState,
-          9,
+          gameState.missionFileOperations,
           completeMissionObjective,
           completeMission,
           true
@@ -247,7 +248,7 @@ describe('useObjectiveAutoTracking', () => {
       );
 
       act(() => {
-        triggerEventBus.emit('fileOperationComplete', { operation: 'copy', filesAffected: 5 });
+        triggerEventBus.emit('fileOperationComplete', { operation: 'paste', filesAffected: 1, fileNames: ['file1.txt'] });
         vi.advanceTimersByTime(100);
       });
 

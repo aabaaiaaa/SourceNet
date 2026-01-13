@@ -14,6 +14,7 @@ const FileManager = () => {
   const activeConnections = game.activeConnections || [];
   const fileClipboard = game.fileClipboard || { files: [], sourceFileSystemId: '', sourceNetworkId: '' };
   const setFileClipboard = game.setFileClipboard || (() => { });
+  const updateFileSystemFiles = game.updateFileSystemFiles || (() => { });
 
   const [selectedFileSystem, setSelectedFileSystem] = useState('');
   const [currentNetworkId, setCurrentNetworkId] = useState('');
@@ -48,6 +49,7 @@ const FileManager = () => {
   // Refs to track current values for use in event handlers
   const availableFileSystemsRef = useRef([]);
   const selectedFileSystemRef = useRef('');
+  const currentNetworkIdRef = useRef('');
 
   // Subscribe to sabotage file operations from scripted events
   useEffect(() => {
@@ -111,6 +113,7 @@ const FileManager = () => {
 
       // Handle completed operations
       sortedCompletedOps.forEach(({ fileIndex, operation, operationId, fileName }) => {
+        console.log(`✅ Operation complete: ${operation} on ${fileName} (index ${fileIndex})`);
         activeOperationsRef.current.delete(fileIndex);
 
         if (operationId) {
@@ -130,6 +133,19 @@ const FileManager = () => {
             // File already added to array when operation started
             newFiles[fileIndex] = { ...newFiles[fileIndex], selected: false };
           }
+
+          // Persist changes to narEntries (skip copy as it doesn't modify files)
+          if (operation !== 'copy') {
+            const networkId = currentNetworkIdRef.current;
+            const fsId = selectedFileSystemRef.current;
+            console.log(`📁 Persisting ${operation} to narEntries: networkId=${networkId}, fsId=${fsId}, files=${newFiles.length}`);
+            if (networkId && fsId) {
+              // Strip selection state before persisting
+              const filesToPersist = newFiles.map(({ selected: _selected, ...rest }) => rest);
+              updateFileSystemFiles(networkId, fsId, filesToPersist);
+            }
+          }
+
           return newFiles;
         });
 
@@ -167,9 +183,11 @@ const FileManager = () => {
       if (completedOps.length > 0 && activeOperationsRef.current.size === 0) {
         // All operations complete
         const operation = completedOps[0].operation;
+        const fileNames = completedOps.map(op => op.fileName);
         const eventData = {
           operation,
           filesAffected: completedOps.length,
+          fileNames,
           fileSystem: selectedFileSystem,
         };
         setLastFileOperation(eventData);
@@ -245,11 +263,31 @@ const FileManager = () => {
     }
   });
 
+  // Check if selected file system is still available (handles network disconnect)
+  useEffect(() => {
+    if (selectedFileSystem && availableFileSystems.length > 0) {
+      const isStillAvailable = availableFileSystems.some(fs => fs.id === selectedFileSystem);
+      if (!isStillAvailable) {
+        // Selected file system no longer available - clear selection
+        setSelectedFileSystem('');
+        setFiles([]);
+        setCurrentNetworkId(null);
+        console.log(`📁 File system ${selectedFileSystem} no longer available - clearing`);
+      }
+    } else if (selectedFileSystem && availableFileSystems.length === 0) {
+      // No networks connected - clear everything
+      setSelectedFileSystem('');
+      setFiles([]);
+      setCurrentNetworkId(null);
+    }
+  }, [availableFileSystems, selectedFileSystem]);
+
   // Keep refs updated for use in event handlers (must be in useEffect, not during render)
   useEffect(() => {
     availableFileSystemsRef.current = availableFileSystems;
     selectedFileSystemRef.current = selectedFileSystem;
-  }, [availableFileSystems, selectedFileSystem]);
+    currentNetworkIdRef.current = currentNetworkId;
+  }, [availableFileSystems, selectedFileSystem, currentNetworkId]);
 
   const handleConnect = (fileSystemId = selectedFileSystem) => {
     if (!fileSystemId) return;

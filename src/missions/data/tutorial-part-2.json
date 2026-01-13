@@ -119,10 +119,19 @@
     },
     {
       "id": "obj-5",
-      "description": "Copy all files from backup to original location",
+      "description": "Copy all log files from backup to original location",
       "type": "fileOperation",
       "operation": "paste",
-      "count": 8
+      "targetFiles": [
+        "log_2024_01.txt",
+        "log_2024_02.txt",
+        "log_2024_03.txt",
+        "log_2024_04.txt",
+        "log_2024_05.txt",
+        "log_2024_06.txt",
+        "log_2024_07.txt",
+        "log_2024_08.txt"
+      ]
     }
   ],
   "scriptedEvents": [],

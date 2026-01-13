@@ -170,16 +170,39 @@ export const GameProvider = ({ children }) => {
     }
   }, [activeConnections, fileClipboard.sourceNetworkId, clearFileClipboard]);
 
-  // Accumulate file operations for mission tracking (cumulative count per operation type)
+  // Update files in a specific file system within narEntries
+  const updateFileSystemFiles = useCallback((networkId, fileSystemId, updatedFiles) => {
+    console.log(`📁 updateFileSystemFiles called: networkId=${networkId}, fsId=${fileSystemId}, fileCount=${updatedFiles?.length}`);
+    setNarEntries(prev => {
+      const updated = prev.map(entry => {
+        if (entry.networkId !== networkId) return entry;
+        if (!entry.fileSystems) return entry;
+
+        return {
+          ...entry,
+          fileSystems: entry.fileSystems.map(fs => {
+            if (fs.id !== fileSystemId) return fs;
+            console.log(`📁 Updating fs ${fileSystemId} files from ${fs.files?.length} to ${updatedFiles?.length}`);
+            return { ...fs, files: updatedFiles };
+          }),
+        };
+      });
+      return updated;
+    });
+  }, []);
+
+  // Accumulate file operations for mission tracking (unique files per operation type)
   useEffect(() => {
     if (lastFileOperation && activeMission) {
-      const { operation, filesAffected } = lastFileOperation;
+      const { operation, fileNames = [] } = lastFileOperation;
       setMissionFileOperations(prev => {
-        const newCount = (prev[operation] || 0) + filesAffected;
-        console.log(`📊 Cumulative ${operation}: ${prev[operation] || 0} + ${filesAffected} = ${newCount}`);
+        const existingFiles = prev[operation] || new Set();
+        const updatedFiles = new Set(existingFiles);
+        fileNames.forEach(name => updatedFiles.add(name));
+        console.log(`📊 Cumulative ${operation}: ${existingFiles.size} + ${fileNames.length} new = ${updatedFiles.size} unique files`);
         return {
           ...prev,
-          [operation]: newCount
+          [operation]: updatedFiles
         };
       });
     }
@@ -792,8 +815,24 @@ export const GameProvider = ({ children }) => {
               newFileSystems.forEach(newFs => {
                 const existingIndex = mergedFileSystems.findIndex(fs => fs.id === newFs.id);
                 if (existingIndex !== -1) {
-                  // Update existing file system
-                  mergedFileSystems[existingIndex] = newFs;
+                  // Merge files: mission files overwrite duplicates, preserve non-conflicting user files
+                  const existingFiles = mergedFileSystems[existingIndex].files || [];
+                  const missionFiles = newFs.files || [];
+
+                  // Start with existing files, then overwrite/add mission files
+                  const mergedFiles = [...existingFiles];
+                  missionFiles.forEach(missionFile => {
+                    const existingFileIndex = mergedFiles.findIndex(f => f.name === missionFile.name);
+                    if (existingFileIndex !== -1) {
+                      // Overwrite existing file with mission file (all properties)
+                      mergedFiles[existingFileIndex] = { ...missionFile };
+                    } else {
+                      // Add new mission file
+                      mergedFiles.push({ ...missionFile });
+                    }
+                  });
+
+                  mergedFileSystems[existingIndex] = { ...newFs, files: mergedFiles };
                 } else {
                   // Add new file system
                   mergedFileSystems.push(newFs);
@@ -1860,6 +1899,7 @@ export const GameProvider = ({ children }) => {
     fileClipboard,
     setFileClipboard,
     clearFileClipboard,
+    updateFileSystemFiles,
 
     // Actions
     initializePlayer,

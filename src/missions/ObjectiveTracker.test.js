@@ -103,28 +103,38 @@ describe('ObjectiveTracker', () => {
   describe('checkFileOperationObjective', () => {
     it('should return true when operation matches', () => {
       const objective = { type: 'fileOperation', operation: 'repair' };
-      const operationData = { operation: 'repair', filesAffected: 8 };
+      const operationData = { operation: 'repair', filesAffected: 8, fileNames: ['file1.txt'] };
 
       expect(checkFileOperationObjective(objective, operationData)).toBe(true);
     });
 
-    it('should check count if specified', () => {
-      const objective = { type: 'fileOperation', operation: 'copy', count: 8 };
-      const operationData = { operation: 'copy', filesAffected: 8 };
+    it('should check targetFiles if specified', () => {
+      const objective = {
+        type: 'fileOperation',
+        operation: 'paste',
+        targetFiles: ['file1.txt', 'file2.txt']
+      };
+      const operationData = { operation: 'paste', filesAffected: 2, fileNames: ['file1.txt', 'file2.txt'] };
+      const cumulativeOps = { paste: new Set(['file1.txt', 'file2.txt']) };
 
-      expect(checkFileOperationObjective(objective, operationData)).toBe(true);
+      expect(checkFileOperationObjective(objective, operationData, cumulativeOps)).toBe(true);
     });
 
-    it('should return false if count not met', () => {
-      const objective = { type: 'fileOperation', operation: 'copy', count: 8 };
-      const operationData = { operation: 'copy', filesAffected: 5 };
+    it('should return false if targetFiles not all completed', () => {
+      const objective = {
+        type: 'fileOperation',
+        operation: 'paste',
+        targetFiles: ['file1.txt', 'file2.txt', 'file3.txt']
+      };
+      const operationData = { operation: 'paste', filesAffected: 1, fileNames: ['file1.txt'] };
+      const cumulativeOps = { paste: new Set(['file1.txt']) };
 
-      expect(checkFileOperationObjective(objective, operationData)).toBe(false);
+      expect(checkFileOperationObjective(objective, operationData, cumulativeOps)).toBe(false);
     });
 
     it('should return false if operation does not match', () => {
       const objective = { type: 'fileOperation', operation: 'repair' };
-      const operationData = { operation: 'delete', filesAffected: 8 };
+      const operationData = { operation: 'delete', filesAffected: 8, fileNames: ['file1.txt'] };
 
       expect(checkFileOperationObjective(objective, operationData)).toBe(false);
     });

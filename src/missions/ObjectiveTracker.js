@@ -74,25 +74,52 @@ export const checkNarEntryAddedObjective = (objective, narEntries) => {
 
 /**
  * Check if file operation objective is complete
- * @param {object} objective - Objective definition
+ * @param {object} objective - Objective definition with targetFiles array
  * @param {object} operationData - File operation completion data (last operation)
- * @param {object} cumulativeOperations - Cumulative file operations {repair: 5, copy: 3}
+ * @param {object} cumulativeOperations - Cumulative file operations {paste: Set(['file1.txt', ...])}
  * @returns {boolean} Objective complete
  */
 export const checkFileOperationObjective = (objective, operationData, cumulativeOperations = {}) => {
-  const { operation, count } = objective;
+  const { operation, targetFiles } = objective;
 
   // Check if operation matches
   if (operationData.operation !== operation) return false;
 
-  if (count !== undefined && count !== null) {
-    // Use cumulative count if available, otherwise fall back to operationData
-    const totalCount = cumulativeOperations[operation] || operationData.filesAffected;
-    console.log(`🔍 checkFileOperationObjective: ${operation} count=${count}, cumulative=${totalCount}`);
-    return totalCount >= count;
+  if (!targetFiles || targetFiles.length === 0) {
+    // No specific files required - just check if operation happened
+    return true;
   }
 
-  return true; // Operation completed, no count requirement
+  // Get the Set of completed files for this operation
+  const completedFiles = cumulativeOperations[operation] || new Set();
+
+  // Check if all target files have been operated on
+  const completedTargetFiles = targetFiles.filter(file => completedFiles.has(file));
+  console.log(`🔍 checkFileOperationObjective: ${operation} - ${completedTargetFiles.length}/${targetFiles.length} target files completed`);
+
+  return completedTargetFiles.length >= targetFiles.length;
+};
+
+/**
+ * Get progress for file operation objective
+ * @param {object} objective - Objective definition with targetFiles array
+ * @param {object} cumulativeOperations - Cumulative file operations
+ * @returns {object|null} Progress info {current, total} or null if no targetFiles
+ */
+export const getFileOperationProgress = (objective, cumulativeOperations = {}) => {
+  const { operation, targetFiles } = objective;
+
+  if (!targetFiles || targetFiles.length === 0) {
+    return null;
+  }
+
+  const completedFiles = cumulativeOperations[operation] || new Set();
+  const completedCount = targetFiles.filter(file => completedFiles.has(file)).length;
+
+  return {
+    current: completedCount,
+    total: targetFiles.length
+  };
 };
 
 /**

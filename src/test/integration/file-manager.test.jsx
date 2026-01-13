@@ -971,6 +971,256 @@ describe('File Manager Integration', () => {
         expect(screen.queryByText(/📋 Clipboard/i)).not.toBeInTheDocument();
     }, 20000);
 
+    it('should persist pasted files when switching file systems and back', async () => {
+        const user = userEvent.setup({ delay: null });
+
+        // Network with two file systems
+        const network = createNetworkWithFileSystem({
+            networkId: 'test-net',
+            networkName: 'Test Network',
+            fileSystems: [
+                {
+                    id: 'fs-1',
+                    ip: '192.168.1.10',
+                    name: 'server-1',
+                    files: [
+                        { name: 'original.txt', size: '5.0 KB', corrupted: false },
+                    ],
+                },
+                {
+                    id: 'fs-2',
+                    ip: '192.168.1.20',
+                    name: 'server-2',
+                    files: [
+                        { name: 'source-file.txt', size: '3.0 KB', corrupted: false },
+                    ],
+                },
+            ],
+        });
+
+        const saveState = createCompleteSaveState({
+            username: 'test_user',
+            overrides: {
+                narEntries: [network],
+                activeConnections: [{ networkId: network.networkId, networkName: network.networkName }],
+            },
+        });
+
+        setSaveInLocalStorage('test_user', saveState);
+
+        render(
+            <GameProvider>
+                <GameLoader username="test_user" />
+                <FileManager />
+            </GameProvider>
+        );
+
+        await waitFor(() => expect(screen.getByRole('combobox')).toBeInTheDocument(), { timeout: 10000 });
+
+        const select = screen.getByRole('combobox');
+
+        // Copy a file from fs-2
+        await user.selectOptions(select, 'fs-2');
+        await waitFor(() => expect(screen.getByText('source-file.txt')).toBeInTheDocument());
+
+        const sourceFile = screen.getByText('source-file.txt').closest('.file-item');
+        await user.click(sourceFile);
+
+        await waitFor(() => {
+            const copyButton = screen.getByRole('button', { name: /copy \(1\)/i });
+            expect(copyButton).not.toBeDisabled();
+        });
+
+        await user.click(screen.getByRole('button', { name: /copy \(1\)/i }));
+
+        // Verify clipboard populated
+        await waitFor(() => {
+            expect(screen.getByText(/📋 Clipboard/i)).toBeInTheDocument();
+        }, { timeout: 2000 });
+
+        // Switch to fs-1 and paste the file
+        await user.selectOptions(select, 'fs-1');
+        await waitFor(() => expect(screen.getByText('original.txt')).toBeInTheDocument());
+
+        await waitFor(() => {
+            expect(screen.getByRole('button', { name: /paste \(1\)/i })).not.toBeDisabled();
+        });
+
+        await user.click(screen.getByRole('button', { name: /paste \(1\)/i }));
+
+        // Wait for paste operation to fully complete (activity log entry appears when done)
+        await waitFor(() => {
+            const fileList = document.querySelector('.file-list');
+            expect(within(fileList).getByText('source-file.txt')).toBeInTheDocument();
+            // Also verify the activity log shows the paste completed
+            const activityLog = document.querySelector('.activity-log-content');
+            expect(activityLog).toHaveTextContent(/PASTE/i);
+        }, { timeout: 5000 });
+
+        // fs-1 should now have both files
+        {
+            const fileList = document.querySelector('.file-list');
+            expect(within(fileList).getByText('original.txt')).toBeInTheDocument();
+            expect(within(fileList).getByText('source-file.txt')).toBeInTheDocument();
+        }
+
+        // Switch to fs-2
+        await user.selectOptions(select, 'fs-2');
+        await waitFor(() => {
+            // fs-2 should still have its original file
+            const fileList = document.querySelector('.file-list');
+            expect(within(fileList).getByText('source-file.txt')).toBeInTheDocument();
+        });
+
+        // Switch back to fs-1 - pasted file should still be there
+        await user.selectOptions(select, 'fs-1');
+        await waitFor(() => {
+            const fileList = document.querySelector('.file-list');
+            expect(within(fileList).getByText('original.txt')).toBeInTheDocument();
+            expect(within(fileList).getByText('source-file.txt')).toBeInTheDocument();
+        });
+    }, 20000);
+
+    it('should persist file changes when disconnecting and reconnecting', async () => {
+        const user = userEvent.setup({ delay: null });
+
+        // Network with source file to copy
+        const sourceNetwork = createNetworkWithFileSystem({
+            networkId: 'source-net',
+            networkName: 'Source Network',
+            fileSystems: [{
+                id: 'fs-source',
+                ip: '10.0.0.1',
+                name: 'source-server',
+                files: [
+                    { name: 'to-copy.txt', size: '5.0 KB', corrupted: false },
+                ],
+            }],
+        });
+
+        // Network where we'll paste
+        const destNetwork = createNetworkWithFileSystem({
+            networkId: 'dest-net',
+            networkName: 'Dest Network',
+            fileSystems: [{
+                id: 'fs-dest',
+                ip: '10.0.0.2',
+                name: 'dest-server',
+                files: [
+                    { name: 'existing.txt', size: '3.0 KB', corrupted: false },
+                ],
+            }],
+        });
+
+        const saveState = createCompleteSaveState({
+            username: 'test_user',
+            overrides: {
+                narEntries: [sourceNetwork, destNetwork],
+                activeConnections: [
+                    { networkId: sourceNetwork.networkId, networkName: sourceNetwork.networkName },
+                    { networkId: destNetwork.networkId, networkName: destNetwork.networkName },
+                ],
+            },
+        });
+
+        setSaveInLocalStorage('test_user', saveState);
+
+        render(
+            <GameProvider>
+                <GameLoader username="test_user" />
+                <VPNClient />
+                <FileManager />
+            </GameProvider>
+        );
+
+        await waitFor(() => expect(screen.getAllByRole('combobox').length).toBeGreaterThan(0), { timeout: 10000 });
+
+        const fmSelect = screen.getAllByRole('combobox')[1]; // FileManager selector
+
+        // Copy from source network
+        await user.selectOptions(fmSelect, 'fs-source');
+        await waitFor(() => expect(screen.getByText('to-copy.txt')).toBeInTheDocument());
+
+        const sourceFile = screen.getByText('to-copy.txt').closest('.file-item');
+        await user.click(sourceFile);
+
+        await waitFor(() => {
+            const copyButton = screen.getByRole('button', { name: /copy \(1\)/i });
+            expect(copyButton).not.toBeDisabled();
+        });
+
+        await user.click(screen.getByRole('button', { name: /copy \(1\)/i }));
+
+        await waitFor(() => {
+            expect(screen.getByText(/📋 Clipboard/i)).toBeInTheDocument();
+        }, { timeout: 2000 });
+
+        // Paste to dest network
+        await user.selectOptions(fmSelect, 'fs-dest');
+        await waitFor(() => expect(screen.getByText('existing.txt')).toBeInTheDocument());
+
+        await waitFor(() => {
+            expect(screen.getByRole('button', { name: /paste \(1\)/i })).not.toBeDisabled();
+        });
+
+        await user.click(screen.getByRole('button', { name: /paste \(1\)/i }));
+
+        // Wait for paste operation to fully complete (activity log entry appears when done)
+        await waitFor(() => {
+            const fileList = document.querySelector('.file-list');
+            expect(within(fileList).getByText('to-copy.txt')).toBeInTheDocument();
+            // Also verify the activity log shows the paste completed
+            const activityLog = document.querySelector('.activity-log-content');
+            expect(activityLog).toHaveTextContent(/PASTE/i);
+        }, { timeout: 5000 });
+
+        // Verify both files present in file list
+        const fileList = document.querySelector('.file-list');
+        expect(within(fileList).getByText('existing.txt')).toBeInTheDocument();
+        expect(within(fileList).getByText('to-copy.txt')).toBeInTheDocument();
+
+        // Disconnect from dest network
+        const disconnectButtons = screen.getAllByRole('button', { name: /disconnect/i });
+        // Click the disconnect for dest network (second one)
+        await user.click(disconnectButtons[1]);
+
+        await waitFor(() => {
+            // Should only show source network's file system now
+            // Either file list is empty or existing.txt is not visible
+            const fileList = document.querySelector('.file-list');
+            if (fileList) {
+                expect(within(fileList).queryByText('existing.txt')).not.toBeInTheDocument();
+            }
+            // Also verify dest-net file system is not in dropdown
+            const select = screen.getAllByRole('combobox')[1]; // FileManager selector
+            expect(within(select).queryByText(/dest-server/i)).not.toBeInTheDocument();
+        }, { timeout: 3000 });
+
+        // Reconnect to dest network
+        const vpnDropdown = screen.getAllByRole('combobox')[0];
+        await user.selectOptions(vpnDropdown, 'dest-net');
+
+        // Find the Connect button in the new-connection-section (not Disconnect)
+        const connectSection = document.querySelector('.new-connection-section');
+        const connectButton = within(connectSection).getByRole('button', { name: /connect/i });
+        await user.click(connectButton);
+
+        // Wait for connection
+        await waitFor(() => {
+            expect(screen.getAllByRole('button', { name: /disconnect/i }).length).toBe(2);
+        }, { timeout: 3000 });
+
+        // Select dest file system again
+        await user.selectOptions(fmSelect, 'fs-dest');
+
+        // Pasted file should still be there (check file list specifically)
+        await waitFor(() => {
+            const fileList = document.querySelector('.file-list');
+            expect(within(fileList).getByText('existing.txt')).toBeInTheDocument();
+            expect(within(fileList).getByText('to-copy.txt')).toBeInTheDocument();
+        }, { timeout: 3000 });
+    }, 30000);
+
     it('should allow copy/paste between two File Manager instances on same network', async () => {
         const user = userEvent.setup({ delay: null });
 

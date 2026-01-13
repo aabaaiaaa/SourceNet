@@ -76,17 +76,6 @@ Once the tutorial part 2 mission is completed, there should be other missions th
 Review the systems in place for handling missions and scripted events and objective tracking as I need to understand how to picture these systems and how best they should integrate with each other as the biggest issues have come from changes in these areas. Each system needs to have a role and individual responsibility so there's not internal variables being changed by external systems. It will then aid in writing test cases for each system.
 
 
-When repairing corrupt files, once they have been repaired, relisting the files should also show the files have been repaired - currently they are showing as corrupt again - maybe the data that drives this is not being updated?
-
-
-(?)
-VPN client should show networks that are not authorised anymore (if the NAR entry is kept after deauth)
-
-
-(check this...)
-The message that comes through for the 2nd part of the tutorial mission should show that the NAR entry attachment can re-authorise your existing NAR enty - currently it says "Added to NAR", which is true, but because the NAR entry is now deauthorised, it's not a NAR entry you can use.
-
-
 (done - needs testing)
 the sabotage event is not very obvious to the user (I have manually tested) - the deleting process happens so fast that the user cannot actually see what has happened, the first thing you see is just a disconnection. It could be that the File Manager app also has a log at the bottom listing all operations performed. We need enough time for the user to think, "oh what is happening, that's not me doing that". Then the administrator disconnecting you should appear more dramatic, like a red warning popup that tells you the details of the network you are being forceibly disconnected from and by the network administrator - maybe also a description of the reason (that being deleting critical files), and that it's a popup that the user has to acknowledge by clicking a dismiss button.
 
@@ -109,10 +98,10 @@ File Manager log doesn't say the location operations were performed on, so when 
 Just like how pasting clears the clipboard, if you disconnect from the network that contains the files you've copied, the clipboard should also clear for those files that are copied for that same network. Currently the clipboard doesn't appear to clear on disconnection as when you reconnect, they are still in the clipboard. Obviously, if you disconnect from a differet network that is not related to the files, then the clipboard shouldn't clear those files. But given you can only copy one series of files from the same location, if the first is from the disconnected network, then all would be.
 
 
-(planning)
+(done - needs testing)
 In the File Manager, if you paste in some files then switch to another file system in the same instance of the File Manager, if you were to switch back to the original file system, you do not see the files that you pasted in. When manipulating files in File Manager, they should stay that way. I understand that for the particular case of the tutorial missions when you are revisiting the same network that the 2nd NAR entry you receive will change the network based on what is set in the mission data, but you could write that down to the network having whatever you did previous undone.
 The persistance of these changes to files I would expect to persist between a disconnect and reconnecting as long as the NAR entry you are using is the same one (hasn't been revoked/deauthed).
 
 
-
+(done - needs testing)
 When copying files for the tutroial part 2 mission, the objective is not tracking which particular files are being copied and so you could copy and paste in the same file 8 times and it would pass - this is incorrect. There are 8 files and it needs to be those 8 particular files.
