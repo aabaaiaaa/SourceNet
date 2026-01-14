@@ -11,6 +11,7 @@
  */
 
 import triggerEventBus from '../core/triggerEventBus';
+import { scheduleGameTimeCallback } from '../core/gameTimeScheduler';
 
 /**
  * Execute file deletion scripted event
@@ -18,8 +19,9 @@ import triggerEventBus from '../core/triggerEventBus';
  * @param {function} onProgress - Progress callback (for UI updates)
  * @param {function} onComplete - Completion callback
  * @param {array} fileNames - Optional array of file names being deleted (for activity log)
+ * @param {number} timeSpeed - Current game time speed multiplier
  */
-export const executeFileDeleteAction = async (action, onProgress, onComplete, fileNames = []) => {
+export const executeFileDeleteAction = async (action, onProgress, onComplete, fileNames = [], timeSpeed = 1) => {
   const { files, duration, playerControl } = action;
 
   // Block player control if specified
@@ -37,7 +39,9 @@ export const executeFileDeleteAction = async (action, onProgress, onComplete, fi
   const timePerFile = duration / fileCount;
 
   for (let i = 0; i < fileCount; i++) {
-    await new Promise((resolve) => setTimeout(resolve, timePerFile));
+    await new Promise((resolve) => {
+      scheduleGameTimeCallback(resolve, timePerFile, timeSpeed);
+    });
 
     // Emit sabotage file operation event for File Manager activity log
     triggerEventBus.emit('sabotageFileOperation', {
@@ -132,21 +136,36 @@ export const executeRevokeNAREntryAction = (action, onComplete) => {
 /**
  * Execute scripted event sequence
  * @param {object} scriptedEvent - Scripted event from mission definition
- * @param {object} callbacks - Callback functions {onProgress, onComplete}
+ * @param {object} callbacks - Callback functions {onProgress, onComplete, timeSpeed}
  */
 export const executeScriptedEvent = async (scriptedEvent, callbacks = {}) => {
   const { actions, id } = scriptedEvent;
+  const timeSpeed = callbacks.timeSpeed || 1;
 
+  // Execute file operations first (these block player control)
+  for (const action of actions) {
+    if (action.type === 'forceFileOperation' && action.operation === 'delete') {
+      await executeFileDeleteAction(
+        action,
+        callbacks.onProgress,
+        null, // Don't call onComplete yet
+        [], // fileNames
+        timeSpeed // Pass time speed for game time scheduling
+      );
+    }
+  }
+
+  // Emit scripted event completion AFTER file operations but BEFORE other actions
+  // This restores player control before forced disconnect overlay appears
+  triggerEventBus.emit('scriptedEventComplete', {
+    eventId: id,
+  });
+
+  // Execute remaining actions (disconnect, revoke NAR, mission status)
   for (const action of actions) {
     switch (action.type) {
       case 'forceFileOperation':
-        if (action.operation === 'delete') {
-          await executeFileDeleteAction(
-            action,
-            callbacks.onProgress,
-            null // Don't call onComplete yet
-          );
-        }
+        // Already handled above
         break;
 
       case 'forceDisconnect':
@@ -165,11 +184,6 @@ export const executeScriptedEvent = async (scriptedEvent, callbacks = {}) => {
         console.warn(`Unknown scripted action type: ${action.type}`);
     }
   }
-
-  // Emit scripted event completion
-  triggerEventBus.emit('scriptedEventComplete', {
-    eventId: id,
-  });
 
   // Call completion callback after all actions
   if (callbacks.onComplete) {

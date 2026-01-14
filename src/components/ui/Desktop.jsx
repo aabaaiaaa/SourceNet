@@ -6,6 +6,7 @@ import Window from './Window';
 import MinimizedWindowBar from './MinimizedWindowBar';
 import PauseOverlay from './PauseOverlay';
 import ForcedDisconnectionOverlay from './ForcedDisconnectionOverlay';
+import TerminalLockoutOverlay from '../TerminalLockoutOverlay';
 
 import InstallationQueue from './InstallationQueue';
 import DebugPanel from '../../debug/DebugPanel';
@@ -16,6 +17,8 @@ const Desktop = () => {
   const { windows, isPaused, setIsPaused, playAlarmSound, narEntries } = useGame();
   const [showDebugPanel, setShowDebugPanel] = useState(false);
   const [forcedDisconnection, setForcedDisconnection] = useState(null);
+  const [isTerminalLocked, setIsTerminalLocked] = useState(false);
+  const [isDeletionActive, setIsDeletionActive] = useState(false);
 
   // Subscribe to forced disconnection events
   useEffect(() => {
@@ -49,6 +52,59 @@ const Desktop = () => {
   const handleAcknowledgeDisconnection = () => {
     setForcedDisconnection(null);
   };
+
+  // Subscribe to scripted event start for terminal lockout
+  useEffect(() => {
+    const handleScriptedEventStart = (data) => {
+      const { actions } = data;
+
+      // Check if any action has playerControl: false
+      const hasPlayerControlLock = actions?.some(action => action.playerControl === false);
+
+      if (hasPlayerControlLock) {
+        console.log('🔒 Terminal control locked - scripted event taking over');
+        setIsTerminalLocked(true);
+        setIsDeletionActive(false); // Visuals hidden during delay
+      }
+    };
+
+    triggerEventBus.on('scriptedEventStart', handleScriptedEventStart);
+
+    return () => {
+      triggerEventBus.off('scriptedEventStart', handleScriptedEventStart);
+    };
+  }, []);
+
+  // Subscribe to sabotage file operations to show visuals
+  useEffect(() => {
+    const handleSabotageFileOperation = (data) => {
+      if (data.operation === 'delete' && isTerminalLocked) {
+        console.log('🚨 Sabotage deletion started - showing lockout visuals');
+        setIsDeletionActive(true);
+      }
+    };
+
+    triggerEventBus.on('sabotageFileOperation', handleSabotageFileOperation);
+
+    return () => {
+      triggerEventBus.off('sabotageFileOperation', handleSabotageFileOperation);
+    };
+  }, [isTerminalLocked]);
+
+  // Subscribe to scripted event completion to restore control
+  useEffect(() => {
+    const handleScriptedEventComplete = (data) => {
+      console.log('✅ Scripted event complete - restoring terminal control');
+      setIsTerminalLocked(false);
+      setIsDeletionActive(false);
+    };
+
+    triggerEventBus.on('scriptedEventComplete', handleScriptedEventComplete);
+
+    return () => {
+      triggerEventBus.off('scriptedEventComplete', handleScriptedEventComplete);
+    };
+  }, []);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -92,6 +148,10 @@ const Desktop = () => {
       <InstallationQueue />
 
       {isPaused && <PauseOverlay />}
+
+      {isTerminalLocked && (
+        <TerminalLockoutOverlay isVisible={isTerminalLocked} showVisuals={isDeletionActive} />
+      )}
 
       {showDebugPanel && <DebugPanel onClose={() => setShowDebugPanel(false)} />}
 

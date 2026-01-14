@@ -290,3 +290,52 @@
 .rep-negative {
   color: #8B0000;
 }
+
+/* Procedural Mission System Styles */
+.mission-badges {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.chain-badge {
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: bold;
+  background: #6A5ACD;
+  color: white;
+}
+
+.mission-expiration {
+  color: #666;
+  font-size: 12px;
+}
+
+.mission-expiration.expiration-urgent {
+  color: #DC143C;
+  font-weight: bold;
+}
+
+.mission-expiration.expiration-expired {
+  color: #8B0000;
+  font-weight: bold;
+  text-decoration: line-through;
+}
+
+.mission-time-limit {
+  color: #8B4500;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.mission-card.mission-expired {
+  opacity: 0.5;
+  background: #f0f0f0;
+  border-color: #999;
+}
+
+.mission-card.mission-expired .accept-mission-btn {
+  background: #999;
+  border-color: #666;
+}

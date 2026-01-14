@@ -134,15 +134,18 @@ const FileManager = () => {
             newFiles[fileIndex] = { ...newFiles[fileIndex], selected: false };
           }
 
-          // Persist changes to narEntries (skip copy as it doesn't modify files)
+          // Schedule persistence outside of setState to avoid "Cannot update a component while rendering" error
           if (operation !== 'copy') {
             const networkId = currentNetworkIdRef.current;
             const fsId = selectedFileSystemRef.current;
-            console.log(`📁 Persisting ${operation} to narEntries: networkId=${networkId}, fsId=${fsId}, files=${newFiles.length}`);
             if (networkId && fsId) {
               // Strip selection state before persisting
               const filesToPersist = newFiles.map(({ selected: _selected, ...rest }) => rest);
-              updateFileSystemFiles(networkId, fsId, filesToPersist);
+              // Use setTimeout to defer the context update until after this render cycle
+              setTimeout(() => {
+                console.log(`📁 Persisting ${operation} to narEntries: networkId=${networkId}, fsId=${fsId}, files=${filesToPersist.length}`);
+                updateFileSystemFiles(networkId, fsId, filesToPersist);
+              }, 0);
             }
           }
 

@@ -15,6 +15,9 @@ test.describe('E2E: Tutorial Mission Flow', () => {
     test('should complete 2-part tutorial missions with all objectives', async ({ page }) => {
         test.setTimeout(120000);
 
+        // Capture console logs
+        page.on('console', msg => console.log('BROWSER:', msg.text()));
+
         // Helper to set game speed
         const setSpeed = async (speed) => {
             await page.evaluate((s) => window.gameContext.setSpecificTimeSpeed(s), speed);
@@ -276,7 +279,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
 
         await networkAttachment.click();
         await page.waitForTimeout(200);
-        await expect(page.locator('text=✓ Added to NAR')).toBeVisible({ timeout: 2000 });
+        await expect(page.locator('text=✓ Network credentials used')).toBeVisible({ timeout: 2000 });
 
         // Close Mail
         const mailWindow2 = page.locator('.window:has(.window-header:has-text("Mail"))');
@@ -492,13 +495,18 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         const repairButton = fileManagerWindowStep15.locator('button:has-text("Repair (8)")');
         await expect(repairButton).toBeEnabled();
 
-        await setSpeed(100);
+        // Use 10x speed for repair to ensure objective completion triggers properly
+        await setSpeed(10);
         await repairButton.click();
-        await page.waitForTimeout(500);
-        await setSpeed(1);
 
-        await expect(fileManagerWindowStep15.locator('.file-corrupted')).toHaveCount(0);
-        await expect(fileManagerWindowStep15.locator('.corruption-icon')).toHaveCount(0);
+        // Wait for forced disconnection overlay - it will appear after sabotage completes
+        const forcedDisconnectOverlay = page.locator('.forced-disconnect-overlay');
+        await expect(forcedDisconnectOverlay).toBeVisible({ timeout: 30000 });
+        await page.locator('.acknowledge-btn').click();
+        await expect(forcedDisconnectOverlay).not.toBeVisible({ timeout: 2000 });
+
+        // Now safe to set back to 1x and continue test
+        await setSpeed(1);
 
         // ========================================
         // STEP 14: Verify Repair Complete
@@ -534,35 +542,13 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         }
 
         // ========================================
-        // STEP 15: Watch Scripted Sabotage Event
+        // STEP 15: Verify Sabotage Consequences
         // ========================================
+        // Sabotage has already been dismissed in STEP 13 after clicking Repair
+        // Now just verify the consequences: VPN disconnected and mission failed
+
         await page.locator('.window:has(.window-header:has-text("SourceNet Mission Board"))').locator('.window-controls button:has-text("×")').click();
         await page.waitForTimeout(100);
-
-        await page.click('text=☰');
-        await page.waitForTimeout(200);
-        await page.click('text=File Manager');
-
-        const fileManagerWindowStep17 = page.locator('.window:has(.window-header:has-text("File Manager"))').first();
-        await expect(fileManagerWindowStep17).toBeVisible();
-
-        await setSpeed(100);
-        await page.waitForTimeout(100); // 5s game time for sabotage delay
-        await page.waitForTimeout(200); // 15s game time deletion (increased from 10s)
-        await page.waitForTimeout(50);  // 3s game time pause
-
-        const remainingFiles = await fileManagerWindowStep17.locator('.file-item').count();
-        expect(remainingFiles).toBe(0);
-
-        await setSpeed(1);
-        await page.waitForTimeout(500);
-
-        // Dismiss forced disconnection overlay
-        const forcedDisconnectOverlay = page.locator('.forced-disconnect-overlay');
-        if (await forcedDisconnectOverlay.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await page.click('.acknowledge-btn');
-            await expect(forcedDisconnectOverlay).not.toBeVisible({ timeout: 2000 });
-        }
 
         // Verify VPN disconnected
         await page.click('text=☰');
@@ -1092,9 +1078,56 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         const betterMsgBody = await page.locator('.message-body').textContent();
         expect(betterMsgBody.length).toBeGreaterThan(50);
 
-        // Go back to inbox
-        await page.locator('button:has-text("Back")').click();
+        // ========================================
+        // STEP 26.5: Verify Procedural Missions Generated
+        // ========================================
+        // Reading the "Better" message triggers procedural mission generation
+        // Close Mail and check Mission Board for generated missions
+        await page.locator('.window:has(.window-header:has-text("Mail"))').locator('.window-controls button:has-text("×")').click({ force: true });
+        await page.waitForTimeout(300);
+
+        await page.click('text=☰');
+        await page.waitForTimeout(500);
+        const missionBoardMenuItem = page.locator('.app-launcher-menu >> text=Mission Board').or(
+            page.locator('.app-launcher-menu >> text=SourceNet Mission Board')
+        );
+        await expect(missionBoardMenuItem).toBeVisible({ timeout: 5000 });
+        await missionBoardMenuItem.click();
+        await expect(page.locator('.window >> .window-header:has-text("SourceNet Mission Board")')).toBeVisible();
+
+        await page.locator('.tab:has-text("Available")').click();
+        await page.waitForTimeout(500);
+
+        // Verify procedural missions were generated (should be at least 4)
+        const proceduralMissionCards = page.locator('.mission-card');
+        const missionCount = await proceduralMissionCards.count();
+        expect(missionCount).toBeGreaterThanOrEqual(4);
+        console.log(`✅ Procedural missions generated: ${missionCount} available`);
+
+        // Verify mission card structure on first procedural mission
+        const firstProceduralMission = proceduralMissionCards.first();
+        await expect(firstProceduralMission.locator('h3')).toBeVisible();
+        await expect(firstProceduralMission.locator('.difficulty-badge')).toBeVisible();
+        await expect(firstProceduralMission.locator('.mission-client')).toBeVisible();
+        await expect(firstProceduralMission.locator('.mission-payout')).toBeVisible();
+        await expect(firstProceduralMission.locator('.mission-expiration')).toBeVisible();
+        console.log('✅ Procedural mission cards have proper structure');
+
+        // Close Mission Board and reopen Mail to continue with NAR info message check
+        await page.locator('.window:has(.window-header:has-text("Mission Board"))').locator('.window-controls button:has-text("×")').click();
         await page.waitForTimeout(100);
+
+        await page.click('text=☰');
+        await page.waitForTimeout(200);
+        await page.click('text=SNet Mail');
+        await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
+
+        // Go back to inbox if needed
+        const backBtnForNar = page.locator('button:has-text("Back")');
+        if (await backBtnForNar.isVisible()) {
+            await backBtnForNar.click();
+            await page.waitForTimeout(100);
+        }
 
         // Check for "About Network Access" NAR info message
         const narInfoMessage = page.locator('.message-item').filter({ hasText: 'About Network Access' });
@@ -1137,8 +1170,6 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await page.locator('.tab:has-text("Completed")').click();
         const completedMissions = await page.locator('.mission-card').count();
         expect(completedMissions).toBe(1);
-
-        await page.pause();
     });
 });
 

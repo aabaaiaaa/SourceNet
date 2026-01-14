@@ -32,6 +32,7 @@ import { updateReputationCountdown, startReputationCountdown } from '../systems/
 import { BANKING_MESSAGES, HR_MESSAGES } from '../core/systemMessages';
 import { getReputationTier } from '../systems/ReputationSystem';
 import triggerEventBus from '../core/triggerEventBus';
+import { executeScriptedEvent } from '../missions/ScriptedEventExecutor';
 
 export const GameContext = createContext();
 
@@ -146,6 +147,14 @@ export const GameProvider = ({ children }) => {
   // Ref to hold the latest completeMission function
   const completeMissionRef = useRef(null);
 
+  // ===== PROCEDURAL MISSION SYSTEM =====
+  const [proceduralMissionsEnabled, setProceduralMissionsEnabled] = useState(false);
+  const [missionPool, setMissionPool] = useState([]); // Available procedural missions
+  const [pendingChainMissions, setPendingChainMissions] = useState({}); // Unrevealed chain parts
+  const [activeClientIds, setActiveClientIds] = useState([]); // Clients with active/pending missions
+  const [clientStandings, setClientStandings] = useState({}); // { clientId: { successCount, failCount, lastMissionDate } }
+  const [extensionOffers, setExtensionOffers] = useState({}); // { missionId: extensionOffer }
+
   // Clear file clipboard
   const clearFileClipboard = useCallback(() => {
     setFileClipboard({ files: [], sourceFileSystemId: '', sourceNetworkId: '' });
@@ -213,6 +222,55 @@ export const GameProvider = ({ children }) => {
     console.log('🔄 Mission changed, resetting missionFileOperations');
     setMissionFileOperations({});
   }, [activeMission?.missionId]);
+
+  // Initialize procedural missions when "Better" message is read (after tutorial-part-2)
+  useEffect(() => {
+    // Listen for the manager's "Better" message being read
+    // Message ID is prefixed with 'msg-' when created from event ID
+    const handleMessageRead = (data) => {
+      if (data.messageId === 'msg-manager-better') {
+        console.log('🎯 "Better" message read! Initializing procedural mission pool...');
+
+        // Enable procedural missions
+        setProceduralMissionsEnabled(true);
+
+        // Initialize the mission pool
+        import('../missions/MissionPoolManager').then(({ initializePool }) => {
+          const poolState = initializePool(reputation, currentTime);
+          console.log(`📋 Procedural pool initialized with ${poolState.missions.length} missions`);
+          setMissionPool(poolState.missions);
+          setPendingChainMissions(poolState.pendingChains);
+          setActiveClientIds(poolState.activeClientIds);
+        });
+      }
+    };
+
+    const unsubscribe = triggerEventBus.on('messageRead', handleMessageRead);
+    return () => unsubscribe();
+  }, [reputation, currentTime]);
+
+  // Refresh procedural mission pool when reputation changes or time advances significantly
+  useEffect(() => {
+    if (!proceduralMissionsEnabled || missionPool.length === 0) return;
+
+    import('../missions/MissionPoolManager').then(({ refreshPool, shouldRefreshPool }) => {
+      const poolState = {
+        missions: missionPool,
+        pendingChains: pendingChainMissions,
+        activeClientIds,
+        lastRefresh: new Date().toISOString()
+      };
+
+      if (shouldRefreshPool(poolState, reputation)) {
+        console.log('🔄 Refreshing procedural mission pool...');
+        const activeMissionId = activeMission?.missionId || null;
+        const newPoolState = refreshPool(poolState, reputation, currentTime, activeMissionId);
+        setMissionPool(newPoolState.missions);
+        setPendingChainMissions(newPoolState.pendingChains);
+        setActiveClientIds(newPoolState.activeClientIds);
+      }
+    });
+  }, [reputation]); // Only trigger on reputation change
 
   // Download manager - handles progress updates for downloads based on game time
   useDownloadManager(
@@ -414,6 +472,15 @@ export const GameProvider = ({ children }) => {
       // Will be handled when message is marked as read
     }
   }, [currentTime]);
+
+  // Update message (for attachment activation, etc.)
+  const updateMessage = useCallback((messageId, updates) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId ? { ...msg, ...updates } : msg
+      )
+    );
+  }, []);
 
   // Mark message as read
   const markMessageAsRead = useCallback((messageId) => {
@@ -899,6 +966,7 @@ export const GameProvider = ({ children }) => {
       missionId: activeMission.missionId || activeMission.id,
       title: activeMission.title,
       client: activeMission.client,
+      clientId: activeMission.clientId, // For procedural missions
       difficulty: activeMission.difficulty,
       status,
       completionTime: currentTime.toISOString(),
@@ -909,6 +977,23 @@ export const GameProvider = ({ children }) => {
 
     // Add to completed missions (use functional update to avoid stale closure)
     setCompletedMissions(prev => [...prev, completedMission]);
+
+    // Update client standings for procedural missions
+    if (activeMission.clientId) {
+      setClientStandings(prev => {
+        const existing = prev[activeMission.clientId] || { successCount: 0, failCount: 0 };
+        return {
+          ...prev,
+          [activeMission.clientId]: {
+            ...existing,
+            successCount: status === 'success' ? existing.successCount + 1 : existing.successCount,
+            failCount: status === 'failed' ? existing.failCount + 1 : existing.failCount,
+            lastMissionDate: currentTime.toISOString(),
+            lastMissionStatus: status,
+          }
+        };
+      });
+    }
 
     // Clear active mission
     setActiveMission(null);
@@ -1354,171 +1439,17 @@ export const GameProvider = ({ children }) => {
   useEffect(() => {
     const handleScriptedEvent = async (data) => {
       const { eventId, actions, missionId } = data;
-      console.log(`🚀 Executing scripted event: ${eventId} with ${actions?.length || 0} actions`);
-      console.log(`🚀 Action types:`, actions.map(a => a.type).join(', '));
+      console.log(`🚀 Executing scripted event: ${eventId}`);
+      console.log(`📡 EMITTING scriptedEventStart: eventId=${eventId}, missionId=${missionId}, actions=${actions?.length || 0}`);
 
-      // Process each action sequentially
-      for (let i = 0; i < actions.length; i++) {
-        const action = actions[i];
-        console.log(`  → Processing action ${i + 1}/${actions.length}: ${action.type}`);
+      // Delegate to ScriptedEventExecutor which handles all action types with proper timing
+      await executeScriptedEvent({ id: eventId, actions }, {
+        onProgress: (progress) => {
+          console.log(`📊 Scripted event progress:`, progress);
+        },
+        timeSpeed
+      });
 
-        switch (action.type) {
-          case 'forceFileOperation':
-            if (action.operation === 'delete') {
-              const filesToDelete = typeof action.files === 'number' ? action.files : 8;
-              console.log(`🗑️ Scripted: Deleting ${filesToDelete} files`);
-
-              // Update NAR entries to remove files from the targeted filesystem
-              setNarEntries(currentEntries => {
-                console.log(`  NAR entries before deletion:`, currentEntries.length);
-                return currentEntries.map(entry => {
-                  if (entry.fileSystems) {
-                    return {
-                      ...entry,
-                      fileSystems: entry.fileSystems.map(fs => {
-                        // Delete files from all filesystems (sabotage affects all)
-                        const remainingFiles = (fs.files || []).slice(filesToDelete);
-                        console.log(`  🗑️ FS ${fs.name}: ${fs.files?.length || 0} files → ${remainingFiles.length} files`);
-                        return {
-                          ...fs,
-                          files: remainingFiles
-                        };
-                      })
-                    };
-                  }
-                  return entry;
-                });
-              });
-
-              console.log(`🗑️ All ${filesToDelete} files deleted by sabotage`);
-            }
-            break;
-
-          case 'forceDisconnect':
-            console.log(`🔌 Scripted: Force disconnecting from network "${action.network}"`);
-
-            // Remove active connections matching the network ID or name
-            setActiveConnections(currentConns => {
-              console.log(`  🔌 Current connections (${currentConns.length}):`, currentConns.map(c => `${c.networkId}/${c.networkName}`));
-              console.log(`  🔌 Looking for: "${action.network}"`);
-              const filtered = currentConns.filter(conn => {
-                const keepConnection = conn.networkId !== action.network && conn.networkName !== action.network;
-                console.log(`    Connection ${conn.networkId}: ${keepConnection ? 'KEEP' : 'REMOVE'}`);
-                return keepConnection;
-              });
-              console.log(`  🔌 After filter (${filtered.length}):`, filtered.map(c => `${c.networkId}/${c.networkName}`));
-              return filtered;
-            });
-
-            // Emit disconnect event
-            triggerEventBus.emit('forceNetworkDisconnect', {
-              networkId: action.network,
-              reason: action.reason || 'Network administrator terminated connection',
-            });
-
-            console.log(`🔌 Network disconnected: ${action.network}`);
-            break;
-
-          case 'revokeNAREntry':
-            console.log(`🔐 Scripted: Revoking NAR entry for ${action.network}`);
-            setNarEntries(currentEntries => {
-              const updated = currentEntries.map(entry => {
-                if (entry.networkId === action.network) {
-                  return {
-                    ...entry,
-                    authorized: false,
-                    revokedReason: action.reason || 'Access credentials revoked by network administrator'
-                  };
-                }
-                return entry;
-              });
-              console.log(`🔐 NAR entry revoked: ${action.network}`);
-              return updated;
-            });
-            break;
-
-          case 'setMissionStatus':
-            console.log(`📋 Scripted: Setting mission status to ${action.status}, completeMissionRef=${typeof completeMissionRef.current}`);
-            if (action.status === 'failed') {
-              // Check if we've already processed this mission failure
-              if (failedMissionsRef.current.has(missionId)) {
-                console.log(`⚠️ Mission ${missionId} failure already processed - skipping duplicate`);
-                break;
-              }
-
-              failedMissionsRef.current.add(missionId);
-
-              // Check if mission is still active
-              console.log(`🔍 Checking mission status: activeMission=${JSON.stringify({ id: activeMission?.id, missionId: activeMission?.missionId })}, lookingFor=${missionId}`);
-              if (activeMission && (activeMission.missionId === missionId || activeMission.id === missionId)) {
-                // Mission still active - complete it with failure status
-                const failurePayout = activeMission.consequences?.failure?.credits || 0;
-                const failureReputation = activeMission.consequences?.failure?.reputation || 0;
-                const failureReason = action.failureReason || 'Mission failed';
-                console.log(`💔 Mission failed - applying penalties: ${failurePayout} credits, ${failureReputation} reputation`);
-                console.log(`🎯 About to call completeMissionRef.current, ref type=${typeof completeMissionRef.current}, value=${completeMissionRef.current}`);
-                completeMissionRef.current?.('failed', failurePayout, failureReputation, failureReason);
-                console.log(`✅ completeMission call finished`);
-              } else {
-                // Mission already completed - update the completed mission's status
-                console.log(`⚠️ Mission ${missionId} already completed - updating status to failed`);
-
-                const failurePayout = action.failureConsequences?.credits ?? -10000;
-                const failureReputation = action.failureConsequences?.reputation ?? -6;
-
-                // Update the mission and bank account in one go to ensure atomicity
-                setCompletedMissions(prevCompleted => {
-                  const mission = prevCompleted.find(m => m.missionId === missionId || m.id === missionId);
-
-                  if (!mission) {
-                    console.log(`⚠️ Mission ${missionId} not found in completed missions`);
-                    return prevCompleted;
-                  }
-
-                  if (mission.status === 'failed') {
-                    console.log(`⚠️ Mission already marked as failed in state - skipping`);
-                    return prevCompleted;
-                  }
-
-                  console.log(`💔 Updating completed mission to failed - adjusting penalties: ${failurePayout} credits, ${failureReputation} reputation`);
-                  const payoutDiff = failurePayout - (mission.payout || 0);
-                  console.log(`💰 Payout diff: ${payoutDiff} (failure: ${failurePayout}, success was: ${mission.payout || 0})`);
-
-                  // Update bank account synchronously
-                  setBankAccounts(prevAccounts => {
-                    const newAccounts = [...prevAccounts];
-                    if (newAccounts[0]) {
-                      const oldBalance = newAccounts[0].balance;
-                      newAccounts[0].balance += payoutDiff;
-                      console.log(`💰 Balance: ${oldBalance} → ${newAccounts[0].balance} (diff: ${payoutDiff})`);
-                    }
-                    return newAccounts;
-                  });
-
-                  return prevCompleted.map(m => {
-                    if (m.missionId === missionId || m.id === missionId) {
-                      return {
-                        ...m,
-                        status: 'failed',
-                        payout: failurePayout,
-                        reputationChange: failureReputation,
-                        failureReason: action.failureReason || 'Mission failed'
-                      };
-                    }
-                    return m;
-                  });
-                });
-              }
-            }
-            break;
-
-          default:
-            console.warn(`Unknown scripted action type: ${action.type}`);
-        }
-      }
-
-      // Emit completion event
-      triggerEventBus.emit('scriptedEventComplete', { eventId });
       console.log(`✅ Scripted event ${eventId} complete`);
     };
 
@@ -1529,7 +1460,131 @@ export const GameProvider = ({ children }) => {
       console.log(`🔌 UNSUBSCRIBED from scriptedEventStart`);
       triggerEventBus.off('scriptedEventStart', handleScriptedEvent);
     };
-  }, [activeMission, completedMissions, bankAccounts, setNarEntries, setActiveConnections, setActiveMission]);
+  }, [activeMission, timeSpeed]);
+
+  // Listen for sabotage file operations to delete files from NAR entries
+  useEffect(() => {
+    const handleSabotageFileOperation = (data) => {
+      const { fileName, operation } = data;
+
+      if (operation === 'delete') {
+        console.log(`🗑️ Sabotage deleting file: ${fileName}`);
+
+        // Remove one file from NAR entries
+        setNarEntries(currentEntries => {
+          return currentEntries.map(entry => {
+            if (entry.fileSystems) {
+              return {
+                ...entry,
+                fileSystems: entry.fileSystems.map(fs => {
+                  if (fs.files && fs.files.length > 0) {
+                    // Remove the first file (simulating progressive deletion)
+                    const remainingFiles = fs.files.slice(1);
+                    console.log(`  🗑️ FS ${fs.name}: ${fs.files.length} files → ${remainingFiles.length} files`);
+                    return {
+                      ...fs,
+                      files: remainingFiles
+                    };
+                  }
+                  return fs;
+                })
+              };
+            }
+            return entry;
+          });
+        });
+      }
+    };
+
+    triggerEventBus.on('sabotageFileOperation', handleSabotageFileOperation);
+
+    return () => {
+      triggerEventBus.off('sabotageFileOperation', handleSabotageFileOperation);
+    };
+  }, [setNarEntries]);
+
+  // Listen for forced network disconnect
+  useEffect(() => {
+    const handleForceNetworkDisconnect = (data) => {
+      const { networkId, reason } = data;
+      console.log(`🔌 Force disconnecting from network: ${networkId}`);
+
+      // Remove active connections matching the network ID or name
+      setActiveConnections(currentConns => {
+        const filtered = currentConns.filter(conn => {
+          return conn.networkId !== networkId && conn.networkName !== networkId;
+        });
+        console.log(`  🔌 Disconnected from ${networkId}: ${currentConns.length} → ${filtered.length} connections`);
+        return filtered;
+      });
+    };
+
+    triggerEventBus.on('forceNetworkDisconnect', handleForceNetworkDisconnect);
+
+    return () => {
+      triggerEventBus.off('forceNetworkDisconnect', handleForceNetworkDisconnect);
+    };
+  }, [setActiveConnections]);
+
+  // Listen for NAR entry revocation
+  useEffect(() => {
+    const handleRevokeNAREntry = (data) => {
+      const { networkId, reason } = data;
+      console.log(`🔐 Revoking NAR entry for ${networkId}`);
+
+      setNarEntries(currentEntries => {
+        return currentEntries.map(entry => {
+          if (entry.networkId === networkId) {
+            return {
+              ...entry,
+              authorized: false,
+              revokedReason: reason || 'Access credentials revoked by network administrator'
+            };
+          }
+          return entry;
+        });
+      });
+    };
+
+    triggerEventBus.on('revokeNAREntry', handleRevokeNAREntry);
+
+    return () => {
+      triggerEventBus.off('revokeNAREntry', handleRevokeNAREntry);
+    };
+  }, [setNarEntries]);
+
+  // Listen for mission status changes
+  useEffect(() => {
+    const handleMissionStatusChanged = (data) => {
+      const { status, failureReason } = data;
+      console.log(`📋 Mission status changed to: ${status}`);
+
+      if (status === 'failed' && activeMission) {
+        const missionId = activeMission.missionId || activeMission.id;
+
+        // Check if already processed
+        if (failedMissionsRef.current.has(missionId)) {
+          console.log(`⚠️ Mission ${missionId} failure already processed - skipping duplicate`);
+          return;
+        }
+
+        failedMissionsRef.current.add(missionId);
+
+        // Apply failure consequences
+        const failurePayout = activeMission.consequences?.failure?.credits || 0;
+        const failureReputation = activeMission.consequences?.failure?.reputation || 0;
+        console.log(`💔 Mission failed - applying penalties: ${failurePayout} credits, ${failureReputation} reputation`);
+
+        completeMissionRef.current?.('failed', failurePayout, failureReputation, failureReason || 'Mission failed');
+      }
+    };
+
+    triggerEventBus.on('missionStatusChanged', handleMissionStatusChanged);
+
+    return () => {
+      triggerEventBus.off('missionStatusChanged', handleMissionStatusChanged);
+    };
+  }, [activeMission]);
 
   // Handle scheduled story events (e.g., failure messages)
   useEffect(() => {
@@ -1649,13 +1704,21 @@ export const GameProvider = ({ children }) => {
       bankingMessagesSent,
       // HR message tracking
       reputationMessagesSent,
+      // Procedural mission system
+      proceduralMissionsEnabled,
+      missionPool,
+      pendingChainMissions,
+      activeClientIds,
+      clientStandings,
+      extensionOffers,
     };
 
     saveToLocalStorage(username, gameState, saveName);
   }, [username, playerMailId, currentTime, hardware, software, bankAccounts, messages, managerName, windows,
     reputation, reputationCountdown, activeMission, completedMissions, availableMissions, missionCooldowns,
     narEntries, activeConnections, lastScanResults, fileManagerConnections, lastFileOperation,
-    downloadQueue, transactions, licensedSoftware, bankruptcyCountdown, lastInterestTime, bankingMessagesSent, reputationMessagesSent]);
+    downloadQueue, transactions, licensedSoftware, bankruptcyCountdown, lastInterestTime, bankingMessagesSent, reputationMessagesSent,
+    proceduralMissionsEnabled, missionPool, pendingChainMissions, activeClientIds, clientStandings, extensionOffers]);
 
   // Reboot system
   const rebootSystem = useCallback(() => {
@@ -1720,8 +1783,23 @@ export const GameProvider = ({ children }) => {
       finalTerminationWarning: false,
       performanceImproved: false,
     });
-    // Go to boot phase
-    setGamePhase('boot');
+    // Reset procedural mission system
+    setProceduralMissionsEnabled(false);
+    setMissionPool([]);
+    setPendingChainMissions({});
+    setActiveClientIds([]);
+    setClientStandings({});
+    setExtensionOffers({});
+
+    // Check if should skip boot (E2E tests)
+    const urlParams = new URLSearchParams(window.location.search);
+    const skipBoot = urlParams.get('skipBoot') === 'true';
+
+    if (skipBoot) {
+      setGamePhase('username'); // Skip boot, go to username selection for new game
+    } else {
+      setGamePhase('boot'); // Normal boot sequence
+    }
   }, []);
 
   // Load game
@@ -1778,6 +1856,14 @@ export const GameProvider = ({ children }) => {
       finalTerminationWarning: false,
       performanceImproved: false,
     });
+
+    // Restore procedural mission system
+    setProceduralMissionsEnabled(gameState.proceduralMissionsEnabled ?? false);
+    setMissionPool(gameState.missionPool ?? []);
+    setPendingChainMissions(gameState.pendingChainMissions ?? {});
+    setActiveClientIds(gameState.activeClientIds ?? []);
+    setClientStandings(gameState.clientStandings ?? {});
+    setExtensionOffers(gameState.extensionOffers ?? {});
 
     // Validate and fix window positions when loading
     const loadedWindows = (gameState.windows || []).map((w, index) => {
@@ -1901,9 +1987,24 @@ export const GameProvider = ({ children }) => {
     clearFileClipboard,
     updateFileSystemFiles,
 
+    // Procedural Mission System
+    proceduralMissionsEnabled,
+    setProceduralMissionsEnabled,
+    missionPool,
+    setMissionPool,
+    pendingChainMissions,
+    setPendingChainMissions,
+    activeClientIds,
+    setActiveClientIds,
+    clientStandings,
+    setClientStandings,
+    extensionOffers,
+    setExtensionOffers,
+
     // Actions
     initializePlayer,
     addMessage,
+    updateMessage,
     markMessageAsRead,
     archiveMessage,
     initiateChequeDeposit,

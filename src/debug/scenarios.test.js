@@ -117,5 +117,10 @@ function createMockContext() {
     setLastInterestTime: vi.fn(),
     setWindows: vi.fn(),
     setTimeSpeed: vi.fn(),
+    setProceduralMissionsEnabled: vi.fn(),
+    setMissionPool: vi.fn(),
+    setPendingChainMissions: vi.fn(),
+    setActiveClientIds: vi.fn(),
+    setClientStandings: vi.fn(),
   };
 }

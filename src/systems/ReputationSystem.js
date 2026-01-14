@@ -26,69 +26,237 @@ export const REPUTATION_TIERS = {
     color: '#8B0000', // Dark red
     description: 'FINAL WARNING - 10 mins to complete mission or FIRED',
     payoutMultiplier: 0.5,
-    clientTypes: ['library', 'museum'], // Only non-critical clients
+    // Tier 1: Only lowest-tier community/cultural clients
+    clientTypes: [
+      'gov-library',
+      'cultural-local',
+      'nonprofit-community',
+      // Legacy types for backward compatibility
+      'library', 'museum'
+    ],
   },
   2: {
     name: 'On performance plan',
     color: '#DC143C', // Red
     description: 'WARNING - One more failure = Tier 1',
     payoutMultiplier: 0.7,
-    clientTypes: ['small-business', 'non-profit'],
+    // Tier 2: Entry-level across several industries
+    clientTypes: [
+      'gov-library',
+      'cultural-local',
+      'nonprofit-community',
+      'bank-local',
+      'health-clinic',
+      'corp-small',
+      'ship-courier',
+      // Legacy
+      'small-business', 'non-profit'
+    ],
   },
   3: {
     name: 'Accident prone',
     color: '#FF6347', // Red/Orange
     description: 'Recent failures, needs practice',
     payoutMultiplier: 0.85,
-    clientTypes: ['small-business', 'medium-business'],
+    // Tier 3: Low-tier clients + local utilities/emergency
+    clientTypes: [
+      'gov-library',
+      'cultural-local',
+      'nonprofit-community',
+      'bank-local',
+      'health-clinic',
+      'corp-small',
+      'ship-courier',
+      'util-local',
+      'emerg-volunteer',
+      // Legacy
+      'small-business', 'medium-business'
+    ],
   },
   4: {
     name: 'Can work with help',
     color: '#FFA500', // Orange
     description: 'Developing skills, improving',
     payoutMultiplier: 1.0,
-    clientTypes: ['medium-business', 'retail'],
+    // Tier 4: Municipal government unlocks
+    clientTypes: [
+      'gov-library',
+      'gov-municipal',
+      'cultural-local',
+      'nonprofit-community',
+      'bank-local',
+      'health-clinic',
+      'corp-small',
+      'ship-courier',
+      'util-local',
+      'emerg-volunteer',
+      // Legacy
+      'medium-business', 'retail'
+    ],
   },
   5: {
     name: 'OK',
     color: '#FFD700', // Yellow/Gold
     description: 'Meets minimum expectations',
     payoutMultiplier: 1.0,
-    clientTypes: ['medium-business'],
+    // Tier 5: Regional banking, mid-tier corporate, foundations
+    clientTypes: [
+      'gov-library',
+      'gov-municipal',
+      'cultural-local',
+      'nonprofit-community',
+      'nonprofit-foundation',
+      'bank-local',
+      'bank-regional',
+      'health-clinic',
+      'health-hospital',
+      'corp-small',
+      'corp-medium',
+      'ship-courier',
+      'ship-logistics',
+      'util-local',
+      'emerg-volunteer',
+      // Legacy
+      'medium-business'
+    ],
   },
   6: {
     name: 'Semi-competent',
     color: '#9ACD32', // Light green
     description: 'Reliable for routine tasks',
     payoutMultiplier: 1.1,
-    clientTypes: ['medium-business', 'large-business'],
+    // Tier 6: State government, major cultural, regional utilities, municipal emergency
+    clientTypes: [
+      'gov-library',
+      'gov-municipal',
+      'gov-state',
+      'cultural-local',
+      'cultural-major',
+      'nonprofit-community',
+      'nonprofit-foundation',
+      'bank-local',
+      'bank-regional',
+      'health-clinic',
+      'health-hospital',
+      'corp-small',
+      'corp-medium',
+      'ship-courier',
+      'ship-logistics',
+      'util-local',
+      'util-regional',
+      'emerg-volunteer',
+      'emerg-municipal',
+      // Legacy
+      'medium-business', 'large-business'
+    ],
   },
   7: {
     name: 'Reliable',
     color: '#32CD32', // Green
     description: 'Consistently good performance',
     payoutMultiplier: 1.2,
-    clientTypes: ['large-business', 'corporation'],
+    // Tier 7: All mid-tier unlocked
+    clientTypes: [
+      'gov-library',
+      'gov-municipal',
+      'gov-state',
+      'cultural-local',
+      'cultural-major',
+      'nonprofit-community',
+      'nonprofit-foundation',
+      'bank-local',
+      'bank-regional',
+      'health-clinic',
+      'health-hospital',
+      'corp-small',
+      'corp-medium',
+      'ship-courier',
+      'ship-logistics',
+      'util-local',
+      'util-regional',
+      'emerg-volunteer',
+      'emerg-municipal',
+      // Legacy
+      'large-business', 'corporation'
+    ],
   },
   8: {
     name: 'High achiever',
     color: '#00FA9A', // Bright green
     description: 'Exceeds expectations regularly',
     payoutMultiplier: 1.3,
-    clientTypes: ['corporation', 'financial'],
+    // Tier 8: National/enterprise tier unlocks (banking, corporate, healthcare, shipping)
+    clientTypes: [
+      'gov-library',
+      'gov-municipal',
+      'gov-state',
+      'gov-federal',
+      'cultural-local',
+      'cultural-major',
+      'nonprofit-community',
+      'nonprofit-foundation',
+      'bank-local',
+      'bank-regional',
+      'bank-national',
+      'health-clinic',
+      'health-hospital',
+      'health-research',
+      'corp-small',
+      'corp-medium',
+      'corp-enterprise',
+      'ship-courier',
+      'ship-logistics',
+      'ship-global',
+      'util-local',
+      'util-regional',
+      'emerg-volunteer',
+      'emerg-municipal',
+      // Legacy
+      'corporation', 'financial'
+    ],
   },
   9: {
     name: 'Superb',
     color: '#20B2AA', // Blue-green
     description: 'Excellent track record',
     payoutMultiplier: 1.5,
-    clientTypes: ['corporation', 'bank', 'government'],
+    // Tier 9: Federal emergency services unlock
+    clientTypes: [
+      'gov-library',
+      'gov-municipal',
+      'gov-state',
+      'gov-federal',
+      'cultural-local',
+      'cultural-major',
+      'nonprofit-community',
+      'nonprofit-foundation',
+      'bank-local',
+      'bank-regional',
+      'bank-national',
+      'health-clinic',
+      'health-hospital',
+      'health-research',
+      'corp-small',
+      'corp-medium',
+      'corp-enterprise',
+      'ship-courier',
+      'ship-logistics',
+      'ship-global',
+      'util-local',
+      'util-regional',
+      'emerg-volunteer',
+      'emerg-municipal',
+      'emerg-federal',
+      // Legacy
+      'corporation', 'bank', 'government'
+    ],
   },
   10: {
     name: 'Ace agent',
     color: '#4169E1', // Blue
     description: 'Elite performer',
     payoutMultiplier: 1.7,
+    // Tier 10: All client types + special contracts
     clientTypes: ['all', 'special-contract'],
   },
   11: {
@@ -96,6 +264,7 @@ export const REPUTATION_TIERS = {
     color: '#FFD700', // Gold
     description: 'Top tier SourceNet agent',
     payoutMultiplier: 2.0,
+    // Tier 11: All client types + elite contracts
     clientTypes: ['all', 'elite-contract'],
   },
 };
@@ -132,6 +301,57 @@ export const calculatePayoutWithReputation = (basePayout, reputation) => {
 export const canAccessMission = (clientType, reputation) => {
   const tier = getReputationTier(reputation);
   return tier.clientTypes.includes('all') || tier.clientTypes.includes(clientType);
+};
+
+/**
+ * Check if a specific client type is accessible at a reputation level
+ * @param {string} clientType - The client type (e.g., 'bank-local', 'gov-federal')
+ * @param {number} reputation - Player reputation tier
+ * @returns {boolean} Whether the client type is accessible
+ */
+export const canAccessClientType = (clientType, reputation) => {
+  const tier = getReputationTier(reputation);
+  return tier.clientTypes.includes('all') || tier.clientTypes.includes(clientType);
+};
+
+/**
+ * Get all client types accessible at a reputation level
+ * @param {number} reputation - Player reputation tier
+ * @returns {string[]} Array of accessible client types
+ */
+export const getAccessibleClientTypes = (reputation) => {
+  const tier = getReputationTier(reputation);
+  if (tier.clientTypes.includes('all')) {
+    // Return all known client types for tier 10+
+    return [
+      'gov-library', 'gov-municipal', 'gov-state', 'gov-federal',
+      'cultural-local', 'cultural-major',
+      'nonprofit-community', 'nonprofit-foundation',
+      'bank-local', 'bank-regional', 'bank-national',
+      'health-clinic', 'health-hospital', 'health-research',
+      'corp-small', 'corp-medium', 'corp-enterprise',
+      'ship-courier', 'ship-logistics', 'ship-global',
+      'util-local', 'util-regional',
+      'emerg-volunteer', 'emerg-municipal', 'emerg-federal',
+      'special-contract', 'elite-contract'
+    ];
+  }
+  return [...tier.clientTypes];
+};
+
+/**
+ * Get the minimum reputation required for a client type
+ * @param {string} clientType - The client type
+ * @returns {number} Minimum reputation tier (1-11)
+ */
+export const getMinReputationForClientType = (clientType) => {
+  for (let tier = 1; tier <= 11; tier++) {
+    const tierData = REPUTATION_TIERS[tier];
+    if (tierData.clientTypes.includes('all') || tierData.clientTypes.includes(clientType)) {
+      return tier;
+    }
+  }
+  return 11; // Default to max tier if not found
 };
 
 /**

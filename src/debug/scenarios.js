@@ -114,6 +114,13 @@ export const loadScenario = (scenarioId, gameContext) => {
     gameContext.setBankruptcyCountdown(fixture.bankruptcyCountdown ?? null);
     gameContext.setLastInterestTime(fixture.lastInterestTime ?? null);
 
+    // Procedural mission state
+    gameContext.setProceduralMissionsEnabled(fixture.proceduralMissionsEnabled ?? false);
+    gameContext.setMissionPool(fixture.missionPool ?? []);
+    gameContext.setPendingChainMissions(fixture.pendingChainMissions ?? []);
+    gameContext.setActiveClientIds(fixture.activeClientIds ?? new Set());
+    gameContext.setClientStandings(fixture.clientStandings ?? {});
+
     // Restore story progression (prevents duplicate messages)
     storyMissionManager.setFiredEvents(fixture.processedEvents ?? []);
 

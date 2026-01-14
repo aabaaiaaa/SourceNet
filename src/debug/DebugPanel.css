@@ -273,3 +273,157 @@
   font-size: 12px;
   text-transform: uppercase;
 }
+
+/* Clients Tab Styles */
+.debug-clients {
+  padding: 10px;
+}
+
+.clients-summary {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 15px;
+  padding: 10px;
+  background: #2a2a2a;
+  border: 1px solid #444;
+}
+
+.clients-by-industry {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.industry-group {
+  border: 1px solid #444;
+  padding: 10px;
+}
+
+.industry-header {
+  margin: 0 0 10px 0;
+  color: #00cc00;
+  font-size: 14px;
+  border-bottom: 1px solid #444;
+  padding-bottom: 5px;
+}
+
+.industry-count {
+  color: #888;
+  font-size: 12px;
+  font-weight: normal;
+  margin-left: 10px;
+}
+
+.clients-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+}
+
+.client-item {
+  background: #2a2a2a;
+  padding: 8px;
+  border: 1px solid #444;
+  font-size: 11px;
+}
+
+.client-item.accessible {
+  border-left: 3px solid #00ff00;
+}
+
+.client-item.locked {
+  border-left: 3px solid #ff6600;
+  opacity: 0.7;
+}
+
+.client-item.has-mission {
+  background: #1a3a1a;
+}
+
+.client-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.client-name {
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.client-tier {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  background: #444;
+}
+
+.client-tier.tier-local,
+.client-tier.tier-clinic,
+.client-tier.tier-courier,
+.client-tier.tier-volunteer,
+.client-tier.tier-community,
+.client-tier.tier-library {
+  background: #2d5a2d;
+}
+
+.client-tier.tier-regional,
+.client-tier.tier-hospital,
+.client-tier.tier-logistics,
+.client-tier.tier-municipal,
+.client-tier.tier-foundation,
+.client-tier.tier-state,
+.client-tier.tier-medium,
+.client-tier.tier-major {
+  background: #5a5a2d;
+}
+
+.client-tier.tier-national,
+.client-tier.tier-research,
+.client-tier.tier-global,
+.client-tier.tier-federal,
+.client-tier.tier-enterprise {
+  background: #5a2d2d;
+}
+
+.client-details {
+  display: flex;
+  gap: 10px;
+  color: #888;
+  flex-wrap: wrap;
+}
+
+.client-status.accessible {
+  color: #00ff00;
+}
+
+.client-status.locked {
+  color: #ff6600;
+}
+
+.client-standing {
+  margin-top: 5px;
+  display: flex;
+  gap: 10px;
+  padding-top: 5px;
+  border-top: 1px solid #333;
+}
+
+.standing-success {
+  color: #00ff00;
+}
+
+.standing-fail {
+  color: #ff4444;
+}
+
+.standing-last {
+  color: #888;
+}
+
+.client-active-mission {
+  margin-top: 5px;
+  color: #00ccff;
+  font-style: italic;
+}

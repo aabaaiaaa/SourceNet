@@ -14,6 +14,8 @@
 import { useState, useMemo } from 'react';
 import { useGame } from '../contexts/useGame';
 import { getDebugScenarios, loadScenario } from './scenarios';
+import { getAllClients, getClientsGroupedByIndustry, getIndustryInfo } from '../data/clientRegistry';
+import { canAccessClientType } from '../systems/ReputationSystem';
 import './DebugPanel.css';
 
 const DebugPanel = ({ onClose }) => {
@@ -293,6 +295,86 @@ const DebugPanel = ({ onClose }) => {
     );
   };
 
+  const renderClientsTab = () => {
+    const clientsByIndustry = getClientsGroupedByIndustry();
+    const { clientStandings = {}, reputation, missionPool = [] } = gameContext;
+
+    // Get clients with active missions
+    const activeClientIds = new Set(missionPool.map(m => m.clientId).filter(Boolean));
+
+    return (
+      <div className="debug-clients">
+        <h3>Client Registry & Standings</h3>
+        <p className="debug-hint">
+          Shows all clients grouped by industry, their accessibility at current reputation (Tier {reputation}), and mission standings.
+        </p>
+
+        <div className="clients-summary">
+          <span>Total Clients: {getAllClients().length}</span>
+          <span>Clients with Standings: {Object.keys(clientStandings).length}</span>
+        </div>
+
+        <div className="clients-by-industry">
+          {Object.entries(clientsByIndustry).map(([industry, clients]) => {
+            const industryInfo = getIndustryInfo(industry);
+
+            return (
+              <div key={industry} className="industry-group">
+                <h4 className="industry-header">
+                  {industryInfo?.displayName || industry}
+                  <span className="industry-count">({clients.length} clients)</span>
+                </h4>
+
+                <div className="clients-list">
+                  {clients.map(client => {
+                    const isAccessible = canAccessClientType(client.clientType, reputation);
+                    const standing = clientStandings[client.id];
+                    const hasActiveMission = activeClientIds.has(client.id);
+
+                    return (
+                      <div
+                        key={client.id}
+                        className={`client-item ${isAccessible ? 'accessible' : 'locked'} ${hasActiveMission ? 'has-mission' : ''}`}
+                      >
+                        <div className="client-header">
+                          <span className="client-name">{client.name}</span>
+                          <span className={`client-tier tier-${client.tier}`}>{client.tier}</span>
+                        </div>
+                        <div className="client-details">
+                          <span className="client-type">{client.clientType}</span>
+                          <span className="client-rep">Min Rep: {client.minReputation}</span>
+                          {isAccessible ? (
+                            <span className="client-status accessible">✓ Accessible</span>
+                          ) : (
+                            <span className="client-status locked">🔒 Locked</span>
+                          )}
+                        </div>
+                        {standing && (
+                          <div className="client-standing">
+                            <span className="standing-success">✓ {standing.successCount || 0}</span>
+                            <span className="standing-fail">✗ {standing.failCount || 0}</span>
+                            {standing.lastMissionDate && (
+                              <span className="standing-last">
+                                Last: {new Date(standing.lastMissionDate).toLocaleDateString()}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        {hasActiveMission && (
+                          <div className="client-active-mission">📋 Has pending mission</div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="debug-panel-overlay">
       <div className="debug-panel">
@@ -322,11 +404,18 @@ const DebugPanel = ({ onClose }) => {
           >
             State Controls
           </button>
+          <button
+            className={`debug-tab ${activeTab === 'clients' ? 'active' : ''}`}
+            onClick={() => setActiveTab('clients')}
+          >
+            Clients
+          </button>
         </div>
 
         <div className="debug-content">
           {activeTab === 'scenarios' && renderScenariosTab()}
           {activeTab === 'state' && renderGameStateTab()}
+          {activeTab === 'clients' && renderClientsTab()}
         </div>
 
         <div className="debug-footer">

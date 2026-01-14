@@ -2,7 +2,7 @@
 
 ## Commands
 - `npm run dev` - Start dev server (http://localhost:5173)
-- `npm test` - Run unit tests (613 tests)
+- `npm test` - Run unit tests (626 tests)
 - `npm run test:e2e` - Run E2E tests (103 tests)
 - `npm run lint` - Run ESLint
 - `npm run test:e2e:generate` - Regenerate debug scenario fixtures
@@ -19,6 +19,17 @@
 - `src/missions/data/` - JSON mission definitions
 - `src/systems/` - Game systems (BankingSystem, ReputationSystem, etc.)
 - `src/debug/` - Debug panel and scenario loading
+
+## File System & Clipboard
+
+**File Persistence:**
+- File operations (paste, delete, repair) are persisted to `narEntries` via `updateFileSystemFiles(networkId, fileSystemId, files)`
+- Files persist across file system switches and network reconnects
+- When missions merge file systems into NAR, user files are preserved but mission files overwrite duplicates
+
+**Clipboard Behavior:**
+- File clipboard auto-clears when disconnecting from the source network
+- FileManager auto-clears its state when the selected file system's network is disconnected
 
 ## Game Time System
 
@@ -45,6 +56,15 @@ Components that need delays or timers must respect game time speed:
 - `src/missions/ObjectiveTracker.js` - Monitors game state for objective completion
 - `src/missions/ScriptedEventExecutor.js` - Executes scripted events (delays, messages, etc.)
 - `src/missions/useStoryMissions.js` - React hook that connects missions to game context
+
+**Objective Types:**
+- `networkConnection` - Connect to a network (`target`: networkId)
+- `networkScan` - Scan network and find target (`target`: networkId, `expectedResult`: hostname/ip)
+- `fileSystemConnection` - Connect FileManager to file system (`target`: ip or fileSystemId)
+- `narEntryAdded` - Network added to NAR (`target`: networkId)
+- `fileOperation` - File operation with specific files (`operation`: paste/copy/repair/delete, `targetFiles`: array of filenames)
+
+**File Operations:** Use `targetFiles` array to require specific files. Progress tracks unique files - pasting the same file multiple times won't count toward completion.
 
 **Story Events:**
 - Missions can trigger scripted events via `scriptedEvents` array in mission JSON

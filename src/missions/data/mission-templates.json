@@ -1,0 +1,607 @@
+{
+    "serverTypes": {
+        "banking": {
+            "addressPatterns": [
+                "{name}-bank.internal",
+                "banking.{name}.corp",
+                "{name}-financial.net",
+                "secure.{name}-bank.com"
+            ],
+            "filePatterns": {
+                "backup": [
+                    "transaction_log_{date}.db",
+                    "account_records_{date}.dat",
+                    "audit_trail_{date}.log",
+                    "customer_data_{date}.enc"
+                ],
+                "repair": [
+                    "ledger_main.db",
+                    "balance_sheet.dat",
+                    "quarterly_report.xlsx",
+                    "compliance_records.db"
+                ],
+                "restoration": [
+                    "backup_{date}.tar",
+                    "archive_accounts_{date}.zip",
+                    "historical_records_{date}.db"
+                ]
+            },
+            "corruptionTypes": [
+                "data corruption",
+                "index fragmentation",
+                "checksum mismatch",
+                "header damage"
+            ]
+        },
+        "government": {
+            "addressPatterns": [
+                "{name}.gov.local",
+                "gov-{name}.internal",
+                "{name}-dept.gov",
+                "systems.{name}.gov"
+            ],
+            "filePatterns": {
+                "backup": [
+                    "citizen_records_{date}.db",
+                    "permit_applications_{date}.dat",
+                    "tax_filings_{date}.enc",
+                    "registration_data_{date}.db"
+                ],
+                "repair": [
+                    "records_database.db",
+                    "case_files.dat",
+                    "license_registry.db",
+                    "inspection_logs.dat"
+                ],
+                "restoration": [
+                    "archive_{date}.tar",
+                    "historical_records_{date}.zip",
+                    "legacy_data_{date}.db"
+                ]
+            },
+            "corruptionTypes": [
+                "sector damage",
+                "file system corruption",
+                "metadata loss",
+                "encryption key issues"
+            ]
+        },
+        "healthcare": {
+            "addressPatterns": [
+                "{name}-medical.internal",
+                "health.{name}.org",
+                "{name}-clinic.local",
+                "records.{name}-health.net"
+            ],
+            "filePatterns": {
+                "backup": [
+                    "patient_records_{date}.enc",
+                    "appointment_log_{date}.db",
+                    "prescription_data_{date}.dat",
+                    "lab_results_{date}.db"
+                ],
+                "repair": [
+                    "ehr_database.db",
+                    "imaging_index.dat",
+                    "pharmacy_inventory.db",
+                    "staff_schedules.dat"
+                ],
+                "restoration": [
+                    "medical_archive_{date}.tar",
+                    "patient_history_{date}.zip",
+                    "compliance_backup_{date}.enc"
+                ]
+            },
+            "corruptionTypes": [
+                "HIPAA encryption failure",
+                "database integrity loss",
+                "backup chain broken",
+                "timestamp corruption"
+            ]
+        },
+        "corporate": {
+            "addressPatterns": [
+                "{name}-corp.internal",
+                "business.{name}.com",
+                "{name}-hq.local",
+                "data.{name}-inc.net"
+            ],
+            "filePatterns": {
+                "backup": [
+                    "sales_data_{date}.db",
+                    "inventory_{date}.dat",
+                    "employee_records_{date}.enc",
+                    "financial_reports_{date}.xlsx"
+                ],
+                "repair": [
+                    "crm_database.db",
+                    "erp_master.dat",
+                    "hr_records.db",
+                    "project_files.dat"
+                ],
+                "restoration": [
+                    "corporate_backup_{date}.tar",
+                    "quarterly_archive_{date}.zip",
+                    "legacy_systems_{date}.db"
+                ]
+            },
+            "corruptionTypes": [
+                "ransomware damage",
+                "disk failure recovery",
+                "RAID rebuild needed",
+                "partition table corruption"
+            ]
+        },
+        "utilities": {
+            "addressPatterns": [
+                "{name}-utility.internal",
+                "grid.{name}.local",
+                "{name}-power.net",
+                "scada.{name}.internal"
+            ],
+            "filePatterns": {
+                "backup": [
+                    "meter_readings_{date}.db",
+                    "outage_logs_{date}.dat",
+                    "maintenance_schedule_{date}.db",
+                    "grid_telemetry_{date}.log"
+                ],
+                "repair": [
+                    "scada_config.db",
+                    "load_balancing.dat",
+                    "transformer_registry.db",
+                    "service_routes.dat"
+                ],
+                "restoration": [
+                    "infrastructure_backup_{date}.tar",
+                    "historical_usage_{date}.zip",
+                    "emergency_protocols_{date}.db"
+                ]
+            },
+            "corruptionTypes": [
+                "SCADA data corruption",
+                "telemetry sync failure",
+                "configuration drift",
+                "log rotation failure"
+            ]
+        },
+        "shipping": {
+            "addressPatterns": [
+                "{name}-logistics.internal",
+                "tracking.{name}.com",
+                "{name}-freight.net",
+                "dispatch.{name}.local"
+            ],
+            "filePatterns": {
+                "backup": [
+                    "shipment_tracking_{date}.db",
+                    "route_history_{date}.dat",
+                    "customs_docs_{date}.enc",
+                    "delivery_logs_{date}.db"
+                ],
+                "repair": [
+                    "fleet_management.db",
+                    "warehouse_inventory.dat",
+                    "routing_tables.db",
+                    "driver_assignments.dat"
+                ],
+                "restoration": [
+                    "logistics_archive_{date}.tar",
+                    "manifests_{date}.zip",
+                    "compliance_records_{date}.db"
+                ]
+            },
+            "corruptionTypes": [
+                "GPS data corruption",
+                "barcode database failure",
+                "manifest sync issues",
+                "tracking ID conflicts"
+            ]
+        },
+        "emergency": {
+            "addressPatterns": [
+                "{name}-emergency.gov",
+                "dispatch.{name}.local",
+                "{name}-responders.internal",
+                "cad.{name}.gov"
+            ],
+            "filePatterns": {
+                "backup": [
+                    "incident_reports_{date}.db",
+                    "dispatch_logs_{date}.dat",
+                    "personnel_records_{date}.enc",
+                    "equipment_inventory_{date}.db"
+                ],
+                "repair": [
+                    "cad_system.db",
+                    "radio_logs.dat",
+                    "evidence_chain.db",
+                    "case_management.dat"
+                ],
+                "restoration": [
+                    "emergency_backup_{date}.tar",
+                    "historical_incidents_{date}.zip",
+                    "training_records_{date}.db"
+                ]
+            },
+            "corruptionTypes": [
+                "CAD system failure",
+                "radio log corruption",
+                "evidence database integrity",
+                "dispatch queue corruption"
+            ]
+        },
+        "nonprofit": {
+            "addressPatterns": [
+                "{name}-org.internal",
+                "community.{name}.org",
+                "{name}-foundation.local",
+                "services.{name}.org"
+            ],
+            "filePatterns": {
+                "backup": [
+                    "donor_database_{date}.db",
+                    "volunteer_records_{date}.dat",
+                    "grant_applications_{date}.enc",
+                    "program_data_{date}.db"
+                ],
+                "repair": [
+                    "membership.db",
+                    "event_calendar.dat",
+                    "fundraising_tracker.db",
+                    "outreach_contacts.dat"
+                ],
+                "restoration": [
+                    "nonprofit_archive_{date}.tar",
+                    "historical_donors_{date}.zip",
+                    "program_history_{date}.db"
+                ]
+            },
+            "corruptionTypes": [
+                "donor sync failure",
+                "grant tracking corruption",
+                "volunteer database issues",
+                "event registration loss"
+            ]
+        },
+        "cultural": {
+            "addressPatterns": [
+                "{name}-museum.internal",
+                "archives.{name}.org",
+                "{name}-gallery.local",
+                "collections.{name}.edu"
+            ],
+            "filePatterns": {
+                "backup": [
+                    "catalog_database_{date}.db",
+                    "exhibition_records_{date}.dat",
+                    "visitor_logs_{date}.db",
+                    "acquisition_history_{date}.enc"
+                ],
+                "repair": [
+                    "collection_index.db",
+                    "provenance_records.dat",
+                    "conservation_notes.db",
+                    "loan_agreements.dat"
+                ],
+                "restoration": [
+                    "archive_backup_{date}.tar",
+                    "digitization_project_{date}.zip",
+                    "historical_catalog_{date}.db"
+                ]
+            },
+            "corruptionTypes": [
+                "catalog index corruption",
+                "provenance chain break",
+                "digital asset corruption",
+                "metadata schema mismatch"
+            ]
+        }
+    },
+    "missionTypes": {
+        "file-backup": {
+            "displayName": "Data Backup",
+            "description": "Create secure backups of critical client data",
+            "objectives": [
+                "navigate",
+                "copy",
+                "paste"
+            ],
+            "baseDuration": "short"
+        },
+        "file-repair": {
+            "displayName": "File Repair",
+            "description": "Repair corrupted files on client systems",
+            "objectives": [
+                "navigate",
+                "repair"
+            ],
+            "baseDuration": "medium",
+            "requiresSoftware": [
+                "file-manager"
+            ]
+        },
+        "file-restoration": {
+            "displayName": "Data Restoration",
+            "description": "Restore files from backup archives",
+            "objectives": [
+                "navigate",
+                "copy",
+                "paste"
+            ],
+            "baseDuration": "medium"
+        },
+        "combined-tasks": {
+            "displayName": "System Maintenance",
+            "description": "Perform multiple maintenance tasks on client systems",
+            "objectives": [
+                "navigate",
+                "copy",
+                "paste",
+                "repair"
+            ],
+            "baseDuration": "long",
+            "requiresSoftware": [
+                "file-manager"
+            ]
+        },
+        "data-extraction": {
+            "displayName": "Data Extraction",
+            "description": "Extract and secure specific data from compromised systems",
+            "objectives": [
+                "navigate",
+                "copy"
+            ],
+            "baseDuration": "short"
+        }
+    },
+    "narrativeTemplates": {
+        "file-backup": {
+            "briefings": [
+                "{client} needs their {fileType} backed up immediately. Their IT department is overwhelmed and they've contracted us to handle it. Connect to {server} and copy the required files to your local storage.",
+                "Urgent request from {client}: They're migrating to a new system and need their current {fileType} preserved. Access {server} and secure copies of all specified files.",
+                "{client} is preparing for an audit and needs redundant copies of their {fileType}. Navigate to {server} and back up the files listed below.",
+                "Standard backup contract for {client}. Their {fileType} needs to be copied from {server} to ensure business continuity. Time-sensitive - complete before the deadline."
+            ],
+            "successMessages": [
+                "Excellent work. {client} confirms all files were received intact. Payment has been processed.",
+                "Backup verified by {client}'s IT team. Job complete, credits transferred.",
+                "{client} is impressed with the quick turnaround. Full payment released."
+            ],
+            "failureMessages": [
+                "{client} reports the backup is incomplete or corrupted. Contract terminated.",
+                "Mission timeout. {client} had to bring in another contractor. Penalty applied.",
+                "Failed to deliver required files to {client}. Reputation impact noted."
+            ]
+        },
+        "file-repair": {
+            "briefings": [
+                "{client} has discovered {corruptionType} in their critical systems at {server}. They need immediate repair of the affected files. Use your file repair tools to fix the damage.",
+                "Emergency repair request: {client} is experiencing {corruptionType} on {server}. Several {fileType} are affected and need professional recovery.",
+                "{client}'s systems suffered {corruptionType} during a power fluctuation. Connect to {server} and repair the damaged {fileType} before they lose more data.",
+                "Contract from {client}: Their {server} has files showing {corruptionType}. Standard repair job - fix all corrupted files listed below."
+            ],
+            "successMessages": [
+                "All files repaired successfully. {client} confirms systems are operational. Payment released.",
+                "{client}'s IT team verified the repairs. Excellent work - credits transferred.",
+                "File integrity restored for {client}. Contract complete, payment processed."
+            ],
+            "failureMessages": [
+                "Repair attempt failed. {client} reports files are still corrupted or further damaged.",
+                "Mission timeout. {client}'s data remains compromised. Contract failed.",
+                "Unable to complete repairs for {client}. Another contractor has been assigned."
+            ]
+        },
+        "file-restoration": {
+            "briefings": [
+                "{client} accidentally deleted critical {fileType} from {server}. They need these files restored from their backup archives immediately.",
+                "Data loss incident at {client}: An employee error wiped their {fileType}. Access {server} and restore the files from backup.",
+                "{client} is recovering from a system crash. They need {fileType} restored to {server} from archived copies. Time is critical.",
+                "Restoration contract for {client}: Their {server} lost several {fileType} during maintenance. Retrieve and restore the archived copies."
+            ],
+            "successMessages": [
+                "Files restored successfully. {client} confirms all data is back online. Payment released.",
+                "{client}'s systems are fully operational again. Great work - credits transferred.",
+                "Restoration complete. {client} is relieved to have their {fileType} back."
+            ],
+            "failureMessages": [
+                "Restoration incomplete. {client} is still missing critical files.",
+                "Mission timeout. {client}'s data remains lost. Contract terminated.",
+                "Failed to restore required files for {client}. Backup archives may have been corrupted."
+            ]
+        },
+        "combined-tasks": {
+            "briefings": [
+                "{client} needs comprehensive system maintenance on {server}. This includes backing up current {fileType}, repairing corrupted files, and verifying data integrity.",
+                "Full maintenance contract from {client}: Their {server} requires backup of critical files, repair of damaged data ({corruptionType}), and system verification.",
+                "{client} is preparing for a major system upgrade. They need their {server} fully serviced - backup all {fileType}, repair any corruption, and ensure everything is stable.",
+                "Priority contract: {client}'s {server} needs immediate attention. Multiple {fileType} require backup and repair due to {corruptionType}."
+            ],
+            "successMessages": [
+                "Comprehensive maintenance complete. {client} reports all systems nominal. Full payment released.",
+                "All tasks completed successfully. {client}'s IT team is impressed with the thorough work.",
+                "{client} confirms backup and repair operations successful. Contract fulfilled, bonus included."
+            ],
+            "failureMessages": [
+                "Maintenance incomplete. {client} reports outstanding issues with their systems.",
+                "Mission timeout. {client}'s systems still require attention. Contract failed.",
+                "Failed to complete all required tasks for {client}. Partial penalty applied."
+            ]
+        },
+        "data-extraction": {
+            "briefings": [
+                "{client} suspects their {server} may be compromised. They need specific {fileType} extracted and secured before potential data loss.",
+                "Urgent extraction request from {client}: Their {server} is showing signs of {corruptionType}. Pull the critical {fileType} before the situation worsens.",
+                "{client} is shutting down a legacy system at {server}. They need {fileType} extracted and preserved for compliance purposes.",
+                "Time-sensitive contract: {client} needs {fileType} extracted from {server}. The system is scheduled for decommission - get the data out now."
+            ],
+            "successMessages": [
+                "Data extraction complete. {client} confirms all critical files secured. Payment processed.",
+                "Files successfully extracted from {server}. {client} is satisfied with the quick response.",
+                "Extraction verified. {client}'s data is safe. Contract complete."
+            ],
+            "failureMessages": [
+                "Extraction failed. {client} reports critical data was not recovered.",
+                "Mission timeout. {client}'s data may be lost permanently.",
+                "Unable to extract required files for {client}. System access may have been compromised."
+            ]
+        }
+    },
+    "chainTemplates": {
+        "escalation": {
+            "name": "Escalating Crisis",
+            "description": "Initial problem reveals deeper issues requiring follow-up work",
+            "parts": [
+                {
+                    "partNumber": 1,
+                    "missionType": "file-repair",
+                    "briefingModifier": "Initial assessment reveals some {corruptionType}. Start with these repairs.",
+                    "transitionMessage": "Hold on - our scans show the corruption is more extensive than initially thought. We need you to continue."
+                },
+                {
+                    "partNumber": 2,
+                    "missionType": "file-backup",
+                    "briefingModifier": "Before we proceed with deeper repairs, we need backups of all remaining good data.",
+                    "transitionMessage": "Good work on the backups. Now we can proceed to the final restoration phase."
+                },
+                {
+                    "partNumber": 3,
+                    "missionType": "file-restoration",
+                    "briefingModifier": "Final phase: restore the repaired and backed-up data to bring systems back online.",
+                    "transitionMessage": null
+                }
+            ]
+        },
+        "discovery": {
+            "name": "Hidden Problems",
+            "description": "Routine work uncovers unexpected issues",
+            "parts": [
+                {
+                    "partNumber": 1,
+                    "missionType": "file-backup",
+                    "briefingModifier": "Standard backup operation. Should be straightforward.",
+                    "transitionMessage": "During the backup, we discovered some corrupted files that need attention before we can continue."
+                },
+                {
+                    "partNumber": 2,
+                    "missionType": "file-repair",
+                    "briefingModifier": "The backup revealed underlying {corruptionType}. Fix these before the client notices.",
+                    "transitionMessage": null
+                }
+            ]
+        },
+        "migration": {
+            "name": "System Migration",
+            "description": "Multi-phase system migration project",
+            "parts": [
+                {
+                    "partNumber": 1,
+                    "missionType": "data-extraction",
+                    "briefingModifier": "Phase 1: Extract all critical data from the legacy system.",
+                    "transitionMessage": "Extraction complete. Moving to data validation phase."
+                },
+                {
+                    "partNumber": 2,
+                    "missionType": "file-repair",
+                    "briefingModifier": "Phase 2: Some extracted files have compatibility issues. Repair them for the new system.",
+                    "transitionMessage": "Files repaired. Final phase: load the data into the new environment."
+                },
+                {
+                    "partNumber": 3,
+                    "missionType": "file-restoration",
+                    "briefingModifier": "Phase 3: Restore all migrated data to the new system and verify integrity.",
+                    "transitionMessage": null
+                }
+            ]
+        },
+        "audit": {
+            "name": "Compliance Audit",
+            "description": "Preparing for regulatory compliance audit",
+            "parts": [
+                {
+                    "partNumber": 1,
+                    "missionType": "file-backup",
+                    "briefingModifier": "Audit preparation: Create compliant backups of all required {fileType}.",
+                    "transitionMessage": "Backups complete, but auditors flagged some data integrity issues."
+                },
+                {
+                    "partNumber": 2,
+                    "missionType": "file-repair",
+                    "briefingModifier": "Fix the flagged files before the auditors return. {corruptionType} must be resolved.",
+                    "transitionMessage": null
+                }
+            ]
+        }
+    },
+    "extensionTemplates": {
+        "additionalFiles": {
+            "triggerMessage": "Good progress so far. {client} has identified additional files that need attention. They're offering {bonusAmount} extra to include these in the current contract.",
+            "acceptMessage": "Extension accepted. Additional files have been added to your objectives.",
+            "declineMessage": "Understood. Focus on completing the original contract."
+        },
+        "urgentAddition": {
+            "triggerMessage": "URGENT: {client} just discovered more critical {fileType} affected by {corruptionType}. They're willing to pay {bonusAmount} extra for immediate inclusion.",
+            "acceptMessage": "Extension accepted. Prioritize these additional files.",
+            "declineMessage": "Extension declined. Complete the original scope only."
+        },
+        "scopeExpansion": {
+            "triggerMessage": "{client} is impressed with your work so far. They'd like to expand the scope to include additional systems. Bonus of {bonusAmount} for the extra work.",
+            "acceptMessage": "Scope expanded. New objectives added to the mission.",
+            "declineMessage": "Staying with original scope. Complete current objectives."
+        }
+    },
+    "fileNameComponents": {
+        "prefixes": [
+            "data",
+            "records",
+            "archive",
+            "backup",
+            "log",
+            "report",
+            "audit",
+            "system",
+            "config",
+            "master"
+        ],
+        "dateFormats": [
+            "2024_01",
+            "2024_Q1",
+            "20240115",
+            "Jan2024",
+            "2024-01-15"
+        ],
+        "suffixes": [
+            "final",
+            "v2",
+            "approved",
+            "draft",
+            "current",
+            "legacy",
+            "temp",
+            "prod"
+        ]
+    },
+    "serverNameComponents": {
+        "prefixes": [
+            "srv",
+            "data",
+            "backup",
+            "primary",
+            "secondary",
+            "prod",
+            "archive",
+            "legacy"
+        ],
+        "numbers": [
+            "01",
+            "02",
+            "03",
+            "1",
+            "2",
+            "A",
+            "B",
+            "alpha",
+            "beta"
+        ]
+    }
+}

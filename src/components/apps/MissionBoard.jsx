@@ -1,9 +1,48 @@
 import { useState } from 'react';
 import { useGame } from '../../contexts/useGame';
 import { canAcceptMission, calculateMissionPayout } from '../../systems/MissionSystem';
-import { getReputationTier } from '../../systems/ReputationSystem';
+import { getReputationTier, canAccessClientType } from '../../systems/ReputationSystem';
 import { getFileOperationProgress } from '../../missions/ObjectiveTracker';
 import './MissionBoard.css';
+
+/**
+ * Format time remaining until expiration
+ * @param {string} expiresAt - ISO date string
+ * @param {Date} currentTime - Current game time
+ * @returns {Object} { display: string, isUrgent: boolean, expired: boolean }
+ */
+const formatExpiration = (expiresAt, currentTime) => {
+  if (!expiresAt) return null;
+
+  const expiresDate = new Date(expiresAt);
+  const now = new Date(currentTime);
+  const diffMs = expiresDate - now;
+
+  if (diffMs <= 0) {
+    return { display: 'EXPIRED', isUrgent: true, expired: true };
+  }
+
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+  const isUrgent = hours < 2;
+  const timeDisplay = hours > 0
+    ? `${hours}h ${minutes}m remaining`
+    : `${minutes}m remaining`;
+
+  const dateDisplay = expiresDate.toLocaleString([], {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  return {
+    display: `${timeDisplay} (${dateDisplay})`,
+    isUrgent,
+    expired: false
+  };
+};
 
 const MissionBoard = () => {
   const {
@@ -14,11 +53,21 @@ const MissionBoard = () => {
     reputation,
     acceptMission,
     missionFileOperations,
+    // Procedural mission state
+    proceduralMissionsEnabled,
+    missionPool,
+    currentTime,
   } = useGame();
 
   const [activeTab, setActiveTab] = useState('available'); // 'available', 'active', 'completed'
 
   const installedSoftwareIds = software || [];
+
+  // Combine story missions and procedural pool
+  const allAvailableMissions = [
+    ...(availableMissions || []),
+    ...(proceduralMissionsEnabled ? (missionPool || []) : [])
+  ];
 
   const handleAcceptMission = (mission) => {
     const validation = canAcceptMission(mission, installedSoftwareIds, reputation, activeMission);
@@ -36,7 +85,7 @@ const MissionBoard = () => {
   };
 
   const renderAvailableTab = () => {
-    if (!availableMissions || availableMissions.length === 0) {
+    if (!allAvailableMissions || allAvailableMissions.length === 0) {
       return (
         <div className="empty-state">
           <p>No missions currently available.</p>
@@ -47,22 +96,42 @@ const MissionBoard = () => {
 
     return (
       <div className="missions-list">
-        {availableMissions.map((mission) => {
+        {allAvailableMissions.map((mission) => {
           const validation = canAcceptMission(mission, installedSoftwareIds, reputation, activeMission);
           const payout = calculateMissionPayout(mission.basePayout || mission.payout || 0, reputation);
           const tierInfo = getReputationTier(reputation);
-          const canAccess = mission.minReputation ? reputation >= mission.minReputation : true;
+
+          // Check reputation access - use clientType for procedural, minReputation for story
+          const canAccessByClientType = mission.clientType
+            ? canAccessClientType(mission.clientType, reputation)
+            : true;
+          const canAccessByMinRep = mission.minReputation ? reputation >= mission.minReputation : true;
+          const canAccess = canAccessByClientType && canAccessByMinRep;
+
+          // Check expiration for procedural missions
+          const expiration = mission.expiresAt ? formatExpiration(mission.expiresAt, currentTime) : null;
+          const isExpired = expiration?.expired;
+
+          // Chain info
+          const isChainMission = mission.chainId && mission.totalParts > 1;
 
           return (
             <div
               key={mission.missionId || mission.id}
-              className={`mission-card ${!canAccess ? 'mission-locked' : ''}`}
+              className={`mission-card ${!canAccess ? 'mission-locked' : ''} ${isExpired ? 'mission-expired' : ''}`}
             >
               <div className="mission-header">
                 <h3>{mission.title}</h3>
-                <span className={`difficulty-badge difficulty-${mission.difficulty?.toLowerCase()}`}>
-                  {mission.difficulty || 'Easy'}
-                </span>
+                <div className="mission-badges">
+                  {isChainMission && (
+                    <span className="chain-badge">
+                      Part {mission.partNumber}/{mission.totalParts}
+                    </span>
+                  )}
+                  <span className={`difficulty-badge difficulty-${mission.difficulty?.toLowerCase()}`}>
+                    {mission.difficulty || 'Easy'}
+                  </span>
+                </div>
               </div>
 
               <div className="mission-info">
@@ -75,13 +144,34 @@ const MissionBoard = () => {
                     </span>
                   )}
                 </div>
+                {expiration && !isExpired && (
+                  <div className={`mission-expiration ${expiration.isUrgent ? 'expiration-urgent' : ''}`}>
+                    ⏱ {expiration.display}
+                  </div>
+                )}
+                {isExpired && (
+                  <div className="mission-expiration expiration-expired">
+                    ⏱ EXPIRED
+                  </div>
+                )}
+                {mission.timeLimit && (
+                  <div className="mission-time-limit">
+                    ⏰ Time Limit: {mission.timeLimit} minutes once accepted
+                  </div>
+                )}
               </div>
 
-              {mission.description && (
+              {/* Show full description only if accessible */}
+              {canAccess && mission.description && (
                 <div className="mission-description">{mission.description}</div>
               )}
 
-              {mission.requirements && mission.requirements.software && (
+              {/* Show briefing for procedural missions if accessible */}
+              {canAccess && mission.briefing && !mission.description && (
+                <div className="mission-description">{mission.briefing.substring(0, 200)}...</div>
+              )}
+
+              {canAccess && mission.requirements && mission.requirements.software && (
                 <div className="mission-requirements">
                   <strong>Requirements:</strong>
                   <ul>
@@ -99,16 +189,17 @@ const MissionBoard = () => {
 
               {!canAccess && (
                 <div className="mission-locked-message">
-                  Requires: {mission.minReputationName || `Tier ${mission.minReputation}`} or higher
+                  🔒 Requires higher reputation to access this client
+                  {mission.minReputation && ` (Tier ${mission.minReputation}+)`}
                 </div>
               )}
 
               <button
                 className="accept-mission-btn"
                 onClick={() => handleAcceptMission(mission)}
-                disabled={!validation.canAccept || !canAccess}
+                disabled={!validation.canAccept || !canAccess || isExpired}
               >
-                {!validation.canAccept ? validation.reason : 'Accept Mission'}
+                {isExpired ? 'Expired' : !canAccess ? 'Locked' : !validation.canAccept ? validation.reason : 'Accept Mission'}
               </button>
             </div>
           );
@@ -310,8 +401,8 @@ const MissionBoard = () => {
           onClick={() => setActiveTab('available')}
         >
           Available Missions
-          {availableMissions && availableMissions.length > 0 && (
-            <span className="tab-badge">{availableMissions.length}</span>
+          {allAvailableMissions && allAvailableMissions.length > 0 && (
+            <span className="tab-badge">{allAvailableMissions.length}</span>
           )}
         </button>
         <button

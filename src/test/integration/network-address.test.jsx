@@ -125,7 +125,7 @@ describe('Network Address Integration', () => {
 
         // Should show installation requirement message
         expect(screen.getByText(/Install Network Address Register to use this attachment/i)).toBeInTheDocument();
-        expect(screen.queryByText(/✓ Added to NAR/i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/✓ Network credentials used/i)).not.toBeInTheDocument();
         expect(screen.queryByText(/Click to add/i)).not.toBeInTheDocument();
     });
 
@@ -180,9 +180,9 @@ describe('Network Address Integration', () => {
 
         await user.click(screen.getByText('Network Access Reminder'));
 
-        // Should immediately show "Added to NAR" (already exists in narEntries)
+        // Should show "Already in NAR" (already exists in narEntries)
         await waitFor(() => {
-            expect(screen.getByText(/✓ Added to NAR/i)).toBeInTheDocument();
+            expect(screen.getByText(/✓ Already in NAR/i)).toBeInTheDocument();
         });
     });
 
@@ -341,7 +341,7 @@ describe('Network Address Integration', () => {
 
         // Wait for NAR to update
         await waitFor(() => {
-            expect(screen.getByText(/✓ Added to NAR/i)).toBeInTheDocument();
+            expect(screen.getByText(/✓ Network credentials used/i)).toBeInTheDocument();
         });
 
         // Wait for NAR state to propagate
@@ -444,7 +444,7 @@ describe('Network Address Integration', () => {
 
         // Wait for NAR to update
         await waitFor(() => {
-            expect(screen.getByText(/✓ Added to NAR/i)).toBeInTheDocument();
+            expect(screen.getByText(/✓ Network credentials used/i)).toBeInTheDocument();
         });
 
         // Wait for NAR state to propagate

@@ -1,0 +1,596 @@
+{
+  "username": "scenario_user",
+  "playerMailId": "SNET-GL7-BZU-66Z",
+  "currentTime": "2020-03-25T09:05:05.000Z",
+  "hardware": {
+    "cpu": {
+      "id": "cpu-1ghz-single",
+      "name": "1GHz Single Core",
+      "specs": "1GHz, 1 core",
+      "price": 200,
+      "power": 65
+    },
+    "memory": [
+      {
+        "id": "ram-2gb",
+        "name": "2GB RAM",
+        "capacity": "2GB",
+        "price": 150,
+        "power": 3
+      }
+    ],
+    "storage": [
+      {
+        "id": "ssd-90gb",
+        "name": "90GB SSD",
+        "capacity": "90GB",
+        "price": 100,
+        "power": 2
+      }
+    ],
+    "motherboard": {
+      "id": "board-basic",
+      "name": "Basic Board",
+      "cpuSlots": 1,
+      "memorySlots": 2,
+      "storageSlots": 2,
+      "networkSlots": 1,
+      "price": 150,
+      "power": 5
+    },
+    "powerSupply": {
+      "id": "psu-300w",
+      "name": "300W PSU",
+      "wattage": 300,
+      "price": 80
+    },
+    "network": {
+      "id": "net-250mb",
+      "name": "250Mb Network Card",
+      "speed": 250,
+      "price": 100,
+      "power": 5
+    }
+  },
+  "software": [
+    {
+      "id": "osnet",
+      "name": "OSNet",
+      "type": "os",
+      "canRemove": false
+    },
+    {
+      "id": "portal",
+      "name": "OSNet Software/Hardware Portal",
+      "type": "system",
+      "canRemove": false
+    },
+    {
+      "id": "mail",
+      "name": "SNet Mail",
+      "type": "system",
+      "canRemove": false
+    },
+    {
+      "id": "banking",
+      "name": "SNet Banking App",
+      "type": "system",
+      "canRemove": false
+    },
+    "mission-board",
+    "network-address-register",
+    "network-scanner",
+    "vpn-client",
+    "file-manager"
+  ],
+  "bankAccounts": [
+    {
+      "id": "account-first-bank",
+      "bankName": "First Bank Ltd",
+      "balance": 1000
+    }
+  ],
+  "messages": [
+    {
+      "id": "msg-welcome-hr",
+      "from": "SourceNet Human Resources",
+      "fromId": "SNET-HQ0-000-001",
+      "fromName": "SourceNet Human Resources",
+      "subject": "Welcome to SourceNet!",
+      "body": "Welcome to SourceNet!\n\nWe are dedicated to securing the global internet space from dark actors and criminals, making it a safe place for all users. You are now part of this important mission.\n\nYour assigned manager will be contacting you shortly with further instructions.\n\nYou have been provided with basic software to get started. To view available software and hardware upgrades, access the OSNet Software/Hardware Portal from your app launcher.\n\nWelcome to the family.\n\n- SourceNet Human Resources",
+      "timestamp": "2020-03-25T09:00:01.000Z",
+      "read": true,
+      "archived": false,
+      "attachments": []
+    },
+    {
+      "id": "msg-welcome-manager",
+      "from": "SourceNet Manager",
+      "fromId": "SNET-MGR-UI4-1RF",
+      "fromName": "SourceNet Manager Sam",
+      "subject": "Hi from your manager - Sam",
+      "body": "Hey scenario_user!\n\nWelcome to the team! I'm Sam, and I'll be your manager here at SourceNet. I was present during your interview process and I have to say, you really impressed us with your skills and dedication.\n\nTo help you get started, I've attached a welcome bonus cheque for 1,000 credits. Just click on the attachment to deposit it into your bank account.\n\nTake some time to get comfortable with your setup. I'll be reaching out again soon with your first assignment.\n\nLooking forward to working with you!\n\n- Sam",
+      "timestamp": "2020-03-25T09:00:19.000Z",
+      "read": true,
+      "archived": false,
+      "attachments": [
+        {
+          "type": "cheque",
+          "amount": 1000,
+          "deposited": true
+        }
+      ]
+    },
+    {
+      "id": "msg-mission-board-license",
+      "from": "SourceNet Manager",
+      "fromId": "SNET-MGR-4LS-W5E",
+      "fromName": "SourceNet Manager Sam",
+      "subject": "Get Ready for Your First Mission",
+      "body": "Hey scenario_user!\n\nNow that you're all set up, it's time to get you started with actual work.\n\nI've attached a license for the SourceNet Mission Board application. This is where you'll find all available missions from our clients.\n\nTo get started:\n\n1. Click the attachment above to add the Mission Board license to your account\n2. Open the OSNet Portal from your app launcher\n3. Go to Software section - you'll see \"SourceNet Mission Board\" marked as \"Licensed\"\n4. Download and install it\n5. Once installed, open the Mission Board from your app launcher\n\nI've posted your first assignment there. It's a straightforward file repair job for one of our clients - perfect for learning the ropes.\n\nOnce you install the Mission Board, I'll send you the software licenses you'll need to complete the mission.\n\n- Sam",
+      "timestamp": "2020-03-25T09:00:56.000Z",
+      "read": true,
+      "archived": false,
+      "attachments": [
+        {
+          "type": "softwareLicense",
+          "softwareId": "mission-board",
+          "softwareName": "SourceNet Mission Board",
+          "price": 250,
+          "size": 200,
+          "activated": true
+        }
+      ]
+    },
+    {
+      "id": "msg-tutorial-software-licenses",
+      "from": "SourceNet Manager",
+      "fromId": "SNET-MGR-1Y2-WRY",
+      "fromName": "SourceNet Manager Sam",
+      "subject": "Mission Software",
+      "body": "Great! Now that you have the Mission Board installed, let me get you set up with the tools you'll need for your first mission.\n\nI've attached free licenses for the essential software (total value: $1,350):\n\n- SourceNet VPN Client ($500): Secure access to client networks\n- Network Address Register ($200): Manages your network connections\n- Network Scanner ($300): Finds machines and file systems on networks\n- File Manager ($350): Access and repair files on remote systems\n\nInstallation steps:\n\n1. Click all the attachments above to add them to your account\n2. Open the Portal and install all four software applications\n3. Once installed, open the Mission Board and accept the \"Log File Repair\" mission\n\nWhen you accept the mission, you'll receive the network credentials for ClientA-Corporate as an attachment. Use the Network Address Register to add them to your NAR.\n\nThe mission objectives are straightforward:\n- Connect to ClientA-Corporate network via VPN\n- Scan the network to find their file server\n- Use File Manager to detect and repair corrupted log files\n\nYour Mission Board will track each objective as you complete them.\n\nGood luck!\n\n- Sam",
+      "timestamp": "2020-03-25T09:01:50.000Z",
+      "read": true,
+      "archived": false,
+      "attachments": [
+        {
+          "type": "softwareLicense",
+          "softwareId": "vpn-client",
+          "softwareName": "SourceNet VPN Client",
+          "price": 500,
+          "size": 45,
+          "activated": true
+        },
+        {
+          "type": "softwareLicense",
+          "softwareId": "network-address-register",
+          "softwareName": "Network Address Register",
+          "price": 200,
+          "size": 15,
+          "activated": true
+        },
+        {
+          "type": "softwareLicense",
+          "softwareId": "network-scanner",
+          "softwareName": "Network Scanner",
+          "price": 300,
+          "size": 30,
+          "activated": true
+        },
+        {
+          "type": "softwareLicense",
+          "softwareId": "file-manager",
+          "softwareName": "File Manager",
+          "price": 350,
+          "size": 40,
+          "activated": true
+        }
+      ]
+    },
+    {
+      "id": "msg-tutorial-network-credentials",
+      "from": "SourceNet Manager",
+      "fromId": "SNET-MGR-6CK-88V",
+      "fromName": "SourceNet Manager Sam",
+      "subject": "ClientA Network Credentials",
+      "body": "Perfect! Now that you've accepted the mission, here are the network credentials for ClientA-Corporate.\n\nClick the attachment above to add it to your Network Address Register. Then you can use your VPN Client to connect to their network.\n\nRemember the mission objectives:\n1. Connect to ClientA-Corporate network\n2. Scan the network to find file servers\n3. Use File Manager to repair corrupted log files\n\nYou've got this!\n\n- Sam",
+      "timestamp": "2020-03-25T09:04:24.000Z",
+      "read": true,
+      "archived": false,
+      "attachments": [
+        {
+          "type": "networkAddress",
+          "missionId": "tutorial-part-1",
+          "activated": true
+        }
+      ]
+    }
+  ],
+  "managerName": "Sam",
+  "windows": [],
+  "reputation": 9,
+  "reputationCountdown": null,
+  "activeMission": {
+    "missionId": "tutorial-part-1",
+    "title": "Log File Repair",
+    "client": "Client A - TechCorp Industries",
+    "difficulty": "Beginner",
+    "basePayout": 2000,
+    "category": "story-tutorial",
+    "oneTime": true,
+    "triggers": {
+      "start": {
+        "type": "timeSinceEvent",
+        "event": "softwareInstalled",
+        "condition": {
+          "softwareId": "mission-board"
+        },
+        "delay": 0
+      }
+    },
+    "requirements": {
+      "software": [
+        "vpn-client",
+        "network-address-register",
+        "network-scanner",
+        "file-manager"
+      ],
+      "reputation": null,
+      "credits": null
+    },
+    "network": {
+      "networkId": "clienta-corporate",
+      "networkName": "ClientA-Corporate",
+      "address": "192.168.50.0/24",
+      "bandwidth": 50,
+      "revokeOnComplete": true,
+      "revokeReason": "Mission access expired",
+      "fileSystems": [
+        {
+          "id": "fs-clienta-01",
+          "ip": "192.168.50.10",
+          "name": "fileserver-01",
+          "files": [
+            {
+              "name": "log_2024_01.txt",
+              "size": "2.5 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_02.txt",
+              "size": "3.1 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_03.txt",
+              "size": "2.8 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_04.txt",
+              "size": "3.2 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_05.txt",
+              "size": "2.9 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_06.txt",
+              "size": "3.0 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_07.txt",
+              "size": "2.7 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_08.txt",
+              "size": "3.3 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2023_11.txt",
+              "size": "2.4 KB",
+              "corrupted": false
+            },
+            {
+              "name": "log_2023_12.txt",
+              "size": "2.6 KB",
+              "corrupted": false
+            },
+            {
+              "name": "system.log",
+              "size": "1.2 KB",
+              "corrupted": false
+            }
+          ]
+        }
+      ]
+    },
+    "objectives": [
+      {
+        "id": "obj-nar",
+        "description": "Add ClientA-Corporate credentials to NAR",
+        "type": "narEntryAdded",
+        "target": "clienta-corporate",
+        "status": "complete"
+      },
+      {
+        "id": "obj-1",
+        "description": "Connect to ClientA-Corporate network",
+        "type": "networkConnection",
+        "target": "clienta-corporate",
+        "status": "complete"
+      },
+      {
+        "id": "obj-2",
+        "description": "Scan network to find fileserver-01",
+        "type": "networkScan",
+        "target": "clienta-corporate",
+        "expectedResult": "fileserver-01",
+        "status": "complete"
+      },
+      {
+        "id": "obj-3",
+        "description": "Connect to fileserver-01 file system",
+        "type": "fileSystemConnection",
+        "target": "192.168.50.10",
+        "status": "complete"
+      },
+      {
+        "id": "obj-4",
+        "description": "Repair all corrupted files",
+        "type": "fileOperation",
+        "operation": "repair",
+        "target": "all-corrupted",
+        "count": 8,
+        "status": "pending"
+      },
+      {
+        "id": "obj-verify",
+        "description": "Verify mission completion",
+        "type": "verification",
+        "autoComplete": false,
+        "status": "pending"
+      }
+    ],
+    "scriptedEvents": [
+      {
+        "id": "sabotage-deletion",
+        "trigger": {
+          "type": "afterObjectiveComplete",
+          "objectiveId": "obj-4",
+          "delay": 5000
+        },
+        "actions": [
+          {
+            "type": "forceFileOperation",
+            "operation": "delete",
+            "files": "all-repaired",
+            "visual": "progressBar",
+            "duration": 15000,
+            "playerControl": false
+          },
+          {
+            "type": "forceDisconnect",
+            "network": "clienta-corporate",
+            "reason": "Network administrator terminated connection",
+            "administratorMessage": "Intrusion detected. Unauthorized file deletion activity flagged. Connection terminated by security administrator."
+          },
+          {
+            "type": "revokeNAREntry",
+            "network": "clienta-corporate",
+            "reason": "Access credentials revoked by network administrator"
+          },
+          {
+            "type": "setMissionStatus",
+            "status": "failed",
+            "failureReason": "Files deleted instead of repaired"
+          }
+        ]
+      }
+    ],
+    "consequences": {
+      "success": {
+        "credits": 2000,
+        "reputation": 0,
+        "messages": []
+      },
+      "failure": {
+        "credits": -10000,
+        "reputation": -6,
+        "messages": [
+          {
+            "id": "manager-angry",
+            "delay": 10000,
+            "from": "manager",
+            "subject": "What happened?!",
+            "templateId": "tutorial-1-failure"
+          }
+        ],
+        "note": "Bank overdraft message triggered by Banking System (not story)"
+      }
+    },
+    "followUpMissions": {
+      "onSuccess": [],
+      "onFailure": [
+        "tutorial-part-2"
+      ]
+    },
+    "startTime": "2020-03-25T09:04:22.000Z",
+    "acceptedTime": "2020-03-25T09:04:22.000Z"
+  },
+  "completedMissions": [],
+  "availableMissions": [],
+  "missionCooldowns": {
+    "easy": null,
+    "medium": null,
+    "hard": null
+  },
+  "narEntries": [
+    {
+      "id": "nar-1768409366161",
+      "networkId": "clienta-corporate",
+      "networkName": "ClientA-Corporate",
+      "address": "192.168.50.0/24",
+      "bandwidth": 50,
+      "status": "active",
+      "authorized": true,
+      "dateAdded": "2026-01-14T16:49:26.161Z",
+      "fileSystems": [
+        {
+          "id": "fs-clienta-01",
+          "ip": "192.168.50.10",
+          "name": "fileserver-01",
+          "files": [
+            {
+              "name": "log_2024_01.txt",
+              "size": "2.5 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_02.txt",
+              "size": "3.1 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_03.txt",
+              "size": "2.8 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_04.txt",
+              "size": "3.2 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_05.txt",
+              "size": "2.9 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_06.txt",
+              "size": "3.0 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_07.txt",
+              "size": "2.7 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_08.txt",
+              "size": "3.3 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2023_11.txt",
+              "size": "2.4 KB",
+              "corrupted": false
+            },
+            {
+              "name": "log_2023_12.txt",
+              "size": "2.6 KB",
+              "corrupted": false
+            },
+            {
+              "name": "system.log",
+              "size": "1.2 KB",
+              "corrupted": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "activeConnections": [],
+  "lastScanResults": {
+    "network": "clienta-corporate",
+    "machines": [
+      {
+        "ip": "192.168.50.10",
+        "hostname": "fileserver-01",
+        "id": "fs-clienta-01",
+        "type": "fileserver",
+        "fileSystems": [
+          "/fileserver-01/"
+        ],
+        "required": true
+      },
+      {
+        "ip": "192.168.50.53",
+        "hostname": "ws-447",
+        "id": "workstation-1",
+        "type": "workstation",
+        "fileSystems": [],
+        "required": false
+      },
+      {
+        "ip": "192.168.50.172",
+        "hostname": "ws-777",
+        "id": "workstation-2",
+        "type": "workstation",
+        "fileSystems": [],
+        "required": false
+      }
+    ]
+  },
+  "fileManagerConnections": [
+    {
+      "fileSystemId": "fs-clienta-01",
+      "ip": "192.168.50.10",
+      "path": "/"
+    }
+  ],
+  "lastFileOperation": null,
+  "downloadQueue": [],
+  "transactions": [
+    {
+      "id": "txn-cheque-1768409239698",
+      "date": "2020-03-25T09:00:39.000Z",
+      "type": "income",
+      "amount": 1000,
+      "description": "Cheque Deposit",
+      "balanceAfter": 1000
+    }
+  ],
+  "licensedSoftware": [
+    "mission-board",
+    "vpn-client",
+    "network-address-register",
+    "network-scanner",
+    "file-manager"
+  ],
+  "bankruptcyCountdown": null,
+  "lastInterestTime": null,
+  "processedEvents": [
+    "Welcome to SourceNet!",
+    "Hi from your manager - {managerName}",
+    "Get Ready for Your First Mission",
+    "Mission Software",
+    "ClientA Network Credentials"
+  ],
+  "pendingStoryEvents": [],
+  "bankingMessagesSent": {
+    "firstOverdraft": false,
+    "approachingBankruptcy": false,
+    "bankruptcyCountdownStart": false,
+    "bankruptcyCancelled": false
+  },
+  "reputationMessagesSent": {
+    "performancePlanWarning": false,
+    "finalTerminationWarning": false,
+    "performanceImproved": false
+  },
+  "proceduralMissionsEnabled": false,
+  "missionPool": [],
+  "pendingChainMissions": {},
+  "activeClientIds": [],
+  "clientStandings": {},
+  "extensionOffers": {},
+  "savedAt": "2026-01-14T16:49:32.280Z",
+  "saveName": "25/03/2020 09:05:05"
+}

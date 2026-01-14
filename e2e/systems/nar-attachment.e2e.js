@@ -125,8 +125,8 @@ test.describe('E2E: Network Address Attachment Flow', () => {
 
         await attachment.click();
 
-        // Verify status changed to "Added to NAR"
-        await expect(page.locator('text=✓ Added to NAR')).toBeVisible({ timeout: 2000 });
+        // Verify status changed to show credentials used
+        await expect(page.locator('text=✓ Network credentials used')).toBeVisible({ timeout: 2000 });
         await expect(page.locator('text=Click to add to Network Address Register')).not.toBeVisible();
 
         // Verify attachment has activated class
@@ -138,8 +138,8 @@ test.describe('E2E: Network Address Attachment Flow', () => {
 
         await attachment.click();
 
-        // Should still show "Added to NAR" (no change)
-        await expect(page.locator('text=✓ Added to NAR')).toBeVisible();
+        // Should still show "Network credentials used" (no change)
+        await expect(page.locator('text=✓ Network credentials used')).toBeVisible();
     });
 
     test('should show install requirement when NAR is not installed', async ({ page }) => {
@@ -222,6 +222,6 @@ test.describe('E2E: Network Address Attachment Flow', () => {
 
         // Should still show install requirement
         await expect(page.locator('text=Install Network Address Register to use this attachment')).toBeVisible();
-        await expect(page.locator('text=✓ Added to NAR')).not.toBeVisible();
+        await expect(page.locator('text=✓ Network credentials used')).not.toBeVisible();
     });
 });

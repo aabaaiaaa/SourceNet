@@ -1,97 +1,27 @@
 TODOs
 
-(done - needs trying)
-The Network Address Register app should show that any NAR entry that is not autorised now is not authorised (revoked access).
-
-
-(done - needs manual testing)
-Plan - I want NAR entries for missions to be revoked at the end of the missions (so to not pollute the NAR app once you've completed 50+ missions). Though there might be some networks eventually that you have prolonged access to, for now there will not be. I need to see which is best, the mission to have mission data set that tells the game code that a particular NAR entry should have it's access revoked, or if that setting should be linked to the NAR entry itself.
-
-
-(done - needs trying)
-For the tutorial mission part 2 (the end of the tutorial), the manager should also send a message about how NAR entries are likely to be automatically revoked once a mission completes (successfully or not).
-
-
-(done - needs trying)
-The tutorial part 1 mission should have an initial objective of adding the NAR entry from message attachment, so to help users know that's vital to the mission and to point them in the right direction. There should be an event that is triggered for accepting NAR entries or attachments already.
-
-
-(done - needs trying)
-Instead of payment being autmatically applied on mission completion, a templated message from the client of the mission with a digital cheque to that value. Reputation should still be applied on mission completion as that's linked who you are working for at the time (SourceNet).
-
-
-(think this is already done?)
-When saving game state and reloading, it seems that the active connections are still connected. If it's easier to force the user to manually disconnect from any networks before they are allowed to save, then that should be the change, but the save button should not be enabled and a tooltip should tell them why they cannot save yet.
-
-
-(done - needs testing)
-The network scanner progress bar animation needs to use in game time to function so the user speeding up the game will also speed up the scanning.
-
-
-(done - needs testing)
-When loading up a save game, there are duplicate messages being delivered that should only come through when you start a new game (the 2 welcome messages). I can see they are being gated and not showing in game, but the issue is really that they are attempting to fire at all. It might highlight a core game issue. I understand that there might be a trigger for them that is an amount of time once you load up the desktop, but it might just be that they are using a badly chosen trigger.
-
-
-(done - needs testing)
-When using the sleep function to return to the game login screen, I can still see activity happening for the game I just left - I heard chimes for notifications and can see console output of events.
-
-
-(done - needs testing)
-What is happening now is the cleared game timers have cleared critical events that then don't attempt to fire when you load up a game that was saved mid way through a timer. For example, the "first mission" message from the manager is delivered 20 seconds after you read your manager welcome message.
-
-
-(done - needs testing)
-does this save and loading e2e test suite give enough test coverage for the saving and loading system?
-
-
-(done - needs testing)
-the banking system was updated to save which messages have been sent as the player passes warning thresholds for negative credit, but the same needs to happen for reputation as there are messages sent for bad reputation - specifically to do with the timers being saved and loaded to make sure the player doesn't miss out on any warning messages.
-
-
-(done - needs testing)
-In File Manager app, the repair progress bar doesn't show any progress being made, it just shows 0% and an emtpy bar. If the process is happening so quickly there's no progress bar render, then the process (all File Manager operations) might need to be artificially extended for game play purposes.
-
-
-(done - needs testing)
-NAR app has a connect button but it just runs an alert saying it's not implemented. Really this connect button should open the VPN client and make a connection through to that network. Obvisouly if you are already connected to that netowrk, the NAR app should show this and give you a disconnect option.
-
-
-(done)
-The Network Scanner can still be used without a valid network being selected. Really you should have no options other than to select a network before you can do anything else in the app. Also, if you were to get disconnected from the network it was using, that should behave in the same limiting way.
-
-
-
-(done)
-When using the sleep function, it will say that it will disconnect you from all connections, but it doesn't. So when loading that save back up, I'm still connected to the networks still.
-
-
-(done - needs testing)
-Not happy there's a tutorial-software-licenses-alt and tutorial-software-licenses events in mission board intro. Ideally there can just be multiple triggers required and for this example the triggers are that BOTH the message msg-mission-board-license has been read AND the mission-board software has been installed. The reason there's two events with different triggers, is that the player could already have installed the mission board BEFORE receiving the msg-mission-board-license message.
-It's important that triggers can have multiple conditions so that more complex story telling can happen later in the game.
-
-
+(wip - testing)
 Once the tutorial part 2 mission is completed, there should be other missions then made available (they should be similar beginner missions). There should be some mission types already created in the phase 2 spec, or some will need to be created. At least there should be missions like the tutorial missions where you need to repair files or copy files or delete files.
+There are some mission data files already, but they aren't being used at the moment. I would like to start making some post tutorial missions available once you complete the tutorial part 2 mission, so the mission board does has some missions available. I would like to see what types of missions can be created based on the software that is currently available.
+There are some missions suggested in the phase 2 docs that require more than the software already available and they will need to be skipped for this initial change. However, there's a lot of variation that could be used to create unique missions that use copy/delete/repair files and different filesystems as well as file sytems across different networks too. So the idea would be to create missions that feel more involved than just copy from a to b location. Also, the narrative of these missions matter so coming up with believable narratives is important - I'm happy for you to embelish stories for each.
+Ideally I'm looking for around 7 unique missions for now.
+The plan is to have some missions that require a better reputation so the player cannot access those until they've worked a bit to repair their rep after the tutorial missions.
+-- (WIP!!!!!) - WORKING ON THIS NOW
+need to create a new generated scenario - Prior to tutorial part 2 verify mission completion objective - so that another e2e test can load this scenario up and that last objective can be completed automatically and then trigger the post tutorial game state (that the generated missions load up in the mission board).
+This game state will need to be saved immediately after the 2nd from last mission objective is completed as the last mission objective "verify mission completion" is a timed event and is only a short time.
+Then a new e2e test can be created to test the error above and iterate on this without needing to go through the whole tutorial missions over and over.
 
 
 Review the systems in place for handling missions and scripted events and objective tracking as I need to understand how to picture these systems and how best they should integrate with each other as the biggest issues have come from changes in these areas. Each system needs to have a role and individual responsibility so there's not internal variables being changed by external systems. It will then aid in writing test cases for each system.
 
 
-(done - needs testing)
-the sabotage event is not very obvious to the user (I have manually tested) - the deleting process happens so fast that the user cannot actually see what has happened, the first thing you see is just a disconnection. It could be that the File Manager app also has a log at the bottom listing all operations performed. We need enough time for the user to think, "oh what is happening, that's not me doing that". Then the administrator disconnecting you should appear more dramatic, like a red warning popup that tells you the details of the network you are being forceibly disconnected from and by the network administrator - maybe also a description of the reason (that being deleting critical files), and that it's a popup that the user has to acknowledge by clicking a dismiss button.
+When the sabotage event happens and files are deleted, it should be deleting the log files that the player just repaired! Currently it's just adding log entries for non-existent files it's deleting.
 
 
-(done)
-when performing the same operation in the File Manager, the log messages seem to look very similar and then this duplicate key errors starts to show:
-react-dom_client.js?v=cc2a3fee:4923 Encountered two children with the same key, `1768296248618`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
-I think it could be the the process to make unique keys is built on data that isn't always unique.
+The Network Scanner is still showing "disconnected from network" even once you reconnect to the network.
 
 
-(done - needs testing)
-When copying and pasting files - make the clipboard clear once you paste - I know this is not normal, but for the purpose of the game, it's should only be a one time paste for now.
-
-
-(done - needs testing)
-File Manager log doesn't say the location operations were performed on, so when switching file system, you can't tell if you've done particular operations in particular locations.
+At the end of the tutorial part 2 mission, when you are disconnected because you've finished the mission, the connection popup is showing 2 entries for disconnection (the message "Disconnecting from ClientA-Corporate due to access revocation" shows twice in the console).
 
 
 (done - needs testing)
@@ -101,7 +31,3 @@ Just like how pasting clears the clipboard, if you disconnect from the network t
 (done - needs testing)
 In the File Manager, if you paste in some files then switch to another file system in the same instance of the File Manager, if you were to switch back to the original file system, you do not see the files that you pasted in. When manipulating files in File Manager, they should stay that way. I understand that for the particular case of the tutorial missions when you are revisiting the same network that the 2nd NAR entry you receive will change the network based on what is set in the mission data, but you could write that down to the network having whatever you did previous undone.
 The persistance of these changes to files I would expect to persist between a disconnect and reconnecting as long as the NAR entry you are using is the same one (hasn't been revoked/deauthed).
-
-
-(done - needs testing)
-When copying files for the tutroial part 2 mission, the objective is not tracking which particular files are being copied and so you could copy and paste in the same file 8 times and it would pass - this is incorrect. There are 8 files and it needs to be those 8 particular files.

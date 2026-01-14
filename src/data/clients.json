@@ -1,0 +1,535 @@
+{
+    "clients": [
+        {
+            "id": "bank-first-community",
+            "name": "First Community Credit Union",
+            "industry": "banking",
+            "tier": "local",
+            "clientType": "bank-local",
+            "minReputation": 2,
+            "description": "A small credit union serving the local community with basic banking services."
+        },
+        {
+            "id": "bank-town-savings",
+            "name": "Town Savings & Loan",
+            "industry": "banking",
+            "tier": "local",
+            "clientType": "bank-local",
+            "minReputation": 2,
+            "description": "Family-owned savings institution that's been serving the town for three generations."
+        },
+        {
+            "id": "bank-coastal-regional",
+            "name": "Coastal Regional Bank",
+            "industry": "banking",
+            "tier": "regional",
+            "clientType": "bank-regional",
+            "minReputation": 5,
+            "description": "Regional bank with branches across multiple counties, known for business lending."
+        },
+        {
+            "id": "bank-midwest-financial",
+            "name": "Midwest Financial Group",
+            "industry": "banking",
+            "tier": "regional",
+            "clientType": "bank-regional",
+            "minReputation": 5,
+            "description": "Investment and commercial banking serving the heartland's growing businesses."
+        },
+        {
+            "id": "bank-national-federal",
+            "name": "National Federal Reserve Bank",
+            "industry": "banking",
+            "tier": "national",
+            "clientType": "bank-national",
+            "minReputation": 8,
+            "description": "One of the nation's largest financial institutions with international operations."
+        },
+        {
+            "id": "bank-sovereign-trust",
+            "name": "Sovereign Trust International",
+            "industry": "banking",
+            "tier": "national",
+            "clientType": "bank-national",
+            "minReputation": 8,
+            "description": "Elite private banking firm handling high-net-worth accounts and sovereign wealth."
+        },
+        {
+            "id": "gov-riverside-library",
+            "name": "Riverside Public Library",
+            "industry": "government",
+            "tier": "library",
+            "clientType": "gov-library",
+            "minReputation": 1,
+            "description": "Local library system maintaining digital archives and community resources."
+        },
+        {
+            "id": "gov-central-library",
+            "name": "Central District Library Network",
+            "industry": "government",
+            "tier": "library",
+            "clientType": "gov-library",
+            "minReputation": 1,
+            "description": "Multi-branch library network serving the greater metropolitan area."
+        },
+        {
+            "id": "gov-city-it",
+            "name": "City IT Department",
+            "industry": "government",
+            "tier": "municipal",
+            "clientType": "gov-municipal",
+            "minReputation": 4,
+            "description": "Municipal technology services managing city infrastructure and citizen portals."
+        },
+        {
+            "id": "gov-metro-transit",
+            "name": "Metro Transit Authority",
+            "industry": "government",
+            "tier": "municipal",
+            "clientType": "gov-municipal",
+            "minReputation": 4,
+            "description": "Public transportation agency managing bus, rail, and paratransit systems."
+        },
+        {
+            "id": "gov-state-tax",
+            "name": "State Revenue Department",
+            "industry": "government",
+            "tier": "state",
+            "clientType": "gov-state",
+            "minReputation": 6,
+            "description": "State-level tax collection and revenue management agency."
+        },
+        {
+            "id": "gov-state-dmv",
+            "name": "Department of Motor Vehicles",
+            "industry": "government",
+            "tier": "state",
+            "clientType": "gov-state",
+            "minReputation": 6,
+            "description": "Statewide vehicle registration and licensing administration."
+        },
+        {
+            "id": "gov-dept-treasury",
+            "name": "Department of Treasury",
+            "industry": "government",
+            "tier": "federal",
+            "clientType": "gov-federal",
+            "minReputation": 8,
+            "description": "Federal agency managing government finances and monetary systems."
+        },
+        {
+            "id": "gov-dept-defense",
+            "name": "Department of Defense - Logistics",
+            "industry": "government",
+            "tier": "federal",
+            "clientType": "gov-federal",
+            "minReputation": 9,
+            "description": "Military logistics division handling supply chain and inventory systems."
+        },
+        {
+            "id": "health-maple-clinic",
+            "name": "Maple Street Family Clinic",
+            "industry": "healthcare",
+            "tier": "clinic",
+            "clientType": "health-clinic",
+            "minReputation": 2,
+            "description": "Small family practice providing primary care to the local neighborhood."
+        },
+        {
+            "id": "health-valley-dental",
+            "name": "Valley Dental Associates",
+            "industry": "healthcare",
+            "tier": "clinic",
+            "clientType": "health-clinic",
+            "minReputation": 2,
+            "description": "Multi-dentist practice serving families throughout the valley."
+        },
+        {
+            "id": "health-st-mary",
+            "name": "St. Mary's Regional Hospital",
+            "industry": "healthcare",
+            "tier": "hospital",
+            "clientType": "health-hospital",
+            "minReputation": 5,
+            "description": "Regional hospital with emergency services and specialized care units."
+        },
+        {
+            "id": "health-general-medical",
+            "name": "General Medical Center",
+            "industry": "healthcare",
+            "tier": "hospital",
+            "clientType": "health-hospital",
+            "minReputation": 5,
+            "description": "Full-service hospital providing comprehensive inpatient and outpatient care."
+        },
+        {
+            "id": "health-nexus-pharma",
+            "name": "Nexus Pharmaceuticals Research",
+            "industry": "healthcare",
+            "tier": "research",
+            "clientType": "health-research",
+            "minReputation": 8,
+            "description": "Leading pharmaceutical research firm developing breakthrough treatments."
+        },
+        {
+            "id": "health-genome-labs",
+            "name": "Genome Analytics Labs",
+            "industry": "healthcare",
+            "tier": "research",
+            "clientType": "health-research",
+            "minReputation": 8,
+            "description": "Cutting-edge genomics research facility pioneering personalized medicine."
+        },
+        {
+            "id": "corp-bobs-auto",
+            "name": "Bob's Auto Parts & Service",
+            "industry": "corporate",
+            "tier": "small",
+            "clientType": "corp-small",
+            "minReputation": 2,
+            "description": "Local auto parts retailer with loyal customer base and inventory challenges."
+        },
+        {
+            "id": "corp-sunshine-bakery",
+            "name": "Sunshine Bakery Chain",
+            "industry": "corporate",
+            "tier": "small",
+            "clientType": "corp-small",
+            "minReputation": 2,
+            "description": "Growing bakery chain with a dozen locations across the region."
+        },
+        {
+            "id": "corp-regional-manufacturing",
+            "name": "Regional Manufacturing Co",
+            "industry": "corporate",
+            "tier": "medium",
+            "clientType": "corp-medium",
+            "minReputation": 5,
+            "description": "Mid-size manufacturer producing industrial components for various sectors."
+        },
+        {
+            "id": "corp-pacific-retail",
+            "name": "Pacific Retail Group",
+            "industry": "corporate",
+            "tier": "medium",
+            "clientType": "corp-medium",
+            "minReputation": 5,
+            "description": "Regional retail conglomerate operating department stores and specialty shops."
+        },
+        {
+            "id": "corp-titan-industries",
+            "name": "Titan Industries International",
+            "industry": "corporate",
+            "tier": "enterprise",
+            "clientType": "corp-enterprise",
+            "minReputation": 8,
+            "description": "Fortune 500 conglomerate with diversified holdings across multiple sectors."
+        },
+        {
+            "id": "corp-apex-dynamics",
+            "name": "Apex Dynamics Corporation",
+            "industry": "corporate",
+            "tier": "enterprise",
+            "clientType": "corp-enterprise",
+            "minReputation": 8,
+            "description": "Global technology leader in aerospace, defense, and advanced systems."
+        },
+        {
+            "id": "util-greenville-water",
+            "name": "Greenville Water Authority",
+            "industry": "utilities",
+            "tier": "local",
+            "clientType": "util-local",
+            "minReputation": 3,
+            "description": "Municipal water treatment and distribution serving the Greenville area."
+        },
+        {
+            "id": "util-county-electric",
+            "name": "County Electric Cooperative",
+            "industry": "utilities",
+            "tier": "local",
+            "clientType": "util-local",
+            "minReputation": 3,
+            "description": "Rural electric cooperative providing power to underserved communities."
+        },
+        {
+            "id": "util-pacific-power",
+            "name": "Pacific Power Grid",
+            "industry": "utilities",
+            "tier": "regional",
+            "clientType": "util-regional",
+            "minReputation": 6,
+            "description": "Regional power transmission operator managing critical grid infrastructure."
+        },
+        {
+            "id": "util-northern-gas",
+            "name": "Northern Natural Gas Pipeline",
+            "industry": "utilities",
+            "tier": "regional",
+            "clientType": "util-regional",
+            "minReputation": 6,
+            "description": "Interstate natural gas pipeline company serving industrial and residential customers."
+        },
+        {
+            "id": "ship-quickship",
+            "name": "QuickShip Express Courier",
+            "industry": "shipping",
+            "tier": "courier",
+            "clientType": "ship-courier",
+            "minReputation": 2,
+            "description": "Local same-day delivery service specializing in urgent document courier."
+        },
+        {
+            "id": "ship-metro-delivery",
+            "name": "Metro Delivery Services",
+            "industry": "shipping",
+            "tier": "courier",
+            "clientType": "ship-courier",
+            "minReputation": 2,
+            "description": "Urban package delivery company serving the metropolitan business district."
+        },
+        {
+            "id": "ship-continental-freight",
+            "name": "Continental Freight Lines",
+            "industry": "shipping",
+            "tier": "logistics",
+            "clientType": "ship-logistics",
+            "minReputation": 5,
+            "description": "Long-haul trucking company with cross-country freight operations."
+        },
+        {
+            "id": "ship-harbor-logistics",
+            "name": "Harbor Logistics Solutions",
+            "industry": "shipping",
+            "tier": "logistics",
+            "clientType": "ship-logistics",
+            "minReputation": 5,
+            "description": "Integrated logistics provider managing warehousing and distribution networks."
+        },
+        {
+            "id": "ship-oceanway-global",
+            "name": "OceanWay Global Shipping",
+            "industry": "shipping",
+            "tier": "global",
+            "clientType": "ship-global",
+            "minReputation": 8,
+            "description": "International shipping conglomerate operating container fleets worldwide."
+        },
+        {
+            "id": "ship-skybridge-air",
+            "name": "SkyBridge Air Cargo",
+            "industry": "shipping",
+            "tier": "global",
+            "clientType": "ship-global",
+            "minReputation": 8,
+            "description": "Global air freight carrier specializing in time-critical international shipments."
+        },
+        {
+            "id": "emerg-volunteer-fire",
+            "name": "Volunteer Fire Department #7",
+            "industry": "emergency",
+            "tier": "volunteer",
+            "clientType": "emerg-volunteer",
+            "minReputation": 3,
+            "description": "Community volunteer fire station serving rural areas with limited funding."
+        },
+        {
+            "id": "emerg-rescue-squad",
+            "name": "County Rescue Squad",
+            "industry": "emergency",
+            "tier": "volunteer",
+            "clientType": "emerg-volunteer",
+            "minReputation": 3,
+            "description": "Volunteer emergency medical responders covering the county's remote areas."
+        },
+        {
+            "id": "emerg-metro-police",
+            "name": "Metro Police Department",
+            "industry": "emergency",
+            "tier": "municipal",
+            "clientType": "emerg-municipal",
+            "minReputation": 6,
+            "description": "City police force managing law enforcement across the metropolitan area."
+        },
+        {
+            "id": "emerg-fire-rescue",
+            "name": "City Fire & Rescue",
+            "industry": "emergency",
+            "tier": "municipal",
+            "clientType": "emerg-municipal",
+            "minReputation": 6,
+            "description": "Professional firefighting and emergency response for the city and suburbs."
+        },
+        {
+            "id": "emerg-federal-bureau",
+            "name": "Federal Bureau of Investigation",
+            "industry": "emergency",
+            "tier": "federal",
+            "clientType": "emerg-federal",
+            "minReputation": 9,
+            "description": "Federal law enforcement agency handling high-priority national security cases."
+        },
+        {
+            "id": "emerg-marshal-service",
+            "name": "U.S. Marshal Service",
+            "industry": "emergency",
+            "tier": "federal",
+            "clientType": "emerg-federal",
+            "minReputation": 9,
+            "description": "Federal agency managing fugitive operations and witness protection."
+        },
+        {
+            "id": "nonprofit-community-center",
+            "name": "Riverside Community Center",
+            "industry": "nonprofit",
+            "tier": "community",
+            "clientType": "nonprofit-community",
+            "minReputation": 1,
+            "description": "Local community center providing youth programs and senior services."
+        },
+        {
+            "id": "nonprofit-food-bank",
+            "name": "Regional Food Bank Network",
+            "industry": "nonprofit",
+            "tier": "community",
+            "clientType": "nonprofit-community",
+            "minReputation": 1,
+            "description": "Food distribution charity serving families in need across the region."
+        },
+        {
+            "id": "nonprofit-heritage-foundation",
+            "name": "Heritage Foundation",
+            "industry": "nonprofit",
+            "tier": "foundation",
+            "clientType": "nonprofit-foundation",
+            "minReputation": 5,
+            "description": "Major charitable foundation funding education and community development."
+        },
+        {
+            "id": "nonprofit-global-relief",
+            "name": "Global Relief Initiative",
+            "industry": "nonprofit",
+            "tier": "foundation",
+            "clientType": "nonprofit-foundation",
+            "minReputation": 5,
+            "description": "International humanitarian organization coordinating disaster response worldwide."
+        },
+        {
+            "id": "cultural-town-museum",
+            "name": "Town Historical Museum",
+            "industry": "cultural",
+            "tier": "local",
+            "clientType": "cultural-local",
+            "minReputation": 1,
+            "description": "Small museum preserving local history and regional artifacts."
+        },
+        {
+            "id": "cultural-arts-center",
+            "name": "Community Arts Center",
+            "industry": "cultural",
+            "tier": "local",
+            "clientType": "cultural-local",
+            "minReputation": 1,
+            "description": "Local arts organization hosting exhibitions and community programs."
+        },
+        {
+            "id": "cultural-national-gallery",
+            "name": "National Art Gallery",
+            "industry": "cultural",
+            "tier": "major",
+            "clientType": "cultural-major",
+            "minReputation": 6,
+            "description": "Premier national museum housing priceless art collections and archives."
+        },
+        {
+            "id": "cultural-heritage-archives",
+            "name": "National Heritage Archives",
+            "industry": "cultural",
+            "tier": "major",
+            "clientType": "cultural-major",
+            "minReputation": 6,
+            "description": "Federal institution preserving historical documents and national records."
+        }
+    ],
+    "industries": {
+        "banking": {
+            "displayName": "Banking & Finance",
+            "tiers": [
+                "local",
+                "regional",
+                "national"
+            ],
+            "description": "Financial institutions from credit unions to international banks"
+        },
+        "government": {
+            "displayName": "Government",
+            "tiers": [
+                "library",
+                "municipal",
+                "state",
+                "federal"
+            ],
+            "description": "Public sector organizations at all levels of government"
+        },
+        "healthcare": {
+            "displayName": "Healthcare",
+            "tiers": [
+                "clinic",
+                "hospital",
+                "research"
+            ],
+            "description": "Medical providers from small practices to research facilities"
+        },
+        "corporate": {
+            "displayName": "Corporate",
+            "tiers": [
+                "small",
+                "medium",
+                "enterprise"
+            ],
+            "description": "Private businesses of varying sizes and industries"
+        },
+        "utilities": {
+            "displayName": "Utilities",
+            "tiers": [
+                "local",
+                "regional"
+            ],
+            "description": "Power, water, and essential infrastructure providers"
+        },
+        "shipping": {
+            "displayName": "Shipping & Logistics",
+            "tiers": [
+                "courier",
+                "logistics",
+                "global"
+            ],
+            "description": "Transportation and delivery services from local to international"
+        },
+        "emergency": {
+            "displayName": "Emergency Services",
+            "tiers": [
+                "volunteer",
+                "municipal",
+                "federal"
+            ],
+            "description": "First responders and law enforcement organizations"
+        },
+        "nonprofit": {
+            "displayName": "Non-Profit",
+            "tiers": [
+                "community",
+                "foundation"
+            ],
+            "description": "Charitable organizations and community service groups"
+        },
+        "cultural": {
+            "displayName": "Cultural Institutions",
+            "tiers": [
+                "local",
+                "major"
+            ],
+            "description": "Museums, galleries, and heritage preservation organizations"
+        }
+    }
+}

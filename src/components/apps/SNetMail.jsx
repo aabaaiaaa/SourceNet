@@ -6,7 +6,7 @@ import triggerEventBus from '../../core/triggerEventBus';
 import './SNetMail.css';
 
 const SNetMail = () => {
-  const { playerMailId, messages, markMessageAsRead, archiveMessage, initiateChequeDeposit, activateLicense, narEntries, setNarEntries, software } = useGame();
+  const { playerMailId, messages, markMessageAsRead, archiveMessage, initiateChequeDeposit, activateLicense, narEntries, setNarEntries, software, updateMessage } = useGame();
   const [activeTab, setActiveTab] = useState('inbox');
   const [selectedMessage, setSelectedMessage] = useState(null);
 
@@ -65,6 +65,12 @@ const SNetMail = () => {
 
   const handleNetworkAddressClick = (message, attachment) => {
     console.log('🔵 handleNetworkAddressClick called', { attachment, narEntries, software });
+
+    // Check if attachment already activated (one-time use)
+    if (attachment.activated) {
+      console.log('⚠️ Network attachment already used - cannot reactivate');
+      return;
+    }
 
     // Only add if NAR is installed and network not already added
     const narInstalled = software?.some(s => (typeof s === 'string' ? s === 'network-address-register' : s.id === 'network-address-register'));
@@ -126,6 +132,7 @@ const SNetMail = () => {
         });
 
         // Update the existing NAR entry
+        // If entry was revoked, re-authorize it (new credentials from fresh attachment)
         return currentEntries.map(entry =>
           entry.networkId === networkData.networkId
             ? { ...entry, fileSystems: mergedFileSystems, authorized: true, revokedReason: undefined }
@@ -166,6 +173,19 @@ const SNetMail = () => {
       });
 
       return [...currentEntries, newEntry];
+    });
+
+    // Mark attachment as activated (one-time use)
+    updateMessage(message.id, {
+      attachments: message.attachments?.map(att => {
+        if (att.type === 'networkAddress' && att.networkId === networkData.networkId) {
+          return { ...att, activated: true };
+        }
+        if (att.type === 'networkAddress' && att.missionId === attachment.missionId) {
+          return { ...att, activated: true };
+        }
+        return att;
+      })
     });
   };
 
@@ -321,18 +341,20 @@ const SNetMail = () => {
 
                     const narInstalled = software?.some(s => (typeof s === 'string' ? s === 'network-address-register' : s.id === 'network-address-register'));
                     const existingEntry = narEntries?.find(entry => entry.networkId === networkData.networkId);
-                    // Only consider it "already added" if the entry exists AND is authorized
-                    const alreadyAdded = existingEntry && existingEntry.authorized !== false;
+                    const alreadyUsed = attachment.activated;
 
                     let statusText;
                     let isClickable = true;
-                    if (alreadyAdded) {
-                      statusText = '✓ Added to NAR';
+                    if (alreadyUsed) {
+                      statusText = '✓ Network credentials used';
                       isClickable = false;
                     } else if (existingEntry && existingEntry.authorized === false) {
-                      // Entry exists but is revoked - allow re-authorization
-                      statusText = 'Click to re-authorize network access';
+                      // Entry exists and is revoked, but attachment is fresh - allow using new credentials
+                      statusText = 'Click to add updated network credentials to NAR';
                       isClickable = narInstalled;
+                    } else if (existingEntry && existingEntry.authorized !== false) {
+                      statusText = '✓ Already in NAR';
+                      isClickable = false;
                     } else if (!narInstalled) {
                       statusText = 'Install Network Address Register to use this attachment';
                       isClickable = false;
@@ -343,7 +365,7 @@ const SNetMail = () => {
                     return (
                       <div
                         key={index}
-                        className={`attachment-item ${alreadyAdded ? 'activated' : ''} ${!isClickable ? 'disabled' : ''}`}
+                        className={`attachment-item ${alreadyUsed ? 'activated' : ''} ${!isClickable ? 'disabled' : ''}`}
                         onClick={isClickable ? () => handleNetworkAddressClick(selectedMessage, attachment) : undefined}
                         data-testid={`network-attachment-${networkData.networkId}`}
                         role="button"
