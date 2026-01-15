@@ -460,10 +460,16 @@ export const GameProvider = ({ children }) => {
       timestamp: new Date(currentTime),
     };
 
-    setMessages((prev) => [...prev, newMessage]);
-
-    // Play notification chime
-    playNotificationChime();
+    setMessages((prev) => {
+      // Prevent duplicate message IDs
+      if (newMessage.id && prev.some(m => m.id === newMessage.id)) {
+        console.warn(`⚠️ Duplicate message ID '${newMessage.id}' - skipping`);
+        return prev;
+      }
+      // Play notification chime when message is added
+      playNotificationChime();
+      return [...prev, newMessage];
+    });
 
     // If this is the first message, schedule second message when it's read
     if (message.id === 'msg-welcome-hr') {
@@ -863,78 +869,43 @@ export const GameProvider = ({ children }) => {
 
   // Accept mission
   const acceptMission = useCallback((mission) => {
+    // Calculate deadline if mission has a time limit
+    const deadlineTime = mission.timeLimitMinutes
+      ? new Date(currentTime.getTime() + mission.timeLimitMinutes * 60 * 1000).toISOString()
+      : null;
+
     setActiveMission({
       ...mission,
       startTime: currentTime.toISOString(),
       acceptedTime: currentTime.toISOString(),
+      deadlineTime,
       objectives: mission.objectives.map(obj => ({ ...obj, status: 'pending' })),
     });
 
     // Remove the accepted mission from available missions
     setAvailableMissions(prev => prev.filter(m => m.missionId !== mission.missionId));
 
-    // If mission has networks with file systems, add them to NAR entries
-    const networksWithFileSystems = mission.networks?.filter(net => net.fileSystems && Array.isArray(net.fileSystems)) || [];
+    // Send the briefing message with NAR attachments (for procedural missions)
+    if (mission.briefingMessage) {
+      // Add the briefing message with proper timestamp
+      const briefingWithTimestamp = {
+        ...mission.briefingMessage,
+        id: mission.briefingMessage.id || `msg-briefing-${mission.missionId}-${Date.now()}`,
+        timestamp: currentTime.toISOString(),
+        read: false,
+      };
 
-    if (networksWithFileSystems.length > 0) {
-      networksWithFileSystems.forEach(network => {
-        const networkId = network.networkId;
-
-        setNarEntries(prev => {
-          const existingEntry = prev.find(entry => entry.networkId === networkId);
-
-          if (existingEntry) {
-            // Merge file systems into existing entry
-            const updatedEntries = prev.map(entry => {
-              if (entry.networkId === networkId) {
-                // Merge file systems, updating existing ones by id
-                const existingFileSystems = entry.fileSystems || [];
-                const newFileSystems = network.fileSystems;
-
-                const mergedFileSystems = [...existingFileSystems];
-                newFileSystems.forEach(newFs => {
-                  const existingIndex = mergedFileSystems.findIndex(fs => fs.id === newFs.id);
-                  if (existingIndex !== -1) {
-                    // Merge files: mission files overwrite duplicates, preserve non-conflicting user files
-                    const existingFiles = mergedFileSystems[existingIndex].files || [];
-                    const missionFiles = newFs.files || [];
-
-                    // Start with existing files, then overwrite/add mission files
-                    const mergedFiles = [...existingFiles];
-                    missionFiles.forEach(missionFile => {
-                      const existingFileIndex = mergedFiles.findIndex(f => f.name === missionFile.name);
-                      if (existingFileIndex !== -1) {
-                        // Overwrite existing file with mission file (all properties)
-                        mergedFiles[existingFileIndex] = { ...missionFile };
-                      } else {
-                        // Add new mission file
-                        mergedFiles.push({ ...missionFile });
-                      }
-                    });
-
-                    mergedFileSystems[existingIndex] = { ...newFs, files: mergedFiles };
-                  } else {
-                    // Add new file system
-                    mergedFileSystems.push(newFs);
-                  }
-                });
-
-                return {
-                  ...entry,
-                  fileSystems: mergedFileSystems,
-                };
-              }
-              return entry;
-            });
-
-            return updatedEntries;
-          }
-
+      setMessages(prev => {
+        // Prevent duplicate messages
+        if (prev.some(m => m.id === briefingWithTimestamp.id)) {
           return prev;
-        });
+        }
+        // Play notification chime
+        playNotificationChime();
+        return [...prev, briefingWithTimestamp];
       });
     }
-  }, [currentTime]);
+  }, [currentTime, playNotificationChime]);
 
   // Complete mission objective
   const completeMissionObjective = useCallback((objectiveId) => {
@@ -1593,6 +1564,26 @@ export const GameProvider = ({ children }) => {
     };
   }, [activeMission]);
 
+  // Poll for mission deadline expiration
+  useEffect(() => {
+    if (!activeMission?.deadlineTime) {
+      return; // No deadline to monitor
+    }
+
+    const deadlineDate = new Date(activeMission.deadlineTime);
+
+    // Check if deadline has passed
+    if (currentTime >= deadlineDate) {
+      console.log(`⏰ Mission deadline has passed! Current: ${currentTime.toISOString()}, Deadline: ${activeMission.deadlineTime}`);
+
+      // Emit mission failed event
+      triggerEventBus.emit('missionStatusChanged', {
+        status: 'failed',
+        failureReason: 'deadline',
+      });
+    }
+  }, [activeMission?.deadlineTime, currentTime]);
+
   // Handle scheduled story events (e.g., failure messages)
   useEffect(() => {
     const scheduledTimeouts = []; // Store scheduled timeouts
@@ -1829,8 +1820,19 @@ export const GameProvider = ({ children }) => {
     setHardware(gameState.hardware);
     setSoftware(gameState.software);
     setBankAccounts(gameState.bankAccounts);
-    setMessages(gameState.messages);
     setManagerName(gameState.managerName);
+
+    // Deduplicate messages (some saves may have duplicate IDs from repeated event triggers)
+    const seenMessageIds = new Set();
+    const deduplicatedMessages = (gameState.messages || []).filter(msg => {
+      if (msg.id && seenMessageIds.has(msg.id)) {
+        console.warn(`⚠️ Removing duplicate message ID '${msg.id}' from save`);
+        return false;
+      }
+      if (msg.id) seenMessageIds.add(msg.id);
+      return true;
+    });
+    setMessages(deduplicatedMessages);
 
     // Load extended state (with defaults for older save formats)
     setReputation(gameState.reputation ?? 9);

@@ -1,40 +1,41 @@
 /**
- * Mission Generator - Creates procedural missions from templates and client registry.
+ * Mission Generator - Creates procedural missions with complete network infrastructure
  * 
  * Generates:
- * - Single missions from client + mission type + templates
- * - Multi-part chain missions with escalation
- * - Mission extensions (mid-mission scope expansion)
+ * - Single standalone missions (repair, backup, transfer)
+ * - Multi-mission arcs with sequential unlocking and cohesive narratives
+ * - Complete networks with file systems, files, and NAR credentials
+ * - Optional time limits with payout scaling
+ * 
+ * All generated missions are fully playable with proper:
+ * - Network infrastructure (networks[], fileSystems[], files[])
+ * - Objective types matching ObjectiveTracker expectations
+ * - NAR credential attachments in mission briefing messages
+ * - Failure consequences and client messages
  */
 
 import { getClientById } from '../data/clientRegistry';
-import missionTemplates from './data/mission-templates.json';
-import {
-    generationConfig,
-    calculateBasePayout,
-    getExpirationHours,
-    getTimeLimit,
-    getExtensionChance
-} from './config/generationConfig';
 
 // Track generated mission IDs to ensure uniqueness
 let missionIdCounter = 0;
 
 /**
  * Generate a unique mission ID
+ * @param {string} prefix - ID prefix (e.g., 'repair', 'backup', 'transfer')
+ * @param {string} clientId - Client ID for uniqueness
  * @returns {string} Unique mission ID
  */
-function generateMissionId() {
+function generateMissionId(prefix, clientId) {
     missionIdCounter++;
-    return `proc-${Date.now()}-${missionIdCounter}`;
+    return `${prefix}-${clientId}-${Date.now()}-${missionIdCounter}`;
 }
 
 /**
- * Generate a unique chain ID
- * @returns {string} Unique chain ID
+ * Generate a unique arc ID
+ * @returns {string} Unique arc ID
  */
-function generateChainId() {
-    return `chain-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+function generateArcId() {
+    return `arc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
 /**
@@ -43,77 +44,129 @@ function generateChainId() {
  * @returns {*} Random item
  */
 function randomPick(arr) {
+    if (!arr || arr.length === 0) return null;
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
 /**
- * Pick a weighted random item
- * @param {Object} weights - Object with keys and weight values
- * @returns {string} Selected key
+ * Generate a random integer between min and max (inclusive)
+ * @param {number} min - Minimum value
+ * @param {number} max - Maximum value
+ * @returns {number} Random integer
  */
-function weightedRandomPick(weights) {
-    const entries = Object.entries(weights);
-    const totalWeight = entries.reduce((sum, [, w]) => sum + w, 0);
-    let random = Math.random() * totalWeight;
-
-    for (const [key, weight] of entries) {
-        random -= weight;
-        if (random <= 0) {
-            return key;
-        }
-    }
-
-    return entries[0][0]; // Fallback
+function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 /**
- * Generate a server address based on client industry
+ * Generate a random IP subnet
+ * @returns {string} IP address in format "10.x.x.0/24"
+ */
+function generateSubnet() {
+    const second = randomInt(1, 254);
+    const third = randomInt(1, 254);
+    return `10.${second}.${third}.0/24`;
+}
+
+/**
+ * Generate an IP within a subnet
+ * @param {string} subnet - Subnet in format "10.x.x.0/24"
+ * @param {number} hostNum - Host number (1-254)
+ * @returns {string} IP address
+ */
+function generateIpInSubnet(subnet, hostNum) {
+    const parts = subnet.split('.');
+    return `${parts[0]}.${parts[1]}.${parts[2]}.${hostNum}`;
+}
+
+/**
+ * Generate a server hostname based on client and purpose
  * @param {Object} client - Client object
- * @returns {string} Generated server address
+ * @param {string} purpose - Server purpose (e.g., 'fileserver', 'backup', 'archive')
+ * @param {number} index - Server index for uniqueness
+ * @returns {string} Generated hostname
  */
-function generateServerAddress(client) {
-    const serverType = missionTemplates.serverTypes[client.industry];
-    if (!serverType) {
-        return `${client.id.replace(/-/g, '')}.internal`;
-    }
-
-    const pattern = randomPick(serverType.addressPatterns);
-    const nameVariant = client.name.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
-
-    return pattern.replace('{name}', nameVariant);
+function generateHostname(client, purpose, index = 1) {
+    const prefix = client.name.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+    return `${prefix}-${purpose}-${String(index).padStart(2, '0')}`;
 }
 
 /**
- * Generate file names based on mission type and industry
+ * Generate file names based on industry and mission type
  * @param {string} industry - Client industry
- * @param {string} missionType - Type of mission (file-backup, file-repair, etc.)
+ * @param {string} missionType - Type of mission (repair, backup, transfer)
  * @param {number} count - Number of files to generate
- * @returns {string[]} Array of generated file names
+ * @param {boolean} corrupted - Whether files should be marked corrupted
+ * @returns {Array} Array of file objects
  */
-function generateFileNames(industry, missionType, count) {
-    const serverType = missionTemplates.serverTypes[industry];
-    if (!serverType) {
-        return Array(count).fill(null).map((_, i) => `file_${i + 1}.dat`);
-    }
+function generateFiles(industry, missionType, count, corrupted = false) {
+    const fileTemplates = {
+        banking: {
+            repair: ['ledger_{date}.db', 'transactions_{date}.dat', 'accounts_{date}.enc', 'audit_log_{date}.txt'],
+            backup: ['customer_data_{date}.db', 'loan_records_{date}.dat', 'compliance_{date}.enc'],
+            transfer: ['quarterly_report_{date}.xlsx', 'financial_summary_{date}.pdf', 'archive_{date}.tar']
+        },
+        government: {
+            repair: ['citizen_records_{date}.db', 'permit_system_{date}.dat', 'case_files_{date}.enc'],
+            backup: ['registry_{date}.db', 'tax_filings_{date}.dat', 'license_data_{date}.enc'],
+            transfer: ['archive_records_{date}.tar', 'historical_data_{date}.zip', 'backup_{date}.db']
+        },
+        healthcare: {
+            repair: ['patient_records_{date}.enc', 'ehr_system_{date}.db', 'lab_results_{date}.dat'],
+            backup: ['medical_imaging_{date}.dat', 'prescriptions_{date}.db', 'appointments_{date}.enc'],
+            transfer: ['hipaa_archive_{date}.enc', 'patient_history_{date}.tar', 'compliance_{date}.zip']
+        },
+        corporate: {
+            repair: ['crm_database_{date}.db', 'erp_system_{date}.dat', 'hr_records_{date}.enc'],
+            backup: ['sales_data_{date}.db', 'inventory_{date}.dat', 'project_files_{date}.zip'],
+            transfer: ['quarterly_backup_{date}.tar', 'financial_records_{date}.enc', 'contracts_{date}.zip']
+        },
+        utilities: {
+            repair: ['scada_config_{date}.db', 'grid_telemetry_{date}.dat', 'meter_data_{date}.enc'],
+            backup: ['outage_logs_{date}.dat', 'maintenance_{date}.db', 'sensor_data_{date}.enc'],
+            transfer: ['infrastructure_{date}.tar', 'network_config_{date}.zip', 'system_backup_{date}.db']
+        },
+        shipping: {
+            repair: ['tracking_system_{date}.db', 'logistics_{date}.dat', 'manifest_{date}.enc'],
+            backup: ['shipment_records_{date}.db', 'customs_{date}.dat', 'routes_{date}.enc'],
+            transfer: ['warehouse_{date}.tar', 'fleet_data_{date}.zip', 'inventory_{date}.db']
+        },
+        emergency: {
+            repair: ['dispatch_logs_{date}.db', 'incident_reports_{date}.dat', 'personnel_{date}.enc'],
+            backup: ['call_records_{date}.db', 'response_times_{date}.dat', 'equipment_{date}.enc'],
+            transfer: ['emergency_archive_{date}.tar', 'training_{date}.zip', 'protocols_{date}.db']
+        },
+        nonprofit: {
+            repair: ['donor_database_{date}.db', 'volunteer_{date}.dat', 'programs_{date}.enc'],
+            backup: ['fundraising_{date}.db', 'grants_{date}.dat', 'events_{date}.enc'],
+            transfer: ['annual_report_{date}.tar', 'financial_{date}.zip', 'membership_{date}.db']
+        },
+        cultural: {
+            repair: ['catalog_{date}.db', 'collections_{date}.dat', 'exhibitions_{date}.enc'],
+            backup: ['archives_{date}.db', 'digitization_{date}.dat', 'metadata_{date}.enc'],
+            transfer: ['preservation_{date}.tar', 'restoration_{date}.zip', 'inventory_{date}.db']
+        }
+    };
 
-    // Map mission type to file pattern category
-    const patternCategory = missionType.includes('repair') ? 'repair' :
-        missionType.includes('restoration') ? 'restoration' : 'backup';
-
-    const patterns = serverType.filePatterns[patternCategory] || serverType.filePatterns.backup;
-    const dateFormats = missionTemplates.fileNameComponents.dateFormats;
+    const templates = fileTemplates[industry]?.[missionType] || fileTemplates.corporate[missionType];
+    const dateFormats = ['2024_01', '2024_02', '2024_03', '2024_Q1', '2024_Q2', '2023_12', '2023_11'];
+    const sizes = ['1.2 KB', '2.5 KB', '3.1 KB', '4.8 KB', '5.2 KB', '6.7 KB', '8.3 KB'];
 
     const files = [];
-    const usedFiles = new Set();
+    const usedNames = new Set();
 
     while (files.length < count) {
-        const pattern = randomPick(patterns);
+        const template = randomPick(templates);
         const date = randomPick(dateFormats);
-        const fileName = pattern.replace('{date}', date);
+        const name = template.replace('{date}', date);
 
-        if (!usedFiles.has(fileName)) {
-            usedFiles.add(fileName);
-            files.push(fileName);
+        if (!usedNames.has(name)) {
+            usedNames.add(name);
+            files.push({
+                name,
+                size: randomPick(sizes),
+                corrupted
+            });
         }
     }
 
@@ -121,462 +174,701 @@ function generateFileNames(industry, missionType, count) {
 }
 
 /**
- * Get corruption type for an industry
- * @param {string} industry - Client industry
- * @returns {string} Corruption type description
- */
-function getCorruptionType(industry) {
-    const serverType = missionTemplates.serverTypes[industry];
-    if (!serverType || !serverType.corruptionTypes) {
-        return 'data corruption';
-    }
-    return randomPick(serverType.corruptionTypes);
-}
-
-/**
- * Generate briefing text from template
- * @param {string} missionType - Mission type
+ * Generate complete network infrastructure for a mission
  * @param {Object} client - Client object
- * @param {string} serverAddress - Server address
- * @param {string} corruptionType - Corruption description
- * @returns {string} Generated briefing text
+ * @param {string} missionType - Mission type (repair, backup, transfer)
+ * @param {number} fileCount - Number of files to include
+ * @param {Object} options - Additional options { corrupted, secondNetwork }
+ * @returns {Object} { networks, primaryNetworkId, primaryIp, fileNames }
  */
-function generateBriefing(missionType, client, serverAddress, corruptionType) {
-    const narratives = missionTemplates.narrativeTemplates[missionType];
-    if (!narratives) {
-        return `Complete the assigned tasks for ${client.name} at ${serverAddress}.`;
-    }
+export function generateNetworkInfrastructure(client, missionType, fileCount, options = {}) {
+    const { corrupted = false, secondNetwork = false } = options;
 
-    const template = randomPick(narratives.briefings);
-    const fileType = 'critical files'; // Could be more specific based on industry
+    const networks = [];
+    const primaryNetworkId = `${client.id}-network-${Date.now()}`;
+    const primarySubnet = generateSubnet();
+    const primaryIp = generateIpInSubnet(primarySubnet, 10);
 
-    return template
-        .replace(/{client}/g, client.name)
-        .replace(/{server}/g, serverAddress)
-        .replace(/{fileType}/g, fileType)
-        .replace(/{corruptionType}/g, corruptionType);
-}
+    // Generate primary network
+    const primaryFiles = generateFiles(client.industry, missionType, fileCount, corrupted);
 
-/**
- * Generate mission objectives based on mission type and files
- * @param {string} missionType - Mission type
- * @param {string[]} targetFiles - Files for the mission
- * @param {string} serverAddress - Target server address
- * @returns {Object[]} Array of objective objects
- */
-function generateObjectives(missionType, targetFiles, serverAddress) {
-    const objectives = [];
-    let objCounter = 1;
+    networks.push({
+        networkId: primaryNetworkId,
+        networkName: `${client.name.split(' ')[0]}-Network`,
+        address: primarySubnet,
+        bandwidth: randomPick([25, 50, 75, 100]),
+        revokeOnComplete: true,
+        revokeReason: 'Mission access expired',
+        fileSystems: [{
+            id: `fs-${client.id}-01`,
+            ip: primaryIp,
+            name: generateHostname(client, 'fileserver'),
+            files: primaryFiles
+        }]
+    });
 
-    const missionTypeInfo = missionTemplates.missionTypes[missionType];
-    const requiredOps = missionTypeInfo?.objectives || ['navigate', 'copy'];
+    // Generate secondary network for transfer missions
+    let secondaryNetworkId = null;
+    let secondaryIp = null;
 
-    // Navigation objective
-    if (requiredOps.includes('navigate')) {
-        objectives.push({
-            id: `obj-${objCounter++}`,
-            type: 'connect',
-            description: `Connect to ${serverAddress}`,
-            targetAddress: serverAddress,
-            status: 'incomplete'
-        });
-    }
+    if (secondNetwork) {
+        secondaryNetworkId = `${client.id}-dest-${Date.now()}`;
+        const secondarySubnet = generateSubnet();
+        secondaryIp = generateIpInSubnet(secondarySubnet, 10);
 
-    // File operation objectives based on mission type
-    if (missionType === 'file-backup' || missionType === 'data-extraction') {
-        objectives.push({
-            id: `obj-${objCounter++}`,
-            type: 'file-operation',
-            operation: 'copy',
-            description: `Copy ${targetFiles.length} files from ${serverAddress}`,
-            targetFiles: targetFiles,
-            status: 'incomplete'
-        });
-    } else if (missionType === 'file-repair') {
-        objectives.push({
-            id: `obj-${objCounter++}`,
-            type: 'file-operation',
-            operation: 'repair',
-            description: `Repair ${targetFiles.length} corrupted files`,
-            targetFiles: targetFiles,
-            status: 'incomplete'
-        });
-    } else if (missionType === 'file-restoration') {
-        objectives.push({
-            id: `obj-${objCounter++}`,
-            type: 'file-operation',
-            operation: 'copy',
-            description: `Copy ${targetFiles.length} files from backup`,
-            targetFiles: targetFiles,
-            status: 'incomplete'
-        });
-        objectives.push({
-            id: `obj-${objCounter++}`,
-            type: 'file-operation',
-            operation: 'paste',
-            description: `Restore files to ${serverAddress}`,
-            targetFiles: targetFiles,
-            status: 'incomplete'
-        });
-    } else if (missionType === 'combined-tasks') {
-        // Combined: copy some files, repair others
-        const halfCount = Math.ceil(targetFiles.length / 2);
-        const backupFiles = targetFiles.slice(0, halfCount);
-        const repairFiles = targetFiles.slice(halfCount);
-
-        objectives.push({
-            id: `obj-${objCounter++}`,
-            type: 'file-operation',
-            operation: 'copy',
-            description: `Backup ${backupFiles.length} critical files`,
-            targetFiles: backupFiles,
-            status: 'incomplete'
-        });
-
-        if (repairFiles.length > 0) {
-            objectives.push({
-                id: `obj-${objCounter++}`,
-                type: 'file-operation',
-                operation: 'repair',
-                description: `Repair ${repairFiles.length} corrupted files`,
-                targetFiles: repairFiles,
-                status: 'incomplete'
-            });
-        }
-    }
-
-    return objectives;
-}
-
-/**
- * Determine difficulty based on client tier and other factors
- * @param {Object} client - Client object
- * @param {string} missionType - Mission type
- * @returns {string} Difficulty level (easy, medium, hard)
- */
-function determineDifficulty(client, missionType) {
-    // Higher tier clients tend toward harder missions
-    const tierFactor = client.minReputation;
-
-    // Combined tasks are inherently harder
-    const typeFactor = missionType === 'combined-tasks' ? 2 :
-        missionType === 'file-repair' ? 1 : 0;
-
-    const score = tierFactor + typeFactor;
-
-    if (score <= 3) return 'easy';
-    if (score <= 6) return 'medium';
-    return 'hard';
-}
-
-/**
- * Get file count based on difficulty
- * @param {string} difficulty - Mission difficulty
- * @returns {number} Number of files for mission
- */
-function getFileCount(difficulty) {
-    switch (difficulty) {
-        case 'easy': return 3 + Math.floor(Math.random() * 2); // 3-4 files
-        case 'medium': return 5 + Math.floor(Math.random() * 3); // 5-7 files
-        case 'hard': return 8 + Math.floor(Math.random() * 3); // 8-10 files
-        default: return 5;
-    }
-}
-
-/**
- * Generate software requirements based on mission type and difficulty
- * @param {string} missionType - Mission type
- * @param {string} difficulty - Mission difficulty
- * @returns {string[]} Required software IDs
- */
-function generateSoftwareRequirements(missionType, difficulty) {
-    const requirements = [];
-    const config = generationConfig.softwareRequirements[difficulty];
-
-    // Add required software for this difficulty
-    requirements.push(...config.required);
-
-    // Mission-type specific requirements
-    const missionTypeInfo = missionTemplates.missionTypes[missionType];
-    if (missionTypeInfo?.requiresSoftware) {
-        missionTypeInfo.requiresSoftware.forEach(sw => {
-            if (!requirements.includes(sw)) {
-                requirements.push(sw);
-            }
+        networks.push({
+            networkId: secondaryNetworkId,
+            networkName: `${client.name.split(' ')[0]}-Backup`,
+            address: secondarySubnet,
+            bandwidth: randomPick([25, 50, 75, 100]),
+            revokeOnComplete: true,
+            revokeReason: 'Mission access expired',
+            fileSystems: [{
+                id: `fs-${client.id}-02`,
+                ip: secondaryIp,
+                name: generateHostname(client, 'backup'),
+                files: [] // Empty - files will be transferred here
+            }]
         });
     }
-
-    return requirements;
-}
-
-/**
- * Generate a single procedural mission
- * @param {string} clientId - Client ID from registry
- * @param {string} [missionType] - Optional specific mission type, random if not provided
- * @param {Date} currentTime - Current game time for expiration calculation
- * @returns {Object|null} Generated mission object or null if client not found
- */
-export function generateMission(clientId, missionType, currentTime) {
-    const client = getClientById(clientId);
-    if (!client) {
-        console.warn(`Client not found: ${clientId}`);
-        return null;
-    }
-
-    // Select mission type if not provided
-    const selectedType = missionType || weightedRandomPick(generationConfig.missionTypeWeights);
-
-    // Generate mission components
-    const difficulty = determineDifficulty(client, selectedType);
-    const serverAddress = generateServerAddress(client);
-    const corruptionType = getCorruptionType(client.industry);
-    const fileCount = getFileCount(difficulty);
-    const targetFiles = generateFileNames(client.industry, selectedType, fileCount);
-    const briefing = generateBriefing(selectedType, client, serverAddress, corruptionType);
-    const objectives = generateObjectives(selectedType, targetFiles, serverAddress);
-    const softwareRequirements = generateSoftwareRequirements(selectedType, difficulty);
-    const basePayout = calculateBasePayout(difficulty, client.clientType);
-
-    // Calculate expiration
-    const expirationHours = getExpirationHours(difficulty);
-    const expiresAt = new Date(currentTime);
-    expiresAt.setHours(expiresAt.getHours() + expirationHours);
-
-    // Maybe add time limit
-    const timeLimit = getTimeLimit(difficulty);
 
     return {
-        missionId: generateMissionId(),
-        title: `${missionTemplates.missionTypes[selectedType]?.displayName || 'Task'} for ${client.name}`,
+        networks,
+        primaryNetworkId,
+        primaryIp,
+        secondaryNetworkId,
+        secondaryIp,
+        fileNames: primaryFiles.map(f => f.name),
+        hostname: networks[0].fileSystems[0].name
+    };
+}
+
+/**
+ * Calculate time limit based on objective count
+ * Range: 3-10 minutes, scaled by complexity
+ * @param {number} objectiveCount - Number of objectives
+ * @returns {number} Time limit in minutes
+ */
+export function calculateTimeLimit(objectiveCount) {
+    // Base: 3 minutes + 1 minute per objective, capped at 10
+    const calculated = 3 + Math.floor(objectiveCount * 0.8);
+    return Math.min(10, Math.max(3, calculated));
+}
+
+/**
+ * Calculate mission payout based on objectives and time limit
+ * @param {number} objectiveCount - Number of objectives
+ * @param {number|null} timeLimitMinutes - Time limit in minutes, or null for untimed
+ * @param {Object} client - Client object for tier multiplier
+ * @returns {number} Calculated payout
+ */
+export function calculatePayout(objectiveCount, timeLimitMinutes, client) {
+    const basePerObjective = 200;
+    const tierMultipliers = {
+        'bank-local': 1.0, 'bank-regional': 1.3, 'bank-national': 1.8,
+        'gov-library': 0.8, 'gov-municipal': 1.1, 'gov-state': 1.4, 'gov-federal': 2.0,
+        'health-clinic': 1.0, 'health-hospital': 1.3, 'health-research': 1.7,
+        'corp-small': 1.0, 'corp-medium': 1.3, 'corp-enterprise': 1.8,
+        'util-local': 1.1, 'util-regional': 1.5,
+        'ship-courier': 1.0, 'ship-logistics': 1.3, 'ship-global': 1.7,
+        'emerg-volunteer': 0.9, 'emerg-municipal': 1.3,
+        'nonprofit-local': 0.7, 'nonprofit-national': 1.0,
+        'cultural-local': 0.8, 'cultural-major': 1.2
+    };
+
+    const tierMultiplier = tierMultipliers[client.clientType] || 1.0;
+    let basePayout = basePerObjective * objectiveCount * tierMultiplier;
+
+    // Time bonus: tighter deadline = more pay
+    if (timeLimitMinutes) {
+        const timeBonus = 300 * (10 / timeLimitMinutes);
+        basePayout += timeBonus;
+    }
+
+    return Math.floor(basePayout);
+}
+
+/**
+ * Generate objectives for a repair mission
+ * @param {Object} infra - Network infrastructure from generateNetworkInfrastructure
+ * @returns {Array} Array of objective objects
+ */
+function generateRepairObjectives(infra) {
+    return [
+        {
+            id: 'obj-1',
+            description: `Connect to ${infra.networks[0].networkName} network`,
+            type: 'networkConnection',
+            target: infra.primaryNetworkId
+        },
+        {
+            id: 'obj-2',
+            description: `Scan network to find ${infra.hostname}`,
+            type: 'networkScan',
+            target: infra.primaryNetworkId,
+            expectedResult: infra.hostname
+        },
+        {
+            id: 'obj-3',
+            description: `Connect to ${infra.hostname} file system`,
+            type: 'fileSystemConnection',
+            target: infra.primaryIp
+        },
+        {
+            id: 'obj-4',
+            description: `Repair all corrupted files (${infra.fileNames.length} files)`,
+            type: 'fileOperation',
+            operation: 'repair',
+            target: 'all-corrupted',
+            targetFiles: infra.fileNames,
+            count: infra.fileNames.length
+        }
+    ];
+}
+
+/**
+ * Generate objectives for a backup mission
+ * @param {Object} infra - Network infrastructure
+ * @returns {Array} Array of objective objects
+ */
+function generateBackupObjectives(infra) {
+    return [
+        {
+            id: 'obj-1',
+            description: `Connect to ${infra.networks[0].networkName} network`,
+            type: 'networkConnection',
+            target: infra.primaryNetworkId
+        },
+        {
+            id: 'obj-2',
+            description: `Scan network to find ${infra.hostname}`,
+            type: 'networkScan',
+            target: infra.primaryNetworkId,
+            expectedResult: infra.hostname
+        },
+        {
+            id: 'obj-3',
+            description: `Connect to ${infra.hostname} file system`,
+            type: 'fileSystemConnection',
+            target: infra.primaryIp
+        },
+        {
+            id: 'obj-4',
+            description: `Copy ${infra.fileNames.length} files to secure backup`,
+            type: 'fileOperation',
+            operation: 'copy',
+            targetFiles: infra.fileNames,
+            count: infra.fileNames.length
+        }
+    ];
+}
+
+/**
+ * Generate objectives for a transfer mission (two networks)
+ * @param {Object} infra - Network infrastructure with two networks
+ * @returns {Array} Array of objective objects
+ */
+function generateTransferObjectives(infra) {
+    const sourceNetwork = infra.networks[0];
+    const destNetwork = infra.networks[1];
+    const destHostname = destNetwork.fileSystems[0].name;
+
+    return [
+        {
+            id: 'obj-1',
+            description: `Connect to ${sourceNetwork.networkName} network`,
+            type: 'networkConnection',
+            target: infra.primaryNetworkId
+        },
+        {
+            id: 'obj-2',
+            description: `Scan ${sourceNetwork.networkName} to find ${infra.hostname}`,
+            type: 'networkScan',
+            target: infra.primaryNetworkId,
+            expectedResult: infra.hostname
+        },
+        {
+            id: 'obj-3',
+            description: `Connect to ${infra.hostname} file system`,
+            type: 'fileSystemConnection',
+            target: infra.primaryIp
+        },
+        {
+            id: 'obj-4',
+            description: `Copy ${infra.fileNames.length} files from source`,
+            type: 'fileOperation',
+            operation: 'copy',
+            targetFiles: infra.fileNames,
+            count: infra.fileNames.length
+        },
+        {
+            id: 'obj-5',
+            description: `Connect to ${destNetwork.networkName} network`,
+            type: 'networkConnection',
+            target: infra.secondaryNetworkId
+        },
+        {
+            id: 'obj-6',
+            description: `Scan ${destNetwork.networkName} to find ${destHostname}`,
+            type: 'networkScan',
+            target: infra.secondaryNetworkId,
+            expectedResult: destHostname
+        },
+        {
+            id: 'obj-7',
+            description: `Connect to ${destHostname} file system`,
+            type: 'fileSystemConnection',
+            target: infra.secondaryIp
+        },
+        {
+            id: 'obj-8',
+            description: `Paste ${infra.fileNames.length} files to destination`,
+            type: 'fileOperation',
+            operation: 'paste',
+            targetFiles: infra.fileNames,
+            count: infra.fileNames.length
+        }
+    ];
+}
+
+/**
+ * Generate NAR credential attachments for mission briefing message
+ * @param {Array} networks - Network definitions
+ * @returns {Array} Array of attachment objects
+ */
+function generateNarAttachments(networks) {
+    return networks.map(network => ({
+        type: 'networkAddress',  // Must match SNetMail attachment type handler
+        networkId: network.networkId,
+        networkName: network.networkName,
+        address: network.address,
+        bandwidth: network.bandwidth,
+        fileSystems: network.fileSystems.map(fs => ({
+            id: fs.id,
+            ip: fs.ip,
+            name: fs.name,
+            files: fs.files
+        }))
+    }));
+}
+
+/**
+ * Generate mission briefing message with NAR attachments
+ * @param {Object} client - Client object
+ * @param {string} missionType - Mission type
+ * @param {Array} networks - Network definitions
+ * @param {number|null} timeLimitMinutes - Time limit or null
+ * @param {Object} context - Additional context { arcSequence, arcTotal, referralText }
+ * @returns {Object} Message object for initial briefing
+ */
+function generateBriefingMessage(client, missionType, networks, timeLimitMinutes, context = {}) {
+    const { arcSequence, arcTotal, referralText } = context;
+
+    const briefingTemplates = {
+        repair: [
+            `We've experienced some data corruption on our file server. We need someone to repair the affected files as soon as possible.`,
+            `Several critical files have become corrupted due to a system error. Your expertise in file repair would be greatly appreciated.`,
+            `Our IT team discovered corruption in our database files. We need these repaired urgently to resume operations.`
+        ],
+        backup: [
+            `We need to create secure backups of critical files before our scheduled maintenance window.`,
+            `As part of our disaster recovery plan, we require immediate backup of essential data files.`,
+            `Our compliance team has requested an emergency backup of sensitive records. Time is of the essence.`
+        ],
+        transfer: [
+            `We're migrating data to a new backup server and need files transferred securely between systems.`,
+            `Our infrastructure upgrade requires moving critical files from the old server to the new one.`,
+            `We need to consolidate files from our primary server to our backup facility for redundancy.`
+        ]
+    };
+
+    let body = referralText ? `${referralText}\n\n` : '';
+    body += randomPick(briefingTemplates[missionType]);
+
+    if (timeLimitMinutes) {
+        body += `\n\n⚠️ TIME SENSITIVE: This task must be completed within ${timeLimitMinutes} minutes of acceptance.`;
+    }
+
+    body += `\n\nAttached are the network credentials you'll need to access our systems.`;
+
+    if (arcSequence && arcTotal) {
+        body += `\n\n[Mission ${arcSequence} of ${arcTotal}]`;
+    }
+
+    return {
+        id: `msg-briefing-${Date.now()}`,
+        from: client.name,
+        fromId: client.id,
+        fromName: client.name,
+        subject: `Mission Briefing: ${missionType.charAt(0).toUpperCase() + missionType.slice(1)} Request`,
+        body,
+        attachments: generateNarAttachments(networks),
+        read: false,
+        timestamp: new Date().toISOString()
+    };
+}
+
+/**
+ * Generate failure consequences for a mission
+ * @param {Object} client - Client object
+ * @param {number} basePayout - Mission payout
+ * @param {string} failureReason - Why mission might fail (deadline, etc)
+ * @returns {Object} Failure consequences object
+ */
+function generateFailureConsequences(client, basePayout, failureReason = 'incomplete') {
+    const failureMessages = {
+        deadline: [
+            `Unfortunately, you failed to complete the task within the required timeframe. We've had to find alternative solutions.`,
+            `The deadline has passed and we can no longer use your services for this task. This is very disappointing.`,
+            `Time ran out before the work was completed. We expected better from someone with your reputation.`
+        ],
+        incomplete: [
+            `We're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.`,
+            `The mission was not completed as requested. This has caused significant inconvenience to our operations.`
+        ]
+    };
+
+    return {
+        credits: -Math.floor(basePayout * 0.25),
+        reputation: -1,
+        messages: [{
+            id: `msg-failure-${Date.now()}`,
+            from: client.name,
+            fromId: client.id,
+            fromName: client.name,
+            subject: 'Mission Failed',
+            body: randomPick(failureMessages[failureReason] || failureMessages.incomplete),
+            attachments: [],
+            delay: 2000
+        }]
+    };
+}
+
+/**
+ * Generate success consequences for a mission
+ * @param {Object} client - Client object
+ * @param {number} basePayout - Mission payout
+ * @returns {Object} Success consequences object
+ */
+function generateSuccessConsequences(client, basePayout) {
+    const successMessages = [
+        `Excellent work! The task has been completed to our satisfaction. Payment has been authorized.`,
+        `Thank you for your efficient work. We're pleased with the results and have processed your payment.`,
+        `Great job on completing the mission. Your professionalism is appreciated. Payment attached.`
+    ];
+
+    return {
+        credits: basePayout,
+        reputation: 1,
+        messages: [{
+            id: `msg-success-${Date.now()}`,
+            from: client.name,
+            fromId: client.id,
+            fromName: client.name,
+            subject: 'Mission Complete - Payment Enclosed',
+            body: randomPick(successMessages),
+            attachments: [{
+                type: 'cheque',
+                amount: basePayout,
+                description: `Payment for completed mission`
+            }],
+            delay: 3000
+        }]
+    };
+}
+
+/**
+ * Generate a repair mission
+ * @param {Object} client - Client object
+ * @param {Object} options - { hasTimed, arcId, arcSequence, arcTotal, arcContext }
+ * @returns {Object} Complete mission object
+ */
+export function generateRepairMission(client, options = {}) {
+    const { hasTimed = false, arcId = null, arcSequence = null, arcTotal = null, arcContext = {} } = options;
+
+    const fileCount = randomInt(4, 8);
+    const infra = generateNetworkInfrastructure(client, 'repair', fileCount, { corrupted: true });
+    const objectives = generateRepairObjectives(infra);
+
+    // Add verification objective
+    objectives.push({
+        id: 'obj-verify',
+        description: 'Verify mission completion',
+        type: 'verification',
+        autoComplete: false
+    });
+
+    const timeLimitMinutes = hasTimed ? calculateTimeLimit(objectives.length) : null;
+    const basePayout = calculatePayout(objectives.length, timeLimitMinutes, client);
+
+    const missionId = generateMissionId('repair', client.id);
+
+    return {
+        missionId,
+        title: `File Repair for ${client.name}`,
         client: client.name,
         clientId: client.id,
         clientType: client.clientType,
         industry: client.industry,
-        difficulty: difficulty.charAt(0).toUpperCase() + difficulty.slice(1), // Capitalize
-        missionType: selectedType,
+        difficulty: fileCount <= 5 ? 'Easy' : fileCount <= 7 ? 'Medium' : 'Hard',
+        missionType: 'repair',
         basePayout,
-        category: 'procedural',
-        briefing,
-        serverAddress,
-        corruptionType,
+        category: arcId ? 'procedural-arc' : 'procedural',
+        networks: infra.networks,
         objectives,
         requirements: {
-            software: softwareRequirements,
+            software: ['vpn-client', 'network-address-register', 'network-scanner', 'file-manager'],
             minReputation: client.minReputation
         },
         consequences: {
-            success: {
-                credits: 'calculated', // Will use basePayout with reputation multiplier
-                reputation: generationConfig.consequences.success[difficulty]
-            },
-            failure: {
-                credits: -Math.floor(basePayout * generationConfig.failurePenalty[difficulty]),
-                reputation: generationConfig.consequences.failure[difficulty]
-            }
+            success: generateSuccessConsequences(client, basePayout),
+            failure: generateFailureConsequences(client, basePayout, hasTimed ? 'deadline' : 'incomplete')
         },
-        expiresAt: expiresAt.toISOString(),
-        timeLimit, // null or minutes
+        timeLimitMinutes,
+        briefingMessage: generateBriefingMessage(client, 'repair', infra.networks, timeLimitMinutes, arcContext),
         isProcedurallyGenerated: true,
-        generatedAt: currentTime.toISOString()
+        generatedAt: new Date().toISOString(),
+        // Arc fields
+        arcId,
+        arcSequence,
+        arcTotal,
+        requiresCompletedMission: arcSequence > 1 ? arcContext.previousMissionId : null
     };
 }
 
 /**
- * Generate a multi-part chain mission
- * @param {string} clientId - Client ID from registry
- * @param {string} [chainType] - Optional specific chain template, random if not provided
- * @param {Date} currentTime - Current game time
- * @returns {Object|null} Chain object with all mission parts
+ * Generate a backup mission
+ * @param {Object} client - Client object
+ * @param {Object} options - { hasTimed, arcId, arcSequence, arcTotal, arcContext }
+ * @returns {Object} Complete mission object
  */
-export function generateChainMission(clientId, chainType, currentTime) {
+export function generateBackupMission(client, options = {}) {
+    const { hasTimed = false, arcId = null, arcSequence = null, arcTotal = null, arcContext = {} } = options;
+
+    const fileCount = randomInt(3, 6);
+    const infra = generateNetworkInfrastructure(client, 'backup', fileCount, { corrupted: false });
+    const objectives = generateBackupObjectives(infra);
+
+    // Add verification objective
+    objectives.push({
+        id: 'obj-verify',
+        description: 'Verify mission completion',
+        type: 'verification',
+        autoComplete: false
+    });
+
+    const timeLimitMinutes = hasTimed ? calculateTimeLimit(objectives.length) : null;
+    const basePayout = calculatePayout(objectives.length, timeLimitMinutes, client);
+
+    const missionId = generateMissionId('backup', client.id);
+
+    return {
+        missionId,
+        title: `Data Backup for ${client.name}`,
+        client: client.name,
+        clientId: client.id,
+        clientType: client.clientType,
+        industry: client.industry,
+        difficulty: fileCount <= 4 ? 'Easy' : 'Medium',
+        missionType: 'backup',
+        basePayout,
+        category: arcId ? 'procedural-arc' : 'procedural',
+        networks: infra.networks,
+        objectives,
+        requirements: {
+            software: ['vpn-client', 'network-address-register', 'network-scanner', 'file-manager'],
+            minReputation: client.minReputation
+        },
+        consequences: {
+            success: generateSuccessConsequences(client, basePayout),
+            failure: generateFailureConsequences(client, basePayout, hasTimed ? 'deadline' : 'incomplete')
+        },
+        timeLimitMinutes,
+        briefingMessage: generateBriefingMessage(client, 'backup', infra.networks, timeLimitMinutes, arcContext),
+        isProcedurallyGenerated: true,
+        generatedAt: new Date().toISOString(),
+        // Arc fields
+        arcId,
+        arcSequence,
+        arcTotal,
+        requiresCompletedMission: arcSequence > 1 ? arcContext.previousMissionId : null
+    };
+}
+
+/**
+ * Generate a transfer mission (copy from one network to another)
+ * @param {Object} client - Client object
+ * @param {Object} options - { hasTimed, arcId, arcSequence, arcTotal, arcContext }
+ * @returns {Object} Complete mission object
+ */
+export function generateTransferMission(client, options = {}) {
+    const { hasTimed = false, arcId = null, arcSequence = null, arcTotal = null, arcContext = {} } = options;
+
+    const fileCount = randomInt(3, 5);
+    const infra = generateNetworkInfrastructure(client, 'transfer', fileCount, {
+        corrupted: false,
+        secondNetwork: true
+    });
+    const objectives = generateTransferObjectives(infra);
+
+    // Add verification objective
+    objectives.push({
+        id: 'obj-verify',
+        description: 'Verify mission completion',
+        type: 'verification',
+        autoComplete: false
+    });
+
+    const timeLimitMinutes = hasTimed ? calculateTimeLimit(objectives.length) : null;
+    const basePayout = calculatePayout(objectives.length, timeLimitMinutes, client);
+
+    const missionId = generateMissionId('transfer', client.id);
+
+    return {
+        missionId,
+        title: `Data Transfer for ${client.name}`,
+        client: client.name,
+        clientId: client.id,
+        clientType: client.clientType,
+        industry: client.industry,
+        difficulty: 'Medium', // Transfer missions are inherently more complex
+        missionType: 'transfer',
+        basePayout,
+        category: arcId ? 'procedural-arc' : 'procedural',
+        networks: infra.networks,
+        objectives,
+        requirements: {
+            software: ['vpn-client', 'network-address-register', 'network-scanner', 'file-manager'],
+            minReputation: client.minReputation
+        },
+        consequences: {
+            success: generateSuccessConsequences(client, basePayout),
+            failure: generateFailureConsequences(client, basePayout, hasTimed ? 'deadline' : 'incomplete')
+        },
+        timeLimitMinutes,
+        briefingMessage: generateBriefingMessage(client, 'transfer', infra.networks, timeLimitMinutes, arcContext),
+        isProcedurallyGenerated: true,
+        generatedAt: new Date().toISOString(),
+        // Arc fields
+        arcId,
+        arcSequence,
+        arcTotal,
+        requiresCompletedMission: arcSequence > 1 ? arcContext.previousMissionId : null
+    };
+}
+
+/**
+ * Generate a standalone mission (random type)
+ * @param {string} clientId - Client ID
+ * @param {Object} options - { hasTimed }
+ * @returns {Object|null} Mission object or null if client not found
+ */
+export function generateMission(clientId, options = {}) {
     const client = getClientById(clientId);
     if (!client) {
         console.warn(`Client not found: ${clientId}`);
         return null;
     }
 
-    // Select chain template
-    const chainTemplates = missionTemplates.chainTemplates;
-    const templateKeys = Object.keys(chainTemplates);
-    const selectedChainType = chainType || randomPick(templateKeys);
-    const template = chainTemplates[selectedChainType];
+    const missionTypes = ['repair', 'backup', 'transfer'];
+    const weights = [0.4, 0.35, 0.25]; // Repair most common, transfer least
 
-    if (!template) {
-        console.warn(`Chain template not found: ${selectedChainType}`);
+    // Weighted random selection
+    const random = Math.random();
+    let cumulative = 0;
+    let selectedType = 'repair';
+
+    for (let i = 0; i < missionTypes.length; i++) {
+        cumulative += weights[i];
+        if (random <= cumulative) {
+            selectedType = missionTypes[i];
+            break;
+        }
+    }
+
+    // Random chance of being timed (50%)
+    const hasTimed = options.hasTimed !== undefined ? options.hasTimed : Math.random() < 0.5;
+
+    switch (selectedType) {
+        case 'repair':
+            return generateRepairMission(client, { hasTimed });
+        case 'backup':
+            return generateBackupMission(client, { hasTimed });
+        case 'transfer':
+            return generateTransferMission(client, { hasTimed });
+        default:
+            return generateRepairMission(client, { hasTimed });
+    }
+}
+
+/**
+ * Generate a multi-mission arc from a storyline template
+ * @param {Object} storyline - Storyline template from arcStorylines.js
+ * @param {Array} clients - Array of clients (one per mission, or same client repeated)
+ * @returns {Object} Arc object with all missions
+ */
+export function generateMissionArc(storyline, clients) {
+    if (!storyline || !clients || clients.length < storyline.length) {
+        console.warn('Invalid storyline or insufficient clients for arc');
         return null;
     }
 
-    const chainId = generateChainId();
-    const serverAddress = generateServerAddress(client);
-    const corruptionType = getCorruptionType(client.industry);
+    const arcId = generateArcId();
+    const missions = [];
+    let previousMissionId = null;
 
-    // Generate all parts
-    const parts = template.parts.map((partTemplate, index) => {
-        const difficulty = determineDifficulty(client, partTemplate.missionType);
-        const fileCount = getFileCount(difficulty);
-        const targetFiles = generateFileNames(client.industry, partTemplate.missionType, fileCount);
-        const baseBriefing = generateBriefing(partTemplate.missionType, client, serverAddress, corruptionType);
+    for (let i = 0; i < storyline.length; i++) {
+        const step = storyline.missionSequence[i];
+        const client = clients[i];
 
-        // Modify briefing with chain-specific modifier
-        const briefing = partTemplate.briefingModifier
-            ? `${partTemplate.briefingModifier.replace(/{corruptionType}/g, corruptionType)}\n\n${baseBriefing}`
-            : baseBriefing;
-
-        const objectives = generateObjectives(partTemplate.missionType, targetFiles, serverAddress);
-        const softwareRequirements = generateSoftwareRequirements(partTemplate.missionType, difficulty);
-
-        // Escalating payout for chain parts
-        const escalation = Math.pow(generationConfig.chain.escalation, index);
-        const basePayout = Math.floor(calculateBasePayout(difficulty, client.clientType) * escalation);
-
-        // First part expires normally, subsequent parts don't expire (revealed when previous completes)
-        const expirationHours = index === 0 ? getExpirationHours(difficulty) : null;
-        const expiresAt = expirationHours ? new Date(currentTime) : null;
-        if (expiresAt) {
-            expiresAt.setHours(expiresAt.getHours() + expirationHours);
-        }
-
-        return {
-            missionId: generateMissionId(),
-            title: `${template.name} - Part ${index + 1} of ${template.parts.length}`,
-            client: client.name,
-            clientId: client.id,
-            clientType: client.clientType,
-            industry: client.industry,
-            difficulty: difficulty.charAt(0).toUpperCase() + difficulty.slice(1),
-            missionType: partTemplate.missionType,
-            basePayout,
-            category: 'procedural-chain',
-            briefing,
-            serverAddress,
-            corruptionType,
-            objectives,
-            requirements: {
-                software: softwareRequirements,
-                minReputation: client.minReputation
-            },
-            consequences: {
-                success: {
-                    credits: 'calculated',
-                    reputation: generationConfig.consequences.success[difficulty]
-                },
-                failure: {
-                    credits: -Math.floor(basePayout * generationConfig.failurePenalty[difficulty]),
-                    reputation: generationConfig.consequences.failure[difficulty]
-                }
-            },
-            expiresAt: expiresAt?.toISOString() || null,
-            timeLimit: index === 0 ? getTimeLimit(difficulty) : null,
-            isProcedurallyGenerated: true,
-            generatedAt: currentTime.toISOString(),
-            // Chain-specific fields
-            chainId,
-            chainName: template.name,
-            partNumber: index + 1,
-            totalParts: template.parts.length,
-            transitionMessage: partTemplate.transitionMessage
+        const arcContext = {
+            arcSequence: i + 1,
+            arcTotal: storyline.length,
+            previousMissionId,
+            referralText: step.referralText || null,
+            narrativeTemplate: step.narrativeTemplate
         };
-    });
 
-    return {
-        chainId,
-        chainName: template.name,
-        clientId: client.id,
-        clientName: client.name,
-        totalParts: parts.length,
-        parts,
-        // Only the first part is initially available
-        currentPartIndex: 0,
-        status: 'active'
-    };
-}
+        const options = {
+            hasTimed: step.hasTimed || false,
+            arcId,
+            arcSequence: i + 1,
+            arcTotal: storyline.length,
+            arcContext
+        };
 
-/**
- * Generate an extension offer for an active mission
- * @param {Object} activeMission - Currently active mission
- * @param {Date} currentTime - Current game time
- * @returns {Object|null} Extension offer or null if not triggered
- */
-export function generateExtension(activeMission, currentTime) {
-    // Check if extension should be offered
-    const chance = getExtensionChance(activeMission.missionType);
-    if (Math.random() > chance) {
-        return null;
-    }
-
-    const client = getClientById(activeMission.clientId);
-    if (!client) {
-        return null;
-    }
-
-    // Generate additional files
-    const additionalFileCount = 2 + Math.floor(Math.random() * 3); // 2-4 extra files
-    const additionalFiles = generateFileNames(
-        client.industry,
-        activeMission.missionType,
-        additionalFileCount
-    );
-
-    // Calculate bonus payout
-    const multiplier = generationConfig.extension.payoutMultiplier;
-    const bonusMultiplier = multiplier.min + Math.random() * (multiplier.max - multiplier.min);
-    const bonusAmount = Math.floor(activeMission.basePayout * (bonusMultiplier - 1));
-
-    // Pick extension template
-    const extensionTemplates = missionTemplates.extensionTemplates;
-    const templateKeys = Object.keys(extensionTemplates);
-    const template = extensionTemplates[randomPick(templateKeys)];
-
-    const triggerMessage = template.triggerMessage
-        .replace(/{client}/g, client.name)
-        .replace(/{bonusAmount}/g, bonusAmount.toString())
-        .replace(/{fileType}/g, 'files')
-        .replace(/{corruptionType}/g, activeMission.corruptionType || 'data issues');
-
-    return {
-        extensionId: `ext-${Date.now()}`,
-        missionId: activeMission.missionId,
-        triggerMessage,
-        acceptMessage: template.acceptMessage,
-        declineMessage: template.declineMessage,
-        additionalFiles,
-        bonusAmount,
-        bonusMultiplier,
-        newBasePayout: activeMission.basePayout + bonusAmount,
-        offeredAt: currentTime.toISOString(),
-        // Extension expires quickly - player must decide soon
-        expiresAt: new Date(currentTime.getTime() + 5 * 60 * 1000).toISOString() // 5 minutes
-    };
-}
-
-/**
- * Apply an accepted extension to a mission
- * @param {Object} mission - Mission to extend
- * @param {Object} extension - Extension offer that was accepted
- * @returns {Object} Updated mission with extension applied
- */
-export function applyExtension(mission, extension) {
-    // Find the file operation objective(s) and add new files
-    const updatedObjectives = mission.objectives.map(obj => {
-        if (obj.type === 'file-operation' && obj.targetFiles) {
-            return {
-                ...obj,
-                targetFiles: [...obj.targetFiles, ...extension.additionalFiles],
-                description: obj.description.replace(
-                    /\d+/,
-                    (obj.targetFiles.length + extension.additionalFiles.length).toString()
-                )
-            };
+        let mission;
+        switch (step.missionType) {
+            case 'repair':
+                mission = generateRepairMission(client, options);
+                break;
+            case 'backup':
+                mission = generateBackupMission(client, options);
+                break;
+            case 'transfer':
+                mission = generateTransferMission(client, options);
+                break;
+            default:
+                mission = generateRepairMission(client, options);
         }
-        return obj;
-    });
+
+        // Update title to include arc info
+        mission.title = `${storyline.name} (${i + 1}/${storyline.length}): ${mission.title}`;
+        mission.arcName = storyline.name;
+
+        missions.push(mission);
+        previousMissionId = mission.missionId;
+    }
 
     return {
-        ...mission,
-        basePayout: extension.newBasePayout,
-        objectives: updatedObjectives,
-        extensionApplied: true,
-        extensionId: extension.extensionId
+        arcId,
+        arcName: storyline.name,
+        description: storyline.description,
+        totalMissions: storyline.length,
+        missions,
+        // Only the first mission is initially visible
+        visibleMissionIds: [missions[0].missionId],
+        status: 'active'
     };
 }
 
@@ -589,8 +881,12 @@ export function resetMissionIdCounter() {
 
 export default {
     generateMission,
-    generateChainMission,
-    generateExtension,
-    applyExtension,
+    generateRepairMission,
+    generateBackupMission,
+    generateTransferMission,
+    generateMissionArc,
+    generateNetworkInfrastructure,
+    calculateTimeLimit,
+    calculatePayout,
     resetMissionIdCounter
 };

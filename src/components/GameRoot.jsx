@@ -32,8 +32,19 @@ const applyScenarioFixture = (fixture, gameContext) => {
     gameContext.setHardware(fixture.hardware);
     gameContext.setSoftware(fixture.software);
     gameContext.setBankAccounts(fixture.bankAccounts);
-    gameContext.setMessages(fixture.messages);
     gameContext.setManagerName(fixture.managerName);
+
+    // Deduplicate messages (some fixtures may have duplicate IDs from repeated event triggers)
+    const seenMessageIds = new Set();
+    const deduplicatedMessages = (fixture.messages || []).filter(msg => {
+      if (msg.id && seenMessageIds.has(msg.id)) {
+        console.warn(`⚠️ Removing duplicate message ID '${msg.id}' from scenario`);
+        return false;
+      }
+      if (msg.id) seenMessageIds.add(msg.id);
+      return true;
+    });
+    gameContext.setMessages(deduplicatedMessages);
 
     // Extended state (with defaults for older save formats)
     gameContext.setReputation(fixture.reputation ?? 9);

@@ -468,3 +468,51 @@
   color: #666;
   margin-top: 4px;
 }
+
+/* Mission Countdown Styles */
+.mission-countdown {
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: bold;
+  font-family: monospace;
+}
+
+.mission-countdown.urgent {
+  background-color: #DC143C;
+  color: #fff;
+  animation: countdown-pulse 0.5s ease-in-out infinite;
+}
+
+.topbar-mission.mission-urgent {
+  background-color: rgba(220, 20, 60, 0.3);
+}
+
+.preview-countdown {
+  padding: 4px 8px;
+  margin: 4px 0;
+  font-size: 11px;
+  font-weight: bold;
+  background-color: rgba(0, 100, 200, 0.1);
+  border-radius: 3px;
+  text-align: center;
+}
+
+.preview-countdown.urgent {
+  background-color: rgba(220, 20, 60, 0.2);
+  color: #DC143C;
+  animation: countdown-pulse 0.5s ease-in-out infinite;
+}
+
+@keyframes countdown-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+}

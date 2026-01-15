@@ -44,6 +44,33 @@ const formatExpiration = (expiresAt, currentTime) => {
   };
 };
 
+/**
+ * Format deadline countdown for active missions
+ * @param {Date|string} deadlineTime - The deadline time
+ * @param {Date} currentTime - Current game time
+ * @returns {Object|null} { display: string, isUrgent: boolean, expired: boolean }
+ */
+const formatDeadline = (deadlineTime, currentTime) => {
+  if (!deadlineTime || !currentTime) return null;
+
+  const deadline = new Date(deadlineTime);
+  const now = new Date(currentTime);
+  const remainingMs = deadline - now;
+
+  if (remainingMs <= 0) {
+    return { display: 'TIME EXPIRED!', isUrgent: true, expired: true };
+  }
+
+  const totalSeconds = Math.floor(remainingMs / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  const isUrgent = minutes < 1;
+  const display = `${minutes}:${seconds.toString().padStart(2, '0')} remaining`;
+
+  return { display, isUrgent, expired: false };
+};
+
 const MissionBoard = () => {
   const {
     availableMissions,
@@ -115,6 +142,9 @@ const MissionBoard = () => {
           // Chain info
           const isChainMission = mission.chainId && mission.totalParts > 1;
 
+          // Arc info for procedural missions
+          const isArcMission = mission.arcId && mission.arcTotal > 1;
+
           return (
             <div
               key={mission.missionId || mission.id}
@@ -126,6 +156,11 @@ const MissionBoard = () => {
                   {isChainMission && (
                     <span className="chain-badge">
                       Part {mission.partNumber}/{mission.totalParts}
+                    </span>
+                  )}
+                  {isArcMission && (
+                    <span className="arc-badge">
+                      📖 {mission.arcSequence}/{mission.arcTotal}
                     </span>
                   )}
                   <span className={`difficulty-badge difficulty-${mission.difficulty?.toLowerCase()}`}>
@@ -154,9 +189,16 @@ const MissionBoard = () => {
                     ⏱ EXPIRED
                   </div>
                 )}
-                {mission.timeLimit && (
+                {/* Show time limit - support both timeLimit and timeLimitMinutes */}
+                {(mission.timeLimit || mission.timeLimitMinutes) && (
                   <div className="mission-time-limit">
-                    ⏰ Time Limit: {mission.timeLimit} minutes once accepted
+                    ⏰ Time Limit: {mission.timeLimitMinutes || mission.timeLimit} minutes once accepted
+                  </div>
+                )}
+                {/* Arc storyline indicator */}
+                {isArcMission && mission.arcStoryline && (
+                  <div className="mission-arc-storyline">
+                    📜 {mission.arcStoryline.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
                   </div>
                 )}
               </div>
@@ -220,6 +262,7 @@ const MissionBoard = () => {
 
     const completedCount = activeMission.objectives?.filter((o) => o.status === 'complete').length || 0;
     const totalCount = activeMission.objectives?.length || 0;
+    const deadline = formatDeadline(activeMission.deadlineTime, currentTime);
 
     return (
       <div className="active-mission">
@@ -229,6 +272,25 @@ const MissionBoard = () => {
             {completedCount}/{totalCount} objectives complete
           </span>
         </div>
+
+        {/* Deadline Countdown */}
+        {deadline && (
+          <div className={`mission-deadline ${deadline.isUrgent ? 'deadline-urgent' : ''}`}>
+            <span className="deadline-icon">⏱️</span>
+            <span className="deadline-text">{deadline.display}</span>
+            {deadline.expired && <span className="deadline-expired-note"> - Mission will be failed!</span>}
+          </div>
+        )}
+
+        {/* Arc Progress Indicator */}
+        {activeMission.arcId && (
+          <div className="mission-arc-indicator">
+            <span className="arc-icon">📖</span>
+            <span className="arc-text">
+              Part {activeMission.arcSequence} of {activeMission.arcTotal} - {activeMission.arcStoryline || 'Story Arc'}
+            </span>
+          </div>
+        )}
 
         <div className="mission-client">Client: {activeMission.client}</div>
 

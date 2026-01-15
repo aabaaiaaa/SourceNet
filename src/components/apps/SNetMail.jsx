@@ -181,9 +181,6 @@ const SNetMail = () => {
         if (att.type === 'networkAddress' && att.networkId === networkData.networkId) {
           return { ...att, activated: true };
         }
-        if (att.type === 'networkAddress' && att.missionId === attachment.missionId) {
-          return { ...att, activated: true };
-        }
         return att;
       })
     });

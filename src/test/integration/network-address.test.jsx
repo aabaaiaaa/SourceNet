@@ -367,23 +367,31 @@ describe('Network Address Integration', () => {
         console.log('✅ Verified NAR entry includes fileSystems from mission network attachment');
     });
 
-    it('should resolve network data from mission when attachment uses missionId reference', async () => {
+    it('should only mark clicked attachment as activated when message has multiple network attachments', async () => {
         const user = userEvent.setup();
 
-        // Create message with network attachment that references mission (no duplication)
+        // Create message with TWO different network attachments
         const message = {
-            id: 'msg-mission-ref',
-            from: 'SourceNet Manager <manager@sourcenet.local>',
+            id: 'msg-multi-network-activation',
+            from: 'Network Admin <admin@corp.local>',
             to: 'testuser@sourcenet.local',
-            subject: 'Mission Software',
-            body: 'Network credentials for your first mission.',
+            subject: 'Multiple Network Credentials',
+            body: 'You have been granted access to multiple networks. Each network requires separate activation.',
             timestamp: '2020-03-25T09:00:00.000Z',
             read: false,
             archived: false,
             attachments: [
                 {
                     type: 'networkAddress',
-                    missionId: 'tutorial-part-1',  // Reference to mission, not duplicate data
+                    networkId: 'network-alpha',
+                    networkName: 'Network Alpha',
+                    address: '10.1.0.0/16',
+                },
+                {
+                    type: 'networkAddress',
+                    networkId: 'network-beta',
+                    networkName: 'Network Beta',
+                    address: '10.2.0.0/16',
                 },
             ],
         };
@@ -403,24 +411,9 @@ describe('Network Address Integration', () => {
 
         setSaveInLocalStorage('testuser', saveState);
 
-        let capturedNarEntries = null;
-
-        const NarCapture = () => {
-            const { narEntries } = useGame();
-
-            useEffect(() => {
-                if (narEntries && narEntries.length > 0) {
-                    capturedNarEntries = narEntries;
-                }
-            }, [narEntries]);
-
-            return null;
-        };
-
         render(
             <GameProvider>
                 <GameLoader username="testuser" />
-                <NarCapture />
                 <TopBar />
                 <SNetMail />
             </GameProvider>
@@ -430,43 +423,39 @@ describe('Network Address Integration', () => {
             expect(screen.getByText(/Your Mail ID:/)).toBeInTheDocument();
         });
 
-        // Click the message to open it
-        await user.click(screen.getByText('Mission Software'));
+        // Open the message with multiple attachments
+        await user.click(screen.getByText('Multiple Network Credentials'));
 
+        // Verify both attachments are visible and clickable initially
         await waitFor(() => {
-            // Should display resolved network name from tutorial-part-1 mission
-            expect(screen.getByText(/Network Credentials: ClientA-Corporate/i)).toBeInTheDocument();
+            expect(screen.getByText(/Network Credentials: Network Alpha/i)).toBeInTheDocument();
+            expect(screen.getByText(/Network Credentials: Network Beta/i)).toBeInTheDocument();
         });
 
-        // Click the network attachment to add to NAR
-        const attachment = screen.getByTestId('network-attachment-clienta-corporate');
-        await user.click(attachment);
+        const attachmentAlpha = screen.getByTestId('network-attachment-network-alpha');
+        const attachmentBeta = screen.getByTestId('network-attachment-network-beta');
 
-        // Wait for NAR to update
+        // Both should show "Click to add" initially
+        expect(screen.getAllByText(/Click to add to Network Address Register/i)).toHaveLength(2);
+
+        // Click ONLY the first attachment (Network Alpha)
+        await user.click(attachmentAlpha);
+
+        // Wait for the activation to complete
         await waitFor(() => {
+            // Network Alpha should show as used
             expect(screen.getByText(/✓ Network credentials used/i)).toBeInTheDocument();
         });
 
-        // Wait for NAR state to propagate
-        await waitFor(() => {
-            expect(capturedNarEntries).not.toBeNull();
-            expect(capturedNarEntries.length).toBeGreaterThan(0);
-        });
+        // CRITICAL BUG CHECK: Network Beta should still be clickable!
+        // The bug is that clicking one attachment marks ALL attachments as activated
+        const remainingClickToAdd = screen.queryAllByText(/Click to add to Network Address Register/i);
+        expect(remainingClickToAdd).toHaveLength(1);
 
-        // Verify NAR entry includes complete network data from tutorial-part-1 mission
-        const narEntry = capturedNarEntries[0];
-        expect(narEntry.networkId).toBe('clienta-corporate');
-        expect(narEntry.networkName).toBe('ClientA-Corporate');
-        expect(narEntry.address).toBe('192.168.50.0/24');
+        // Verify we can still see the "Click to add" for Network Beta
+        // by checking the beta attachment specifically is not marked as used
+        expect(attachmentBeta).not.toHaveClass('used');
 
-        // Most importantly: verify fileSystems were resolved from mission
-        expect(narEntry.fileSystems).toBeDefined();
-        expect(narEntry.fileSystems.length).toBe(1);
-        expect(narEntry.fileSystems[0].id).toBe('fs-clienta-01');
-        expect(narEntry.fileSystems[0].ip).toBe('192.168.50.10');
-        expect(narEntry.fileSystems[0].name).toBe('fileserver-01');
-        expect(narEntry.fileSystems[0].files.length).toBe(11);
-
-        console.log('✅ Verified missionId reference resolves complete network data from tutorial-part-1.json');
+        console.log('✅ Verified clicking one attachment only marks that specific attachment as activated');
     });
 });

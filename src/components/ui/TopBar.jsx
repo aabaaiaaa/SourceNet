@@ -8,6 +8,35 @@ import triggerEventBus from '../../core/triggerEventBus';
 import { scheduleGameTimeCallback, clearGameTimeCallback } from '../../core/gameTimeScheduler';
 import './TopBar.css';
 
+/**
+ * Format deadline countdown for display
+ * @param {Date} deadlineTime - The deadline time
+ * @param {Date} currentTime - Current game time
+ * @returns {{ text: string, isUrgent: boolean, isExpired: boolean }}
+ */
+const formatDeadlineCountdown = (deadlineTime, currentTime) => {
+  if (!deadlineTime || !currentTime) {
+    return { text: '', isUrgent: false, isExpired: false };
+  }
+
+  const deadline = new Date(deadlineTime);
+  const now = new Date(currentTime);
+  const remainingMs = deadline - now;
+
+  if (remainingMs <= 0) {
+    return { text: 'EXPIRED', isUrgent: true, isExpired: true };
+  }
+
+  const totalSeconds = Math.floor(remainingMs / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  const isUrgent = minutes < 1;
+  const text = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+  return { text, isUrgent, isExpired: false };
+};
+
 const TopBar = () => {
   const {
     currentTime,
@@ -394,37 +423,51 @@ const TopBar = () => {
         })()}
 
         {/* Active Mission Indicator */}
-        {activeMission && (
-          <div
-            className="topbar-mission"
-            onMouseEnter={() => setShowMissionPreview(true)}
-            onMouseLeave={() => setShowMissionPreview(false)}
-            onClick={() => openWindow('missionBoard')}
-            title="Click to open Mission Board"
-          >
-            <span className="mission-icon">📋</span>
-            <span className="mission-badge">
-              {activeMission.objectives?.filter(o => o.status !== 'complete').length || 0}
-            </span>
-            {showMissionPreview && (
-              <div className="notification-preview">
-                <div className="preview-header">{activeMission.title}</div>
-                {activeMission.objectives?.map((obj) => (
-                  <div
-                    key={obj.id}
-                    className="preview-item-small"
-                    style={{
-                      textDecoration: obj.status === 'complete' ? 'line-through' : 'none',
-                      color: obj.status === 'complete' ? '#32CD32' : '#222',
-                    }}
-                  >
-                    {obj.status === 'complete' ? '☑' : '☐'} {obj.description}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        {activeMission && (() => {
+          const countdown = formatDeadlineCountdown(activeMission.deadlineTime, currentTime);
+          return (
+            <div
+              className={`topbar-mission ${countdown.isUrgent ? 'mission-urgent' : ''}`}
+              onMouseEnter={() => setShowMissionPreview(true)}
+              onMouseLeave={() => setShowMissionPreview(false)}
+              onClick={() => openWindow('missionBoard')}
+              title="Click to open Mission Board"
+            >
+              <span className="mission-icon">📋</span>
+              {countdown.text ? (
+                <span className={`mission-countdown ${countdown.isUrgent ? 'urgent' : ''}`}>
+                  {countdown.text}
+                </span>
+              ) : (
+                <span className="mission-badge">
+                  {activeMission.objectives?.filter(o => o.status !== 'complete').length || 0}
+                </span>
+              )}
+              {showMissionPreview && (
+                <div className="notification-preview">
+                  <div className="preview-header">{activeMission.title}</div>
+                  {countdown.text && (
+                    <div className={`preview-countdown ${countdown.isUrgent ? 'urgent' : ''}`}>
+                      ⏱️ {countdown.isExpired ? 'TIME EXPIRED!' : `Time remaining: ${countdown.text}`}
+                    </div>
+                  )}
+                  {activeMission.objectives?.map((obj) => (
+                    <div
+                      key={obj.id}
+                      className="preview-item-small"
+                      style={{
+                        textDecoration: obj.status === 'complete' ? 'line-through' : 'none',
+                        color: obj.status === 'complete' ? '#32CD32' : '#222',
+                      }}
+                    >
+                      {obj.status === 'complete' ? '☑' : '☐'} {obj.description}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Right: App Launcher */}

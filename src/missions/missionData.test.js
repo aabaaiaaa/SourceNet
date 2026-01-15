@@ -36,27 +36,6 @@ describe('missionData', () => {
     });
   });
 
-  describe('Post-Tutorial Missions', () => {
-    it('should have multiple post-tutorial missions', () => {
-      expect(postTutorialMissions.length).toBeGreaterThanOrEqual(7);
-    });
-
-    it('should have file backup missions', () => {
-      const backup = postTutorialMissions.filter(m => m.title.includes('Backup'));
-      expect(backup.length).toBeGreaterThan(0);
-    });
-
-    it('should have file repair missions', () => {
-      const repair = postTutorialMissions.filter(m => m.title.includes('Repair'));
-      expect(repair.length).toBeGreaterThan(0);
-    });
-
-    it('should have file restoration missions', () => {
-      const restoration = postTutorialMissions.filter(m => m.title.includes('Restore') || m.title.includes('Recovery'));
-      expect(restoration.length).toBeGreaterThan(0);
-    });
-  });
-
   describe('getMissionById', () => {
     it('should find mission by ID', () => {
       const mission = getMissionById('tutorial-part-1');

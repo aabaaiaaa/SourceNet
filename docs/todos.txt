@@ -11,7 +11,7 @@ need to create a new generated scenario - Prior to tutorial part 2 verify missio
 This game state will need to be saved immediately after the 2nd from last mission objective is completed as the last mission objective "verify mission completion" is a timed event and is only a short time.
 Then a new e2e test can be created to test the error above and iterate on this without needing to go through the whole tutorial missions over and over.
 
-(planning)
+(WIP - missions are better but have objectives like copy files, but not to paste them anywhere, which doesn't make sense - it should be to copy them to a location, not just copy them)
 the mission generator system is not fit for purpose because it generates missions that have unsupported objectives. there are core building blocks of apps and systems like the message system and scripted event system that could be used to create varying sized missions with different narratives based on all the client/back story.
 I need you to review the mission generator and plan out changes that allow actual compatible objectives to be created that make sense.
 You'll need to review network structures, what devices can be seen and how apps interact with those networks.
@@ -23,6 +23,7 @@ NAR entries are always shared through a message as an attachment.
 NAR entries can be revoked at the end of missions too.
 There's no limit to the number of NAR entry attachments a mission might need, as each NAR entry gives you access to at least 1 network of devices.
 The file manager has the ability to have multiple instances open so a player can copy from one network and paste into another (if they had previously connected to 2 separate networks).
+Missions could have time based objectives (needs to be completed by a time else fail. And missions in the mission board should have expiration dates.
 All missions MUST have a "verify mission completion" objective that is added to the end of all other objectives. This serves as a cooldown so the player can see that once the last real mission objective is complete, there's time for them to see the completion happen. But this delay also serves as a way to extend missions by adding in an additional objective to the mission.
 As an example of a basic mission structure:
 1. message from the client of the mission with some mission narrative and the NAR entry in order to access their network. One NAR entry as a minimum but they could provide multiple NAR entries for multiple networks.
@@ -36,7 +37,8 @@ As an example of a basic mission structure:
 You can look at the tutorial parts 1 + 2 for some examples, but this is not the limit.
 
 
-is there a coding reason why sometimes after the console log '"Better" message read! Initializing procedural mission pool' appears, the browser becomes unresponsive, like it's stuck in a loop.
+(done - needs testing)
+when loading the post tutorial scenario, there are duplicate messages in the SNet Mail app. There's a lot of console errors when opening the mail app too.
 
 
 

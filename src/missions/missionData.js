@@ -3,19 +3,16 @@
  *
  * This module imports all story mission JSON files and provides them
  * to the Story Mission Manager for registration.
+ * 
+ * NOTE: Post-tutorial missions are now generated procedurally by
+ * MissionGenerator.js and MissionPoolManager.js. The story missions
+ * below handle the tutorial flow and initial game setup only.
  */
 
 import welcomeMessages from './data/welcome-messages.json';
 import missionBoardIntro from './data/mission-board-intro.json';
 import tutorialPart1 from './data/tutorial-part-1.json';
 import tutorialPart2 from './data/tutorial-part-2.json';
-import fileBackup01 from './data/post-tutorial/file-backup-01.json';
-import fileBackup02 from './data/post-tutorial/file-backup-02.json';
-import fileRepair01 from './data/post-tutorial/file-repair-01.json';
-import fileRepair02 from './data/post-tutorial/file-repair-02.json';
-import fileRestoration01 from './data/post-tutorial/file-restoration-01.json';
-import fileRestoration02 from './data/post-tutorial/file-restoration-02.json';
-import combinedTasks01 from './data/post-tutorial/combined-tasks-01.json';
 
 /**
  * All story event definitions (initial welcome messages)
@@ -34,24 +31,17 @@ export const tutorialMissions = [
 ];
 
 /**
- * All post-tutorial missions
+ * Post-tutorial missions are now procedurally generated.
+ * See MissionGenerator.js and MissionPoolManager.js for the new system.
+ * @deprecated - Use procedural mission system instead
  */
-export const postTutorialMissions = [
-  fileBackup01,
-  fileBackup02,
-  fileRepair01,
-  fileRepair02,
-  fileRestoration01,
-  fileRestoration02,
-  combinedTasks01,
-];
+export const postTutorialMissions = [];
 
 /**
- * All missions combined
+ * All missions combined (tutorial only, procedural replaces post-tutorial)
  */
 export const allMissions = [
   ...tutorialMissions,
-  ...postTutorialMissions,
 ];
 
 /**
@@ -84,12 +74,13 @@ export const initializeAllMissions = (storyMissionManager) => {
     storyMissionManager.registerMission(event);
   });
 
-  // Register all missions
+  // Register tutorial missions only (post-tutorial is procedural)
   allMissions.forEach((mission) => {
     storyMissionManager.registerMission(mission);
   });
 
-  console.log(`✅ Loaded ${storyEvents.length} story events and ${allMissions.length} missions`);
+  console.log(`✅ Loaded ${storyEvents.length} story events and ${allMissions.length} tutorial missions`);
+  console.log(`ℹ️ Post-tutorial missions are procedurally generated`);
 };
 
 export default {

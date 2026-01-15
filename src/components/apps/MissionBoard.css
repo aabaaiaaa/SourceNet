@@ -307,6 +307,21 @@
   color: white;
 }
 
+.arc-badge {
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: bold;
+  background: #8B68C8;
+  color: white;
+}
+
+.mission-arc-storyline {
+  color: #5D3F8C;
+  font-size: 12px;
+  font-style: italic;
+}
+
 .mission-expiration {
   color: #666;
   font-size: 12px;
@@ -338,4 +353,75 @@
 .mission-card.mission-expired .accept-mission-btn {
   background: #999;
   border-color: #666;
+}
+
+/* Mission Deadline Countdown */
+.mission-deadline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  margin: 10px 0;
+  background: linear-gradient(135deg, #E6F3FF 0%, #CCE5FF 100%);
+  border: 2px solid #4A90D9;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.mission-deadline .deadline-icon {
+  font-size: 18px;
+}
+
+.mission-deadline .deadline-text {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+}
+
+.mission-deadline.deadline-urgent {
+  background: linear-gradient(135deg, #FFE4E4 0%, #FFD0D0 100%);
+  border-color: #DC143C;
+  color: #DC143C;
+  animation: deadline-pulse 0.5s ease-in-out infinite;
+}
+
+.mission-deadline .deadline-expired-note {
+  font-size: 12px;
+  font-style: italic;
+}
+
+@keyframes deadline-pulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.02);
+    opacity: 0.8;
+  }
+}
+
+/* Mission Arc Indicator */
+.mission-arc-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin: 8px 0;
+  background: linear-gradient(135deg, #F0E6FF 0%, #E0D0FF 100%);
+  border: 1px solid #8B68C8;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #5D3F8C;
+}
+
+.mission-arc-indicator .arc-icon {
+  font-size: 16px;
+}
+
+.mission-arc-indicator .arc-text {
+  font-weight: 500;
 }
