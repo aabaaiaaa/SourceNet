@@ -11,11 +11,45 @@ need to create a new generated scenario - Prior to tutorial part 2 verify missio
 This game state will need to be saved immediately after the 2nd from last mission objective is completed as the last mission objective "verify mission completion" is a timed event and is only a short time.
 Then a new e2e test can be created to test the error above and iterate on this without needing to go through the whole tutorial missions over and over.
 
+(planning)
+the mission generator system is not fit for purpose because it generates missions that have unsupported objectives. there are core building blocks of apps and systems like the message system and scripted event system that could be used to create varying sized missions with different narratives based on all the client/back story.
+I need you to review the mission generator and plan out changes that allow actual compatible objectives to be created that make sense.
+You'll need to review network structures, what devices can be seen and how apps interact with those networks.
+VPN client allows connecting to multiple netowkrs as well as disconnecting.
+Netowrk scanner discovers devices on a network.
+File Manager allows file systems that have been discovered to have their files listed (if there are any files). It also allows file operations like copy, delete and repair be done (repair on corrupted files only).
+THe NAR app allows you to see all entries you have access to as well as ones you've gotten revoked from. It also has a connect/disconnect function that links through to the VPN client.
+NAR entries are always shared through a message as an attachment.
+NAR entries can be revoked at the end of missions too.
+There's no limit to the number of NAR entry attachments a mission might need, as each NAR entry gives you access to at least 1 network of devices.
+The file manager has the ability to have multiple instances open so a player can copy from one network and paste into another (if they had previously connected to 2 separate networks).
+All missions MUST have a "verify mission completion" objective that is added to the end of all other objectives. This serves as a cooldown so the player can see that once the last real mission objective is complete, there's time for them to see the completion happen. But this delay also serves as a way to extend missions by adding in an additional objective to the mission.
+As an example of a basic mission structure:
+1. message from the client of the mission with some mission narrative and the NAR entry in order to access their network. One NAR entry as a minimum but they could provide multiple NAR entries for multiple networks.
+2. VPN client is used to connect to the network or networks.
+3. network scanner discovers devices.
+4. File manager can be used to access file systems and manipulate files using copy/paste/delete/repair. The actions required should be based on the narrative of the mission.
+5. There could be any number of networks/devices that make up the mission and therefore have multiple levels of objectives that need fulfilling.
+6. Once all mission objectives completed, it's just the "verify mission completion" objective that will auto-complete IF there's no scripted event that happens.
+7. Scripted events can trigger on any event or after a particular objective, so for example a message from the client could be sent with additional mission information or NAR entries for new devices that need interacting with.
+8. Message from client with the payout for the mission.
+You can look at the tutorial parts 1 + 2 for some examples, but this is not the limit.
+
+
+is there a coding reason why sometimes after the console log '"Better" message read! Initializing procedural mission pool' appears, the browser becomes unresponsive, like it's stuck in a loop.
+
+
 
 Review the systems in place for handling missions and scripted events and objective tracking as I need to understand how to picture these systems and how best they should integrate with each other as the biggest issues have come from changes in these areas. Each system needs to have a role and individual responsibility so there's not internal variables being changed by external systems. It will then aid in writing test cases for each system.
 
 
-(planning)
+if any of the sessionStorage usages actaully required now? I thought they were just to attempt to fix a bug and turns out they were not critical to fixing it?
+
+
+minimising the file manager and network scanner apps seems to reset some state in them so when you open them back up, the dropdowns are not selected anymore. It might not be just the dropdowns that are affected, but ideally no visuals should be affected once you open the app back up from minimising.
+
+
+(WIP)
 When the sabotage event happens and files are deleted, it should be deleting the log files that the player just repaired! Currently it's just adding log entries for non-existent files it's deleting.
 
 

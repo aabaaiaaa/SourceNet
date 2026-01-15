@@ -375,4 +375,290 @@ describe('StoryMissionManager', () => {
       expect(eventFired).toBe(false);
     });
   });
+
+  describe('File Name Resolution in Scripted Events', () => {
+    it('should resolve "all-corrupted" to actual file names from mission networks', async () => {
+      const mission = {
+        missionId: 'tutorial-part-1',
+        triggers: { start: { type: 'timeSinceEvent', event: 'gameStart', delay: 0 } },
+        networks: [
+          {
+            networkId: 'clienta-corporate',
+            fileSystems: [
+              {
+                id: 'fs-clienta-01',
+                files: [
+                  { name: 'log_2024_01.txt', corrupted: true },
+                  { name: 'log_2024_02.txt', corrupted: true },
+                  { name: 'log_2024_03.txt', corrupted: true },
+                  { name: 'system.log', corrupted: false },
+                ],
+              },
+            ],
+          },
+        ],
+        scriptedEvents: [
+          {
+            id: 'sabotage-deletion',
+            trigger: {
+              type: 'afterObjectiveComplete',
+              objectiveId: 'obj-4',
+              delay: 10,
+            },
+            actions: [
+              {
+                type: 'forceFileOperation',
+                operation: 'delete',
+                files: 'all-corrupted',
+              },
+            ],
+          },
+        ],
+      };
+
+      storyMissionManager.registerMission(mission);
+
+      const eventPromise = new Promise((resolve) => {
+        triggerEventBus.once('scriptedEventStart', (data) => {
+          resolve(data.actions);
+        });
+      });
+
+      // Trigger the scripted event
+      triggerEventBus.emit('objectiveComplete', {
+        missionId: 'tutorial-part-1',
+        objectiveId: 'obj-4',
+      });
+
+      const capturedActions = await eventPromise;
+      expect(capturedActions).toBeTruthy();
+      expect(capturedActions.length).toBe(1);
+      expect(capturedActions[0].resolvedFileNames).toEqual([
+        'log_2024_01.txt',
+        'log_2024_02.txt',
+        'log_2024_03.txt',
+      ]);
+    });
+
+    it('should resolve "all-repaired" to actual file names from mission networks', async () => {
+      const mission = {
+        missionId: 'tutorial-part-1',
+        triggers: { start: { type: 'timeSinceEvent', event: 'gameStart', delay: 0 } },
+        networks: [
+          {
+            networkId: 'clienta-corporate',
+            fileSystems: [
+              {
+                id: 'fs-clienta-01',
+                files: [
+                  { name: 'log_2024_01.txt', corrupted: true },
+                  { name: 'log_2024_02.txt', corrupted: true },
+                  { name: 'system.log', corrupted: false },
+                ],
+              },
+            ],
+          },
+        ],
+        scriptedEvents: [
+          {
+            id: 'sabotage-deletion',
+            trigger: {
+              type: 'afterObjectiveComplete',
+              objectiveId: 'obj-4',
+              delay: 10,
+            },
+            actions: [
+              {
+                type: 'forceFileOperation',
+                operation: 'delete',
+                files: 'all-repaired',
+              },
+            ],
+          },
+        ],
+      };
+
+      storyMissionManager.registerMission(mission);
+
+      const eventPromise = new Promise((resolve) => {
+        triggerEventBus.once('scriptedEventStart', (data) => {
+          resolve(data.actions);
+        });
+      });
+
+      // Trigger the scripted event
+      triggerEventBus.emit('objectiveComplete', {
+        missionId: 'tutorial-part-1',
+        objectiveId: 'obj-4',
+      });
+
+      const capturedActions = await eventPromise;
+      expect(capturedActions).toBeTruthy();
+      expect(capturedActions.length).toBe(1);
+      // Should resolve to corrupted files (files that would be repaired)
+      expect(capturedActions[0].resolvedFileNames).toEqual([
+        'log_2024_01.txt',
+        'log_2024_02.txt',
+      ]);
+    });
+
+    it('should handle multiple file systems when resolving file names', async () => {
+      const mission = {
+        missionId: 'test-mission',
+        triggers: { start: { type: 'timeSinceEvent', event: 'gameStart', delay: 0 } },
+        networks: [
+          {
+            networkId: 'network-1',
+            fileSystems: [
+              {
+                id: 'fs-1',
+                files: [
+                  { name: 'file1.txt', corrupted: true },
+                  { name: 'file2.txt', corrupted: true },
+                ],
+              },
+              {
+                id: 'fs-2',
+                files: [
+                  { name: 'file3.txt', corrupted: true },
+                  { name: 'file4.txt', corrupted: false },
+                ],
+              },
+            ],
+          },
+        ],
+        scriptedEvents: [
+          {
+            id: 'delete-all',
+            trigger: {
+              type: 'afterObjectiveComplete',
+              objectiveId: 'obj-1',
+              delay: 10,
+            },
+            actions: [
+              {
+                type: 'forceFileOperation',
+                operation: 'delete',
+                files: 'all-corrupted',
+              },
+            ],
+          },
+        ],
+      };
+
+      storyMissionManager.registerMission(mission);
+
+      const eventPromise = new Promise((resolve) => {
+        triggerEventBus.once('scriptedEventStart', (data) => {
+          resolve(data.actions);
+        });
+      });
+
+      triggerEventBus.emit('objectiveComplete', {
+        missionId: 'test-mission',
+        objectiveId: 'obj-1',
+      });
+
+      const capturedActions = await eventPromise;
+      expect(capturedActions[0].resolvedFileNames).toEqual([
+        'file1.txt',
+        'file2.txt',
+        'file3.txt',
+      ]);
+    });
+
+    it('should not modify actions without file indicators', async () => {
+      const mission = {
+        missionId: 'test-mission',
+        triggers: { start: { type: 'timeSinceEvent', event: 'gameStart', delay: 0 } },
+        scriptedEvents: [
+          {
+            id: 'disconnect',
+            trigger: {
+              type: 'afterObjectiveComplete',
+              objectiveId: 'obj-1',
+              delay: 10,
+            },
+            actions: [
+              {
+                type: 'forceDisconnect',
+                network: 'test-network',
+              },
+            ],
+          },
+        ],
+      };
+
+      storyMissionManager.registerMission(mission);
+
+      const eventPromise = new Promise((resolve) => {
+        triggerEventBus.once('scriptedEventStart', (data) => {
+          resolve(data.actions);
+        });
+      });
+
+      triggerEventBus.emit('objectiveComplete', {
+        missionId: 'test-mission',
+        objectiveId: 'obj-1',
+      });
+
+      const capturedActions = await eventPromise;
+      expect(capturedActions[0].resolvedFileNames).toBeUndefined();
+      expect(capturedActions[0].type).toBe('forceDisconnect');
+    });
+
+    it('should return empty array when no corrupted files exist', async () => {
+      const mission = {
+        missionId: 'test-mission',
+        triggers: { start: { type: 'timeSinceEvent', event: 'gameStart', delay: 0 } },
+        networks: [
+          {
+            networkId: 'network-1',
+            fileSystems: [
+              {
+                id: 'fs-1',
+                files: [
+                  { name: 'file1.txt', corrupted: false },
+                  { name: 'file2.txt', corrupted: false },
+                ],
+              },
+            ],
+          },
+        ],
+        scriptedEvents: [
+          {
+            id: 'delete-all',
+            trigger: {
+              type: 'afterObjectiveComplete',
+              objectiveId: 'obj-1',
+              delay: 10,
+            },
+            actions: [
+              {
+                type: 'forceFileOperation',
+                operation: 'delete',
+                files: 'all-corrupted',
+              },
+            ],
+          },
+        ],
+      };
+
+      storyMissionManager.registerMission(mission);
+
+      const eventPromise = new Promise((resolve) => {
+        triggerEventBus.once('scriptedEventStart', (data) => {
+          resolve(data.actions);
+        });
+      });
+
+      triggerEventBus.emit('objectiveComplete', {
+        missionId: 'test-mission',
+        objectiveId: 'obj-1',
+      });
+
+      const capturedActions = await eventPromise;
+      expect(capturedActions[0].resolvedFileNames).toEqual([]);
+    });
+  });
 });

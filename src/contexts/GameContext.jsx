@@ -33,6 +33,7 @@ import { BANKING_MESSAGES, HR_MESSAGES } from '../core/systemMessages';
 import { getReputationTier } from '../systems/ReputationSystem';
 import triggerEventBus from '../core/triggerEventBus';
 import { executeScriptedEvent } from '../missions/ScriptedEventExecutor';
+import { initializePool, refreshPool, shouldRefreshPool } from '../missions/MissionPoolManager';
 
 export const GameContext = createContext();
 
@@ -179,6 +180,8 @@ export const GameProvider = ({ children }) => {
   }, [activeConnections, fileClipboard.sourceNetworkId, clearFileClipboard]);
 
   // Update files in a specific file system within narEntries
+  // Note: State updates are batched by React. Components may see stale narEntries
+  // for one render cycle if they perform operations that immediately query updated values.
   const updateFileSystemFiles = useCallback((networkId, fileSystemId, updatedFiles) => {
     console.log(`📁 updateFileSystemFiles called: networkId=${networkId}, fsId=${fileSystemId}, fileCount=${updatedFiles?.length}`);
     setNarEntries(prev => {
@@ -234,13 +237,11 @@ export const GameProvider = ({ children }) => {
         setProceduralMissionsEnabled(true);
 
         // Initialize the mission pool
-        import('../missions/MissionPoolManager').then(({ initializePool }) => {
-          const poolState = initializePool(reputation, currentTime);
-          console.log(`📋 Procedural pool initialized with ${poolState.missions.length} missions`);
-          setMissionPool(poolState.missions);
-          setPendingChainMissions(poolState.pendingChains);
-          setActiveClientIds(poolState.activeClientIds);
-        });
+        const poolState = initializePool(reputation, currentTime);
+        console.log(`📋 Procedural pool initialized with ${poolState.missions.length} missions`);
+        setMissionPool(poolState.missions);
+        setPendingChainMissions(poolState.pendingChains);
+        setActiveClientIds(poolState.activeClientIds);
       }
     };
 
@@ -252,23 +253,21 @@ export const GameProvider = ({ children }) => {
   useEffect(() => {
     if (!proceduralMissionsEnabled || missionPool.length === 0) return;
 
-    import('../missions/MissionPoolManager').then(({ refreshPool, shouldRefreshPool }) => {
-      const poolState = {
-        missions: missionPool,
-        pendingChains: pendingChainMissions,
-        activeClientIds,
-        lastRefresh: new Date().toISOString()
-      };
+    const poolState = {
+      missions: missionPool,
+      pendingChains: pendingChainMissions,
+      activeClientIds,
+      lastRefresh: new Date().toISOString()
+    };
 
-      if (shouldRefreshPool(poolState, reputation)) {
-        console.log('🔄 Refreshing procedural mission pool...');
-        const activeMissionId = activeMission?.missionId || null;
-        const newPoolState = refreshPool(poolState, reputation, currentTime, activeMissionId);
-        setMissionPool(newPoolState.missions);
-        setPendingChainMissions(newPoolState.pendingChains);
-        setActiveClientIds(newPoolState.activeClientIds);
-      }
-    });
+    if (shouldRefreshPool(poolState, reputation)) {
+      console.log('🔄 Refreshing procedural mission pool...');
+      const activeMissionId = activeMission?.missionId || null;
+      const newPoolState = refreshPool(poolState, reputation, currentTime, activeMissionId);
+      setMissionPool(newPoolState.missions);
+      setPendingChainMissions(newPoolState.pendingChains);
+      setActiveClientIds(newPoolState.activeClientIds);
+    }
   }, [reputation]); // Only trigger on reputation change
 
   // Download manager - handles progress updates for downloads based on game time
@@ -1473,7 +1472,7 @@ export const GameProvider = ({ children }) => {
       if (operation === 'delete') {
         console.log(`🗑️ Sabotage deleting file: ${fileName}`);
 
-        // Remove one file from NAR entries
+        // Remove file by name from NAR entries
         setNarEntries(currentEntries => {
           return currentEntries.map(entry => {
             if (entry.fileSystems) {
@@ -1481,9 +1480,14 @@ export const GameProvider = ({ children }) => {
                 ...entry,
                 fileSystems: entry.fileSystems.map(fs => {
                   if (fs.files && fs.files.length > 0) {
-                    // Remove the first file (simulating progressive deletion)
-                    const remainingFiles = fs.files.slice(1);
-                    console.log(`  🗑️ FS ${fs.name}: ${fs.files.length} files → ${remainingFiles.length} files`);
+                    // Remove the file matching the fileName
+                    const remainingFiles = fs.files.filter(f => f.name !== fileName);
+                    const deletedCount = fs.files.length - remainingFiles.length;
+
+                    if (deletedCount > 0) {
+                      console.log(`  🗑️ FS ${fs.name}: Deleted ${fileName} (${fs.files.length} → ${remainingFiles.length} files)`);
+                    }
+
                     return {
                       ...fs,
                       files: remainingFiles

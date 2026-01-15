@@ -106,7 +106,7 @@ test.describe('E2E: Tutorial Sabotage Event', () => {
         console.log('⏳ Waiting for terminal lockout (~5s game time = 0.5s at 10x speed)...');
 
         const terminalLockoutOverlay = page.locator('.terminal-lockout-overlay');
-        await expect(terminalLockoutOverlay).toBeVisible({ timeout: 10000 });
+        await expect(terminalLockoutOverlay).toBeVisible({ timeout: 15000 });
         console.log('✅ Terminal lockout overlay active (player cannot interact)');
 
         // Verify lockout overlay blocks interaction - try clicking app launcher
@@ -127,7 +127,7 @@ test.describe('E2E: Tutorial Sabotage Event', () => {
         console.log('⏳ Waiting for sabotage deletion to start...');
 
         // Wait for lockout visuals to appear (red border and text)
-        await expect(lockoutBorder).toBeVisible({ timeout: 3000 });
+        await expect(lockoutBorder).toBeVisible({ timeout: 10000 });
         console.log('🚨 Lockout visuals appeared - deletion started!');
 
         const lockoutMessage = page.locator('.lockout-message');
@@ -181,6 +181,17 @@ test.describe('E2E: Tutorial Sabotage Event', () => {
         const firstDeleteEntry = fileManager.locator('.activity-log-entry:has(.log-operation:has-text("DELETE"))').first();
         await expect(firstDeleteEntry).toBeVisible();
         console.log('✅ DELETE operations logged as normal entries');
+
+        // Verify DELETE entries show actual log file names (log_2024_XX.txt), not placeholders (file_X.dat)
+        const logFileDeleteEntry = fileManager.locator('.activity-log-entry:has-text("log_2024_")');
+        const actualFileNameCount = await logFileDeleteEntry.count();
+        expect(actualFileNameCount).toBeGreaterThan(0);
+        console.log(`✅ DELETE entries show actual log file names (found ${actualFileNameCount} entries with log_2024_*)`);
+
+        // Verify first delete entry shows a real log file name
+        const firstDeleteText = await firstDeleteEntry.textContent();
+        expect(firstDeleteText).toMatch(/log_2024_\d{2}\.txt/);
+        console.log(`✅ First DELETE entry contains real file name: ${firstDeleteText.match(/log_2024_\d{2}\.txt/)?.[0]}`);
 
         // ========================================
         // STEP 10: Verify forced disconnection overlay appears

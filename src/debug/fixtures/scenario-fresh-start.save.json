@@ -1,7 +1,7 @@
 {
   "username": "scenario_user",
-  "playerMailId": "SNET-BP6-OZ9-2HS",
-  "currentTime": "2020-03-25T09:01:40.000Z",
+  "playerMailId": "SNET-H9U-OK2-939",
+  "currentTime": "2020-03-25T09:01:31.000Z",
   "hardware": {
     "cpu": {
       "id": "cpu-1ghz-single",
@@ -101,11 +101,11 @@
     {
       "id": "msg-welcome-manager",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-GFC-3DA",
-      "fromName": "SourceNet Manager Casey",
-      "subject": "Hi from your manager - Casey",
-      "body": "Hey scenario_user!\n\nWelcome to the team! I'm Casey, and I'll be your manager here at SourceNet. I was present during your interview process and I have to say, you really impressed us with your skills and dedication.\n\nTo help you get started, I've attached a welcome bonus cheque for 1,000 credits. Just click on the attachment to deposit it into your bank account.\n\nTake some time to get comfortable with your setup. I'll be reaching out again soon with your first assignment.\n\nLooking forward to working with you!\n\n- Casey",
-      "timestamp": "2020-03-25T09:00:21.000Z",
+      "fromId": "SNET-MGR-ZL7-4CZ",
+      "fromName": "SourceNet Manager Morgan",
+      "subject": "Hi from your manager - Morgan",
+      "body": "Hey scenario_user!\n\nWelcome to the team! I'm Morgan, and I'll be your manager here at SourceNet. I was present during your interview process and I have to say, you really impressed us with your skills and dedication.\n\nTo help you get started, I've attached a welcome bonus cheque for 1,000 credits. Just click on the attachment to deposit it into your bank account.\n\nTake some time to get comfortable with your setup. I'll be reaching out again soon with your first assignment.\n\nLooking forward to working with you!\n\n- Morgan",
+      "timestamp": "2020-03-25T09:00:18.000Z",
       "read": true,
       "archived": false,
       "attachments": [
@@ -119,11 +119,11 @@
     {
       "id": "msg-mission-board-license",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-ZU8-UD3",
-      "fromName": "SourceNet Manager Casey",
+      "fromId": "SNET-MGR-BQH-KXC",
+      "fromName": "SourceNet Manager Morgan",
       "subject": "Get Ready for Your First Mission",
-      "body": "Hey scenario_user!\n\nNow that you're all set up, it's time to get you started with actual work.\n\nI've attached a license for the SourceNet Mission Board application. This is where you'll find all available missions from our clients.\n\nTo get started:\n\n1. Click the attachment above to add the Mission Board license to your account\n2. Open the OSNet Portal from your app launcher\n3. Go to Software section - you'll see \"SourceNet Mission Board\" marked as \"Licensed\"\n4. Download and install it\n5. Once installed, open the Mission Board from your app launcher\n\nI've posted your first assignment there. It's a straightforward file repair job for one of our clients - perfect for learning the ropes.\n\nOnce you install the Mission Board, I'll send you the software licenses you'll need to complete the mission.\n\n- Casey",
-      "timestamp": "2020-03-25T09:01:01.000Z",
+      "body": "Hey scenario_user!\n\nNow that you're all set up, it's time to get you started with actual work.\n\nI've attached a license for the SourceNet Mission Board application. This is where you'll find all available missions from our clients.\n\nTo get started:\n\n1. Click the attachment above to add the Mission Board license to your account\n2. Open the OSNet Portal from your app launcher\n3. Go to Software section - you'll see \"SourceNet Mission Board\" marked as \"Licensed\"\n4. Download and install it\n5. Once installed, open the Mission Board from your app launcher\n\nI've posted your first assignment there. It's a straightforward file repair job for one of our clients - perfect for learning the ropes.\n\nOnce you install the Mission Board, I'll send you the software licenses you'll need to complete the mission.\n\n- Morgan",
+      "timestamp": "2020-03-25T09:00:57.000Z",
       "read": true,
       "archived": false,
       "attachments": [
@@ -138,7 +138,7 @@
       ]
     }
   ],
-  "managerName": "Casey",
+  "managerName": "Morgan",
   "windows": [],
   "reputation": 9,
   "reputationCountdown": null,
@@ -159,8 +159,8 @@
   "downloadQueue": [],
   "transactions": [
     {
-      "id": "txn-cheque-1768478427174",
-      "date": "2020-03-25T09:00:43.000Z",
+      "id": "txn-cheque-1768491843816",
+      "date": "2020-03-25T09:00:38.000Z",
       "type": "income",
       "amount": 1000,
       "description": "Cheque Deposit",
@@ -199,7 +199,7 @@
           ]
         }
       },
-      "remainingDelayMs": 1767
+      "remainingDelayMs": 1716
     },
     {
       "id": "storyEvent-6",
@@ -224,7 +224,7 @@
           ]
         }
       },
-      "remainingDelayMs": 19767
+      "remainingDelayMs": 19716
     }
   ],
   "bankingMessagesSent": {
@@ -244,6 +244,6 @@
   "activeClientIds": [],
   "clientStandings": {},
   "extensionOffers": {},
-  "savedAt": "2026-01-15T12:00:27.954Z",
+  "savedAt": "2026-01-15T15:44:04.593Z",
   "saveName": "ScenarioFreshStart"
 }

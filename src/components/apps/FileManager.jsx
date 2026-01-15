@@ -47,10 +47,41 @@ const FileManager = () => {
     setActivityLog(prev => [...prev, logEntry]);
   }, []);
 
+  // Get available file systems from connected networks
+  const availableFileSystems = [];
+  activeConnections.forEach((connection) => {
+    const narEntry = narEntries.find((entry) => entry.networkId === connection.networkId);
+    const discoveredData = discoveredDevices[connection.networkId];
+    const discovered = discoveredData instanceof Set ? discoveredData : new Set(discoveredData || []);
+
+    if (narEntry && narEntry.fileSystems) {
+      narEntry.fileSystems.forEach((fs) => {
+        // Only include filesystems whose IP has been discovered via Network Scanner
+        if (discovered.has(fs.ip)) {
+          availableFileSystems.push({
+            id: fs.id,
+            ip: fs.ip,
+            name: fs.name,
+            label: `${fs.ip} - ${fs.name}`,
+            files: fs.files || [],
+            networkId: narEntry.networkId,
+          });
+        }
+      });
+    }
+  });
+
   // Refs to track current values for use in event handlers
   const availableFileSystemsRef = useRef([]);
   const selectedFileSystemRef = useRef('');
   const currentNetworkIdRef = useRef('');
+
+  // Keep refs in sync
+  useEffect(() => {
+    availableFileSystemsRef.current = availableFileSystems;
+    selectedFileSystemRef.current = selectedFileSystem;
+    currentNetworkIdRef.current = currentNetworkId;
+  });
 
   // Subscribe to sabotage file operations from scripted events
   useEffect(() => {
@@ -135,18 +166,14 @@ const FileManager = () => {
             newFiles[fileIndex] = { ...newFiles[fileIndex], selected: false };
           }
 
-          // Schedule persistence outside of setState to avoid "Cannot update a component while rendering" error
+          // Persist file changes immediately to narEntries
           if (operation !== 'copy') {
             const networkId = currentNetworkIdRef.current;
             const fsId = selectedFileSystemRef.current;
             if (networkId && fsId) {
               // Strip selection state before persisting
               const filesToPersist = newFiles.map(({ selected: _selected, ...rest }) => rest);
-              // Use setTimeout to defer the context update until after this render cycle
-              setTimeout(() => {
-                console.log(`📁 Persisting ${operation} to narEntries: networkId=${networkId}, fsId=${fsId}, files=${filesToPersist.length}`);
-                updateFileSystemFiles(networkId, fsId, filesToPersist);
-              }, 0);
+              updateFileSystemFiles(networkId, fsId, filesToPersist);
             }
           }
 
@@ -249,29 +276,6 @@ const FileManager = () => {
     return narEntry?.bandwidth || 50; // Default 50 Mbps
   };
 
-  // Get available file systems from connected networks
-  const availableFileSystems = [];
-  activeConnections.forEach((connection) => {
-    const narEntry = narEntries.find((entry) => entry.networkId === connection.networkId);
-    const discovered = discoveredDevices[connection.networkId] || new Set();
-
-    if (narEntry && narEntry.fileSystems) {
-      narEntry.fileSystems.forEach((fs) => {
-        // Only include filesystems whose IP has been discovered via Network Scanner
-        if (discovered.has(fs.ip)) {
-          availableFileSystems.push({
-            id: fs.id,
-            ip: fs.ip,
-            name: fs.name,
-            label: `${fs.ip} - ${fs.name}`,
-            files: fs.files || [],
-            networkId: narEntry.networkId,
-          });
-        }
-      });
-    }
-  });
-
   // Check if selected file system is still available (handles network disconnect)
   useEffect(() => {
     if (selectedFileSystem && availableFileSystems.length > 0) {
@@ -291,22 +295,20 @@ const FileManager = () => {
     }
   }, [availableFileSystems, selectedFileSystem]);
 
-  // Keep refs updated for use in event handlers (must be in useEffect, not during render)
-  useEffect(() => {
-    availableFileSystemsRef.current = availableFileSystems;
-    selectedFileSystemRef.current = selectedFileSystem;
-    currentNetworkIdRef.current = currentNetworkId;
-  }, [availableFileSystems, selectedFileSystem, currentNetworkId]);
+  // TODO: Re-enable reactive file deletion for dramatic sabotage effect
+  // Currently disabled due to timing issues with paste operations
+  // See conversation history for attempted implementations
 
-  const handleConnect = (fileSystemId = selectedFileSystem) => {
+  const handleFileSystemSelect = (fileSystemId) => {
     if (!fileSystemId) return;
 
-    // Find the selected file system
-    const fileSystem = availableFileSystems.find((fs) => fs.id === fileSystemId);
+    // Use availableFileSystemsRef to get the latest value after state updates
+    const fileSystem = availableFileSystemsRef.current.find((fs) => fs.id === fileSystemId);
     if (!fileSystem) return;
 
     // Load files from the file system with selection state
     setFiles(fileSystem.files.map(f => ({ ...f, selected: false })));
+    setSelectedFileSystem(fileSystemId);
     setCurrentNetworkId(fileSystem.networkId);
 
     // Clear any ongoing operations
@@ -576,7 +578,7 @@ const FileManager = () => {
               value={selectedFileSystem}
               onChange={(e) => {
                 setSelectedFileSystem(e.target.value);
-                if (e.target.value) handleConnect(e.target.value);
+                if (e.target.value) handleFileSystemSelect(e.target.value);
               }}
             >
               <option value="">

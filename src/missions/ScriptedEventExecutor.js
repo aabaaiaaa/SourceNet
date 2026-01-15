@@ -145,11 +145,14 @@ export const executeScriptedEvent = async (scriptedEvent, callbacks = {}) => {
   // Execute file operations first (these block player control)
   for (const action of actions) {
     if (action.type === 'forceFileOperation' && action.operation === 'delete') {
+      // Use resolved file names if available, otherwise empty array
+      const fileNames = action.resolvedFileNames || [];
+
       await executeFileDeleteAction(
         action,
         callbacks.onProgress,
         null, // Don't call onComplete yet
-        [], // fileNames
+        fileNames, // Use resolved file names from action enrichment
         timeSpeed // Pass time speed for game time scheduling
       );
     }

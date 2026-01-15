@@ -644,7 +644,7 @@ class StoryMissionManager {
     // Get mission definition to access consequences
     const mission = this.getMission(missionId);
 
-    // Enrich actions with mission data (e.g., failure consequences)
+    // Enrich actions with mission data (e.g., failure consequences, file names)
     const enrichedActions = scriptedEvent.actions.map(action => {
       if (action.type === 'setMissionStatus' && action.status === 'failed' && mission?.consequences?.failure) {
         return {
@@ -652,6 +652,36 @@ class StoryMissionManager {
           failureConsequences: mission.consequences.failure
         };
       }
+
+      // Resolve file indicators like "all-repaired" or "all-corrupted" to actual file names
+      if (action.type === 'forceFileOperation' && typeof action.files === 'string') {
+        const fileIndicator = action.files;
+        let resolvedFileNames = [];
+
+        if (fileIndicator === 'all-repaired' || fileIndicator === 'all-corrupted') {
+          // Get corrupted files from mission networks
+          if (mission?.networks) {
+            mission.networks.forEach(network => {
+              if (network.fileSystems) {
+                network.fileSystems.forEach(fs => {
+                  if (fs.files) {
+                    const corruptedFiles = fs.files.filter(f => f.corrupted === true);
+                    resolvedFileNames.push(...corruptedFiles.map(f => f.name));
+                  }
+                });
+              }
+            });
+          }
+
+          console.log(`📂 Resolved "${fileIndicator}" to ${resolvedFileNames.length} files:`, resolvedFileNames);
+        }
+
+        return {
+          ...action,
+          resolvedFileNames
+        };
+      }
+
       return action;
     });
 
