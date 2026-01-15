@@ -86,8 +86,8 @@ const SNetMail = () => {
     // If attachment references a mission, look up the mission's network definition
     if (attachment.missionId && !attachment.networkId) {
       const mission = getMissionById(attachment.missionId);
-      if (mission && mission.network) {
-        networkData = mission.network;
+      if (mission && mission.networks && mission.networks.length > 0) {
+        networkData = mission.networks[0];
         console.log('🔍 Resolved network data from mission:', attachment.missionId);
       } else {
         console.error('⚠️ Could not resolve mission network:', attachment.missionId);
@@ -193,7 +193,7 @@ const SNetMail = () => {
   const resolveNetworkData = (attachment) => {
     if (attachment.missionId && !attachment.networkId) {
       const mission = getMissionById(attachment.missionId);
-      return mission?.network || attachment;
+      return mission?.networks?.[0] || attachment;
     }
     return attachment;
   };

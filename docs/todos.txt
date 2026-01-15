@@ -15,12 +15,19 @@ Then a new e2e test can be created to test the error above and iterate on this w
 Review the systems in place for handling missions and scripted events and objective tracking as I need to understand how to picture these systems and how best they should integrate with each other as the biggest issues have come from changes in these areas. Each system needs to have a role and individual responsibility so there's not internal variables being changed by external systems. It will then aid in writing test cases for each system.
 
 
+(planning)
 When the sabotage event happens and files are deleted, it should be deleting the log files that the player just repaired! Currently it's just adding log entries for non-existent files it's deleting.
 
 
+(done)
+The File Manager shows filesystems on the network even before the network scanner has scanned the network to discover those devices. The point of the network scanner is to discover devices on the network - in this tutorial mission, you are being shown that more devices can be discovered over time.
+
+
+(done)
 The Network Scanner is still showing "disconnected from network" even once you reconnect to the network.
 
 
+(done)
 At the end of the tutorial part 2 mission, when you are disconnected because you've finished the mission, the connection popup is showing 2 entries for disconnection (the message "Disconnecting from ClientA-Corporate due to access revocation" shows twice in the console).
 
 

@@ -12,6 +12,7 @@ const FileManager = () => {
   const completeBandwidthOperation = game.completeBandwidthOperation || (() => { });
   const narEntries = game.narEntries || [];
   const activeConnections = game.activeConnections || [];
+  const discoveredDevices = game.discoveredDevices || {};
   const fileClipboard = game.fileClipboard || { files: [], sourceFileSystemId: '', sourceNetworkId: '' };
   const setFileClipboard = game.setFileClipboard || (() => { });
   const updateFileSystemFiles = game.updateFileSystemFiles || (() => { });
@@ -252,16 +253,21 @@ const FileManager = () => {
   const availableFileSystems = [];
   activeConnections.forEach((connection) => {
     const narEntry = narEntries.find((entry) => entry.networkId === connection.networkId);
+    const discovered = discoveredDevices[connection.networkId] || new Set();
+
     if (narEntry && narEntry.fileSystems) {
       narEntry.fileSystems.forEach((fs) => {
-        availableFileSystems.push({
-          id: fs.id,
-          ip: fs.ip,
-          name: fs.name,
-          label: `${fs.ip} - ${fs.name}`,
-          files: fs.files || [],
-          networkId: narEntry.networkId,
-        });
+        // Only include filesystems whose IP has been discovered via Network Scanner
+        if (discovered.has(fs.ip)) {
+          availableFileSystems.push({
+            id: fs.id,
+            ip: fs.ip,
+            name: fs.name,
+            label: `${fs.ip} - ${fs.name}`,
+            files: fs.files || [],
+            networkId: narEntry.networkId,
+          });
+        }
       });
     }
   });
@@ -573,7 +579,11 @@ const FileManager = () => {
                 if (e.target.value) handleConnect(e.target.value);
               }}
             >
-              <option value="">Select File System</option>
+              <option value="">
+                {availableFileSystems.length === 0 && activeConnections.length > 0
+                  ? "Scan network to discover devices"
+                  : "Select File System"}
+              </option>
               {availableFileSystems.map((fs) => (
                 <option key={fs.id} value={fs.id}>
                   {fs.label}

@@ -341,7 +341,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await connectBtn.click();
 
         await expect(page.locator('text=Connecting').first()).toBeVisible({ timeout: 2000 });
-        await page.waitForTimeout(3200);
+        await expect(page.locator('button:has-text("Disconnect")')).toBeVisible({ timeout: 5000 });
 
         await expect(page.locator('text=Connected').first()).toBeVisible();
         await expect(page.locator('text=ClientA-Corporate').first()).toBeVisible();
@@ -780,7 +780,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await expect(connectBtn2).toBeEnabled();
         await connectBtn2.click();
 
-        await page.waitForTimeout(3200);
+        await expect(page.locator('button:has-text("Disconnect")')).toBeVisible({ timeout: 5000 });
 
         await expect(page.locator('text=Connected').first()).toBeVisible();
 
@@ -1077,6 +1077,8 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         // Verify message has body content
         const betterMsgBody = await page.locator('.message-body').textContent();
         expect(betterMsgBody.length).toBeGreaterThan(50);
+
+        await page.waitForTimeout(5000);
 
         // ========================================
         // STEP 26.5: Verify Procedural Missions Generated

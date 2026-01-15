@@ -15,6 +15,7 @@ describe('FileManager Component - Initial Rendering', () => {
     vi.spyOn(useGameModule, 'useGame').mockReturnValue({
       activeConnections: [],
       narEntries: [],
+      discoveredDevices: {},
       fileClipboard: { files: [], sourceFileSystemId: '', sourceNetworkId: '' },
       setFileClipboard: vi.fn(),
       setFileManagerConnections: vi.fn(),
@@ -81,6 +82,10 @@ describe('FileManager Component - Connected State', () => {
           }
         ]
       }],
+      // Mark IPs as discovered so filesystems appear
+      discoveredDevices: {
+        'test-network': new Set(['192.168.50.10', '192.168.50.20'])
+      },
       fileClipboard: { files: [], sourceFileSystemId: '', sourceNetworkId: '' },
       setFileClipboard: vi.fn(),
       setFileManagerConnections: vi.fn(),
@@ -149,6 +154,9 @@ describe('FileManager Component - Button States', () => {
           }
         ]
       }],
+      discoveredDevices: {
+        'test-network': new Set(['192.168.50.10'])
+      },
       fileClipboard: { files: [], sourceFileSystemId: '', sourceNetworkId: '' },
       setFileClipboard: vi.fn(),
       setFileManagerConnections: vi.fn(),
@@ -209,6 +217,9 @@ describe('FileManager Component - Button States', () => {
           }
         ]
       }],
+      discoveredDevices: {
+        'test-network': new Set(['192.168.50.10'])
+      },
       fileClipboard: {
         files: [{ name: 'newfile.txt', size: '1 KB', corrupted: false }],
         sourceFileSystemId: 'fs-other',
@@ -256,6 +267,9 @@ describe('FileManager Component - Repair UI', () => {
           }
         ]
       }],
+      discoveredDevices: {
+        'test-network': new Set(['192.168.50.10'])
+      },
       fileClipboard: { files: [], sourceFileSystemId: '', sourceNetworkId: '' },
       setFileClipboard: vi.fn(),
       setFileManagerConnections: vi.fn(),

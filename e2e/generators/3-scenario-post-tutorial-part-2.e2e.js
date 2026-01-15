@@ -6,7 +6,7 @@
  * 
  * Reading the "Better" message triggers procedural mission generation.
  * 
- * Starts from fresh-start scenario to skip initial setup.
+ * Starts from tutorial-part-1-prior-to-sabotage scenario to skip initial setup.
  * 
  * Run with: npm run generate:scenarios
  */
@@ -28,106 +28,34 @@ test.describe('Scenario Generator: Post Tutorial Complete', () => {
         };
 
         // ========================================
-        // STEP 1: Load fresh-start scenario
+        // STEP 1: Load tutorial-part-1-prior-to-sabotage scenario
         // ========================================
         await page.goto('/');
         await page.evaluate(() => localStorage.clear());
-        await page.goto('/?scenario=fresh-start');
+        await page.goto('/?scenario=tutorial-part-1-prior-to-sabotage');
         await expect(page.locator('.desktop')).toBeVisible({ timeout: 15000 });
         await page.waitForFunction(() => window.gameContext?.setSpecificTimeSpeed, { timeout: 10000 });
 
         // ========================================
-        // STEP 2: Install Mission Board and required software
+        // STEP 2: Trigger sabotage by repairing files
         // ========================================
-        await page.click('text=☰');
-        await page.click('text=OSNet Portal');
-        await page.click('button:has-text("Software")');
-        await page.waitForTimeout(200);
+        // Scenario loads with VPN disconnected and File Manager closed
+        // Need to reconnect and open File Manager to repair files
 
-        // Install Mission Board (already licensed)
-        await page.locator('button:has-text("Install")').first().click();
-        await setSpeed(100);
-        await page.waitForTimeout(300);
-        await setSpeed(1);
-
-        // Get software licenses from mail
-        await page.click('text=☰');
-        await page.click('text=SNet Mail');
-        const backBtn = page.locator('button:has-text("Back")');
-        if (await backBtn.isVisible()) await backBtn.click();
-
-        // Find and click software message
-        const softwareMsg = page.locator('.message-item:has-text("Mission Software")').first();
-        if (await softwareMsg.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await softwareMsg.click();
-            const licenseAttachments = page.locator('.attachment-item:has-text("Software License")');
-            const count = await licenseAttachments.count();
-            for (let i = 0; i < count; i++) {
-                await licenseAttachments.nth(i).click();
-                await page.waitForTimeout(50);
-            }
-        }
-
-        // Install all required software
-        await page.click('text=☰');
-        await page.click('text=OSNet Portal');
-        await page.click('button:has-text("Software")');
-        const softwareToInstall = ['VPN Client', 'Network Scanner', 'File Manager', 'Network Address Register'];
-        for (const software of softwareToInstall) {
-            const btn = page.locator(`.portal-item:has-text("${software}") button:has-text("Install")`).first();
-            if (await btn.count() > 0) await btn.click({ timeout: 2000 }).catch(() => { });
-        }
-        await setSpeed(100);
-        await page.waitForTimeout(1500);
-        await setSpeed(1);
-
-        // ========================================
-        // STEP 3: Accept Tutorial Part 1
-        // ========================================
-        await page.locator('.window:has(.window-header:has-text("OSNet Portal"))').locator('.window-controls button:has-text("×")').click();
-        await page.click('text=☰');
-        await page.click('.app-launcher-menu >> text=Mission Board');
-        await expect(page.locator('.window:has(.window-header:has-text("Mission Board"))')).toBeVisible({ timeout: 5000 });
-        await page.waitForTimeout(500);
-
-        const missionCard = page.locator('.mission-card:has-text("Log File Repair")');
-        await expect(missionCard).toBeVisible({ timeout: 5000 });
-        await missionCard.locator('.accept-mission-btn').click();
-
-        // Get network credentials
-        await setSpeed(100);
-        await page.waitForTimeout(100);
-        await setSpeed(1);
-        await page.click('text=☰');
-        await page.click('.app-launcher-menu >> text=SNet Mail');
-        if (await page.locator('button:has-text("Back")').isVisible()) await page.click('button:has-text("Back")');
-        await page.locator('.message-item:has-text("ClientA")').first().click();
-        await page.locator('[data-testid^="network-attachment-"]').first().click();
-
-        // ========================================
-        // STEP 4: Complete Tutorial Part 1 (connect, scan, repair)
-        // ========================================
+        // Connect to VPN
         await page.click('text=☰');
         await page.click('.app-launcher-menu >> text=VPN Client');
         await page.locator('.network-dropdown').selectOption('clienta-corporate');
         await page.click('button:has-text("Connect")');
-        await page.waitForTimeout(3200);
+        await expect(page.locator('button:has-text("Disconnect")')).toBeVisible({ timeout: 5000 });
 
-        await page.click('text=☰');
-        await page.click('.app-launcher-menu >> text=Network Scanner');
-        const scanner = page.locator('.window:has(.window-header:has-text("Network Scanner"))');
-        await scanner.locator('label:has-text("Network:") select').selectOption('clienta-corporate');
-        await scanner.locator('button:has-text("Scan")').click();
-        await setSpeed(100);
-        await page.waitForTimeout(300);
-        await setSpeed(1);
-
+        // Open File Manager and select server
         await page.click('text=☰');
         await page.click('.app-launcher-menu >> text=File Manager');
         await page.locator('.window:has(.window-header:has-text("File Manager"))').locator('select').selectOption('fs-clienta-01');
         await page.waitForTimeout(500);
 
-        // Repair all files
+        // Select all corrupted files
         const fileItems = page.locator('.window:has(.window-header:has-text("File Manager"))').locator('.file-corrupted');
         for (let i = 0; i < 8; i++) {
             await fileItems.nth(i).click();
@@ -140,21 +68,21 @@ test.describe('Scenario Generator: Post Tutorial Complete', () => {
 
         // Wait for forced disconnect overlay (sabotage will trigger after repair)
         const forcedDisconnectOverlay = page.locator('.forced-disconnect-overlay');
-        await expect(forcedDisconnectOverlay).toBeVisible({ timeout: 30000 });
+        await expect(forcedDisconnectOverlay).toBeVisible({ timeout: 40000 });
         await page.locator('.acknowledge-btn').click();
         await expect(forcedDisconnectOverlay).not.toBeVisible({ timeout: 2000 });
 
         await setSpeed(1);
 
         // ========================================
-        // STEP 5: Wait for Mission Failure
+        // STEP 3: Wait for Mission Failure
         // ========================================
         await setSpeed(100);
         await page.waitForTimeout(2000);
         await setSpeed(1);
 
         // ========================================
-        // STEP 6: Accept Tutorial Part 2
+        // STEP 4: Accept Tutorial Part 2
         // ========================================
         await page.click('text=☰');
         await page.click('.app-launcher-menu >> text=Mission Board');
@@ -177,42 +105,29 @@ test.describe('Scenario Generator: Post Tutorial Complete', () => {
         // Find the NEW network credentials message (tutorial-part-2)
         console.log('Looking for Updated Network Access message...');
         const networkUpdateMsg = page.locator('.message-item:has-text("Updated Network Access"), .message-item:has-text("Backup Server")').first();
-        const foundNetworkMsg = await networkUpdateMsg.isVisible({ timeout: 2000 }).catch(() => false);
-        console.log('Found network update message:', foundNetworkMsg);
-
-        if (foundNetworkMsg) {
-            await networkUpdateMsg.click();
-        } else {
-            // Fallback to unread message
-            console.log('Falling back to unread message');
-            const unreadMsg = page.locator('.message-item.unread').first();
-            await unreadMsg.click();
-        }
+        await expect(networkUpdateMsg).toBeVisible({ timeout: 10000 });
+        console.log('Found network update message');
+        await networkUpdateMsg.click();
         await page.waitForTimeout(200);
 
         // Check if network attachment is clickable (not disabled/used)
         const networkAttachment = page.locator('[data-testid^="network-attachment-"]:not(.disabled)').first();
-        const attachmentVisible = await networkAttachment.isVisible({ timeout: 2000 }).catch(() => false);
-        console.log('Network attachment visible:', attachmentVisible);
-
-        if (attachmentVisible) {
-            const attachmentClass = await networkAttachment.getAttribute('class');
-            console.log('Network attachment class:', attachmentClass);
-            await networkAttachment.click();
-            await page.waitForTimeout(500); // Wait for NAR entry to be updated
-            console.log('Clicked network attachment');
-        } else {
-            throw new Error('Network attachment not found in message');
-        }
+        await expect(networkAttachment).toBeVisible({ timeout: 5000 });
+        console.log('Network attachment visible');
+        const attachmentClass = await networkAttachment.getAttribute('class');
+        console.log('Network attachment class:', attachmentClass);
+        await networkAttachment.click();
+        await page.waitForTimeout(500); // Wait for NAR entry to be updated
+        console.log('Clicked network attachment');
 
         // ========================================
-        // STEP 7: Complete Part 2 (reconnect, scan, copy files)
+        // STEP 5: Complete Part 2 (reconnect, scan, copy files)
         // ========================================
         await page.click('text=☰');
         await page.click('.app-launcher-menu >> text=VPN Client');
         await page.locator('.network-dropdown').selectOption('clienta-corporate');
         await page.click('button:has-text("Connect")');
-        await page.waitForTimeout(3200);
+        await expect(page.locator('button:has-text("Disconnect")')).toBeVisible({ timeout: 5000 });
 
         await page.click('text=☰');
         await page.click('.app-launcher-menu >> text=Network Scanner');
@@ -276,7 +191,7 @@ test.describe('Scenario Generator: Post Tutorial Complete', () => {
         await setSpeed(1);
 
         // ========================================
-        // STEP 8: Complete verification objective and wait for "Better" message
+        // STEP 6: Complete verification objective and wait for "Better" message
         // ========================================
         // Close all windows
         await page.evaluate(() => {
@@ -312,7 +227,7 @@ test.describe('Scenario Generator: Post Tutorial Complete', () => {
         await page.waitForTimeout(100);
 
         // ========================================
-        // STEP 9: Open Mail and verify "Better" message exists but don't read it
+        // STEP 7: Open Mail and verify "Better" message exists but don't read it
         // ========================================
         await page.click('text=☰');
         await page.click('.app-launcher-menu >> text=SNet Mail');
@@ -334,7 +249,7 @@ test.describe('Scenario Generator: Post Tutorial Complete', () => {
         console.log('✅ "Better" message is unread');
 
         // ========================================
-        // STEP 10: Save the game state
+        // STEP 8: Save the game state
         // ========================================
         // Close all windows
         await page.evaluate(() => {
@@ -352,7 +267,7 @@ test.describe('Scenario Generator: Post Tutorial Complete', () => {
         await page.waitForTimeout(5000);
 
         // ========================================
-        // STEP 11: Extract and Write Fixture
+        // STEP 9: Extract and Write Fixture
         // ========================================
         const saveData = await page.evaluate(() => {
             const saves = JSON.parse(localStorage.getItem('sourcenet_saves') || '{}');

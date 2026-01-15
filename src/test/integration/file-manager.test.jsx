@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { GameProvider } from '../../contexts/GameContext';
 import { useGame } from '../../contexts/useGame';
 import FileManager from '../../components/apps/FileManager';
+import NetworkScanner from '../../components/apps/NetworkScanner';
 import VPNClient from '../../components/apps/VPNClient';
 import TopBar from '../../components/ui/TopBar';
 import Desktop from '../../components/ui/Desktop';
@@ -30,6 +31,29 @@ const GameLoader = ({ username }) => {
     return null;
 };
 
+// Helper function to perform network scan
+async function performNetworkScan(user, networkId, scanType = 'deep') {
+    // Select the network
+    const networkSelect = screen.getByRole('combobox', { name: /network/i });
+    await user.selectOptions(networkSelect, networkId);
+
+    // Select scan type
+    const scanTypeSelect = screen.getByRole('combobox', { name: /scan type/i });
+    await user.selectOptions(scanTypeSelect, scanType);
+
+    // Start scan
+    const scanButton = screen.getByRole('button', { name: /start scan/i });
+    await user.click(scanButton);
+
+    // Wait for scan to complete
+    await waitFor(
+        () => {
+            expect(screen.queryByText(/scanning/i)).not.toBeInTheDocument();
+        },
+        { timeout: 10000 }
+    );
+}
+
 describe('File Manager Integration', () => {
     beforeEach(() => {
         localStorage.clear();
@@ -50,7 +74,7 @@ describe('File Manager Integration', () => {
         expect(screen.queryByText('Select File System')).not.toBeInTheDocument();
     });
 
-    it('should display file systems from connected network', async () => {
+    it('should display file systems from connected network after scanning', async () => {
         const user = userEvent.setup();
 
         // Create network with two file systems
@@ -90,6 +114,8 @@ describe('File Manager Integration', () => {
                         address: network.address,
                     },
                 ],
+                // Explicitly set empty discoveredDevices to test scanning flow
+                discoveredDevices: {},
             },
         });
 
@@ -99,24 +125,41 @@ describe('File Manager Integration', () => {
             <GameProvider>
                 <GameLoader username="test_user" />
                 <TopBar />
+                <NetworkScanner />
                 <FileManager />
             </GameProvider>
         );
 
-        // Wait for game to load by checking TopBar renders (like software-license test does)
+        // Wait for game to load by checking TopBar renders
         await waitFor(() => {
             const topBarCredits = screen.getByTitle('Click to open Banking App');
             expect(topBarCredits).toHaveTextContent(/credits/);
         });
 
-        // Now check for specific file system option
-        const select = screen.getByRole('combobox');
-        expect(select).toHaveTextContent(/192\.168\.50\.10/);
+        // FileManager should show "Scan network to discover devices" before scan
+        const fileManagerSelect = screen.getAllByRole('combobox').find(select =>
+            select.textContent.includes('Scan network to discover devices')
+        );
+        expect(fileManagerSelect).toBeDefined();
+        expect(fileManagerSelect.textContent).toContain('Scan network to discover devices');
 
-        // Should not show empty state
-        expect(screen.queryByText(/Not connected to any networks/i)).not.toBeInTheDocument();
+        // Perform network scan
+        await performNetworkScan(user, 'corp-net-1');
+
+        // Now file systems should appear in FileManager dropdown
+        await waitFor(() => {
+            const select = screen.getAllByRole('combobox').find(s =>
+                s.textContent.includes('192.168.50.10')
+            );
+            expect(select).toBeDefined();
+            expect(select.textContent).toContain('192.168.50.10');
+            expect(select.textContent).toContain('192.168.50.20');
+        });
 
         // Select first file system
+        const select = screen.getAllByRole('combobox').find(s =>
+            s.textContent.includes('192.168.50.10')
+        );
         await user.selectOptions(select, 'fs-001');
 
         // Files from that file system should be displayed
@@ -1494,4 +1537,97 @@ describe('File Manager Integration', () => {
         const fileItemsInSecond = secondFM.querySelectorAll('.file-item');
         expect(fileItemsInSecond.length).toBe(2);
     }, 25000);
+
+    it('should load discovered devices from saved game state', async () => {
+        const user = userEvent.setup({ delay: null });
+
+        // Create network with file systems
+        const network = createNetworkWithFileSystem({
+            networkId: 'corp-net-1',
+            networkName: 'Corporate Network',
+            address: '192.168.50.0/24',
+            fileSystems: [
+                {
+                    id: 'fs-001',
+                    ip: '192.168.50.10',
+                    name: 'fileserver-01',
+                    files: [
+                        { name: 'document.txt', size: '5 KB', corrupted: false },
+                    ],
+                },
+                {
+                    id: 'fs-002',
+                    ip: '192.168.50.20',
+                    name: 'backup-server',
+                    files: [
+                        { name: 'backup.zip', size: '100 MB', corrupted: false },
+                    ],
+                },
+            ],
+        });
+
+        const saveState = createCompleteSaveState({
+            username: 'test_user',
+            overrides: {
+                narEntries: [network],
+                activeConnections: [
+                    {
+                        networkId: network.networkId,
+                        networkName: network.networkName,
+                        address: network.address,
+                    },
+                ],
+                // Simulate previously discovered devices (as arrays for save format)
+                discoveredDevices: {
+                    'corp-net-1': ['192.168.50.10', '192.168.50.20']
+                },
+            },
+        });
+
+        setSaveInLocalStorage('test_user', saveState);
+
+        render(
+            <GameProvider>
+                <GameLoader username="test_user" />
+                <TopBar />
+                <FileManager />
+            </GameProvider>
+        );
+
+        // Wait for game to load
+        await waitFor(() => {
+            const topBarCredits = screen.getByTitle('Click to open Banking App');
+            expect(topBarCredits).toHaveTextContent(/credits/);
+        });
+
+        // File systems should be immediately available (no scan needed)
+        await waitFor(() => {
+            const select = screen.getAllByRole('combobox').find(s =>
+                s.textContent.includes('192.168.50.10')
+            );
+            expect(select).toBeDefined();
+            expect(select.textContent).toContain('192.168.50.10 - fileserver-01');
+            expect(select.textContent).toContain('192.168.50.20 - backup-server');
+        });
+
+        // Select first file system
+        const select = screen.getAllByRole('combobox').find(s =>
+            s.textContent.includes('192.168.50.10')
+        );
+        await user.selectOptions(select, 'fs-001');
+
+        // Verify files are accessible
+        await waitFor(() => {
+            expect(screen.getByText('document.txt')).toBeInTheDocument();
+            expect(screen.getByText('5 KB')).toBeInTheDocument();
+        });
+
+        // Switch to second filesystem
+        await user.selectOptions(select, 'fs-002');
+
+        await waitFor(() => {
+            expect(screen.getByText('backup.zip')).toBeInTheDocument();
+            expect(screen.getByText('100 MB')).toBeInTheDocument();
+        });
+    }, 15000);
 });

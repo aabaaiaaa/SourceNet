@@ -281,6 +281,20 @@ export function createCompleteSaveState({
     software = STARTING_SOFTWARE,
     overrides = {},
 } = {}) {
+    // Use narEntries from overrides if provided, otherwise use parameter
+    const finalNarEntries = overrides.narEntries || narEntries;
+
+    // Auto-populate discoveredDevices from narEntries unless explicitly overridden
+    let discoveredDevices = {};
+    if (!overrides.discoveredDevices) {
+        // Extract all filesystem IPs from NAR entries and mark them as discovered
+        finalNarEntries.forEach(nar => {
+            if (nar.fileSystems && nar.fileSystems.length > 0) {
+                discoveredDevices[nar.networkId] = nar.fileSystems.map(fs => fs.ip);
+            }
+        });
+    }
+
     return {
         username,
         playerMailId: `${username}@sourcenet.local`,
@@ -298,6 +312,8 @@ export function createCompleteSaveState({
         completedMissions: [],
         transactions,
         ...overrides,
+        // Apply discoveredDevices after overrides, but only if not already in overrides
+        discoveredDevices: overrides.discoveredDevices || discoveredDevices,
     };
 }
 

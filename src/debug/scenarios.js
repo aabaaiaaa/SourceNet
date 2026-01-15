@@ -106,6 +106,7 @@ export const loadScenario = (scenarioId, gameContext) => {
     gameContext.setNarEntries(fixture.narEntries ?? []);
     gameContext.setActiveConnections(fixture.activeConnections ?? []);
     gameContext.setLastScanResults(fixture.lastScanResults ?? null);
+    gameContext.setDiscoveredDevices(fixture.discoveredDevices ?? {});
     gameContext.setFileManagerConnections(fixture.fileManagerConnections ?? []);
     gameContext.setLastFileOperation(fixture.lastFileOperation ?? null);
     gameContext.setDownloadQueue(fixture.downloadQueue ?? []);

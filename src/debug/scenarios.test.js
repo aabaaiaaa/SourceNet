@@ -108,6 +108,7 @@ function createMockContext() {
     setNarEntries: vi.fn(),
     setActiveConnections: vi.fn(),
     setLastScanResults: vi.fn(),
+    setDiscoveredDevices: vi.fn(),
     setFileManagerConnections: vi.fn(),
     setLastFileOperation: vi.fn(),
     setDownloadQueue: vi.fn(),

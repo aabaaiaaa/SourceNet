@@ -103,11 +103,9 @@ export const GameProvider = ({ children }) => {
       // Functional update - wrap to log the actual value
       setActiveMissionRaw((prev) => {
         const newValue = valueOrUpdater(prev);
-        console.log(`🎯 setActiveMission (functional) called: prev=${prev?.missionId || 'null'} -> new=${newValue?.missionId || 'null'}`);
         return newValue;
       });
     } else {
-      console.log(`🎯 setActiveMission called with:`, valueOrUpdater === null ? 'null' : valueOrUpdater?.missionId || 'unknown');
       setActiveMissionRaw(valueOrUpdater);
     }
   }, []);
@@ -119,6 +117,7 @@ export const GameProvider = ({ children }) => {
   const [narEntries, setNarEntries] = useState([]); // Network Address Register entries
   const [activeConnections, setActiveConnections] = useState([]); // Currently connected networks
   const [lastScanResults, setLastScanResults] = useState(null); // Last network scan results
+  const [discoveredDevices, setDiscoveredDevices] = useState({}); // Map of networkId -> Set of discovered IPs
   const [fileManagerConnections, setFileManagerConnections] = useState([]); // Active File Manager connections
   const [lastFileOperation, setLastFileOperation] = useState(null); // Last file operation completed
   const [missionFileOperations, setMissionFileOperations] = useState({}); // Cumulative file operations for current mission {repair: 5, copy: 3}
@@ -472,6 +471,18 @@ export const GameProvider = ({ children }) => {
       // Will be handled when message is marked as read
     }
   }, [currentTime]);
+
+  // Add discovered devices from network scan
+  const addDiscoveredDevices = useCallback((networkId, ips) => {
+    setDiscoveredDevices((prev) => {
+      const existingIps = prev[networkId] || new Set();
+      const updatedIps = new Set([...existingIps, ...ips]);
+      return {
+        ...prev,
+        [networkId]: updatedIps,
+      };
+    });
+  }, []);
 
   // Update message (for attachment activation, etc.)
   const updateMessage = useCallback((messageId, updates) => {
@@ -863,62 +874,65 @@ export const GameProvider = ({ children }) => {
     // Remove the accepted mission from available missions
     setAvailableMissions(prev => prev.filter(m => m.missionId !== mission.missionId));
 
-    // If mission has network file systems, add them to the NAR entry
-    if (mission.network && mission.network.fileSystems && Array.isArray(mission.network.fileSystems)) {
-      const networkId = mission.network.networkId;
+    // If mission has networks with file systems, add them to NAR entries
+    const networksWithFileSystems = mission.networks?.filter(net => net.fileSystems && Array.isArray(net.fileSystems)) || [];
 
-      setNarEntries(prev => {
-        const existingEntry = prev.find(entry => entry.networkId === networkId);
+    if (networksWithFileSystems.length > 0) {
+      networksWithFileSystems.forEach(network => {
+        const networkId = network.networkId;
 
-        if (existingEntry) {
-          // Merge file systems into existing entry
-          const updatedEntries = prev.map(entry => {
-            if (entry.networkId === networkId) {
-              // Merge file systems, updating existing ones by id
-              const existingFileSystems = entry.fileSystems || [];
-              const newFileSystems = mission.network.fileSystems;
+        setNarEntries(prev => {
+          const existingEntry = prev.find(entry => entry.networkId === networkId);
 
-              const mergedFileSystems = [...existingFileSystems];
-              newFileSystems.forEach(newFs => {
-                const existingIndex = mergedFileSystems.findIndex(fs => fs.id === newFs.id);
-                if (existingIndex !== -1) {
-                  // Merge files: mission files overwrite duplicates, preserve non-conflicting user files
-                  const existingFiles = mergedFileSystems[existingIndex].files || [];
-                  const missionFiles = newFs.files || [];
+          if (existingEntry) {
+            // Merge file systems into existing entry
+            const updatedEntries = prev.map(entry => {
+              if (entry.networkId === networkId) {
+                // Merge file systems, updating existing ones by id
+                const existingFileSystems = entry.fileSystems || [];
+                const newFileSystems = network.fileSystems;
 
-                  // Start with existing files, then overwrite/add mission files
-                  const mergedFiles = [...existingFiles];
-                  missionFiles.forEach(missionFile => {
-                    const existingFileIndex = mergedFiles.findIndex(f => f.name === missionFile.name);
-                    if (existingFileIndex !== -1) {
-                      // Overwrite existing file with mission file (all properties)
-                      mergedFiles[existingFileIndex] = { ...missionFile };
-                    } else {
-                      // Add new mission file
-                      mergedFiles.push({ ...missionFile });
-                    }
-                  });
+                const mergedFileSystems = [...existingFileSystems];
+                newFileSystems.forEach(newFs => {
+                  const existingIndex = mergedFileSystems.findIndex(fs => fs.id === newFs.id);
+                  if (existingIndex !== -1) {
+                    // Merge files: mission files overwrite duplicates, preserve non-conflicting user files
+                    const existingFiles = mergedFileSystems[existingIndex].files || [];
+                    const missionFiles = newFs.files || [];
 
-                  mergedFileSystems[existingIndex] = { ...newFs, files: mergedFiles };
-                } else {
-                  // Add new file system
-                  mergedFileSystems.push(newFs);
-                }
-              });
+                    // Start with existing files, then overwrite/add mission files
+                    const mergedFiles = [...existingFiles];
+                    missionFiles.forEach(missionFile => {
+                      const existingFileIndex = mergedFiles.findIndex(f => f.name === missionFile.name);
+                      if (existingFileIndex !== -1) {
+                        // Overwrite existing file with mission file (all properties)
+                        mergedFiles[existingFileIndex] = { ...missionFile };
+                      } else {
+                        // Add new mission file
+                        mergedFiles.push({ ...missionFile });
+                      }
+                    });
 
-              return {
-                ...entry,
-                fileSystems: mergedFileSystems,
-              };
-            }
-            return entry;
-          });
+                    mergedFileSystems[existingIndex] = { ...newFs, files: mergedFiles };
+                  } else {
+                    // Add new file system
+                    mergedFileSystems.push(newFs);
+                  }
+                });
 
-          console.log(`✅ Merged ${mission.network.fileSystems.length} file systems into NAR entry for ${networkId}`);
-          return updatedEntries;
-        }
+                return {
+                  ...entry,
+                  fileSystems: mergedFileSystems,
+                };
+              }
+              return entry;
+            });
 
-        return prev;
+            return updatedEntries;
+          }
+
+          return prev;
+        });
       });
     }
   }, [currentTime]);
@@ -947,16 +961,13 @@ export const GameProvider = ({ children }) => {
 
   // Complete mission (success or failure)
   const completeMission = useCallback((status, payout, reputationChange, failureReason = null) => {
-    console.log(`🏁 completeMission called: status=${status}, activeMission=${activeMission?.missionId}`);
     if (!activeMission) {
-      console.log('⚠️ No active mission to complete');
       return;
     }
 
     // Guard against double completion - check if mission was already completed
     const missionId = activeMission.missionId || activeMission.id;
     if (failedMissionsRef.current.has(missionId + '-completed')) {
-      console.log(`⚠️ Mission ${missionId} completion already processed - skipping duplicate`);
       return;
     }
     failedMissionsRef.current.add(missionId + '-completed');
@@ -997,7 +1008,6 @@ export const GameProvider = ({ children }) => {
 
     // Clear active mission
     setActiveMission(null);
-    console.log(`✅ Active mission cleared, setting to null`);
 
     // Emit missionComplete event for mission system
     triggerEventBus.emit('missionComplete', {
@@ -1019,7 +1029,6 @@ export const GameProvider = ({ children }) => {
         });
 
         if (paymentMessage) {
-          console.log(`💰 Sending payment message from ${activeMission.client} for ${payout} credits`);
           addMessage(paymentMessage);
         }
       }, 3000, timeSpeed);
@@ -1028,7 +1037,6 @@ export const GameProvider = ({ children }) => {
       setBankAccounts(prev => {
         return prev.map((account, index) => {
           if (index === 0) {
-            console.log(`BALANCE_LOG completeMission penalty: ${account.balance} + ${payout} = ${account.balance + payout}`);
             return { ...account, balance: account.balance + payout };
           }
           return account;
@@ -1039,49 +1047,44 @@ export const GameProvider = ({ children }) => {
     // Update reputation
     setReputation(prev => Math.max(1, Math.min(11, prev + reputationChange)));
 
-    // Schedule NAR entry revocation if mission has revokeOnComplete
-    if (activeMission.network?.revokeOnComplete) {
-      const networkId = activeMission.network.networkId;
-      const networkName = activeMission.network.networkName || networkId;
-      const revokeReason = activeMission.network.revokeReason || 'Mission access expired';
+    // Revoke NAR entries and disconnect if mission has networks with revokeOnComplete
+    const networksToRevoke = activeMission.networks?.filter(network => network.revokeOnComplete) || [];
 
-      console.log(`🔒 Scheduling NAR revocation for ${networkId} in 5 seconds (game time)`);
+    if (networksToRevoke.length > 0) {
+      // Revoke all NAR entries for these networks
+      setNarEntries(prev => prev.map(entry => {
+        const networkToRevoke = networksToRevoke.find(net => net.networkId === entry.networkId);
+        if (networkToRevoke) {
+          return {
+            ...entry,
+            authorized: false,
+            revokedReason: networkToRevoke.revokeReason || 'Mission access expired',
+          };
+        }
+        return entry;
+      }));
 
-      scheduleGameTimeCallback(() => {
-        console.log(`🔒 Revoking NAR entry for ${networkId}`);
-
-        // Revoke the NAR entry
-        setNarEntries(prev => prev.map(entry => {
-          if (entry.networkId === networkId) {
-            return {
-              ...entry,
-              authorized: false,
-              revokedReason: revokeReason,
-            };
-          }
-          return entry;
-        }));
-
-        // Disconnect any active VPN connection to this network
-        setActiveConnections(prev => {
-          const wasConnected = prev.some(conn => conn.networkId === networkId);
-          if (wasConnected) {
-            console.log(`📡 Disconnecting from ${networkName} due to access revocation`);
+      // Disconnect from all revoked networks and emit events
+      setActiveConnections(prev => {
+        const updatedConnections = prev.filter(conn => {
+          const networkToRevoke = networksToRevoke.find(net => net.networkId === conn.networkId);
+          if (networkToRevoke) {
             // Emit networkDisconnected event for TopBar notification
-            // Use queueMicrotask to defer emission until after render completes
             queueMicrotask(() => {
               triggerEventBus.emit('networkDisconnected', {
-                networkId,
-                networkName,
-                reason: revokeReason,
+                networkId: networkToRevoke.networkId,
+                networkName: networkToRevoke.networkName || networkToRevoke.networkId,
+                reason: networkToRevoke.revokeReason || 'Mission access expired',
               });
             });
+            return false; // Remove this connection
           }
-          return prev.filter(conn => conn.networkId !== networkId);
+          return true; // Keep this connection
         });
-      }, 5000, timeSpeed);
+        return updatedConnections;
+      });
     }
-  }, [activeMission, currentTime, completedMissions, bankAccounts, timeSpeed]);
+  }, [activeMission, currentTime, bankAccounts, timeSpeed]);
 
   // Keep completeMissionRef updated
   useEffect(() => {
@@ -1506,7 +1509,7 @@ export const GameProvider = ({ children }) => {
   // Listen for forced network disconnect
   useEffect(() => {
     const handleForceNetworkDisconnect = (data) => {
-      const { networkId, reason } = data;
+      const { networkId } = data;
       console.log(`🔌 Force disconnecting from network: ${networkId}`);
 
       // Remove active connections matching the network ID or name
@@ -1689,6 +1692,12 @@ export const GameProvider = ({ children }) => {
       narEntries,
       activeConnections,
       lastScanResults,
+      discoveredDevices: Object.fromEntries(
+        Object.entries(discoveredDevices).map(([networkId, ipSet]) => [
+          networkId,
+          Array.from(ipSet)
+        ])
+      ),
       fileManagerConnections,
       lastFileOperation,
       downloadQueue,
@@ -1716,7 +1725,7 @@ export const GameProvider = ({ children }) => {
     saveToLocalStorage(username, gameState, saveName);
   }, [username, playerMailId, currentTime, hardware, software, bankAccounts, messages, managerName, windows,
     reputation, reputationCountdown, activeMission, completedMissions, availableMissions, missionCooldowns,
-    narEntries, activeConnections, lastScanResults, fileManagerConnections, lastFileOperation,
+    narEntries, activeConnections, lastScanResults, discoveredDevices, fileManagerConnections, lastFileOperation,
     downloadQueue, transactions, licensedSoftware, bankruptcyCountdown, lastInterestTime, bankingMessagesSent, reputationMessagesSent,
     proceduralMissionsEnabled, missionPool, pendingChainMissions, activeClientIds, clientStandings, extensionOffers]);
 
@@ -1791,11 +1800,12 @@ export const GameProvider = ({ children }) => {
     setClientStandings({});
     setExtensionOffers({});
 
-    // Check if should skip boot (E2E tests)
+    // Check if should skip boot (E2E tests or scenarios)
     const urlParams = new URLSearchParams(window.location.search);
     const skipBoot = urlParams.get('skipBoot') === 'true';
+    const hasScenario = urlParams.get('scenario');
 
-    if (skipBoot) {
+    if (skipBoot || hasScenario) {
       setGamePhase('username'); // Skip boot, go to username selection for new game
     } else {
       setGamePhase('boot'); // Normal boot sequence
@@ -1828,6 +1838,16 @@ export const GameProvider = ({ children }) => {
     setNarEntries(gameState.narEntries ?? []);
     setActiveConnections(gameState.activeConnections ?? []);
     setLastScanResults(gameState.lastScanResults ?? null);
+    setDiscoveredDevices(
+      gameState.discoveredDevices
+        ? Object.fromEntries(
+          Object.entries(gameState.discoveredDevices).map(([networkId, ips]) => [
+            networkId,
+            new Set(ips)
+          ])
+        )
+        : {}
+    );
     setFileManagerConnections(gameState.fileManagerConnections ?? []);
     setLastFileOperation(gameState.lastFileOperation ?? null);
     setDownloadQueue(gameState.downloadQueue ?? []);
@@ -1897,11 +1917,12 @@ export const GameProvider = ({ children }) => {
 
     setTimeSpeed(TIME_SPEEDS.NORMAL); // Always reset to 1x
 
-    // Check if should skip boot (E2E tests)
+    // Check if should skip boot (E2E tests or scenarios)
     const urlParams = new URLSearchParams(window.location.search);
     const skipBoot = urlParams.get('skipBoot') === 'true';
+    const hasScenario = urlParams.get('scenario');
 
-    if (skipBoot) {
+    if (skipBoot || hasScenario) {
       setGamePhase('desktop'); // Skip boot, go straight to desktop
     } else {
       setGamePhase('boot'); // Normal boot sequence
@@ -1961,6 +1982,9 @@ export const GameProvider = ({ children }) => {
     setActiveConnections,
     lastScanResults,
     setLastScanResults,
+    discoveredDevices,
+    setDiscoveredDevices,
+    addDiscoveredDevices,
     fileManagerConnections,
     setFileManagerConnections,
     lastFileOperation,
@@ -1975,6 +1999,10 @@ export const GameProvider = ({ children }) => {
     setBankruptcyCountdown,
     lastInterestTime,
     setLastInterestTime,
+    bankingMessagesSent,
+    setBankingMessagesSent,
+    reputationMessagesSent,
+    setReputationMessagesSent,
     autoTrackingEnabled,
     setAutoTrackingEnabled,
     bandwidthOperations,

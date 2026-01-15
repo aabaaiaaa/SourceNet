@@ -6,11 +6,12 @@ const Rebooting = () => {
   const { setGamePhase } = useGame();
 
   useEffect(() => {
-    // Check for skipBoot parameter (E2E tests)
+    // Check for skipBoot parameter or scenario (E2E tests)
     const urlParams = new URLSearchParams(window.location.search);
     const skipBoot = urlParams.get('skipBoot') === 'true';
+    const hasScenario = urlParams.get('scenario');
 
-    if (skipBoot) {
+    if (skipBoot || hasScenario) {
       // Skip straight to desktop on reboot (E2E tests)
       setGamePhase('desktop');
       return;

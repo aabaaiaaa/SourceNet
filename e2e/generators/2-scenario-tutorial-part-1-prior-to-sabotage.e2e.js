@@ -31,6 +31,14 @@ test.setTimeout(180000);
 
 test.describe('Scenario Generator: Tutorial Part 1 - Prior to Sabotage', () => {
     test('generate scenario ready to trigger sabotage', async ({ page }) => {
+        // Listen for console to debug
+        page.on('console', msg => {
+            const text = msg.text();
+            if (text.includes('📋') || text.includes('Scenario')) {
+                console.log('BROWSER:', text);
+            }
+        });
+
         const setSpeed = async (speed) => {
             await page.evaluate((s) => window.gameContext.setSpecificTimeSpeed(s), speed);
         };
@@ -39,7 +47,10 @@ test.describe('Scenario Generator: Tutorial Part 1 - Prior to Sabotage', () => {
         // STEP 1: Load fresh-start scenario
         // ========================================
         await page.goto('/');
-        await page.evaluate(() => localStorage.clear());
+        await page.evaluate(() => {
+            localStorage.clear();
+            sessionStorage.clear();
+        });
         await page.goto('/?scenario=fresh-start');
         await expect(page.locator('.desktop')).toBeVisible({ timeout: 15000 });
         await page.waitForFunction(() => window.gameContext?.setSpecificTimeSpeed, { timeout: 10000 });
@@ -64,16 +75,17 @@ test.describe('Scenario Generator: Tutorial Part 1 - Prior to Sabotage', () => {
         const backBtn = page.locator('button:has-text("Back")');
         if (await backBtn.isVisible()) await backBtn.click();
 
-        // Find and click software message
+        // Wait for story event message to arrive (5s delay + processing time)
         const softwareMsg = page.locator('.message-item:has-text("Mission Software")').first();
-        if (await softwareMsg.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await softwareMsg.click();
-            const licenseAttachments = page.locator('.attachment-item:has-text("Software License")');
-            const count = await licenseAttachments.count();
-            for (let i = 0; i < count; i++) {
-                await licenseAttachments.nth(i).click();
-                await page.waitForTimeout(50);
-            }
+        await expect(softwareMsg).toBeVisible({ timeout: 10000 });
+        await softwareMsg.click();
+
+        const licenseAttachments = page.locator('.attachment-item:has-text("Software License")');
+        const count = await licenseAttachments.count();
+        expect(count).toBeGreaterThan(0);
+        for (let i = 0; i < count; i++) {
+            await licenseAttachments.nth(i).click();
+            await page.waitForTimeout(50);
         }
 
         // Install all required software
@@ -83,7 +95,8 @@ test.describe('Scenario Generator: Tutorial Part 1 - Prior to Sabotage', () => {
         const softwareToInstall = ['VPN Client', 'Network Scanner', 'File Manager', 'Network Address Register'];
         for (const software of softwareToInstall) {
             const btn = page.locator(`.portal-item:has-text("${software}") button:has-text("Install")`).first();
-            if (await btn.count() > 0) await btn.click({ timeout: 2000 }).catch(() => { });
+            await expect(btn).toBeVisible({ timeout: 5000 });
+            await btn.click();
         }
         await setSpeed(100);
         await page.waitForTimeout(1500);
@@ -119,7 +132,7 @@ test.describe('Scenario Generator: Tutorial Part 1 - Prior to Sabotage', () => {
         await page.click('.app-launcher-menu >> text=VPN Client');
         await page.locator('.network-dropdown').selectOption('clienta-corporate');
         await page.click('button:has-text("Connect")');
-        await page.waitForTimeout(3200);
+        await expect(page.locator('button:has-text("Disconnect")')).toBeVisible({ timeout: 5000 });
 
         await page.click('text=☰');
         await page.click('.app-launcher-menu >> text=Network Scanner');
@@ -164,6 +177,7 @@ test.describe('Scenario Generator: Tutorial Part 1 - Prior to Sabotage', () => {
         await page.locator('.window:has(.window-header:has-text("File Manager"))').locator('.window-controls button:last-child').click();
         await page.waitForTimeout(200);
         console.log('✅ Closed all windows');
+
         // Sleep to save
         page.once('dialog', async (dialog) => dialog.accept());
         await page.hover('text=⏻');

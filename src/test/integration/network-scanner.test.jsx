@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GameProvider } from '../../contexts/GameContext';
 import { useGame } from '../../contexts/useGame';
@@ -657,7 +657,7 @@ describe('Network Scanner Integration', () => {
 
         // Load actual tutorial mission data
         const tutorialPart1 = await import('../../missions/data/tutorial-part-1.json');
-        const missionNetwork = tutorialPart1.network;
+        const missionNetwork = tutorialPart1.networks[0];
 
         // Create NAR entry from mission network data (as the game would do)
         const narEntry = {
@@ -739,5 +739,111 @@ describe('Network Scanner Integration', () => {
         console.log(`   - Network: ${missionNetwork.networkName} (${missionNetwork.networkId})`);
         console.log(`   - File System: ${missionFileSystem.name} at ${missionFileSystem.ip}`);
         console.log(`   - Files in mission data: ${missionFileSystem.files.length}`);
+    }, 20000);
+
+    it('should show disconnection message on disconnect and clear it on reconnect', async () => {
+        const user = userEvent.setup({ delay: null });
+        let gameState;
+
+        // TestComponent to access game context
+        const TestComponent = ({ onRender }) => {
+            const game = useGame();
+            if (onRender) onRender(game);
+            return null;
+        };
+
+        // Create network with devices
+        const network = createNetworkWithFileSystem({
+            networkId: 'corp-net-1',
+            networkName: 'Corporate Network',
+            address: '192.168.50.0/24',
+            fileSystems: [
+                {
+                    ip: '192.168.50.10',
+                    name: 'file-server',
+                    files: [
+                        { name: 'data.txt', size: 100 },
+                    ],
+                },
+            ],
+        });
+
+        const saveState = createCompleteSaveState({
+            username: 'test_user',
+            overrides: {
+                narEntries: [network],
+                activeConnections: [
+                    {
+                        networkId: network.networkId,
+                        networkName: network.networkName,
+                        address: network.address,
+                    }
+                ],
+            },
+        });
+
+        setSaveInLocalStorage('test_user', saveState);
+
+        render(
+            <GameProvider>
+                <GameLoader username="test_user" />
+                <TestComponent onRender={(game) => { gameState = game; }} />
+                <TopBar />
+                <NetworkScanner />
+            </GameProvider>
+        );
+
+        // Wait for game to load
+        await waitFor(() => {
+            const topBarCredits = screen.getByTitle('Click to open Banking App');
+            expect(topBarCredits).toHaveTextContent(/credits/);
+        });
+
+        // Verify network is available
+        const networkSelect = screen.getByRole('combobox', { name: /network/i });
+        expect(networkSelect).toBeInTheDocument();
+
+        // Select the network
+        await user.selectOptions(networkSelect, 'corp-net-1');
+
+        // Verify scan controls are visible (network is connected)
+        expect(screen.getByRole('button', { name: /start scan/i })).toBeInTheDocument();
+        expect(screen.queryByText(/disconnected from network/i)).not.toBeInTheDocument();
+
+        // Disconnect from network
+        await act(async () => {
+            gameState.setActiveConnections([]);
+        });
+
+        // Verify disconnection message appears
+        await waitFor(() => {
+            expect(screen.getByText(/disconnected from network/i)).toBeInTheDocument();
+        });
+
+        // Verify selection was cleared
+        await waitFor(() => {
+            expect(networkSelect).toHaveTextContent('Select connected network');
+        });
+
+        // Reconnect to network
+        await act(async () => {
+            gameState.setActiveConnections([
+                {
+                    networkId: network.networkId,
+                    networkName: network.networkName,
+                    address: network.address,
+                }
+            ]);
+        });
+
+        // Verify disconnection message is cleared
+        await waitFor(() => {
+            expect(screen.queryByText(/disconnected from network/i)).not.toBeInTheDocument();
+        });
+
+        // Verify network is available for selection again
+        expect(networkSelect).toBeInTheDocument();
+        await user.selectOptions(networkSelect, 'corp-net-1');
+        expect(screen.getByRole('button', { name: /start scan/i })).toBeInTheDocument();
     }, 20000);
 });

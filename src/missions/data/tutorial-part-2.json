@@ -28,69 +28,71 @@
     "reputation": null,
     "credits": null
   },
-  "network": {
-    "networkId": "clienta-corporate",
-    "networkName": "ClientA-Corporate",
-    "address": "192.168.50.0/24",
-    "bandwidth": 50,
-    "revokeOnComplete": true,
-    "revokeReason": "Mission access expired",
-    "fileSystems": [
-      {
-        "id": "fs-clienta-01",
-        "ip": "192.168.50.10",
-        "name": "fileserver-01",
-        "files": []
-      },
-      {
-        "id": "fs-clienta-backup",
-        "ip": "192.168.50.20",
-        "name": "backup-server",
-        "files": [
-          {
-            "name": "log_2024_01.txt",
-            "size": "2.5 KB",
-            "corrupted": false
-          },
-          {
-            "name": "log_2024_02.txt",
-            "size": "3.1 KB",
-            "corrupted": false
-          },
-          {
-            "name": "log_2024_03.txt",
-            "size": "2.8 KB",
-            "corrupted": false
-          },
-          {
-            "name": "log_2024_04.txt",
-            "size": "3.2 KB",
-            "corrupted": false
-          },
-          {
-            "name": "log_2024_05.txt",
-            "size": "2.9 KB",
-            "corrupted": false
-          },
-          {
-            "name": "log_2024_06.txt",
-            "size": "3.0 KB",
-            "corrupted": false
-          },
-          {
-            "name": "log_2024_07.txt",
-            "size": "2.7 KB",
-            "corrupted": false
-          },
-          {
-            "name": "log_2024_08.txt",
-            "size": "3.3 KB",
-            "corrupted": false
-          }
-        ]
-      }
-    ]
-  },
+  "networks": [
+    {
+      "networkId": "clienta-corporate",
+      "networkName": "ClientA-Corporate",
+      "address": "192.168.50.0/24",
+      "bandwidth": 50,
+      "revokeOnComplete": true,
+      "revokeReason": "Mission access expired",
+      "fileSystems": [
+        {
+          "id": "fs-clienta-01",
+          "ip": "192.168.50.10",
+          "name": "fileserver-01",
+          "files": []
+        },
+        {
+          "id": "fs-clienta-backup",
+          "ip": "192.168.50.20",
+          "name": "backup-server",
+          "files": [
+            {
+              "name": "log_2024_01.txt",
+              "size": "2.5 KB",
+              "corrupted": false
+            },
+            {
+              "name": "log_2024_02.txt",
+              "size": "3.1 KB",
+              "corrupted": false
+            },
+            {
+              "name": "log_2024_03.txt",
+              "size": "2.8 KB",
+              "corrupted": false
+            },
+            {
+              "name": "log_2024_04.txt",
+              "size": "3.2 KB",
+              "corrupted": false
+            },
+            {
+              "name": "log_2024_05.txt",
+              "size": "2.9 KB",
+              "corrupted": false
+            },
+            {
+              "name": "log_2024_06.txt",
+              "size": "3.0 KB",
+              "corrupted": false
+            },
+            {
+              "name": "log_2024_07.txt",
+              "size": "2.7 KB",
+              "corrupted": false
+            },
+            {
+              "name": "log_2024_08.txt",
+              "size": "3.3 KB",
+              "corrupted": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "objectives": [
     {
       "id": "obj-1",

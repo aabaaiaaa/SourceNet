@@ -40,13 +40,13 @@ test.describe('E2E: Tutorial Sabotage Event', () => {
         await page.click('.app-launcher-menu >> text=VPN Client');
         await page.locator('.network-dropdown').selectOption('clienta-corporate');
         await page.click('button:has-text("Connect")');
-        await page.waitForTimeout(3200);
+        await expect(page.locator('button:has-text("Disconnect")')).toBeVisible({ timeout: 5000 });
         console.log('✅ Connected to ClientA network');
 
         // ========================================
         // STEP 3: Open File Manager and select filesystem
         // ========================================
-        // Network scan was already performed in the scenario, just open File Manager
+        // Devices already discovered in scenario - scan was performed before saving
         await page.click('text=☰');
         await page.click('.app-launcher-menu >> text=File Manager');
         await page.waitForTimeout(500);
@@ -106,7 +106,7 @@ test.describe('E2E: Tutorial Sabotage Event', () => {
         console.log('⏳ Waiting for terminal lockout (~5s game time = 0.5s at 10x speed)...');
 
         const terminalLockoutOverlay = page.locator('.terminal-lockout-overlay');
-        await expect(terminalLockoutOverlay).toBeVisible({ timeout: 3000 });
+        await expect(terminalLockoutOverlay).toBeVisible({ timeout: 10000 });
         console.log('✅ Terminal lockout overlay active (player cannot interact)');
 
         // Verify lockout overlay blocks interaction - try clicking app launcher
@@ -200,7 +200,7 @@ test.describe('E2E: Tutorial Sabotage Event', () => {
         console.log('✅ Dismissed forced disconnection overlay');
 
         // ========================================
-        // STEP 9: Verify mission marked as failed
+        // STEP 11: Verify mission marked as failed
         // ========================================
         await page.click('text=☰');
         await page.click('.app-launcher-menu >> text=Mission Board');

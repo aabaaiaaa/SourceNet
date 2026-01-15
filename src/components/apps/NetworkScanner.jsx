@@ -16,6 +16,7 @@ const NetworkScanner = () => {
   const activeConnections = game.activeConnections || [];
   const narEntries = game.narEntries || [];
   const setLastScanResults = game.setLastScanResults || (() => { });
+  const addDiscoveredDevices = game.addDiscoveredDevices || (() => { });
   const registerBandwidthOperation = game.registerBandwidthOperation || (() => ({ operationId: null, estimatedTimeMs: 5000 }));
   const completeBandwidthOperation = game.completeBandwidthOperation || (() => { });
   const [selectedNetwork, setSelectedNetwork] = useState('');
@@ -32,6 +33,13 @@ const NetworkScanner = () => {
   const isNetworkConnected = selectedNetwork && activeConnections.some(
     conn => conn.networkId === selectedNetwork
   );
+
+  // Clear disconnection message when reconnecting to any network
+  useEffect(() => {
+    if (activeConnections.length > 0 && disconnectionMessage) {
+      setDisconnectionMessage(null);
+    }
+  }, [activeConnections.length, disconnectionMessage]);
 
   // Clear selection and stop scan if network gets disconnected
   useEffect(() => {
@@ -85,6 +93,10 @@ const NetworkScanner = () => {
       setScanResults(results);
       setLastScanResults(results);
 
+      // Add discovered IPs to persistent discovered devices
+      const discoveredIps = machines.map(m => m.ip);
+      addDiscoveredDevices(selectedNetwork, discoveredIps);
+
       // Emit scan complete event
       triggerEventBus.emit('networkScanComplete', {
         network: selectedNetwork,
@@ -96,7 +108,7 @@ const NetworkScanner = () => {
       setScanStartTime(null);
       console.log(`🔍 Scan complete: Found ${results.machines.length} machines`);
     }
-  }, [scanning, scanStartTime, currentTime, estimatedDuration, selectedNetwork, scanType, narEntries, completeBandwidthOperation, setLastScanResults]);
+  }, [scanning, scanStartTime, currentTime, estimatedDuration, selectedNetwork, scanType, narEntries, completeBandwidthOperation, setLastScanResults, addDiscoveredDevices]);
 
   const handleScan = () => {
     if (!selectedNetwork || scanning || !currentTime) return;

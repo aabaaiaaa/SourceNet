@@ -26,78 +26,80 @@
     "reputation": null,
     "credits": null
   },
-  "network": {
-    "networkId": "clienta-corporate",
-    "networkName": "ClientA-Corporate",
-    "address": "192.168.50.0/24",
-    "bandwidth": 50,
-    "revokeOnComplete": true,
-    "revokeReason": "Mission access expired",
-    "fileSystems": [
-      {
-        "id": "fs-clienta-01",
-        "ip": "192.168.50.10",
-        "name": "fileserver-01",
-        "files": [
-          {
-            "name": "log_2024_01.txt",
-            "size": "2.5 KB",
-            "corrupted": true
-          },
-          {
-            "name": "log_2024_02.txt",
-            "size": "3.1 KB",
-            "corrupted": true
-          },
-          {
-            "name": "log_2024_03.txt",
-            "size": "2.8 KB",
-            "corrupted": true
-          },
-          {
-            "name": "log_2024_04.txt",
-            "size": "3.2 KB",
-            "corrupted": true
-          },
-          {
-            "name": "log_2024_05.txt",
-            "size": "2.9 KB",
-            "corrupted": true
-          },
-          {
-            "name": "log_2024_06.txt",
-            "size": "3.0 KB",
-            "corrupted": true
-          },
-          {
-            "name": "log_2024_07.txt",
-            "size": "2.7 KB",
-            "corrupted": true
-          },
-          {
-            "name": "log_2024_08.txt",
-            "size": "3.3 KB",
-            "corrupted": true
-          },
-          {
-            "name": "log_2023_11.txt",
-            "size": "2.4 KB",
-            "corrupted": false
-          },
-          {
-            "name": "log_2023_12.txt",
-            "size": "2.6 KB",
-            "corrupted": false
-          },
-          {
-            "name": "system.log",
-            "size": "1.2 KB",
-            "corrupted": false
-          }
-        ]
-      }
-    ]
-  },
+  "networks": [
+    {
+      "networkId": "clienta-corporate",
+      "networkName": "ClientA-Corporate",
+      "address": "192.168.50.0/24",
+      "bandwidth": 50,
+      "revokeOnComplete": true,
+      "revokeReason": "Mission access expired",
+      "fileSystems": [
+        {
+          "id": "fs-clienta-01",
+          "ip": "192.168.50.10",
+          "name": "fileserver-01",
+          "files": [
+            {
+              "name": "log_2024_01.txt",
+              "size": "2.5 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_02.txt",
+              "size": "3.1 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_03.txt",
+              "size": "2.8 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_04.txt",
+              "size": "3.2 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_05.txt",
+              "size": "2.9 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_06.txt",
+              "size": "3.0 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_07.txt",
+              "size": "2.7 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2024_08.txt",
+              "size": "3.3 KB",
+              "corrupted": true
+            },
+            {
+              "name": "log_2023_11.txt",
+              "size": "2.4 KB",
+              "corrupted": false
+            },
+            {
+              "name": "log_2023_12.txt",
+              "size": "2.6 KB",
+              "corrupted": false
+            },
+            {
+              "name": "system.log",
+              "size": "1.2 KB",
+              "corrupted": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "objectives": [
     {
       "id": "obj-nar",

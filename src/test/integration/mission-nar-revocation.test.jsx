@@ -3,6 +3,7 @@ import { render, waitFor, act } from '@testing-library/react';
 import { GameProvider } from '../../contexts/GameContext';
 import { useGame } from '../../contexts/useGame';
 import triggerEventBus from '../../core/triggerEventBus';
+import TopBar from '../../components/ui/TopBar';
 
 // Mock the game time scheduler to execute callbacks immediately
 vi.mock('../../core/gameTimeScheduler', () => ({
@@ -70,12 +71,12 @@ describe('Mission NAR Revocation', () => {
                 client: 'Test Client',
                 difficulty: 'Easy',
                 objectives: [{ id: 'obj-1', description: 'Test objective', status: 'complete' }],
-                network: {
+                networks: [{
                     networkId: 'test-network',
                     networkName: 'Test Network',
                     revokeOnComplete: true,
                     revokeReason: 'Test mission completed',
-                },
+                }],
             };
 
             await act(async () => {
@@ -130,12 +131,12 @@ describe('Mission NAR Revocation', () => {
                 client: 'Test Client',
                 difficulty: 'Easy',
                 objectives: [{ id: 'obj-1', description: 'Test', status: 'complete' }],
-                network: {
+                networks: [{
                     networkId: 'test-network',
                     networkName: 'Test Network',
                     revokeOnComplete: true,
                     revokeReason: 'Mission ended',
-                },
+                }],
             };
 
             await act(async () => {
@@ -193,12 +194,12 @@ describe('Mission NAR Revocation', () => {
                 client: 'Test Client',
                 difficulty: 'Easy',
                 objectives: [{ id: 'obj-1', description: 'Test', status: 'complete' }],
-                network: {
+                networks: [{
                     networkId: 'test-network',
                     networkName: 'Test Network',
                     revokeOnComplete: true,
                     revokeReason: 'Access expired',
-                },
+                }],
             };
 
             await act(async () => {
@@ -218,6 +219,223 @@ describe('Mission NAR Revocation', () => {
                     reason: 'Access expired',
                 });
             }, { timeout: 1000 });
+
+            // Cleanup
+            triggerEventBus.off('networkDisconnected', disconnectHandler);
+        });
+
+        it('should emit networkDisconnected event only ONCE per network (no duplicates)', async () => {
+            let gameState;
+            const disconnectHandler = vi.fn();
+
+            // Subscribe to event
+            triggerEventBus.on('networkDisconnected', disconnectHandler);
+
+            render(
+                <GameProvider>
+                    <TestComponent onRender={(game) => { gameState = game; }} />
+                    <TopBar />
+                </GameProvider>
+            );
+
+            // Initialize player
+            await act(async () => {
+                gameState.initializePlayer('TestPlayer');
+            });
+
+            // Add NAR entry and active connection
+            await act(async () => {
+                gameState.setNarEntries([{
+                    id: 'nar-test-1',
+                    networkId: 'clienta-corporate',
+                    networkName: 'ClientA-Corporate',
+                    address: '192.168.50.0/24',
+                    authorized: true,
+                    status: 'active',
+                }]);
+                gameState.setActiveConnections([{
+                    networkId: 'clienta-corporate',
+                    networkName: 'ClientA-Corporate',
+                    connectedAt: new Date().toISOString(),
+                }]);
+            });
+
+            // Set up mission with revokeOnComplete (like tutorial-part-2)
+            const testMission = {
+                missionId: 'tutorial-part-2',
+                title: 'Data Retrieval',
+                client: 'Client A',
+                difficulty: 'Easy',
+                objectives: [{ id: 'obj-1', description: 'Test', status: 'complete' }],
+                networks: [{
+                    networkId: 'clienta-corporate',
+                    networkName: 'ClientA-Corporate',
+                    revokeOnComplete: true,
+                    revokeReason: 'Mission access expired',
+                }],
+            };
+
+            await act(async () => {
+                gameState.setActiveMission(testMission);
+            });
+
+            // Complete mission
+            await act(async () => {
+                gameState.completeMission('success', 1000, 1);
+            });
+
+            // Wait for event to be emitted
+            await waitFor(() => {
+                expect(disconnectHandler).toHaveBeenCalled();
+            }, { timeout: 1000 });
+
+            // Give extra time to ensure no duplicate events fire
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            // Verify event was called EXACTLY ONCE (not twice)
+            expect(disconnectHandler).toHaveBeenCalledTimes(1);
+            expect(disconnectHandler).toHaveBeenCalledWith({
+                networkId: 'clienta-corporate',
+                networkName: 'ClientA-Corporate',
+                reason: 'Mission access expired',
+            });
+
+            // Cleanup
+            triggerEventBus.off('networkDisconnected', disconnectHandler);
+        });
+
+        it('should emit networkDisconnected for each network when mission has multiple networks', async () => {
+            let gameState;
+            const disconnectHandler = vi.fn();
+
+            // Subscribe to event
+            triggerEventBus.on('networkDisconnected', disconnectHandler);
+
+            render(
+                <GameProvider>
+                    <TestComponent onRender={(game) => { gameState = game; }} />
+                    <TopBar />
+                </GameProvider>
+            );
+
+            // Initialize player
+            await act(async () => {
+                gameState.initializePlayer('TestPlayer');
+            });
+
+            // Add multiple NAR entries and active connections
+            await act(async () => {
+                gameState.setNarEntries([
+                    {
+                        id: 'nar-test-1',
+                        networkId: 'network-alpha',
+                        networkName: 'Alpha Corp',
+                        address: '192.168.1.0/24',
+                        authorized: true,
+                        status: 'active',
+                    },
+                    {
+                        id: 'nar-test-2',
+                        networkId: 'network-beta',
+                        networkName: 'Beta Industries',
+                        address: '192.168.2.0/24',
+                        authorized: true,
+                        status: 'active',
+                    },
+                    {
+                        id: 'nar-test-3',
+                        networkId: 'network-gamma',
+                        networkName: 'Gamma Systems',
+                        address: '192.168.3.0/24',
+                        authorized: true,
+                        status: 'active',
+                    }
+                ]);
+                gameState.setActiveConnections([
+                    {
+                        networkId: 'network-alpha',
+                        networkName: 'Alpha Corp',
+                        connectedAt: new Date().toISOString(),
+                    },
+                    {
+                        networkId: 'network-beta',
+                        networkName: 'Beta Industries',
+                        connectedAt: new Date().toISOString(),
+                    },
+                    {
+                        networkId: 'network-gamma',
+                        networkName: 'Gamma Systems',
+                        connectedAt: new Date().toISOString(),
+                    }
+                ]);
+            });
+
+            // Set up mission with multiple networks to revoke
+            const testMission = {
+                missionId: 'multi-network-mission',
+                title: 'Multi-Network Operation',
+                client: 'Test Client',
+                difficulty: 'Medium',
+                objectives: [{ id: 'obj-1', description: 'Test', status: 'complete' }],
+                networks: [
+                    {
+                        networkId: 'network-alpha',
+                        networkName: 'Alpha Corp',
+                        revokeOnComplete: true,
+                        revokeReason: 'Mission complete',
+                    },
+                    {
+                        networkId: 'network-beta',
+                        networkName: 'Beta Industries',
+                        revokeOnComplete: true,
+                        revokeReason: 'Access expired',
+                    },
+                    {
+                        networkId: 'network-gamma',
+                        networkName: 'Gamma Systems',
+                        revokeOnComplete: true,
+                        revokeReason: 'Contract ended',
+                    }
+                ],
+            };
+
+            await act(async () => {
+                gameState.setActiveMission(testMission);
+            });
+
+            // Complete mission
+            await act(async () => {
+                gameState.completeMission('success', 2000, 2);
+            });
+
+            // Wait for all events to be emitted
+            await waitFor(() => {
+                expect(disconnectHandler).toHaveBeenCalledTimes(3);
+            }, { timeout: 1000 });
+
+            // Give extra time to ensure no duplicate events fire
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            // Verify each network disconnected exactly once
+            expect(disconnectHandler).toHaveBeenCalledTimes(3);
+            expect(disconnectHandler).toHaveBeenCalledWith({
+                networkId: 'network-alpha',
+                networkName: 'Alpha Corp',
+                reason: 'Mission complete',
+            });
+            expect(disconnectHandler).toHaveBeenCalledWith({
+                networkId: 'network-beta',
+                networkName: 'Beta Industries',
+                reason: 'Access expired',
+            });
+            expect(disconnectHandler).toHaveBeenCalledWith({
+                networkId: 'network-gamma',
+                networkName: 'Gamma Systems',
+                reason: 'Contract ended',
+            });
+
+            // Verify all connections were removed
+            expect(gameState.activeConnections).toHaveLength(0);
 
             // Cleanup
             triggerEventBus.off('networkDisconnected', disconnectHandler);
@@ -253,11 +471,11 @@ describe('Mission NAR Revocation', () => {
                 client: 'Test Client',
                 difficulty: 'Easy',
                 objectives: [{ id: 'obj-1', description: 'Test', status: 'complete' }],
-                network: {
+                networks: [{
                     networkId: 'test-network',
                     networkName: 'Test Network',
                     // No revokeOnComplete
-                },
+                }],
             };
 
             await act(async () => {

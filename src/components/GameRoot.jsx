@@ -45,6 +45,15 @@ const applyScenarioFixture = (fixture, gameContext) => {
     gameContext.setNarEntries(fixture.narEntries ?? []);
     gameContext.setActiveConnections(fixture.activeConnections ?? []);
     gameContext.setLastScanResults(fixture.lastScanResults ?? null);
+    const convertedDiscoveredDevices = fixture.discoveredDevices
+      ? Object.fromEntries(
+        Object.entries(fixture.discoveredDevices).map(([networkId, ips]) => [
+          networkId,
+          new Set(ips)
+        ])
+      )
+      : {};
+    gameContext.setDiscoveredDevices(convertedDiscoveredDevices);
     gameContext.setFileManagerConnections(fixture.fileManagerConnections ?? []);
     gameContext.setLastFileOperation(fixture.lastFileOperation ?? null);
     gameContext.setDownloadQueue(fixture.downloadQueue ?? []);
@@ -55,6 +64,32 @@ const applyScenarioFixture = (fixture, gameContext) => {
 
     // Restore story progression (prevents duplicate messages)
     storyMissionManager.setFiredEvents(fixture.processedEvents ?? []);
+
+    // Restore pending story events (timers in progress)
+    storyMissionManager.setPendingEvents(fixture.pendingStoryEvents ?? []);
+
+    // Restore banking message tracking
+    gameContext.setBankingMessagesSent(fixture.bankingMessagesSent ?? {
+      firstOverdraft: false,
+      approachingBankruptcy: false,
+      bankruptcyCountdownStart: false,
+      bankruptcyCancelled: false,
+    });
+
+    // Restore HR message tracking
+    gameContext.setReputationMessagesSent(fixture.reputationMessagesSent ?? {
+      performancePlanWarning: false,
+      finalTerminationWarning: false,
+      performanceImproved: false,
+    });
+
+    // Restore procedural mission system
+    gameContext.setProceduralMissionsEnabled(fixture.proceduralMissionsEnabled ?? false);
+    gameContext.setMissionPool(fixture.missionPool ?? []);
+    gameContext.setPendingChainMissions(fixture.pendingChainMissions ?? {});
+    gameContext.setActiveClientIds(fixture.activeClientIds ?? []);
+    gameContext.setClientStandings(fixture.clientStandings ?? {});
+    gameContext.setExtensionOffers(fixture.extensionOffers ?? {});
 
     // Windows are not restored for scenarios - start fresh
     gameContext.setWindows([]);
@@ -72,7 +107,21 @@ const applyScenarioFixture = (fixture, gameContext) => {
 const GameRoot = () => {
   const gameContext = useGame();
   const { gamePhase, setGamePhase } = gameContext;
-  const scenarioAppliedRef = useRef(false);
+
+  // Use sessionStorage to persist across component remounts (React Strict Mode)
+  // Namespace with scenario name to avoid cross-test contamination
+  const getScenarioApplied = (scenarioName) => {
+    if (typeof window !== 'undefined' && scenarioName) {
+      return sessionStorage.getItem(`scenarioApplied_${scenarioName}`) === 'true';
+    }
+    return false;
+  };
+
+  const setScenarioApplied = (scenarioName, value) => {
+    if (typeof window !== 'undefined' && scenarioName) {
+      sessionStorage.setItem(`scenarioApplied_${scenarioName}`, value.toString());
+    }
+  };
 
   // Expose game context globally for e2e testing
   useEffect(() => {
@@ -87,19 +136,23 @@ const GameRoot = () => {
   }, [gameContext]);
 
   useEffect(() => {
-    // Check for scenario parameter (for E2E tests and debug)
+    // Check for scenario parameter (for E2E tests and debug) - highest priority
     const urlParams = new URLSearchParams(window.location.search);
     const scenarioName = urlParams.get('scenario');
 
-    if (scenarioName && !scenarioAppliedRef.current && gamePhase === 'boot') {
+    // Early return if scenario already applied
+    if (scenarioName && getScenarioApplied(scenarioName)) {
+      // Scenario already loaded, skip reloading
+      return;
+    } else if (scenarioName && !getScenarioApplied(scenarioName)) {
       const fixture = getScenarioFixture(scenarioName);
 
       if (fixture) {
         const success = applyScenarioFixture(fixture, gameContext);
         if (success) {
-          scenarioAppliedRef.current = true;
+          setScenarioApplied(scenarioName, true);
+          setGamePhase('desktop'); // Skip boot and go straight to desktop
           console.log(`✅ Scenario '${scenarioName}' loaded successfully`);
-          setGamePhase('desktop'); // Go straight to desktop
           return;
         } else {
           console.error(`❌ Failed to load scenario '${scenarioName}'`);
@@ -107,12 +160,18 @@ const GameRoot = () => {
       } else {
         console.error(`❌ Scenario '${scenarioName}' not found`);
       }
+      // If scenario failed to load, fall through to normal boot logic
+    }
+
+    // Only process boot-related logic when in boot phase
+    if (gamePhase !== 'boot') {
+      return;
     }
 
     // Check for skipBoot parameter (for E2E tests)
     const skipBoot = urlParams.get('skipBoot') === 'true';
 
-    if (skipBoot && gamePhase === 'boot') {
+    if (skipBoot) {
       // If saves exist, go to login to pick save
       // If no saves, go to username
       const savesExist = hasSaves();
@@ -127,11 +186,11 @@ const GameRoot = () => {
     // Only check for saves on initial mount (gamePhase starts as 'boot')
     // Don't re-check if user explicitly chose "New Game"
     const savesExist = hasSaves();
-    if (savesExist && gamePhase === 'boot') {
+    if (savesExist) {
       setGamePhase('login');
     }
 
-  }, []); // Empty deps = only run on mount
+  }, [gamePhase]); // Only run when gamePhase changes
 
   // Render appropriate component based on game phase
   switch (gamePhase) {
