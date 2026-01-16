@@ -178,11 +178,11 @@ function generateFiles(industry, missionType, count, corrupted = false) {
  * @param {Object} client - Client object
  * @param {string} missionType - Mission type (repair, backup, transfer)
  * @param {number} fileCount - Number of files to include
- * @param {Object} options - Additional options { corrupted, secondNetwork }
+ * @param {Object} options - Additional options { corrupted, secondNetwork, sameNetworkBackup }
  * @returns {Object} { networks, primaryNetworkId, primaryIp, fileNames }
  */
 export function generateNetworkInfrastructure(client, missionType, fileCount, options = {}) {
-    const { corrupted = false, secondNetwork = false } = options;
+    const { corrupted = false, secondNetwork = false, sameNetworkBackup = false } = options;
 
     const networks = [];
     const primaryNetworkId = `${client.id}-network-${Date.now()}`;
@@ -207,14 +207,33 @@ export function generateNetworkInfrastructure(client, missionType, fileCount, op
         }]
     });
 
-    // Generate secondary network for transfer missions
+    // Add backup server to same network (for simpler backup missions)
+    let backupServerIp = null;
+    let backupServerName = null;
+
+    if (sameNetworkBackup) {
+        backupServerIp = generateIpInSubnet(primarySubnet, 20); // Different IP in same subnet
+        backupServerName = generateHostname(client, 'backup');
+
+        // Add backup server as second file system in same network
+        networks[0].fileSystems.push({
+            id: `fs-${client.id}-backup`,
+            ip: backupServerIp,
+            name: backupServerName,
+            files: [] // Empty - files will be backed up here
+        });
+    }
+
+    // Generate secondary network for backup/transfer missions (separate network)
     let secondaryNetworkId = null;
     let secondaryIp = null;
+    let secondaryHostname = null;
 
     if (secondNetwork) {
         secondaryNetworkId = `${client.id}-dest-${Date.now()}`;
         const secondarySubnet = generateSubnet();
         secondaryIp = generateIpInSubnet(secondarySubnet, 10);
+        secondaryHostname = generateHostname(client, 'backup');
 
         networks.push({
             networkId: secondaryNetworkId,
@@ -226,8 +245,8 @@ export function generateNetworkInfrastructure(client, missionType, fileCount, op
             fileSystems: [{
                 id: `fs-${client.id}-02`,
                 ip: secondaryIp,
-                name: generateHostname(client, 'backup'),
-                files: [] // Empty - files will be transferred here
+                name: secondaryHostname,
+                files: [] // Empty - files will be transferred/backed up here
             }]
         });
     }
@@ -238,6 +257,10 @@ export function generateNetworkInfrastructure(client, missionType, fileCount, op
         primaryIp,
         secondaryNetworkId,
         secondaryIp,
+        secondaryHostname,
+        backupServerIp,
+        backupServerName,
+        useSameNetwork: sameNetworkBackup,
         fileNames: primaryFiles.map(f => f.name),
         hostname: networks[0].fileSystems[0].name
     };
@@ -332,6 +355,57 @@ function generateRepairObjectives(infra) {
  * @returns {Array} Array of objective objects
  */
 function generateBackupObjectives(infra) {
+    // Same-network backup: simpler, fewer objectives
+    if (infra.useSameNetwork) {
+        return [
+            {
+                id: 'obj-1',
+                description: `Connect to ${infra.networks[0].networkName} network`,
+                type: 'networkConnection',
+                target: infra.primaryNetworkId
+            },
+            {
+                id: 'obj-2',
+                description: `Scan network to find file servers`,
+                type: 'networkScan',
+                target: infra.primaryNetworkId,
+                expectedResult: infra.hostname
+            },
+            {
+                id: 'obj-3',
+                description: `Connect to ${infra.hostname} (source)`,
+                type: 'fileSystemConnection',
+                target: infra.primaryIp
+            },
+            {
+                id: 'obj-4',
+                description: `Copy ${infra.fileNames.length} files from source`,
+                type: 'fileOperation',
+                operation: 'copy',
+                targetFiles: infra.fileNames,
+                count: infra.fileNames.length
+            },
+            {
+                id: 'obj-5',
+                description: `Connect to ${infra.backupServerName} (backup)`,
+                type: 'fileSystemConnection',
+                target: infra.backupServerIp
+            },
+            {
+                id: 'obj-6',
+                description: `Paste ${infra.fileNames.length} files to backup server`,
+                type: 'fileOperation',
+                operation: 'paste',
+                targetFiles: infra.fileNames,
+                count: infra.fileNames.length,
+                destination: infra.backupServerIp
+            }
+        ];
+    }
+
+    // Different-network backup: more complex, requires connecting to second network
+    const destNetwork = infra.networks[1];
+
     return [
         {
             id: 'obj-1',
@@ -348,17 +422,45 @@ function generateBackupObjectives(infra) {
         },
         {
             id: 'obj-3',
-            description: `Connect to ${infra.hostname} file system`,
+            description: `Connect to ${infra.hostname} (source)`,
             type: 'fileSystemConnection',
             target: infra.primaryIp
         },
         {
             id: 'obj-4',
-            description: `Copy ${infra.fileNames.length} files to secure backup`,
+            description: `Copy ${infra.fileNames.length} files from source`,
             type: 'fileOperation',
             operation: 'copy',
             targetFiles: infra.fileNames,
             count: infra.fileNames.length
+        },
+        {
+            id: 'obj-5',
+            description: `Connect to ${destNetwork.networkName} network`,
+            type: 'networkConnection',
+            target: infra.secondaryNetworkId
+        },
+        {
+            id: 'obj-6',
+            description: `Scan backup network to find ${infra.secondaryHostname}`,
+            type: 'networkScan',
+            target: infra.secondaryNetworkId,
+            expectedResult: infra.secondaryHostname
+        },
+        {
+            id: 'obj-7',
+            description: `Connect to ${infra.secondaryHostname} (backup)`,
+            type: 'fileSystemConnection',
+            target: infra.secondaryIp
+        },
+        {
+            id: 'obj-8',
+            description: `Paste ${infra.fileNames.length} files to backup server`,
+            type: 'fileOperation',
+            operation: 'paste',
+            targetFiles: infra.fileNames,
+            count: infra.fileNames.length,
+            destination: infra.secondaryIp
         }
     ];
 }
@@ -495,8 +597,11 @@ function generateBriefingMessage(client, missionType, networks, timeLimitMinutes
         body += `\n\n[Mission ${arcSequence} of ${arcTotal}]`;
     }
 
+    // Generate unique message ID using mission type, client ID, and timestamp with random suffix
+    const uniqueId = `msg-briefing-${missionType}-${client.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
     return {
-        id: `msg-briefing-${Date.now()}`,
+        id: uniqueId,
         from: client.name,
         fromId: client.id,
         fromName: client.name,
@@ -646,7 +751,15 @@ export function generateBackupMission(client, options = {}) {
     const { hasTimed = false, arcId = null, arcSequence = null, arcTotal = null, arcContext = {} } = options;
 
     const fileCount = randomInt(3, 6);
-    const infra = generateNetworkInfrastructure(client, 'backup', fileCount, { corrupted: false });
+
+    // Randomly choose: backup to same network (simpler) or different network (more complex)
+    const useSameNetwork = Math.random() < 0.4; // 40% same network, 60% different network
+
+    const infra = generateNetworkInfrastructure(client, 'backup', fileCount, {
+        corrupted: false,
+        secondNetwork: !useSameNetwork,
+        sameNetworkBackup: useSameNetwork
+    });
     const objectives = generateBackupObjectives(infra);
 
     // Add verification objective

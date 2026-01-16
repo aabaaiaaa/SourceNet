@@ -81,9 +81,10 @@ const VPNClient = () => {
     };
   }, [connecting, connectionStartTime, currentTime, pendingConnection, activeConnections, setActiveConnections]);
 
-  // Get available networks from NAR (non-expired and authorized only)
+  // Get available networks from NAR (non-expired, authorized, and not already connected)
+  const connectedNetworkIds = new Set((activeConnections || []).map(conn => conn.networkId));
   const availableNetworks = (narEntries || []).filter((entry) =>
-    entry.status !== 'expired' && entry.authorized !== false
+    entry.status !== 'expired' && entry.authorized !== false && !connectedNetworkIds.has(entry.networkId)
   );
 
   const handleConnect = () => {

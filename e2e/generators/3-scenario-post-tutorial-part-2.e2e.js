@@ -248,6 +248,46 @@ test.describe('Scenario Generator: Post Tutorial Complete', () => {
         expect(isUnread).toBe(true);
         console.log('✅ "Better" message is unread');
 
+        // Archive all other messages (not the "Better" one)
+        console.log('Archiving all messages except "Better"...');
+
+        // Get count of non-Better messages
+        let otherMessages = page.locator('.message-item:not(:has-text("Better"))');
+        let otherCount = await otherMessages.count();
+        console.log(`Found ${otherCount} other messages to archive`);
+
+        while (otherCount > 0) {
+            // Click the first non-Better message
+            await otherMessages.first().click();
+            await page.waitForTimeout(200);
+
+            // Click the Archive button (use .archive-button class to avoid matching the tab)
+            const archiveBtn = page.locator('button.archive-button');
+            if (await archiveBtn.isVisible()) {
+                await archiveBtn.click();
+                await page.waitForTimeout(300);
+            }
+
+            // Go back to inbox if needed
+            const backBtnArchive = page.locator('button:has-text("Back")');
+            if (await backBtnArchive.isVisible()) {
+                await backBtnArchive.click();
+                await page.waitForTimeout(200);
+            }
+
+            // Refresh count
+            otherMessages = page.locator('.message-item:not(:has-text("Better"))');
+            otherCount = await otherMessages.count();
+        }
+
+        console.log('✅ All other messages archived');
+
+        // Verify only "Better" message remains
+        const remainingMessages = page.locator('.message-item');
+        const remainingCount = await remainingMessages.count();
+        expect(remainingCount).toBe(1);
+        console.log('✅ Only "Better" message remains in inbox');
+
         // ========================================
         // STEP 8: Save the game state
         // ========================================

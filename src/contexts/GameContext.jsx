@@ -33,7 +33,7 @@ import { BANKING_MESSAGES, HR_MESSAGES } from '../core/systemMessages';
 import { getReputationTier } from '../systems/ReputationSystem';
 import triggerEventBus from '../core/triggerEventBus';
 import { executeScriptedEvent } from '../missions/ScriptedEventExecutor';
-import { initializePool, refreshPool, shouldRefreshPool } from '../missions/MissionPoolManager';
+import { initializePool, refreshPool, shouldRefreshPool, handleArcProgression, handleArcFailure } from '../missions/MissionPoolManager';
 
 export const GameContext = createContext();
 
@@ -184,6 +184,12 @@ export const GameProvider = ({ children }) => {
   // for one render cycle if they perform operations that immediately query updated values.
   const updateFileSystemFiles = useCallback((networkId, fileSystemId, updatedFiles) => {
     console.log(`📁 updateFileSystemFiles called: networkId=${networkId}, fsId=${fileSystemId}, fileCount=${updatedFiles?.length}`);
+
+    // Capture previous file count for logging (outside state updater)
+    const prevEntry = narEntries.find(e => e.networkId === networkId);
+    const prevFs = prevEntry?.fileSystems?.find(fs => fs.id === fileSystemId);
+    const prevFileCount = prevFs?.files?.length;
+
     setNarEntries(prev => {
       const updated = prev.map(entry => {
         if (entry.networkId !== networkId) return entry;
@@ -193,24 +199,29 @@ export const GameProvider = ({ children }) => {
           ...entry,
           fileSystems: entry.fileSystems.map(fs => {
             if (fs.id !== fileSystemId) return fs;
-            console.log(`📁 Updating fs ${fileSystemId} files from ${fs.files?.length} to ${updatedFiles?.length}`);
             return { ...fs, files: updatedFiles };
           }),
         };
       });
       return updated;
     });
-  }, []);
+
+    // Log after state update (outside updater)
+    console.log(`📁 Updating fs ${fileSystemId} files from ${prevFileCount} to ${updatedFiles?.length}`);
+  }, [narEntries]);
 
   // Accumulate file operations for mission tracking (unique files per operation type)
   useEffect(() => {
     if (lastFileOperation && activeMission) {
       const { operation, fileNames = [] } = lastFileOperation;
+
       setMissionFileOperations(prev => {
         const existingFiles = prev[operation] || new Set();
+        const existingCount = existingFiles.size;
         const updatedFiles = new Set(existingFiles);
         fileNames.forEach(name => updatedFiles.add(name));
-        console.log(`📊 Cumulative ${operation}: ${existingFiles.size} + ${fileNames.length} new = ${updatedFiles.size} unique files`);
+        // Log inside updater to get accurate counts (logging is harmless side effect)
+        console.log(`📊 Cumulative ${operation}: ${existingCount} + ${fileNames.length} new files`);
         return {
           ...prev,
           [operation]: updatedFiles
@@ -238,9 +249,9 @@ export const GameProvider = ({ children }) => {
 
         // Initialize the mission pool
         const poolState = initializePool(reputation, currentTime);
-        console.log(`📋 Procedural pool initialized with ${poolState.missions.length} missions`);
+        console.log(`📋 Procedural pool initialized with ${poolState.missions.length} missions, ${Object.keys(poolState.pendingArcMissions || {}).length} arcs pending`);
         setMissionPool(poolState.missions);
-        setPendingChainMissions(poolState.pendingChains);
+        setPendingChainMissions(poolState.pendingArcMissions || {});
         setActiveClientIds(poolState.activeClientIds);
       }
     };
@@ -255,7 +266,7 @@ export const GameProvider = ({ children }) => {
 
     const poolState = {
       missions: missionPool,
-      pendingChains: pendingChainMissions,
+      pendingArcMissions: pendingChainMissions,
       activeClientIds,
       lastRefresh: new Date().toISOString()
     };
@@ -265,10 +276,54 @@ export const GameProvider = ({ children }) => {
       const activeMissionId = activeMission?.missionId || null;
       const newPoolState = refreshPool(poolState, reputation, currentTime, activeMissionId);
       setMissionPool(newPoolState.missions);
-      setPendingChainMissions(newPoolState.pendingChains);
+      setPendingChainMissions(newPoolState.pendingArcMissions || {});
       setActiveClientIds(newPoolState.activeClientIds);
     }
   }, [reputation]); // Only trigger on reputation change
+
+  // Handle arc progression/failure when missions complete
+  useEffect(() => {
+    if (!proceduralMissionsEnabled) return;
+
+    const handleMissionComplete = (data) => {
+      // Skip if no arc info (not part of an arc)
+      if (!data.arcId) return;
+
+      const poolState = {
+        missions: missionPool,
+        pendingArcMissions: pendingChainMissions,
+        activeClientIds,
+        lastRefresh: new Date().toISOString()
+      };
+
+      if (data.status === 'success') {
+        // Handle arc progression on success
+        const result = handleArcProgression(poolState, data, currentTime);
+
+        if (result.nextArcMission) {
+          console.log(`🔗 Arc progression: Unlocked "${result.nextArcMission.title}" (${result.nextArcMission.arcSequence}/${result.nextArcMission.arcTotal})`);
+          setMissionPool(result.missions);
+          setPendingChainMissions(result.pendingArcMissions || {});
+          setActiveClientIds(result.activeClientIds);
+        } else if (result.arcCompleted) {
+          console.log(`✅ Arc completed: "${result.arcCompleted}"`);
+          setPendingChainMissions(result.pendingArcMissions || {});
+        }
+      } else if (data.status === 'failed') {
+        // Handle arc cancellation on failure
+        const result = handleArcFailure(poolState, data);
+
+        if (result.arcCancelled) {
+          console.log(`🚫 Arc cancelled: "${result.arcCancelled}" - remaining missions removed`);
+          setPendingChainMissions(result.pendingArcMissions || {});
+          setActiveClientIds(result.activeClientIds);
+        }
+      }
+    };
+
+    const unsubscribe = triggerEventBus.on('missionComplete', handleMissionComplete);
+    return () => unsubscribe();
+  }, [proceduralMissionsEnabled, missionPool, pendingChainMissions, activeClientIds, currentTime]);
 
   // Download manager - handles progress updates for downloads based on game time
   useDownloadManager(
@@ -460,22 +515,24 @@ export const GameProvider = ({ children }) => {
       timestamp: new Date(currentTime),
     };
 
-    setMessages((prev) => {
-      // Prevent duplicate message IDs
-      if (newMessage.id && prev.some(m => m.id === newMessage.id)) {
-        console.warn(`⚠️ Duplicate message ID '${newMessage.id}' - skipping`);
-        return prev;
-      }
-      // Play notification chime when message is added
-      playNotificationChime();
-      return [...prev, newMessage];
-    });
+    // Check for duplicate before state update
+    const isDuplicate = messages.some(m => m.id === newMessage.id);
+    if (isDuplicate) {
+      console.warn(`⚠️ Duplicate message ID '${newMessage.id}' - skipping`);
+      return;
+    }
+
+    // Pure state update (no side effects)
+    setMessages((prev) => [...prev, newMessage]);
+
+    // Play notification chime after state update (outside updater)
+    playNotificationChime();
 
     // If this is the first message, schedule second message when it's read
     if (message.id === 'msg-welcome-hr') {
       // Will be handled when message is marked as read
     }
-  }, [currentTime]);
+  }, [currentTime, messages, playNotificationChime]);
 
   // Add discovered devices from network scan
   const addDiscoveredDevices = useCallback((networkId, ips) => {
@@ -525,6 +582,10 @@ export const GameProvider = ({ children }) => {
 
   // Window management (defined before initiateChequeDeposit which uses it)
   const openWindow = useCallback((appId) => {
+    // Pre-calculate ref values before setState to avoid double-increment in StrictMode
+    const newWindowId = nextWindowIdRef.current++;
+    const newZIndex = nextZIndexRef.current++;
+
     setWindows((prev) => {
       // Check if app allows multiple instances
       const allowsMultipleInstances = MULTI_INSTANCE_APPS.includes(appId);
@@ -534,10 +595,9 @@ export const GameProvider = ({ children }) => {
         const existing = prev.find((w) => w.appId === appId);
 
         if (existing) {
-          // Bring existing window to front with new z-index
-          const newZ = nextZIndexRef.current++;
+          // Bring existing window to front with pre-calculated z-index
           return prev.map((w) =>
-            w.id === existing.id ? { ...w, zIndex: newZ, minimized: false } : w
+            w.id === existing.id ? { ...w, zIndex: newZIndex, minimized: false } : w
           );
         }
       }
@@ -550,9 +610,9 @@ export const GameProvider = ({ children }) => {
       const offset = openWindows.length * CASCADE_OFFSET;
 
       const newWindow = {
-        id: `window-${nextWindowIdRef.current++}`, // Unique ID for this window instance
+        id: `window-${newWindowId}`, // Unique ID for this window instance
         appId, // App type (for rendering the correct component)
-        zIndex: nextZIndexRef.current++,
+        zIndex: newZIndex,
         minimized: false,
         position: {
           x: BASE_X + offset,
@@ -869,6 +929,10 @@ export const GameProvider = ({ children }) => {
 
   // Accept mission
   const acceptMission = useCallback((mission) => {
+    console.log('📋 Accepting mission:', mission.missionId, mission.title);
+    console.log('   Has briefingMessage:', !!mission.briefingMessage);
+    console.log('   Is procedural:', !!mission.isProcedurallyGenerated);
+
     // Calculate deadline if mission has a time limit
     const deadlineTime = mission.timeLimitMinutes
       ? new Date(currentTime.getTime() + mission.timeLimitMinutes * 60 * 1000).toISOString()
@@ -882,8 +946,13 @@ export const GameProvider = ({ children }) => {
       objectives: mission.objectives.map(obj => ({ ...obj, status: 'pending' })),
     });
 
-    // Remove the accepted mission from available missions
+    // Remove the accepted mission from available missions (story missions)
     setAvailableMissions(prev => prev.filter(m => m.missionId !== mission.missionId));
+
+    // Also remove from procedural mission pool if it's a procedural mission
+    if (mission.isProcedurallyGenerated) {
+      setMissionPool(prev => prev.filter(m => m.missionId !== mission.missionId));
+    }
 
     // Send the briefing message with NAR attachments (for procedural missions)
     if (mission.briefingMessage) {
@@ -895,25 +964,32 @@ export const GameProvider = ({ children }) => {
         read: false,
       };
 
-      setMessages(prev => {
-        // Prevent duplicate messages
-        if (prev.some(m => m.id === briefingWithTimestamp.id)) {
-          return prev;
-        }
-        // Play notification chime
+      // Check for duplicate before state update
+      const isDuplicate = messages.some(m => m.id === briefingWithTimestamp.id);
+      if (!isDuplicate) {
+        // Pure state update (no side effects)
+        setMessages(prev => [...prev, briefingWithTimestamp]);
+        // Play notification chime after state update (outside updater)
         playNotificationChime();
-        return [...prev, briefingWithTimestamp];
-      });
+      }
     }
-  }, [currentTime, playNotificationChime]);
+  }, [currentTime, messages, playNotificationChime]);
 
   // Complete mission objective
   const completeMissionObjective = useCallback((objectiveId) => {
+    // Check for active mission before state update (for logging)
+    if (!activeMission) {
+      console.log(`⚠️ completeMissionObjective: No active mission to update (objective: ${objectiveId})`);
+      return;
+    }
+
+    // Log before state update (outside updater)
+    console.log(`📋 completeMissionObjective: Updating objective ${objectiveId} for mission ${activeMission.missionId}`);
+
     // Use functional update to get the latest activeMission state
     // This prevents stale closure issues when multiple updates happen quickly
     setActiveMission((currentMission) => {
       if (!currentMission) {
-        console.log(`⚠️ completeMissionObjective: No active mission to update (objective: ${objectiveId})`);
         return null; // Don't set it back if it was already cleared
       }
 
@@ -921,13 +997,12 @@ export const GameProvider = ({ children }) => {
         obj.id === objectiveId ? { ...obj, status: 'complete' } : obj
       );
 
-      console.log(`📋 completeMissionObjective: Updating objective ${objectiveId} for mission ${currentMission.missionId}`);
       return {
         ...currentMission,
         objectives: updatedObjectives,
       };
     });
-  }, []);
+  }, [activeMission]);
 
   // Complete mission (success or failure)
   const completeMission = useCallback((status, payout, reputationChange, failureReason = null) => {
@@ -984,6 +1059,10 @@ export const GameProvider = ({ children }) => {
       missionId: activeMission.missionId || activeMission.id,
       status,
       title: activeMission.title,
+      arcId: activeMission.arcId,
+      arcSequence: activeMission.arcSequence,
+      arcTotal: activeMission.arcTotal,
+      arcName: activeMission.arcName,
     });
 
     // Handle payment based on mission status
@@ -1034,24 +1113,26 @@ export const GameProvider = ({ children }) => {
         return entry;
       }));
 
-      // Disconnect from all revoked networks and emit events
-      setActiveConnections(prev => {
-        const updatedConnections = prev.filter(conn => {
+      // Calculate which connections will be disconnected (before state update)
+      const connectionsToDisconnect = activeConnections.filter(conn =>
+        networksToRevoke.some(net => net.networkId === conn.networkId)
+      );
+
+      // Disconnect from all revoked networks (pure state update)
+      setActiveConnections(prev =>
+        prev.filter(conn => !networksToRevoke.some(net => net.networkId === conn.networkId))
+      );
+
+      // Emit networkDisconnected events after state update (outside updater)
+      queueMicrotask(() => {
+        connectionsToDisconnect.forEach(conn => {
           const networkToRevoke = networksToRevoke.find(net => net.networkId === conn.networkId);
-          if (networkToRevoke) {
-            // Emit networkDisconnected event for TopBar notification
-            queueMicrotask(() => {
-              triggerEventBus.emit('networkDisconnected', {
-                networkId: networkToRevoke.networkId,
-                networkName: networkToRevoke.networkName || networkToRevoke.networkId,
-                reason: networkToRevoke.revokeReason || 'Mission access expired',
-              });
-            });
-            return false; // Remove this connection
-          }
-          return true; // Keep this connection
+          triggerEventBus.emit('networkDisconnected', {
+            networkId: networkToRevoke.networkId,
+            networkName: networkToRevoke.networkName || networkToRevoke.networkId,
+            reason: networkToRevoke.revokeReason || 'Mission access expired',
+          });
         });
-        return updatedConnections;
       });
     }
   }, [activeMission, currentTime, bankAccounts, timeSpeed]);
@@ -1116,6 +1197,10 @@ export const GameProvider = ({ children }) => {
       missionId: activeMission.missionId || activeMission.id,
       status: 'failed',
       title: activeMission.title,
+      arcId: activeMission.arcId,
+      arcSequence: activeMission.arcSequence,
+      arcTotal: activeMission.arcTotal,
+      arcName: activeMission.arcName,
     });
     console.log(`❌ Emitted missionComplete event for ${activeMission.missionId}`);
 
@@ -1443,7 +1528,17 @@ export const GameProvider = ({ children }) => {
       if (operation === 'delete') {
         console.log(`🗑️ Sabotage deleting file: ${fileName}`);
 
-        // Remove file by name from NAR entries
+        // Capture file counts before deletion for logging (outside state updater)
+        const deletionLog = [];
+        narEntries.forEach(entry => {
+          entry.fileSystems?.forEach(fs => {
+            if (fs.files?.some(f => f.name === fileName)) {
+              deletionLog.push({ fsName: fs.name, prevCount: fs.files.length });
+            }
+          });
+        });
+
+        // Remove file by name from NAR entries (pure state update)
         setNarEntries(currentEntries => {
           return currentEntries.map(entry => {
             if (entry.fileSystems) {
@@ -1453,12 +1548,6 @@ export const GameProvider = ({ children }) => {
                   if (fs.files && fs.files.length > 0) {
                     // Remove the file matching the fileName
                     const remainingFiles = fs.files.filter(f => f.name !== fileName);
-                    const deletedCount = fs.files.length - remainingFiles.length;
-
-                    if (deletedCount > 0) {
-                      console.log(`  🗑️ FS ${fs.name}: Deleted ${fileName} (${fs.files.length} → ${remainingFiles.length} files)`);
-                    }
-
                     return {
                       ...fs,
                       files: remainingFiles
@@ -1470,6 +1559,11 @@ export const GameProvider = ({ children }) => {
             }
             return entry;
           });
+        });
+
+        // Log deletions after state update (outside updater)
+        deletionLog.forEach(({ fsName, prevCount }) => {
+          console.log(`  🗑️ FS ${fsName}: Deleted ${fileName} (${prevCount} → ${prevCount - 1} files)`);
         });
       }
     };
@@ -1487,14 +1581,21 @@ export const GameProvider = ({ children }) => {
       const { networkId } = data;
       console.log(`🔌 Force disconnecting from network: ${networkId}`);
 
-      // Remove active connections matching the network ID or name
+      // Capture connection count before update for logging (outside state updater)
+      const prevCount = activeConnections.length;
+
+      // Remove active connections matching the network ID or name (pure state update)
       setActiveConnections(currentConns => {
-        const filtered = currentConns.filter(conn => {
+        return currentConns.filter(conn => {
           return conn.networkId !== networkId && conn.networkName !== networkId;
         });
-        console.log(`  🔌 Disconnected from ${networkId}: ${currentConns.length} → ${filtered.length} connections`);
-        return filtered;
       });
+
+      // Log after state update (outside updater)
+      const matchingCount = activeConnections.filter(conn =>
+        conn.networkId === networkId || conn.networkName === networkId
+      ).length;
+      console.log(`  🔌 Disconnected from ${networkId}: ${prevCount} → ${prevCount - matchingCount} connections`);
     };
 
     triggerEventBus.on('forceNetworkDisconnect', handleForceNetworkDisconnect);
@@ -1502,7 +1603,7 @@ export const GameProvider = ({ children }) => {
     return () => {
       triggerEventBus.off('forceNetworkDisconnect', handleForceNetworkDisconnect);
     };
-  }, [setActiveConnections]);
+  }, [activeConnections]);
 
   // Listen for NAR entry revocation
   useEffect(() => {

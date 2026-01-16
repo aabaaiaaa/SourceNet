@@ -458,4 +458,135 @@ describe('Network Address Integration', () => {
 
         console.log('✅ Verified clicking one attachment only marks that specific attachment as activated');
     });
+
+    it('should deduplicate disconnection notices when same networkId event fires multiple times', async () => {
+        // This test verifies the TopBar handles duplicate networkDisconnected events correctly
+        // (which can happen due to React StrictMode double-invoking state updaters)
+
+        const triggerEventBusModule = await import('../../core/triggerEventBus');
+        const triggerEventBus = triggerEventBusModule.default;
+
+        const saveState = createCompleteSaveState({
+            username: 'testuser',
+            messages: [],
+            software: [
+                { id: 'osnet', type: 'os' },
+                { id: 'portal', type: 'system' },
+                { id: 'mail', type: 'system' },
+                { id: 'banking', type: 'system' },
+            ],
+            narEntries: [],
+            activeConnections: [
+                { networkId: 'test-network-1', networkName: 'Test Network 1' },
+            ],
+        });
+
+        setSaveInLocalStorage('testuser', saveState);
+
+        render(
+            <GameProvider>
+                <GameLoader username="testuser" />
+                <TopBar />
+            </GameProvider>
+        );
+
+        // Wait for game to load
+        await waitFor(() => {
+            expect(screen.getByText(/credits/)).toBeInTheDocument();
+        });
+
+        // Simulate duplicate networkDisconnected events (as would happen with StrictMode)
+        triggerEventBus.emit('networkDisconnected', {
+            networkId: 'test-network-1',
+            networkName: 'Test Network 1',
+            reason: 'Mission access expired',
+        });
+
+        // Fire the same event again immediately (simulating StrictMode double-invoke)
+        triggerEventBus.emit('networkDisconnected', {
+            networkId: 'test-network-1',
+            networkName: 'Test Network 1',
+            reason: 'Mission access expired',
+        });
+
+        // Wait for disconnection notice to appear
+        await waitFor(() => {
+            expect(screen.getByText('Network Disconnected')).toBeInTheDocument();
+        });
+
+        // CRITICAL: Should only show ONE notice for test-network-1, not two
+        const networkNames = screen.getAllByText('Test Network 1');
+        expect(networkNames).toHaveLength(1);
+
+        // Verify reason is shown once
+        const reasons = screen.getAllByText('Mission access expired');
+        expect(reasons).toHaveLength(1);
+
+        console.log('✅ Verified duplicate networkDisconnected events result in single notice');
+    });
+
+    it('should show separate notices for different networkIds disconnected at same time', async () => {
+        // This test verifies that multiple DIFFERENT networks disconnecting shows multiple notices
+
+        const triggerEventBusModule = await import('../../core/triggerEventBus');
+        const triggerEventBus = triggerEventBusModule.default;
+
+        const saveState = createCompleteSaveState({
+            username: 'testuser',
+            messages: [],
+            software: [
+                { id: 'osnet', type: 'os' },
+                { id: 'portal', type: 'system' },
+                { id: 'mail', type: 'system' },
+                { id: 'banking', type: 'system' },
+            ],
+            narEntries: [],
+            activeConnections: [
+                { networkId: 'network-a', networkName: 'Network A' },
+                { networkId: 'network-b', networkName: 'Network B' },
+            ],
+        });
+
+        setSaveInLocalStorage('testuser', saveState);
+
+        render(
+            <GameProvider>
+                <GameLoader username="testuser" />
+                <TopBar />
+            </GameProvider>
+        );
+
+        // Wait for game to load
+        await waitFor(() => {
+            expect(screen.getByText(/credits/)).toBeInTheDocument();
+        });
+
+        // Emit disconnection for two DIFFERENT networks
+        triggerEventBus.emit('networkDisconnected', {
+            networkId: 'network-a',
+            networkName: 'Network A',
+            reason: 'NAR revoked',
+        });
+
+        triggerEventBus.emit('networkDisconnected', {
+            networkId: 'network-b',
+            networkName: 'Network B',
+            reason: 'NAR revoked',
+        });
+
+        // Wait for disconnection notices to appear
+        await waitFor(() => {
+            expect(screen.getByText('Network Disconnected')).toBeInTheDocument();
+        });
+
+        // Should show TWO notices - one for each network
+        expect(screen.getByText('Network A')).toBeInTheDocument();
+        expect(screen.getByText('Network B')).toBeInTheDocument();
+
+        // Both should have the reason displayed
+        const reasons = screen.getAllByText('NAR revoked');
+        expect(reasons).toHaveLength(2);
+
+        console.log('✅ Verified different networkIds show separate notices');
+    });
 });

@@ -84,10 +84,10 @@ const TopBar = () => {
       const { networkId, networkName, reason } = data;
       console.log(`📡 TopBar received networkDisconnected: ${networkName} - ${reason}`);
 
-      // Add to notices (stacking)
+      // Add to notices (deduplicate by networkId, keeping latest)
       setDisconnectionNotices(prev => [
-        ...prev,
-        { networkId, networkName, reason, id: Date.now() }
+        ...prev.filter(n => n.networkId !== networkId),
+        { networkId, networkName, reason }
       ]);
 
       // Clear existing timer and start new 3-second timer (resets on new notices)
@@ -370,7 +370,7 @@ const TopBar = () => {
                 <button className="dismiss-btn" onClick={dismissDisconnectionNotices}>×</button>
               </div>
               {disconnectionNotices.map((notice) => (
-                <div key={notice.id} className="preview-item">
+                <div key={notice.networkId} className="preview-item">
                   <strong>{notice.networkName}</strong>
                   <div className="preview-item-small">{notice.reason}</div>
                 </div>

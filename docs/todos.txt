@@ -41,6 +41,9 @@ You can look at the tutorial parts 1 + 2 for some examples, but this is not the 
 when loading the post tutorial scenario, there are duplicate messages in the SNet Mail app. There's a lot of console errors when opening the mail app too.
 
 
+(done - needs testing)
+VPN client allows you to connect to already connected networks. Once you are connected to a network, it shouldn't be an option for the connection drop down.
+
 
 Review the systems in place for handling missions and scripted events and objective tracking as I need to understand how to picture these systems and how best they should integrate with each other as the biggest issues have come from changes in these areas. Each system needs to have a role and individual responsibility so there's not internal variables being changed by external systems. It will then aid in writing test cases for each system.
 

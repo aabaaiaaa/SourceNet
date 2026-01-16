@@ -540,8 +540,9 @@ describe('File Manager Integration', () => {
         // Should not show "not connected" message anymore
         expect(screen.queryByText(/Not connected to any networks/i)).not.toBeInTheDocument();
 
-        // Can now select file system in File Manager
-        const fileManagerSelect = screen.getAllByRole('combobox')[1]; // File Manager selector
+        // Can now select file system in File Manager (use specific container since VPN dropdown is hidden when connected)
+        const fileManagerContainer = document.querySelector('.file-manager');
+        const fileManagerSelect = within(fileManagerContainer).getByRole('combobox');
         await user.selectOptions(fileManagerSelect, 'fs-001');
 
         await waitFor(() => {
@@ -957,10 +958,11 @@ describe('File Manager Integration', () => {
             </GameProvider>
         );
 
-        await waitFor(() => expect(screen.getAllByRole('combobox').length).toBeGreaterThan(0), { timeout: 10000 });
+        await waitFor(() => expect(screen.getByText('File Manager')).toBeInTheDocument(), { timeout: 10000 });
 
-        // Select file system and copy a file
-        const fmSelect = screen.getAllByRole('combobox')[1]; // FileManager selector
+        // Select file system and copy a file (use specific container since VPN dropdown is hidden when connected)
+        const fmContainer = document.querySelector('.file-manager');
+        const fmSelect = within(fmContainer).getByRole('combobox');
         await user.selectOptions(fmSelect, 'fs-001');
 
         await waitFor(() => expect(screen.getByText('data.txt')).toBeInTheDocument());
@@ -1182,9 +1184,11 @@ describe('File Manager Integration', () => {
             </GameProvider>
         );
 
-        await waitFor(() => expect(screen.getAllByRole('combobox').length).toBeGreaterThan(0), { timeout: 10000 });
+        await waitFor(() => expect(screen.getByText('File Manager')).toBeInTheDocument(), { timeout: 10000 });
 
-        const fmSelect = screen.getAllByRole('combobox')[1]; // FileManager selector
+        // Use specific container since VPN dropdown is hidden when all networks are connected
+        const fmContainer = document.querySelector('.file-manager');
+        const fmSelect = within(fmContainer).getByRole('combobox');
 
         // Copy from source network
         await user.selectOptions(fmSelect, 'fs-source');

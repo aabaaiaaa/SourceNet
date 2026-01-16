@@ -265,21 +265,21 @@ export function refreshPool(poolState, reputation, currentTime, activeMissionId 
 /**
  * Handle arc mission progression when a mission is completed successfully
  * @param {Object} poolState - Current pool state
- * @param {string} completedMissionId - ID of completed mission
+ * @param {Object} completedMissionData - Data about completed mission { missionId, arcId, arcName, ... }
  * @param {Date} _currentTime - Current game time (reserved for future use)
  * @returns {Object} Updated pool state with next arc mission revealed (if applicable)
  */
-export function handleArcProgression(poolState, completedMissionId, _currentTime) {
+export function handleArcProgression(poolState, completedMissionData, _currentTime) {
     const { missions, pendingArcMissions, activeClientIds, completedMissions = [] } = poolState;
 
-    // Find the completed mission in the current pool or check if it was an active mission
-    const completedMission = missions.find(m => m.missionId === completedMissionId);
+    // Extract arc info from the mission data passed directly
+    const { missionId, arcId, arcName } = completedMissionData;
 
     // Add to completed missions list
-    const newCompletedMissions = [...completedMissions, completedMissionId];
+    const newCompletedMissions = [...completedMissions, missionId];
 
     // If not part of an arc, just update completed list
-    if (!completedMission?.arcId) {
+    if (!arcId) {
         return {
             ...poolState,
             completedMissions: newCompletedMissions,
@@ -287,7 +287,6 @@ export function handleArcProgression(poolState, completedMissionId, _currentTime
         };
     }
 
-    const arcId = completedMission.arcId;
     const pendingMissions = pendingArcMissions[arcId];
 
     // If no more pending missions for this arc, arc is complete
@@ -300,7 +299,7 @@ export function handleArcProgression(poolState, completedMissionId, _currentTime
             pendingArcMissions: newPendingArcMissions,
             completedMissions: newCompletedMissions,
             nextArcMission: null,
-            arcCompleted: completedMission.arcName
+            arcCompleted: arcName
         };
     }
 
@@ -336,42 +335,46 @@ export function handleArcProgression(poolState, completedMissionId, _currentTime
 /**
  * Handle arc mission failure - remove all pending arc missions
  * @param {Object} poolState - Current pool state
- * @param {string} failedMissionId - ID of failed mission
+ * @param {Object} failedMissionData - Data about failed mission { missionId, arcId, clientId, ... }
  * @returns {Object} Updated pool state with arc missions removed
  */
-export function handleArcFailure(poolState, failedMissionId) {
+export function handleArcFailure(poolState, failedMissionData) {
     const { missions, pendingArcMissions, activeClientIds } = poolState;
 
-    // Find the failed mission
-    const failedMission = missions.find(m => m.missionId === failedMissionId);
-    if (!failedMission) {
+    const { arcId, clientId } = failedMissionData;
+
+    // If not part of an arc, just return current state
+    if (!arcId) {
         return poolState;
     }
 
-    // Remove from missions
-    let newMissions = missions.filter(m => m.missionId !== failedMissionId);
     let newActiveClients = [...activeClientIds];
     let newPendingArcMissions = { ...pendingArcMissions };
 
     // If part of an arc, remove all pending arc missions
-    if (failedMission.arcId && pendingArcMissions[failedMission.arcId]) {
+    if (pendingArcMissions[arcId]) {
         // Remove all clients from arc from active list
-        const arcMissions = pendingArcMissions[failedMission.arcId];
+        const arcMissions = pendingArcMissions[arcId];
         const arcClientIds = new Set(arcMissions.map(m => m.clientId));
         newActiveClients = activeClientIds.filter(id => !arcClientIds.has(id));
 
         // Remove arc from pending
-        delete newPendingArcMissions[failedMission.arcId];
+        delete newPendingArcMissions[arcId];
+
+        console.log(`🚫 Arc "${arcId}" cancelled due to mission failure`);
     }
 
-    // Remove failed mission's client
-    newActiveClients = newActiveClients.filter(id => id !== failedMission.clientId);
+    // Remove failed mission's client from active list
+    if (clientId) {
+        newActiveClients = newActiveClients.filter(id => id !== clientId);
+    }
 
     return {
         ...poolState,
-        missions: newMissions,
+        missions,
         pendingArcMissions: newPendingArcMissions,
-        activeClientIds: newActiveClients
+        activeClientIds: newActiveClients,
+        arcCancelled: arcId
     };
 }
 
