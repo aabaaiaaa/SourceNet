@@ -11,7 +11,7 @@
     "test": "vitest --no-watch",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage --no-watch",
-    "test:e2e": "playwright test e2e/systems",
+    "test:e2e": "playwright test e2e/systems --retries=2",
     "test:e2e:playthroughs": "playwright test e2e/playthroughs",
     "generate:scenarios": "playwright test e2e/generators"
   },

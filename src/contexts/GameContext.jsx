@@ -7,6 +7,7 @@ import {
   STARTING_BANK_ACCOUNT,
   MANAGER_NAMES,
   MULTI_INSTANCE_APPS,
+  LOCAL_SSD_NETWORK_ID,
 } from '../constants/gameConstants';
 import {
   generateMailId,
@@ -34,6 +35,7 @@ import { getReputationTier } from '../systems/ReputationSystem';
 import triggerEventBus from '../core/triggerEventBus';
 import { executeScriptedEvent } from '../missions/ScriptedEventExecutor';
 import { initializePool, refreshPool, shouldRefreshPool, handleArcProgression, handleArcFailure } from '../missions/MissionPoolManager';
+import { shouldTriggerExtension, generateExtension, getObjectiveProgress } from '../missions/MissionExtensionGenerator';
 
 export const GameContext = createContext();
 
@@ -138,6 +140,9 @@ export const GameProvider = ({ children }) => {
   // File Manager Clipboard (shared across instances, cleared on disconnect)
   const [fileClipboard, setFileClipboard] = useState({ files: [], sourceFileSystemId: '', sourceNetworkId: '' });
 
+  // Local SSD files (files stored on the player's terminal)
+  const [localSSDFiles, setLocalSSDFiles] = useState([]);
+
   // Auto-tracking control (can be disabled for testing)
   const [autoTrackingEnabled, setAutoTrackingEnabled] = useState(true);
 
@@ -168,9 +173,9 @@ export const GameProvider = ({ children }) => {
     });
   }, []);
 
-  // Clear clipboard when disconnecting from source network
+  // Clear clipboard when disconnecting from source network (exempt local SSD)
   useEffect(() => {
-    if (fileClipboard.sourceNetworkId) {
+    if (fileClipboard.sourceNetworkId && fileClipboard.sourceNetworkId !== LOCAL_SSD_NETWORK_ID) {
       const stillConnected = activeConnections.some(conn => conn.networkId === fileClipboard.sourceNetworkId);
       if (!stillConnected) {
         console.log('📋 Clipboard cleared - disconnected from source network');
@@ -324,6 +329,118 @@ export const GameProvider = ({ children }) => {
     const unsubscribe = triggerEventBus.on('missionComplete', handleMissionComplete);
     return () => unsubscribe();
   }, [proceduralMissionsEnabled, missionPool, pendingChainMissions, activeClientIds, currentTime]);
+
+  // Handle mission extensions when objectives complete
+  useEffect(() => {
+    if (!activeMission) return;
+
+    const handleObjectiveComplete = (data) => {
+      // Only handle objectives from the current active mission
+      if (data.missionId !== activeMission.missionId) return;
+
+      // Get objective progress (excluding verification)
+      const { completed, total, isAllRealComplete } = getObjectiveProgress(activeMission.objectives);
+
+      // Check if extension should trigger
+      const shouldExtend = shouldTriggerExtension(
+        activeMission,
+        completed,
+        total,
+        isAllRealComplete,
+        extensionOffers
+      );
+
+      if (!shouldExtend) return;
+
+      // Generate the extension
+      const extension = generateExtension(activeMission, isAllRealComplete);
+      if (!extension) return;
+
+      const missionId = activeMission.missionId || activeMission.id;
+      console.log(`🔧 Mission extension triggered for ${missionId} (${isAllRealComplete ? 'post-completion' : 'mid-mission'})`);
+
+      // Mark this mission as extended to prevent double-extension
+      setExtensionOffers(prev => ({
+        ...prev,
+        [missionId]: {
+          triggered: true,
+          isPostCompletion: extension.isPostCompletion,
+          payoutMultiplier: extension.payoutMultiplier
+        }
+      }));
+
+      // Update the active mission with new objectives and networks
+      setActiveMission(prev => {
+        if (!prev) return null;
+
+        // Find verification objective index
+        const verificationIndex = prev.objectives.findIndex(obj => obj.type === 'verification');
+
+        // Insert new objectives before verification (or at end if no verification)
+        let newObjectives;
+        if (verificationIndex >= 0) {
+          newObjectives = [
+            ...prev.objectives.slice(0, verificationIndex),
+            ...extension.objectives,
+            ...prev.objectives.slice(verificationIndex)
+          ];
+        } else {
+          newObjectives = [...prev.objectives, ...extension.objectives];
+        }
+
+        // Update payout
+        const newPayout = Math.floor(prev.basePayout * extension.payoutMultiplier);
+
+        return {
+          ...prev,
+          objectives: newObjectives,
+          networks: extension.networks,
+          basePayout: newPayout,
+          extended: true,
+          extensionPayoutMultiplier: extension.payoutMultiplier
+        };
+      });
+
+      // Send extension message to player
+      const templateId = `extension-${extension.messageTemplate}`;
+      const extensionMessage = createMessageFromTemplate(templateId, {
+        username,
+        clientName: extension.clientName
+      });
+
+      if (extensionMessage) {
+        // Add NAR attachment if extension requires new network
+        if (extension.narAttachment) {
+          extensionMessage.attachments = [
+            ...(extensionMessage.attachments || []),
+            extension.narAttachment
+          ];
+        }
+
+        // Small delay before sending so player sees objective complete first
+        setTimeout(() => {
+          setMessages(prev => {
+            const isDuplicate = prev.some(m => m.id === extensionMessage.id);
+            if (isDuplicate) return prev;
+            return [...prev, { ...extensionMessage, timestamp: new Date(currentTime) }];
+          });
+          // Play notification sound
+          try {
+            const audio = new Audio('/sounds/notification.mp3');
+            audio.volume = 0.5;
+            audio.play().catch(() => { });
+          } catch {
+            // Audio unavailable
+          }
+        }, 1500);
+      }
+
+      console.log(`📬 Extension message "${templateId}" queued with ${extension.objectives.length} new objectives`);
+    };
+
+    const unsubscribe = triggerEventBus.on('objectiveComplete', handleObjectiveComplete);
+    return () => unsubscribe();
+  }, [activeMission, extensionOffers, username, currentTime]);
 
   // Download manager - handles progress updates for downloads based on game time
   useDownloadManager(
@@ -976,7 +1093,8 @@ export const GameProvider = ({ children }) => {
   }, [currentTime, messages, playNotificationChime]);
 
   // Complete mission objective
-  const completeMissionObjective = useCallback((objectiveId) => {
+  // isPreCompleted: true if this objective was completed before becoming the "current" objective
+  const completeMissionObjective = useCallback((objectiveId, isPreCompleted = false) => {
     // Check for active mission before state update (for logging)
     if (!activeMission) {
       console.log(`⚠️ completeMissionObjective: No active mission to update (objective: ${objectiveId})`);
@@ -984,7 +1102,7 @@ export const GameProvider = ({ children }) => {
     }
 
     // Log before state update (outside updater)
-    console.log(`📋 completeMissionObjective: Updating objective ${objectiveId} for mission ${activeMission.missionId}`);
+    console.log(`📋 completeMissionObjective: Updating objective ${objectiveId} for mission ${activeMission.missionId}${isPreCompleted ? ' (pre-completed)' : ''}`);
 
     // Use functional update to get the latest activeMission state
     // This prevents stale closure issues when multiple updates happen quickly
@@ -994,7 +1112,7 @@ export const GameProvider = ({ children }) => {
       }
 
       const updatedObjectives = currentMission.objectives.map(obj =>
-        obj.id === objectiveId ? { ...obj, status: 'complete' } : obj
+        obj.id === objectiveId ? { ...obj, status: 'complete', preCompleted: isPreCompleted } : obj
       );
 
       return {
@@ -1816,6 +1934,8 @@ export const GameProvider = ({ children }) => {
       activeClientIds,
       clientStandings,
       extensionOffers,
+      // Local SSD files
+      localSSDFiles,
     };
 
     saveToLocalStorage(username, gameState, saveName);
@@ -1823,7 +1943,7 @@ export const GameProvider = ({ children }) => {
     reputation, reputationCountdown, activeMission, completedMissions, availableMissions, missionCooldowns,
     narEntries, activeConnections, lastScanResults, discoveredDevices, fileManagerConnections, lastFileOperation,
     downloadQueue, transactions, licensedSoftware, bankruptcyCountdown, lastInterestTime, bankingMessagesSent, reputationMessagesSent,
-    proceduralMissionsEnabled, missionPool, pendingChainMissions, activeClientIds, clientStandings, extensionOffers]);
+    proceduralMissionsEnabled, missionPool, pendingChainMissions, activeClientIds, clientStandings, extensionOffers, localSSDFiles]);
 
   // Reboot system
   const rebootSystem = useCallback(() => {
@@ -1992,6 +2112,9 @@ export const GameProvider = ({ children }) => {
     setClientStandings(gameState.clientStandings ?? {});
     setExtensionOffers(gameState.extensionOffers ?? {});
 
+    // Restore local SSD files
+    setLocalSSDFiles(gameState.localSSDFiles ?? []);
+
     // Validate and fix window positions when loading
     const loadedWindows = (gameState.windows || []).map((w, index) => {
       // If position is missing or invalid, calculate a valid position
@@ -2121,6 +2244,10 @@ export const GameProvider = ({ children }) => {
     setFileClipboard,
     clearFileClipboard,
     updateFileSystemFiles,
+
+    // Local SSD
+    localSSDFiles,
+    setLocalSSDFiles,
 
     // Procedural Mission System
     proceduralMissionsEnabled,

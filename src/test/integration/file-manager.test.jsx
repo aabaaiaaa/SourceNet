@@ -136,12 +136,12 @@ describe('File Manager Integration', () => {
             expect(topBarCredits).toHaveTextContent(/credits/);
         });
 
-        // FileManager should show "Scan network to discover devices" before scan
+        // FileManager should show Local SSD option even before network scan
         const fileManagerSelect = screen.getAllByRole('combobox').find(select =>
-            select.textContent.includes('Scan network to discover devices')
+            select.textContent.includes('Local SSD')
         );
         expect(fileManagerSelect).toBeDefined();
-        expect(fileManagerSelect.textContent).toContain('Scan network to discover devices');
+        expect(fileManagerSelect.textContent).toContain('Local SSD');
 
         // Perform network scan
         await performNetworkScan(user, 'corp-net-1');

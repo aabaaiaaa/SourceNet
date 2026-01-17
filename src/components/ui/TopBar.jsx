@@ -3,7 +3,7 @@ import { useGame } from '../../contexts/useGame';
 import { MULTI_INSTANCE_APPS } from '../../constants/gameConstants';
 import { formatDateTime, getAllSavesFlat } from '../../utils/helpers';
 import { getReputationTier } from '../../systems/ReputationSystem';
-import { calculateStorageUsed, formatStorage } from '../../systems/StorageSystem';
+import { calculateStorageUsed, calculateLocalFilesSize, formatStorage } from '../../systems/StorageSystem';
 import triggerEventBus from '../../core/triggerEventBus';
 import { scheduleGameTimeCallback, clearGameTimeCallback } from '../../core/gameTimeScheduler';
 import './TopBar.css';
@@ -60,6 +60,7 @@ const TopBar = () => {
     reputationCountdown,
     software,
     getBandwidthInfo,
+    localSSDFiles,
   } = useGame();
 
   const [showPowerMenu, setShowPowerMenu] = useState(false);
@@ -516,7 +517,7 @@ const TopBar = () => {
                 </button>
               ))}
               <div className="app-launcher-storage">
-                {formatStorage(calculateStorageUsed(software || []), 90)}
+                {formatStorage(calculateStorageUsed(software || []), calculateLocalFilesSize(localSSDFiles || []), 90)}
               </div>
             </div>
           )}

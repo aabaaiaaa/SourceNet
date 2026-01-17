@@ -35,11 +35,11 @@ export const useObjectiveAutoTracking = (
   enabled = true
 ) => {
   const processingRef = useRef(false);
-  const lastCompletedRef = useRef(null);
+  const completedObjectiveIdsRef = useRef(new Set());
   const missionCompletedRef = useRef(null);
 
-  // Memoized objective checker
-  const checkAndCompleteObjective = useCallback(() => {
+  // Memoized objective checker - handles multiple objectives completing at once
+  const checkAndCompleteObjectives = useCallback(() => {
     if (!enabled || !activeMission || !activeMission.objectives || processingRef.current) {
       return;
     }
@@ -53,23 +53,38 @@ export const useObjectiveAutoTracking = (
     processingRef.current = true;
 
     try {
-      const completedObjective = checkMissionObjectives(activeMission, gameState);
+      // Get ALL completable objectives (array)
+      const completableObjectives = checkMissionObjectives(activeMission, gameState);
 
-      if (completedObjective && completedObjective.id !== lastCompletedRef.current) {
-        console.log(`✅ Objective auto-completed: ${completedObjective.description}`);
-        lastCompletedRef.current = completedObjective.id;
-        completeMissionObjective(completedObjective.id);
+      // Track which objectives are being completed this cycle
+      const newlyCompletedIds = [];
 
-        // Emit objectiveComplete event for scripted event triggers
-        triggerEventBus.emit('objectiveComplete', {
-          objectiveId: completedObjective.id,
-          missionId: activeMission.missionId,
-          objective: completedObjective
-        });
+      // Complete each objective that hasn't been completed yet
+      for (const objective of completableObjectives) {
+        if (!completedObjectiveIdsRef.current.has(objective.id)) {
+          completedObjectiveIdsRef.current.add(objective.id);
+          newlyCompletedIds.push(objective.id);
 
-        // Check if all objectives now complete
+          // Determine if this is a pre-completion (not the first incomplete objective)
+          const firstIncomplete = activeMission.objectives.find(obj => obj.status !== 'complete');
+          const isPreCompleted = firstIncomplete && firstIncomplete.id !== objective.id;
+
+          console.log(`✅ Objective auto-completed${isPreCompleted ? ' (pre-completed)' : ''}: ${objective.description}`);
+          completeMissionObjective(objective.id, isPreCompleted);
+
+          // Emit objectiveComplete event for scripted event triggers
+          triggerEventBus.emit('objectiveComplete', {
+            objectiveId: objective.id,
+            missionId: activeMission.missionId,
+            objective: objective
+          });
+        }
+      }
+
+      // Check if all objectives now complete (after this batch)
+      if (newlyCompletedIds.length > 0) {
         const updatedObjectives = activeMission.objectives.map((obj) =>
-          obj.id === completedObjective.id ? { ...obj, status: 'complete' } : obj
+          completedObjectiveIdsRef.current.has(obj.id) ? { ...obj, status: 'complete' } : obj
         );
 
         if (areAllObjectivesComplete(updatedObjectives)) {
@@ -105,21 +120,21 @@ export const useObjectiveAutoTracking = (
     const unsubscribers = events.map((eventType) =>
       triggerEventBus.on(eventType, () => {
         // Small delay to ensure state has updated before checking
-        setTimeout(checkAndCompleteObjective, 50);
+        setTimeout(checkAndCompleteObjectives, 50);
       })
     );
 
     return () => {
       unsubscribers.forEach((unsub) => unsub());
     };
-  }, [enabled, checkAndCompleteObjective]);
+  }, [enabled, checkAndCompleteObjectives]);
 
   // Reset tracking when mission changes
   useEffect(() => {
     const missionId = activeMission?.missionId || activeMission?.id;
     if (missionId) {
       // Reset refs for new mission
-      lastCompletedRef.current = null;
+      completedObjectiveIdsRef.current = new Set();
       // Only reset missionCompletedRef if it's a different mission
       if (missionCompletedRef.current !== missionId) {
         missionCompletedRef.current = null;
@@ -127,14 +142,14 @@ export const useObjectiveAutoTracking = (
     }
   }, [activeMission?.missionId, activeMission?.id]);
 
-  // Check objectives when mission is first accepted (some may already be met)
+  // Check objectives when mission is first accepted (catch-up for pre-satisfied objectives)
   useEffect(() => {
     if (!enabled || !activeMission) return;
 
     // Delay initial check to allow state to settle
-    const timeoutId = setTimeout(checkAndCompleteObjective, 100);
+    const timeoutId = setTimeout(checkAndCompleteObjectives, 100);
     return () => clearTimeout(timeoutId);
-  }, [enabled, activeMission?.missionId, checkAndCompleteObjective]);
+  }, [enabled, activeMission?.missionId, checkAndCompleteObjectives]);
 
   // Watch for all objectives being complete (handles externally completed objectives like obj-verify)
   useEffect(() => {

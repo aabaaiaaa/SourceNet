@@ -52,7 +52,7 @@ describe('useObjectiveAutoTracking', () => {
         vi.advanceTimersByTime(100);
       });
 
-      expect(completeMissionObjective).toHaveBeenCalledWith('obj-1');
+      expect(completeMissionObjective).toHaveBeenCalledWith('obj-1', false);
     });
 
     it('should not complete objective when connected to different network', () => {
@@ -133,7 +133,7 @@ describe('useObjectiveAutoTracking', () => {
         vi.advanceTimersByTime(100);
       });
 
-      expect(completeMissionObjective).toHaveBeenCalledWith('obj-2');
+      expect(completeMissionObjective).toHaveBeenCalledWith('obj-2', false);
     });
   });
 
@@ -173,7 +173,7 @@ describe('useObjectiveAutoTracking', () => {
         vi.advanceTimersByTime(100);
       });
 
-      expect(completeMissionObjective).toHaveBeenCalledWith('obj-1');
+      expect(completeMissionObjective).toHaveBeenCalledWith('obj-1', false);
     });
   });
 
@@ -213,7 +213,7 @@ describe('useObjectiveAutoTracking', () => {
         vi.advanceTimersByTime(100);
       });
 
-      expect(completeMissionObjective).toHaveBeenCalledWith('obj-1');
+      expect(completeMissionObjective).toHaveBeenCalledWith('obj-1', false);
     });
 
     it('should not complete objective when targetFiles not all completed', () => {
@@ -293,7 +293,7 @@ describe('useObjectiveAutoTracking', () => {
         vi.advanceTimersByTime(200); // Allow time for both objective and mission completion
       });
 
-      expect(completeMissionObjective).toHaveBeenCalledWith('obj-1');
+      expect(completeMissionObjective).toHaveBeenCalledWith('obj-1', false);
       expect(completeMission).toHaveBeenCalledWith('success', 1500, 2); // 1000 * 1.5 = 1500
     });
 
@@ -413,7 +413,7 @@ describe('useObjectiveAutoTracking', () => {
   });
 
   describe('objective ordering', () => {
-    it('should only complete the first incomplete objective', () => {
+    it('should complete multiple objectives simultaneously when conditions are met (out-of-order completion)', () => {
       const completeMissionObjective = vi.fn();
       const completeMission = vi.fn();
 
@@ -426,7 +426,7 @@ describe('useObjectiveAutoTracking', () => {
         ],
       };
 
-      // Both networks connected, but only first objective should complete
+      // Both networks connected - both objectives should complete
       const gameState = {
         activeConnections: [{ networkId: 'network-a' }, { networkId: 'network-b' }],
         lastScanResults: null,
@@ -450,9 +450,10 @@ describe('useObjectiveAutoTracking', () => {
         vi.advanceTimersByTime(100);
       });
 
-      // Only first objective should be completed
-      expect(completeMissionObjective).toHaveBeenCalledTimes(1);
-      expect(completeMissionObjective).toHaveBeenCalledWith('obj-1');
+      // Both objectives should be completed (first one normally, second one pre-completed)
+      expect(completeMissionObjective).toHaveBeenCalledTimes(2);
+      expect(completeMissionObjective).toHaveBeenCalledWith('obj-1', false);
+      expect(completeMissionObjective).toHaveBeenCalledWith('obj-2', true); // Pre-completed
     });
   });
 });

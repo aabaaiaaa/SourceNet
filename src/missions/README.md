@@ -86,6 +86,22 @@ Monitors game state for objective completion:
 - Supports: networkConnection, networkScan, fileSystemConnection, fileOperation, narEntryAdded, verification
 - Emits objectiveComplete events
 - Tracks file operation progress with cumulative completion
+- **Out-of-order completion**: Objectives can complete in any order based on player actions
+  - If player completes a later objective before earlier ones, it's marked as "pre-completed"
+  - Pre-completed objectives display with grey styling until prior objectives complete
+  - Once all prior objectives complete, pre-completed objectives turn green
+  - Verification objectives still require all other objectives to be complete first
+- **Return format**: `checkMissionObjectives()` returns an array of all completable objectives (not just the first)
+
+### useObjectiveAutoTracking.js
+React hook that automatically completes objectives based on game events:
+- Subscribes to: networkConnected, networkScanComplete, fileSystemConnected, fileOperationComplete, narEntryAdded
+- Handles multiple objectives completing simultaneously
+- Tracks completed objective IDs to prevent duplicates
+- Emits `objectiveComplete` event for each completion (used by scripted events and extensions)
+- Performs "catch-up" check on mission activation to complete already-satisfied objectives
+- Parameters passed to `completeMissionObjective(objectiveId, isPreCompleted)`:
+  - `isPreCompleted`: true if objective completed before becoming the "current" objective
 
 ## Objective Types
 
@@ -289,18 +305,122 @@ Reputation tiers affect which clients are available:
 └─────────────────┘
 ```
 
+## Mission Extensions
+
+Extensions are mandatory mid-mission additions triggered by the client. They add new objectives and increase payout.
+
+### Trigger Points
+- **Mid-mission**: When ≥50% of objectives complete (excluding verification), 25% chance
+- **Post-completion**: After all real objectives complete but before verification, 20% chance
+
+### Extension Patterns per Mission Type
+
+**Repair Mission**
+- Pattern A: More corrupted files on same server (no new NAR)
+- Pattern B: Second damaged server on same network (no new NAR)
+- Pattern C: New network with damaged server (new NAR credentials)
+
+**Backup Mission**
+- Pattern A: Additional files to backup (no new NAR)
+- Pattern B: Secondary backup destination on same network (no new NAR)
+- Pattern C: Offsite backup network (new NAR credentials)
+
+**Transfer Mission**
+- Pattern A: More files to transfer (no new NAR)
+- Pattern B: Additional destination server (no new NAR)
+- Pattern C: Partner network destination (new NAR credentials)
+
+### Payout Multipliers
+- Mid-mission extensions: 1.3x - 1.5x original payout
+- Post-completion extensions: 1.5x - 1.8x original payout (higher bonus for "surprise" work)
+
+### Pattern Selection
+- 30% chance of Pattern C (new network with NAR)
+- 70% chance of Pattern A or B (same network, 50/50 split)
+
+### Extension Flow
+1. Objective completes → trigger check
+2. If extension triggers: generate extension objectives
+3. Inject objectives before verification
+4. Update mission payout with multiplier
+5. Send client message explaining additional work
+6. If Pattern C: message includes new NAR attachment
+
+## Local SSD Storage
+
+Players have access to a local SSD through File Manager for gathering files from multiple remote locations.
+
+### Key Points
+- Always available as first option in File Manager dropdown (💾 Local SSD)
+- Network ID: `'local'` (constant: `LOCAL_SSD_NETWORK_ID`)
+- Bandwidth: 4000 Mbps (nearly instant operations)
+- Capacity: 90 GB (shared with installed software)
+- Clipboard from local SSD is NOT cleared when disconnecting from remote networks
+
+### Storage Display
+TopBar shows: `Apps: X GB | Files: Y GB | Z GB free`
+- Apps: Size of installed software
+- Files: Size of files stored on local SSD
+- Paste blocked if insufficient free space
+
+### Use Case
+Missions requiring files from multiple networks:
+1. Connect to Network A, copy files to local SSD
+2. Connect to Network B, copy more files to local SSD
+3. Connect to destination Network C, paste all files from local SSD
+
+## File Operations
+
+### Operation Durations
+Operations use bandwidth-based duration calculation except for copy:
+
+| Operation | Duration Formula | Notes |
+|-----------|-----------------|-------|
+| Copy | 200ms + 3.7ms/MB (max 4s) | Reference only, no data transfer |
+| Paste | bandwidth-based × 1.5 | Actual data transfer |
+| Repair | bandwidth-based × 2.0 | Slower for gameplay balance |
+| Delete | bandwidth-based × 0.5 | Fast operation |
+
+- Minimum duration for paste/repair/delete: 2 seconds (for visible progress bar)
+- Local SSD operations are nearly instant (4000 Mbps bandwidth)
+
+### Cumulative File Tracking
+- `missionFileOperations` tracks all completed operations per type
+- Format: `{ paste: Set(['file1.txt', 'file2.txt']), repair: Set([...]) }`
+- Objectives check cumulative completion, not just last operation
+- Allows objectives to be satisfied across multiple batches
+
+## Event Bus Events (triggerEventBus)
+
+Key events used by the mission system:
+
+| Event | Payload | Triggered By |
+|-------|---------|--------------|
+| `objectiveComplete` | `{objectiveId, missionId, objective}` | useObjectiveAutoTracking |
+| `fileOperationComplete` | `{operation, filesAffected, fileNames, fileSystem}` | FileManager |
+| `networkConnected` | `{networkId}` | VPN connection |
+| `networkScanComplete` | `{machines[]}` | Network Scanner |
+| `fileSystemConnected` | `{fileSystemId, ip}` | FileManager dropdown selection |
+| `narEntryAdded` | `{networkId}` | NAR save |
+
+These events trigger:
+- Objective auto-completion checks
+- Mission extension eligibility checks
+- Scripted event execution (e.g., tutorial sabotage)
+
 ## File Structure
 
 ```
 missions/
-├── MissionGenerator.js      # Procedural generation
-├── MissionPoolManager.js    # Pool management & arcs
-├── arcStorylines.js         # Arc storyline templates
-├── StoryMissionManager.js   # Story mission orchestration
-├── ObjectiveTracker.js      # Objective completion tracking
-├── ScriptedEventExecutor.js # Scripted event handling
-├── missionData.js           # Story mission imports
-├── messageTemplates.js      # Mail message templates
+├── MissionGenerator.js          # Procedural generation
+├── MissionExtensionGenerator.js # Mid-mission extensions
+├── MissionPoolManager.js        # Pool management & arcs
+├── arcStorylines.js             # Arc storyline templates
+├── StoryMissionManager.js       # Story mission orchestration
+├── ObjectiveTracker.js          # Objective completion tracking
+├── ScriptedEventExecutor.js     # Scripted event handling
+├── missionData.js               # Story mission imports
+├── messageTemplates.js          # Mail message templates (incl. extension templates)
 └── data/
     ├── welcome-messages.json
     ├── mission-board-intro.json
@@ -322,6 +442,9 @@ missions/
 5. Briefing email with NAR credentials sent to inbox
 6. Countdown starts in TopBar
 7. Player adds credentials to NAR, connects, completes objectives
-8. If arc mission, next mission in arc becomes available
-9. NAR credentials revoked, player disconnected from mission networks
-10. Pool replenishes to maintain 4-6 available missions
+8. **At ~50% completion or post-completion: extension may trigger**
+9. **Client sends message with additional objectives (and possibly new NAR)**
+10. Player completes extension objectives
+11. If arc mission, next mission in arc becomes available
+12. NAR credentials revoked, player disconnected from mission networks
+13. Pool replenishes to maintain 4-6 available missions

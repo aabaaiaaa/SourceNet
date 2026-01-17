@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useGame } from '../../contexts/useGame';
+import { LOCAL_SSD_NETWORK_ID, LOCAL_SSD_BANDWIDTH, LOCAL_SSD_CAPACITY_GB } from '../../constants/gameConstants';
+import { calculateStorageUsed, calculateLocalFilesSize } from '../../systems/StorageSystem';
 import triggerEventBus from '../../core/triggerEventBus';
 import './FileManager.css';
 
 const FileManager = () => {
   const game = useGame();
-  const { currentTime } = game;
+  const { currentTime, software } = game;
   const setFileManagerConnections = game.setFileManagerConnections || (() => { });
   const setLastFileOperation = game.setLastFileOperation || (() => { });
   const registerBandwidthOperation = game.registerBandwidthOperation || (() => ({ operationId: null, estimatedTimeMs: 2000 }));
@@ -16,6 +18,8 @@ const FileManager = () => {
   const fileClipboard = game.fileClipboard || { files: [], sourceFileSystemId: '', sourceNetworkId: '' };
   const setFileClipboard = game.setFileClipboard || (() => { });
   const updateFileSystemFiles = game.updateFileSystemFiles || (() => { });
+  const localSSDFiles = game.localSSDFiles || [];
+  const setLocalSSDFiles = game.setLocalSSDFiles || (() => { });
 
   const [selectedFileSystem, setSelectedFileSystem] = useState('');
   const [currentNetworkId, setCurrentNetworkId] = useState('');
@@ -49,6 +53,19 @@ const FileManager = () => {
 
   // Get available file systems from connected networks
   const availableFileSystems = [];
+
+  // Add local SSD as the first option (always available)
+  availableFileSystems.push({
+    id: LOCAL_SSD_NETWORK_ID,
+    ip: 'local',
+    name: 'Local SSD',
+    label: '💾 Local SSD',
+    files: localSSDFiles,
+    networkId: LOCAL_SSD_NETWORK_ID,
+    isLocal: true,
+  });
+
+  // Add remote file systems from connected networks
   activeConnections.forEach((connection) => {
     const narEntry = narEntries.find((entry) => entry.networkId === connection.networkId);
     const discoveredData = discoveredDevices[connection.networkId];
@@ -166,14 +183,20 @@ const FileManager = () => {
             newFiles[fileIndex] = { ...newFiles[fileIndex], selected: false };
           }
 
-          // Persist file changes immediately to narEntries
+          // Persist file changes immediately
           if (operation !== 'copy') {
             const networkId = currentNetworkIdRef.current;
             const fsId = selectedFileSystemRef.current;
             if (networkId && fsId) {
               // Strip selection state before persisting
               const filesToPersist = newFiles.map(({ selected: _selected, ...rest }) => rest);
-              updateFileSystemFiles(networkId, fsId, filesToPersist);
+              if (networkId === LOCAL_SSD_NETWORK_ID) {
+                // Update local SSD files directly
+                setLocalSSDFiles(filesToPersist);
+              } else {
+                // Update remote file system via narEntries
+                updateFileSystemFiles(networkId, fsId, filesToPersist);
+              }
             }
           }
 
@@ -210,9 +233,8 @@ const FileManager = () => {
         });
       });
 
-      // Emit events for completed operations
-      if (completedOps.length > 0 && activeOperationsRef.current.size === 0) {
-        // All operations complete
+      // Emit events for completed operations (emit for each batch, not just when all complete)
+      if (completedOps.length > 0) {
         const operation = completedOps[0].operation;
         const fileNames = completedOps.map(op => op.fileName);
         const eventData = {
@@ -256,10 +278,17 @@ const FileManager = () => {
   // Calculate operation duration based on file size and network bandwidth
   const calculateOperationDuration = (file, operation, bandwidth) => {
     const sizeInMB = parseFileSizeToMB(file.size);
+
+    // Copy is nearly instant - just storing a reference, no data transfer
+    // Larger files take slightly longer for visual feedback
+    if (operation === 'copy') {
+      return Math.min(4000, 200 + (sizeInMB * 3.7)); // 200ms base + 3.7ms/MB, max 4s
+    }
+
     // Base: 1MB takes 1 second at 50 Mbps bandwidth
     // Adjust for actual bandwidth and operation type
     // Multipliers set higher for gameplay feel - operations should be visible
-    const multipliers = { repair: 2, delete: 0.5, copy: 0.3, paste: 1.5 };
+    const multipliers = { repair: 2, delete: 0.5, paste: 1.5 };
     const multiplier = multipliers[operation] || 1;
 
     // bandwidth in Mbps, convert to MB/s: bandwidth / 8
@@ -270,8 +299,11 @@ const FileManager = () => {
     return Math.max(2000, baseTimeSeconds * 1000 * multiplier);
   };
 
-  // Get network bandwidth from NAR entry
+  // Get network bandwidth from NAR entry (or local SSD constant)
   const getNetworkBandwidth = (networkId) => {
+    if (networkId === LOCAL_SSD_NETWORK_ID) {
+      return LOCAL_SSD_BANDWIDTH; // 4000 Mbps for local operations
+    }
     const narEntry = narEntries.find(e => e.networkId === networkId);
     return narEntry?.bandwidth || 50; // Default 50 Mbps
   };
@@ -395,6 +427,26 @@ const FileManager = () => {
 
   const handlePaste = () => {
     if (!currentTime || !fileClipboard.files || fileClipboard.files.length === 0) return;
+
+    // Check for sufficient space when pasting to local SSD
+    if (currentNetworkId === LOCAL_SSD_NETWORK_ID) {
+      const appsUsed = calculateStorageUsed(software);
+      const filesUsed = calculateLocalFilesSize(localSSDFiles);
+      const currentUsedGB = appsUsed + filesUsed;
+      const pasteFileSizeGB = calculateLocalFilesSize(fileClipboard.files);
+      const freeSpaceGB = LOCAL_SSD_CAPACITY_GB - currentUsedGB;
+
+      if (pasteFileSizeGB > freeSpaceGB) {
+        addLogEntry({
+          fileName: `${fileClipboard.files.length} file(s)`,
+          operation: 'error',
+          source: 'LOCAL SSD',
+          message: `Insufficient space: need ${pasteFileSizeGB.toFixed(2)} GB, only ${freeSpaceGB.toFixed(2)} GB free`,
+        });
+        console.warn(`⚠️ Insufficient local SSD space: need ${pasteFileSizeGB.toFixed(2)} GB, have ${freeSpaceGB.toFixed(2)} GB`);
+        return;
+      }
+    }
 
     const sourceBandwidth = getNetworkBandwidth(fileClipboard.sourceNetworkId);
     const destBandwidth = getNetworkBandwidth(currentNetworkId);

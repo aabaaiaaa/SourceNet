@@ -97,6 +97,14 @@ export const checkFileOperationObjective = (objective, operationData, cumulative
   const completedTargetFiles = targetFiles.filter(file => completedFiles.has(file));
   console.log(`🔍 checkFileOperationObjective: ${operation} - ${completedTargetFiles.length}/${targetFiles.length} target files completed`);
 
+  // Debug: Log what files we're expecting vs what we have when there's a mismatch
+  if (completedTargetFiles.length < targetFiles.length && completedFiles.size > 0) {
+    console.log(`  📋 Target files expected:`, targetFiles);
+    console.log(`  📋 Completed files in Set:`, [...completedFiles]);
+    const missing = targetFiles.filter(file => !completedFiles.has(file));
+    console.log(`  ❌ Missing files:`, missing);
+  }
+
   return completedTargetFiles.length >= targetFiles.length;
 };
 
@@ -133,78 +141,82 @@ export const areAllObjectivesComplete = (objectives) => {
 };
 
 /**
+ * Check if a single objective is complete based on game state
+ * @param {object} objective - Objective to check
+ * @param {object} gameState - Current game state
+ * @returns {boolean} Whether objective is complete
+ */
+const isObjectiveComplete = (objective, gameState) => {
+  switch (objective.type) {
+    case 'networkConnection':
+      return checkNetworkConnectionObjective(
+        objective,
+        gameState.activeConnections || []
+      );
+
+    case 'networkScan':
+      return checkNetworkScanObjective(
+        objective,
+        gameState.lastScanResults
+      );
+
+    case 'fileSystemConnection':
+      return checkFileSystemConnectionObjective(
+        objective,
+        gameState.fileManagerConnections || []
+      );
+
+    case 'fileOperation':
+      return checkFileOperationObjective(
+        objective,
+        gameState.lastFileOperation || {},
+        gameState.missionFileOperations || {}
+      );
+
+    case 'narEntryAdded':
+      return checkNarEntryAddedObjective(
+        objective,
+        gameState.narEntries || []
+      );
+
+    case 'verification':
+      // Verification objectives never auto-complete
+      return false;
+
+    default:
+      console.warn(`Unknown objective type: ${objective.type}`);
+      return false;
+  }
+};
+
+/**
  * Monitor active mission objectives
  * Called on relevant game events to check objective progress
+ * Checks ALL incomplete objectives and returns array of completable ones
+ * (supports out-of-order completion)
  *
  * @param {object} activeMission - Current active mission
  * @param {object} gameState - Current game state
- * @returns {object|null} Completed objective or null
+ * @returns {array} Array of completed objectives (may be empty)
  */
 export const checkMissionObjectives = (activeMission, gameState) => {
-  if (!activeMission || !activeMission.objectives) return null;
+  if (!activeMission || !activeMission.objectives) return [];
 
-  // Find first incomplete objective (objectives must complete in order)
-  const incompleteObjective = activeMission.objectives.find(
-    (obj) => obj.status !== 'complete'
+  const completableObjectives = [];
+
+  // Find all incomplete non-verification objectives
+  const incompleteObjectives = activeMission.objectives.filter(
+    (obj) => obj.status !== 'complete' && obj.type !== 'verification'
   );
 
-  if (!incompleteObjective) return null; // All complete
-
-  // Check if this objective is now complete based on game state
-  let isComplete = false;
-
-  switch (incompleteObjective.type) {
-    case 'networkConnection':
-      isComplete = checkNetworkConnectionObjective(
-        incompleteObjective,
-        gameState.activeConnections || []
-      );
-      break;
-
-    case 'networkScan':
-      isComplete = checkNetworkScanObjective(
-        incompleteObjective,
-        gameState.lastScanResults
-      );
-      break;
-
-    case 'fileSystemConnection':
-      isComplete = checkFileSystemConnectionObjective(
-        incompleteObjective,
-        gameState.fileManagerConnections || []
-      );
-      break;
-
-    case 'fileOperation':
-      isComplete = checkFileOperationObjective(
-        incompleteObjective,
-        gameState.lastFileOperation || {},
-        gameState.missionFileOperations || {} // Pass cumulative operations
-      );
-      break;
-
-    case 'narEntryAdded':
-      isComplete = checkNarEntryAddedObjective(
-        incompleteObjective,
-        gameState.narEntries || []
-      );
-      break;
-
-    case 'verification':
-      // Verification objectives never auto-complete - they are completed manually
-      // after all scripted events finish or via explicit game logic
-      isComplete = false;
-      break;
-
-    default:
-      console.warn(`Unknown objective type: ${incompleteObjective.type}`);
+  // Check each incomplete objective
+  for (const objective of incompleteObjectives) {
+    if (isObjectiveComplete(objective, gameState)) {
+      completableObjectives.push(objective);
+    }
   }
 
-  if (isComplete) {
-    return incompleteObjective;
-  }
-
-  return null;
+  return completableObjectives;
 };
 
 /**

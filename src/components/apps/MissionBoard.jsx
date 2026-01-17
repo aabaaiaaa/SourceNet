@@ -304,15 +304,24 @@ const MissionBoard = () => {
         <div className="objectives-section">
           <h4>Objectives:</h4>
           <ul className="objectives-list">
-            {activeMission.objectives?.map((objective) => {
+            {activeMission.objectives?.map((objective, index) => {
               const progress = objective.type === 'fileOperation'
                 ? getFileOperationProgress(objective, missionFileOperations)
                 : null;
 
+              // Check if all prior objectives are complete (for visual styling)
+              const allPriorComplete = activeMission.objectives
+                .slice(0, index)
+                .every(obj => obj.status === 'complete');
+
+              // Determine visual state: grey if pre-completed with pending priors, green if fully complete
+              const isComplete = objective.status === 'complete';
+              const isPendingPrior = isComplete && !allPriorComplete;
+
               return (
                 <li
                   key={objective.id}
-                  className={`objective-item objective-${objective.status}`}
+                  className={`objective-item objective-${objective.status}${isPendingPrior ? ' objective-pending-prior' : ''}`}
                 >
                   <span className="objective-checkbox">
                     {objective.status === 'complete' ? '☑' : '☐'}

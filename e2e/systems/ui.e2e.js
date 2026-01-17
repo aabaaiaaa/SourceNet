@@ -88,8 +88,8 @@ test.describe('App Launcher', () => {
         await page.hover('text=☰');
         await page.waitForTimeout(200);
 
-        // Storage should be visible
-        await expect(page.locator('text=GB used')).toBeVisible();
+        // Storage should be visible (format: "Apps: X GB | Y GB free")
+        await expect(page.locator('text=GB free')).toBeVisible();
 
         console.log('✅ E2E: Storage display in launcher');
     });

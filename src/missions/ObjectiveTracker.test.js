@@ -186,12 +186,12 @@ describe('ObjectiveTracker', () => {
   });
 
   describe('checkMissionObjectives', () => {
-    it('should return null if no active mission', () => {
+    it('should return empty array if no active mission', () => {
       const result = checkMissionObjectives(null, {});
-      expect(result).toBe(null);
+      expect(result).toEqual([]);
     });
 
-    it('should return null if all objectives complete', () => {
+    it('should return empty array if all objectives complete', () => {
       const mission = {
         objectives: [
           { id: 'obj-1', status: 'complete' },
@@ -200,10 +200,10 @@ describe('ObjectiveTracker', () => {
       };
 
       const result = checkMissionObjectives(mission, {});
-      expect(result).toBe(null);
+      expect(result).toEqual([]);
     });
 
-    it('should check first incomplete objective', () => {
+    it('should return all completable objectives (out-of-order completion)', () => {
       const mission = {
         objectives: [
           { id: 'obj-1', type: 'networkConnection', target: 'test-network', status: 'complete' },
@@ -216,10 +216,29 @@ describe('ObjectiveTracker', () => {
       };
 
       const result = checkMissionObjectives(mission, gameState);
-      expect(result).toEqual(mission.objectives[1]);
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual(mission.objectives[1]);
     });
 
-    it('should return null if objective not yet complete', () => {
+    it('should return multiple completable objectives at once', () => {
+      const mission = {
+        objectives: [
+          { id: 'obj-1', type: 'networkConnection', target: 'test-network-1', status: 'pending' },
+          { id: 'obj-2', type: 'networkConnection', target: 'test-network-2', status: 'pending' },
+        ],
+      };
+
+      const gameState = {
+        activeConnections: [{ networkId: 'test-network-1' }, { networkId: 'test-network-2' }],
+      };
+
+      const result = checkMissionObjectives(mission, gameState);
+      expect(result).toHaveLength(2);
+      expect(result).toContainEqual(mission.objectives[0]);
+      expect(result).toContainEqual(mission.objectives[1]);
+    });
+
+    it('should return empty array if objective not yet complete', () => {
       const mission = {
         objectives: [
           { id: 'obj-1', type: 'networkConnection', target: 'test-network', status: 'pending' },
@@ -229,7 +248,21 @@ describe('ObjectiveTracker', () => {
       const gameState = { activeConnections: [] };
 
       const result = checkMissionObjectives(mission, gameState);
-      expect(result).toBe(null);
+      expect(result).toEqual([]);
+    });
+
+    it('should not include verification objectives in completable list', () => {
+      const mission = {
+        objectives: [
+          { id: 'obj-1', type: 'networkConnection', target: 'test-network', status: 'complete' },
+          { id: 'obj-verify', type: 'verification', status: 'pending' },
+        ],
+      };
+
+      const gameState = { activeConnections: [{ networkId: 'test-network' }] };
+
+      const result = checkMissionObjectives(mission, gameState);
+      expect(result).toEqual([]);
     });
   });
 });

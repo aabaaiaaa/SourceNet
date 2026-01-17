@@ -37,12 +37,23 @@ As an example of a basic mission structure:
 You can look at the tutorial parts 1 + 2 for some examples, but this is not the limit.
 
 
-(done - needs testing)
-when loading the post tutorial scenario, there are duplicate messages in the SNet Mail app. There's a lot of console errors when opening the mail app too.
+(WIP - needs testing)
+mission extensions
 
-
+(wip - needs testing)
+missions are mostly to do with copy/delete/repair of files at the moment. But the objectives are often about operating on all the files that are present on a file system, instead of being only some of the files and having to check which files should be operated out of all the files.
+also, there should be more variation on the number of file systems that are generated. There's no limit to the number of file systems that could exist - for example back up mission might be backing up from multiple locations/networks to a central location.
+the file types and names and sizes need to vary more. epsecially with backup missions as would might expect very large files for backup missions. also for repair missions, there might be large DB files that need repairing AND then a backup taken.
+There could be backup missions where you restore from the backup, but need to delete the corrupt files first and then restore from the backup.
+---
 (done - needs testing)
-VPN client allows you to connect to already connected networks. Once you are connected to a network, it shouldn't be an option for the connection drop down.
+If i've already scanned and discovered a particular file system, the objective tracker should mark the objective as completed, even if I scanned it BEFORE I reached that objective - it shouldn't matter the order you completed objectives.
+---
+(done - needs testing)
+Some objectives require files to be copied from multiple locations and then pasted into a central location - because the way you copy (and real life copy functionality) only allows you to copy one selection of files, it's pointless to have objectives where you are asked to copy files from one location and a second location and then paste all in a third location.
+However, if the SSD drive on your terminal was accessible through the File Manager app too, then one of the options on the drop down for it would be your local machine, so then the player could copy and paste the files from multiple locations to your local machine and then copy them all to perform the final pasting of all files. Obviously, this special file system location should not have the same slow restrictions as remote locations would as you are accessing the files locally, so copying shouldn't take long at all. Deleting and repairing local files should still take time based on the file sizes, but should be much quicker than performing those operations remotely.
+Any files copied into your SSD must persist regardless of disconnection or NAR entry revocation - they should be accessible when not connected to any network - so this might need a change to the way the File Manager handles it's UI.
+
 
 
 Review the systems in place for handling missions and scripted events and objective tracking as I need to understand how to picture these systems and how best they should integrate with each other as the biggest issues have come from changes in these areas. Each system needs to have a role and individual responsibility so there's not internal variables being changed by external systems. It will then aid in writing test cases for each system.

@@ -56,19 +56,22 @@ test.describe('Window Management', () => {
             await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
             // Open SNet Mail → verify cascaded position
-            await page.click('text=☰');
+            await page.hover('text=☰');
+            await page.waitForTimeout(200);
             await page.click('text=SNet Mail');
             const mailWindow = page.locator('.window:has-text("SNet Mail")');
             await expect(mailWindow).toBeVisible();
 
             // Open Banking App → verify cascaded from Mail
-            await page.click('text=☰');
+            await page.hover('text=☰');
+            await page.waitForTimeout(200);
             await page.click('text=SNet Banking App');
             const bankWindow = page.locator('.window:has-text("SNet Banking App")');
             await expect(bankWindow).toBeVisible();
 
             // Open Portal → verify cascaded from Banking
-            await page.click('text=☰');
+            await page.hover('text=☰');
+            await page.waitForTimeout(200);
             await page.click('text=OSNet Portal');
             const portalWindow = page.locator('.window:has-text("OSNet Portal")');
             await expect(portalWindow).toBeVisible();

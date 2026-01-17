@@ -210,7 +210,14 @@
   border-left-color: #4CAF50;
   background: #f0fff0;
   text-decoration: line-through;
-  color: #666;
+  color: #4CAF50;
+}
+
+/* Pre-completed objectives waiting for prior objectives to complete */
+.objective-complete.objective-pending-prior {
+  border-left-color: #888;
+  background: #f5f5f5;
+  color: #888;
 }
 
 .objective-failed {

@@ -3,6 +3,11 @@
 // Starting date/time
 export const GAME_START_DATE = new Date('2020-03-25T09:00:00');
 
+// Local SSD constants
+export const LOCAL_SSD_NETWORK_ID = 'local';
+export const LOCAL_SSD_BANDWIDTH = 4000; // ~500 MB/s SSD speed in Mbps
+export const LOCAL_SSD_CAPACITY_GB = 90;
+
 // Time speeds
 export const TIME_SPEEDS = {
   NORMAL: 1,
