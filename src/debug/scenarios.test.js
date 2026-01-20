@@ -91,6 +91,7 @@ describe('scenarios', () => {
 function createMockContext() {
   return {
     bankAccounts: [{ id: 'acc-1', balance: 0 }],
+    applyGameState: vi.fn(),
     setUsername: vi.fn(),
     setPlayerMailId: vi.fn(),
     setCurrentTime: vi.fn(),

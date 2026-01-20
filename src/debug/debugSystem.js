@@ -11,6 +11,8 @@
  * Access: Ctrl+Shift+D or ?debug=true
  */
 
+import networkRegistry from '../systems/NetworkRegistry';
+
 /**
  * Check if debug mode is enabled
  * @returns {boolean} Debug mode enabled
@@ -121,16 +123,16 @@ export const installSoftwareInstantly = (gameContext, softwareIds) => {
 export const addNetworkToNAR = (gameContext, networkId, networkName) => {
   if (!isDebugMode()) return;
 
-  const entry = {
-    id: `nar-${Date.now()}`,
+  // Register the network in NetworkRegistry
+  networkRegistry.registerNetwork({
     networkId,
     networkName,
     address: '10.0.0.0/8',
-    status: 'active',
-    dateAdded: new Date().toISOString(),
-  };
+    bandwidth: 100,
+  });
 
-  gameContext.setNarEntries([...gameContext.narEntries, entry]);
+  // Grant access to the network
+  networkRegistry.grantNetworkAccess(networkId, []);
 
   console.log('✅ Debug: Network added to NAR', networkId);
 };

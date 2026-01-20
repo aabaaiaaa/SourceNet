@@ -6,13 +6,16 @@ import { useGame } from '../../contexts/useGame';
 import NetworkScanner from '../../components/apps/NetworkScanner';
 import TopBar from '../../components/ui/TopBar';
 import triggerEventBus from '../../core/triggerEventBus';
+import networkRegistry from '../../systems/NetworkRegistry';
 import {
     createCompleteSaveState,
     createNetworkWithFileSystem,
     createNetworkWithDevices,
     setSaveInLocalStorage,
+    populateNetworkRegistry,
 } from '../helpers/testData';
 import { useEffect } from 'react';
+import tutorialPart1 from '../../missions/data/tutorial-part-1.json';
 
 // GameLoader helper component to load save state
 const GameLoader = ({ username }) => {
@@ -32,6 +35,7 @@ const GameLoader = ({ username }) => {
 describe('Network Scanner Integration', () => {
     beforeEach(() => {
         localStorage.clear();
+        networkRegistry.reset();
         vi.clearAllMocks();
     });
 
@@ -72,29 +76,39 @@ describe('Network Scanner Integration', () => {
     it('should discover devices from connected network', async () => {
         const user = userEvent.setup({ delay: null });
 
-        // Create network with file systems (devices)
+        // Define file systems for the test
+        const fileSystems = [
+            {
+                id: 'fs-001',
+                ip: '192.168.50.10',
+                name: 'fileserver-01',
+                files: [
+                    { name: 'log_2024.txt', size: '5 KB', corrupted: false },
+                ],
+            },
+            {
+                id: 'fs-002',
+                ip: '192.168.50.20',
+                name: 'backup-server',
+                files: [
+                    { name: 'backup.zip', size: '100 MB', corrupted: false },
+                ],
+            },
+        ];
+
+        // Populate NetworkRegistry with file systems
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'corp-net-1',
+            networkName: 'Corporate Network',
+            fileSystems,
+        });
+
+        // Create NAR entry (now only contains deviceAccess)
         const network = createNetworkWithFileSystem({
             networkId: 'corp-net-1',
             networkName: 'Corporate Network',
             address: '192.168.50.0/24',
-            fileSystems: [
-                {
-                    id: 'fs-001',
-                    ip: '192.168.50.10',
-                    name: 'fileserver-01',
-                    files: [
-                        { name: 'log_2024.txt', size: '5 KB', corrupted: false },
-                    ],
-                },
-                {
-                    id: 'fs-002',
-                    ip: '192.168.50.20',
-                    name: 'backup-server',
-                    files: [
-                        { name: 'backup.zip', size: '100 MB', corrupted: false },
-                    ],
-                },
-            ],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -108,6 +122,7 @@ describe('Network Scanner Integration', () => {
                         address: network.address,
                     },
                 ],
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -166,33 +181,51 @@ describe('Network Scanner Integration', () => {
     it('should show different devices for different networks', async () => {
         const user = userEvent.setup({ delay: null });
 
-        // Create two different networks
+        // Define devices for both networks
+        const alphaDevices = [
+            {
+                id: 'fs-alpha-1',
+                ip: '192.168.10.10',
+                name: 'alpha-fileserver',
+                files: [],
+            },
+        ];
+
+        const betaDevices = [
+            {
+                id: 'fs-beta-1',
+                ip: '10.0.50.15',
+                name: 'beta-database',
+                files: [],
+            },
+        ];
+
+        // Populate NetworkRegistry with both networks
+        populateNetworkRegistry({
+            networkId: 'network-alpha',
+            networkName: 'Alpha Corp',
+            fileSystems: alphaDevices,
+        });
+
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'network-beta',
+            networkName: 'Beta Industries',
+            fileSystems: betaDevices,
+        });
+
+        // Create NAR entries
         const network1 = createNetworkWithDevices({
             networkId: 'network-alpha',
             networkName: 'Alpha Corp',
             address: '192.168.10.0/24',
-            devices: [
-                {
-                    id: 'fs-alpha-1',
-                    ip: '192.168.10.10',
-                    name: 'alpha-fileserver',
-                    files: [],
-                },
-            ],
+            devices: alphaDevices,
         });
 
         const network2 = createNetworkWithDevices({
             networkId: 'network-beta',
             networkName: 'Beta Industries',
             address: '10.0.50.0/24',
-            devices: [
-                {
-                    id: 'fs-beta-1',
-                    ip: '10.0.50.15',
-                    name: 'beta-database',
-                    files: [],
-                },
-            ],
+            devices: betaDevices,
         });
 
         const saveState = createCompleteSaveState({
@@ -211,6 +244,7 @@ describe('Network Scanner Integration', () => {
                         address: network2.address,
                     },
                 ],
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -268,24 +302,35 @@ describe('Network Scanner Integration', () => {
     it('should show only critical devices on quick scan', async () => {
         const user = userEvent.setup({ delay: null });
 
+        // Define file systems for the test
+        const fileSystems = [
+            {
+                id: 'fs-001',
+                ip: '192.168.50.10',
+                name: 'fileserver-01',
+                files: [],
+            },
+            {
+                id: 'fs-002',
+                ip: '192.168.50.20',
+                name: 'database-primary',
+                files: [],
+            },
+        ];
+
+        // Populate NetworkRegistry with file systems
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'corp-net-1',
+            networkName: 'Corporate Network',
+            fileSystems,
+        });
+
+        // Create NAR entry
         const network = createNetworkWithFileSystem({
             networkId: 'corp-net-1',
             networkName: 'Corporate Network',
             address: '192.168.50.0/24',
-            fileSystems: [
-                {
-                    id: 'fs-001',
-                    ip: '192.168.50.10',
-                    name: 'fileserver-01',
-                    files: [],
-                },
-                {
-                    id: 'fs-002',
-                    ip: '192.168.50.20',
-                    name: 'database-primary',
-                    files: [],
-                },
-            ],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -299,6 +344,7 @@ describe('Network Scanner Integration', () => {
                         address: network.address,
                     },
                 ],
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -345,18 +391,29 @@ describe('Network Scanner Integration', () => {
     it('should show all devices including workstations on deep scan', async () => {
         const user = userEvent.setup({ delay: null });
 
+        // Define file systems for the test
+        const fileSystems = [
+            {
+                id: 'fs-001',
+                ip: '192.168.50.10',
+                name: 'fileserver-01',
+                files: [],
+            },
+        ];
+
+        // Populate NetworkRegistry with file systems
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'corp-net-1',
+            networkName: 'Corporate Network',
+            fileSystems,
+        });
+
+        // Create NAR entry
         const network = createNetworkWithFileSystem({
             networkId: 'corp-net-1',
             networkName: 'Corporate Network',
             address: '192.168.50.0/24',
-            fileSystems: [
-                {
-                    id: 'fs-001',
-                    ip: '192.168.50.10',
-                    name: 'fileserver-01',
-                    files: [],
-                },
-            ],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -370,6 +427,7 @@ describe('Network Scanner Integration', () => {
                         address: network.address,
                     },
                 ],
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -418,18 +476,29 @@ describe('Network Scanner Integration', () => {
         const eventHandler = vi.fn();
         triggerEventBus.on('networkScanComplete', eventHandler);
 
+        // Define file systems for the test
+        const fileSystems = [
+            {
+                id: 'fs-001',
+                ip: '192.168.50.10',
+                name: 'fileserver-01',
+                files: [],
+            },
+        ];
+
+        // Populate NetworkRegistry with file systems
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'corp-net-1',
+            networkName: 'Corporate Network',
+            fileSystems,
+        });
+
+        // Create NAR entry
         const network = createNetworkWithFileSystem({
             networkId: 'corp-net-1',
             networkName: 'Corporate Network',
             address: '192.168.50.0/24',
-            fileSystems: [
-                {
-                    id: 'fs-001',
-                    ip: '192.168.50.10',
-                    name: 'fileserver-01',
-                    files: [],
-                },
-            ],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -443,6 +512,7 @@ describe('Network Scanner Integration', () => {
                         address: network.address,
                     },
                 ],
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -499,20 +569,31 @@ describe('Network Scanner Integration', () => {
     it('should map file systems to discovered devices', async () => {
         const user = userEvent.setup({ delay: null });
 
+        // Define file systems for the test
+        const fileSystems = [
+            {
+                id: 'fs-001',
+                ip: '192.168.50.10',
+                name: 'fileserver-01',
+                files: [
+                    { name: 'important.txt', size: '1 KB', corrupted: false },
+                ],
+            },
+        ];
+
+        // Populate NetworkRegistry with file systems
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'corp-net-1',
+            networkName: 'Corporate Network',
+            fileSystems,
+        });
+
+        // Create NAR entry
         const network = createNetworkWithFileSystem({
             networkId: 'corp-net-1',
             networkName: 'Corporate Network',
             address: '192.168.50.0/24',
-            fileSystems: [
-                {
-                    id: 'fs-001',
-                    ip: '192.168.50.10',
-                    name: 'fileserver-01',
-                    files: [
-                        { name: 'important.txt', size: '1 KB', corrupted: false },
-                    ],
-                },
-            ],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -526,6 +607,7 @@ describe('Network Scanner Integration', () => {
                         address: network.address,
                     },
                 ],
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -565,30 +647,40 @@ describe('Network Scanner Integration', () => {
     it('should always discover mission-critical file systems regardless of scan type', async () => {
         const user = userEvent.setup({ delay: null });
 
-        // Create network with mission-critical file systems (like tutorial missions)
+        // Define mission-critical file systems (like tutorial missions)
+        const fileSystems = [
+            {
+                id: 'fs-001',
+                ip: '192.168.50.10',
+                name: 'fileserver-01',
+                files: [
+                    { name: 'log_2024_01.txt', size: '2.5 KB', corrupted: true },
+                    { name: 'log_2024_02.txt', size: '3.1 KB', corrupted: true },
+                ],
+            },
+            {
+                id: 'fs-002',
+                ip: '192.168.50.20',
+                name: 'backup-server',
+                files: [
+                    { name: 'backup_jan.zip', size: '150 MB', corrupted: false },
+                ],
+            },
+        ];
+
+        // Populate NetworkRegistry with file systems
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'clienta-corporate',
+            networkName: 'ClientA-Corporate',
+            fileSystems,
+        });
+
+        // Create NAR entry
         const network = createNetworkWithFileSystem({
             networkId: 'clienta-corporate',
             networkName: 'ClientA-Corporate',
             address: '192.168.50.0/24',
-            fileSystems: [
-                {
-                    id: 'fs-001',
-                    ip: '192.168.50.10',
-                    name: 'fileserver-01',
-                    files: [
-                        { name: 'log_2024_01.txt', size: '2.5 KB', corrupted: true },
-                        { name: 'log_2024_02.txt', size: '3.1 KB', corrupted: true },
-                    ],
-                },
-                {
-                    id: 'fs-002',
-                    ip: '192.168.50.20',
-                    name: 'backup-server',
-                    files: [
-                        { name: 'backup_jan.zip', size: '150 MB', corrupted: false },
-                    ],
-                },
-            ],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -602,6 +694,7 @@ describe('Network Scanner Integration', () => {
                         address: network.address,
                     },
                 ],
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -655,11 +748,18 @@ describe('Network Scanner Integration', () => {
     it('should discover devices using actual mission data from tutorial-part-1', async () => {
         const user = userEvent.setup({ delay: null });
 
-        // Load actual tutorial mission data
-        const tutorialPart1 = await import('../../missions/data/tutorial-part-1.json');
+        // Use imported tutorial mission data
         const missionNetwork = tutorialPart1.networks[0];
 
+        // Populate NetworkRegistry with mission file systems
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: missionNetwork.networkId,
+            networkName: missionNetwork.networkName,
+            fileSystems: missionNetwork.fileSystems,
+        });
+
         // Create NAR entry from mission network data (as the game would do)
+        // Now only contains deviceAccess, not fileSystems
         const narEntry = {
             id: 'nar-tutorial-1',
             networkId: missionNetwork.networkId,
@@ -667,13 +767,7 @@ describe('Network Scanner Integration', () => {
             address: missionNetwork.address,
             status: 'active',
             addedAt: '2020-03-25T09:00:00.000Z',
-            // Map mission fileSystems to NAR entry format
-            fileSystems: missionNetwork.fileSystems.map(fs => ({
-                id: fs.id,
-                ip: fs.ip,
-                name: fs.name,
-                files: fs.files,
-            })),
+            deviceAccess: missionNetwork.fileSystems.map(fs => fs.ip),
         };
 
         const saveState = createCompleteSaveState({
@@ -687,6 +781,7 @@ describe('Network Scanner Integration', () => {
                         address: missionNetwork.address,
                     },
                 ],
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -752,20 +847,31 @@ describe('Network Scanner Integration', () => {
             return null;
         };
 
-        // Create network with devices
+        // Define file systems for the test
+        const fileSystems = [
+            {
+                id: 'fs-001',
+                ip: '192.168.50.10',
+                name: 'file-server',
+                files: [
+                    { name: 'data.txt', size: 100 },
+                ],
+            },
+        ];
+
+        // Populate NetworkRegistry with file systems
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'corp-net-1',
+            networkName: 'Corporate Network',
+            fileSystems,
+        });
+
+        // Create NAR entry
         const network = createNetworkWithFileSystem({
             networkId: 'corp-net-1',
             networkName: 'Corporate Network',
             address: '192.168.50.0/24',
-            fileSystems: [
-                {
-                    ip: '192.168.50.10',
-                    name: 'file-server',
-                    files: [
-                        { name: 'data.txt', size: 100 },
-                    ],
-                },
-            ],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -779,6 +885,7 @@ describe('Network Scanner Integration', () => {
                         address: network.address,
                     }
                 ],
+                networkRegistry: registrySnapshot,
             },
         });
 

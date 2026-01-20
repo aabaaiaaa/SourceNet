@@ -15,6 +15,7 @@
  */
 
 import { getClientById } from '../data/clientRegistry';
+import { generateSubnet, generateIpInSubnet, generateNarAttachments, randomInt } from './networkUtils';
 
 // Track generated mission IDs to ensure uniqueness
 let missionIdCounter = 0;
@@ -48,39 +49,7 @@ function randomPick(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-/**
- * Generate a random integer between min and max (inclusive)
- * @param {number} min - Minimum value
- * @param {number} max - Maximum value
- * @returns {number} Random integer
- */
-function randomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-/**
- * Generate a random IP subnet
- * @returns {string} IP address in format "10.x.x.0/24"
- */
-function generateSubnet() {
-    const second = randomInt(1, 254);
-    const third = randomInt(1, 254);
-    return `10.${second}.${third}.0/24`;
-}
-
-/**
- * Generate an IP within a subnet
- * @param {string} subnet - Subnet in format "10.x.x.0/24"
- * @param {number} hostNum - Host number (1-254)
- * @returns {string} IP address
- */
-function generateIpInSubnet(subnet, hostNum) {
-    const parts = subnet.split('.');
-    return `${parts[0]}.${parts[1]}.${parts[2]}.${hostNum}`;
-}
-
-/**
- * Generate a server hostname based on client and purpose
+/**\n * Generate a server hostname based on client and purpose
  * @param {Object} client - Client object
  * @param {string} purpose - Server purpose (e.g., 'fileserver', 'backup', 'archive')
  * @param {number} index - Server index for uniqueness
@@ -312,7 +281,8 @@ export function generateNetworkInfrastructure(client, missionType, targetFileCou
             id: `fs-${client.id}-${Date.now()}-${String(i + 1).padStart(2, '0')}`,
             ip,
             name: hostname,
-            files
+            files,
+            accessible: true
         });
     }
 
@@ -339,7 +309,8 @@ export function generateNetworkInfrastructure(client, missionType, targetFileCou
             id: `fs-${client.id}-${Date.now()}-backup`,
             ip: backupServerIp,
             name: backupServerName,
-            files: [] // Empty - files will be backed up here
+            files: [], // Empty - files will be backed up here
+            accessible: true
         });
     }
 
@@ -365,7 +336,8 @@ export function generateNetworkInfrastructure(client, missionType, targetFileCou
                 id: `fs-${client.id}-${Date.now()}-dest`,
                 ip: secondaryIp,
                 name: secondaryHostname,
-                files: [] // Empty - files will be transferred/backed up here
+                files: [], // Empty - files will be transferred/backed up here
+                accessible: true
             }]
         });
     }
@@ -739,27 +711,6 @@ function generateTransferObjectives(infra) {
 }
 
 /**
- * Generate NAR credential attachments for mission briefing message
- * @param {Array} networks - Network definitions
- * @returns {Array} Array of attachment objects
- */
-function generateNarAttachments(networks) {
-    return networks.map(network => ({
-        type: 'networkAddress',  // Must match SNetMail attachment type handler
-        networkId: network.networkId,
-        networkName: network.networkName,
-        address: network.address,
-        bandwidth: network.bandwidth,
-        fileSystems: network.fileSystems.map(fs => ({
-            id: fs.id,
-            ip: fs.ip,
-            name: fs.name,
-            files: fs.files
-        }))
-    }));
-}
-
-/**
  * Generate mission briefing message with NAR attachments
  * @param {Object} client - Client object
  * @param {string} missionType - Mission type
@@ -799,7 +750,8 @@ function generateBriefingMessage(client, missionType, networks, timeLimitMinutes
         ]
     };
 
-    let body = referralText ? `${referralText}\n\n` : '';
+    let body = 'Dear {username},\n\n';
+    body += referralText ? `${referralText}\n\n` : '';
     body += randomPick(briefingTemplates[missionType] || briefingTemplates.repair);
 
     // Add target files list
@@ -840,6 +792,8 @@ function generateBriefingMessage(client, missionType, networks, timeLimitMinutes
     if (arcSequence && arcTotal) {
         body += `\n\n[Mission ${arcSequence} of ${arcTotal}]`;
     }
+
+    body += `\n\nSincerely,\n{clientName}`;
 
     // Generate mission type display name
     const missionTypeNames = {
@@ -887,6 +841,8 @@ function generateFailureConsequences(client, basePayout, failureReason = 'incomp
         ]
     };
 
+    const messageBody = `Dear {username},\n\n${randomPick(failureMessages[failureReason] || failureMessages.incomplete)}\n\nSincerely,\n{clientName}`;
+
     return {
         credits: -Math.floor(basePayout * 0.25),
         reputation: -1,
@@ -896,7 +852,7 @@ function generateFailureConsequences(client, basePayout, failureReason = 'incomp
             fromId: client.id,
             fromName: client.name,
             subject: 'Mission Failed',
-            body: randomPick(failureMessages[failureReason] || failureMessages.incomplete),
+            body: messageBody,
             attachments: [],
             delay: 2000
         }]
@@ -916,6 +872,8 @@ function generateSuccessConsequences(client, basePayout) {
         `Great job on completing the mission. Your professionalism is appreciated. Payment attached.`
     ];
 
+    const messageBody = `Dear {username},\n\n${randomPick(successMessages)}\n\nSincerely,\n{clientName}`;
+
     return {
         credits: basePayout,
         reputation: 1,
@@ -925,7 +883,7 @@ function generateSuccessConsequences(client, basePayout) {
             fromId: client.id,
             fromName: client.name,
             subject: 'Mission Complete - Payment Enclosed',
-            body: randomPick(successMessages),
+            body: messageBody,
             attachments: [{
                 type: 'cheque',
                 amount: basePayout,
@@ -1233,13 +1191,15 @@ export function generateRestoreFromBackupMission(client, options = {}) {
                 id: `fs-${client.id}-${Date.now()}-primary`,
                 ip: primaryIp,
                 name: hostname,
-                files: corruptFiles
+                files: corruptFiles,
+                accessible: true
             },
             {
                 id: `fs-${client.id}-${Date.now()}-backup`,
                 ip: backupIp,
                 name: backupHostname,
-                files: backupFiles
+                files: backupFiles,
+                accessible: true
             }
         ]
     }];
@@ -1406,13 +1366,15 @@ export function generateRepairAndBackupMission(client, options = {}) {
                 id: `fs-${client.id}-${Date.now()}-primary`,
                 ip: primaryIp,
                 name: hostname,
-                files: primaryFiles
+                files: primaryFiles,
+                accessible: true
             },
             {
                 id: `fs-${client.id}-${Date.now()}-backup`,
                 ip: backupIp,
                 name: backupHostname,
-                files: [] // Empty backup destination
+                files: [], // Empty backup destination
+                accessible: true
             }
         ]
     }];

@@ -3,6 +3,8 @@
  * Functions to create save states and test data for localStorage initialization
  */
 
+import networkRegistry from '../../systems/NetworkRegistry';
+
 // ============================================================================
 // STARTING GAME DATA
 // ============================================================================
@@ -128,6 +130,8 @@ export function createMessageWithLicense({
  * @param {string} options.networkId - ID of the network
  * @param {string} options.networkName - Display name of the network
  * @param {string} options.address - Network address (CIDR format)
+ * @param {boolean} options.activated - Whether attachment has been used (default: false)
+ * @param {Array} options.fileSystems - Array of file system/device objects for the network
  * @returns {Object} Message object with network address attachment
  */
 export function createMessageWithNetworkAddress({
@@ -139,7 +143,30 @@ export function createMessageWithNetworkAddress({
     networkId = 'corp-network-1',
     networkName = 'Corporate Network',
     address = '10.0.0.0/16',
+    activated = false,
+    fileSystems = [],
 } = {}) {
+    const attachment = {
+        type: 'networkAddress',
+        networkId,
+        networkName,
+        address,
+    };
+
+    if (activated) {
+        attachment.activated = true;
+    }
+
+    if (fileSystems.length > 0) {
+        attachment.fileSystems = fileSystems.map(fs => ({
+            id: fs.id,
+            ip: fs.ip,
+            name: fs.name,
+            files: fs.files || [],
+            accessible: fs.accessible !== undefined ? fs.accessible : true,
+        }));
+    }
+
     return {
         id,
         from,
@@ -149,14 +176,7 @@ export function createMessageWithNetworkAddress({
         timestamp: '2020-03-25T09:00:00.000Z',
         read,
         archived: false,
-        attachments: [
-            {
-                type: 'networkAddress',
-                networkId,
-                networkName,
-                address,
-            },
-        ],
+        attachments: [attachment],
     };
 }
 
@@ -170,31 +190,90 @@ export function createMessageWithNetworkAddress({
  * @param {string} options.networkId - Network ID
  * @param {string} options.networkName - Network display name
  * @param {string} options.address - Network address (CIDR format)
- * @param {Array} options.fileSystems - Array of file system objects
- * @returns {Object} NAR entry object with file systems
+ * @param {Array} options.fileSystems - Array of file system objects (converted to deviceAccess)
+ * @returns {Object} NAR entry object with deviceAccess
  */
 export function createNetworkWithFileSystem({
     networkId = 'corp-net-1',
     networkName = 'Corporate Network',
     address = '192.168.50.0/24',
     bandwidth = 50,
+    authorized = true,
     fileSystems = [],
 } = {}) {
+    // Extract just the IPs for deviceAccess - file system data should be in NetworkRegistry
+    const deviceAccess = fileSystems.map(fs => fs.ip || '192.168.50.10');
+
     return {
         id: `nar-${networkId}`,
         networkId,
         networkName,
         address,
         bandwidth,
+        authorized,
         addedAt: '2020-03-25T09:00:00.000Z',
         status: 'active',
-        fileSystems: fileSystems.map(fs => ({
-            id: fs.id || 'fs-001',
-            ip: fs.ip || '192.168.50.10',
-            name: fs.name || 'fileserver',
-            files: fs.files || [],
-        })),
+        deviceAccess,
     };
+}
+
+/**
+ * Populate NetworkRegistry with file systems for a network.
+ * Call this before loadGame when testing file system behavior.
+ * @param {Object} options - Network and file system configuration
+ * @param {string} options.networkId - Network ID
+ * @param {string} options.networkName - Network display name
+ * @param {string} [options.address] - Network address (CIDR format), defaults to '192.168.50.0/24'
+ * @param {boolean} [options.accessible] - Network accessibility (defaults to true unless any fileSystem has accessible: false)
+ * @param {Array} options.fileSystems - Array of file system objects
+ */
+export function populateNetworkRegistry({
+    networkId,
+    networkName,
+    address = '192.168.50.0/24',
+    accessible,
+    discovered = true,  // Tests typically want networks to be discovered/visible
+    revokedReason = null,  // Reason for revocation (implies accessible: false)
+    fileSystems = [],
+} = {}) {
+    // Determine network accessibility: explicit value, or infer from fileSystems
+    // If any fileSystem has accessible: false, default network to inaccessible
+    // If revokedReason is set, network must be inaccessible
+    const hasInaccessibleDevice = fileSystems.some(fs => fs.accessible === false);
+    const networkAccessible = revokedReason ? false : (accessible !== undefined ? accessible : !hasInaccessibleDevice);
+
+    networkRegistry.registerNetwork({
+        networkId,
+        networkName,
+        address,
+        bandwidth: 50,
+        accessible: networkAccessible,
+        discovered,
+        revokedReason,
+    });
+
+    for (const fs of fileSystems) {
+        const ip = fs.ip || '192.168.50.10';
+        const fileSystemId = fs.id || ip; // Use provided id or fallback to IP
+
+        // Register device with the proper fileSystemId
+        networkRegistry.registerDevice({
+            ip,
+            hostname: fs.name || 'device',
+            networkId,
+            fileSystemId,
+            accessible: fs.accessible !== undefined ? fs.accessible : true,
+        });
+
+        // Register file system with the proper id and files
+        networkRegistry.registerFileSystem({
+            id: fileSystemId,
+            files: fs.files || [],
+        });
+    }
+
+    // Return snapshot for inclusion in save state
+    return networkRegistry.getSnapshot();
 }
 
 /**
@@ -204,26 +283,29 @@ export function createNetworkWithFileSystem({
  * @param {string} options.networkName - Network display name
  * @param {string} options.address - Network address (CIDR format)
  * @param {Array} options.devices - Array of device objects (fileservers, databases, etc.)
- * @returns {Object} NAR entry object with devices as fileSystems
+ * @returns {Object} NAR entry object with deviceAccess
  */
 export function createNetworkWithDevices({
     networkId = 'corp-net-1',
     networkName = 'Corporate Network',
     address = '192.168.50.0/24',
+    authorized = true,
     devices = [],
 } = {}) {
-    // Convert devices to fileSystems format
+    // Convert devices to fileSystems format for createNetworkWithFileSystem
     const fileSystems = devices.map((device, index) => ({
         id: device.id || `fs-${String(index + 1).padStart(3, '0')}`,
         ip: device.ip || `192.168.50.${10 + index}`,
         name: device.name || device.hostname || `device-${index + 1}`,
         files: device.files || [],
+        accessible: device.accessible !== undefined ? device.accessible : true,
     }));
 
     return createNetworkWithFileSystem({
         networkId,
         networkName,
         address,
+        authorized,
         fileSystems,
     });
 }

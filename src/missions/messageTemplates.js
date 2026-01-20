@@ -218,13 +218,13 @@ Just something to be aware of.
     fromId: 'CLIENT-{random}',
     fromName: '{clientName}',
     subject: 'Payment for {missionTitle}',
-    body: `{username},
+    body: `Dear {username},
 
 Thank you for completing the work on "{missionTitle}".
 
 Please find attached a digital cheque for {payoutAmount} credits as agreed.
 
-Regards,
+Sincerely,
 {clientName}`,
     attachments: [
       {
@@ -261,15 +261,15 @@ When you're ready for more interesting work, I'll have it for you.
     fromId: 'CLIENT-{random}',
     fromName: '{clientName}',
     subject: 'URGENT: More Corrupted Files Found',
-    body: `{username},
+    body: `Dear {username},
 
 While you've been working, our monitoring systems detected additional file corruption on the same server.
 
-These files need to be repaired as well - they're part of the same data set and equally critical to our operations.
+These files need to be repaired as well - they're part of the same data set and equally critical to our operations.{targetFilesList}
 
 We're increasing your payment to reflect the additional work. Please continue and repair these files as well.
 
-Regards,
+Sincerely,
 {clientName}`,
   },
 
@@ -278,15 +278,15 @@ Regards,
     fromId: 'CLIENT-{random}',
     fromName: '{clientName}',
     subject: 'Additional Server Needs Attention',
-    body: `{username},
+    body: `Dear {username},
 
 Good progress so far. However, we've discovered that the corruption has spread to another server on the same network.
 
-Please also repair the files on this additional system. The server should be visible when you scan the network.
+Please also repair the files on this additional system. The server should be visible when you scan the network.{targetFilesList}
 
 Your payment has been increased to compensate for the extra work.
 
-Regards,
+Sincerely,
 {clientName}`,
   },
 
@@ -295,15 +295,15 @@ Regards,
     fromId: 'CLIENT-{random}',
     fromName: '{clientName}',
     subject: 'Urgent: Archive Network Also Affected',
-    body: `{username},
+    body: `Dear {username},
 
 We've just discovered that our archive network has also been hit by the same corruption issue.
 
-I'm attaching credentials for our archive network. Please connect and repair the affected files there as well.
+I'm attaching credentials for our archive network. Please connect and repair the affected files there as well.{targetFilesList}
 
 We're significantly increasing your payment given the expanded scope of work.
 
-Regards,
+Sincerely,
 {clientName}`,
   },
 
@@ -313,15 +313,15 @@ Regards,
     fromId: 'CLIENT-{random}',
     fromName: '{clientName}',
     subject: 'Additional Files for Backup',
-    body: `{username},
+    body: `Dear {username},
 
 Our compliance team just identified additional files that need to be included in this backup operation.
 
-Please also copy these files to the backup destination. They've been added to the source directory.
+Please also copy these files to the backup destination. They've been added to the source directory.{targetFilesList}
 
 Payment has been adjusted upward for the additional work.
 
-Regards,
+Sincerely,
 {clientName}`,
   },
 
@@ -330,15 +330,15 @@ Regards,
     fromId: 'CLIENT-{random}',
     fromName: '{clientName}',
     subject: 'Secondary Backup Required',
-    body: `{username},
+    body: `Dear {username},
 
 Management has requested that we also maintain a secondary backup on a different server for redundancy.
 
-Please copy the files to our secondary backup server as well. It's on the same network - you should see it after scanning.
+Please copy the files to our secondary backup server as well. It's on the same network - you should see it after scanning.{targetFilesList}
 
 We're increasing your payment for the additional backup work.
 
-Regards,
+Sincerely,
 {clientName}`,
   },
 
@@ -347,15 +347,15 @@ Regards,
     fromId: 'CLIENT-{random}',
     fromName: '{clientName}',
     subject: 'Offsite Backup Also Required',
-    body: `{username},
+    body: `Dear {username},
 
 For disaster recovery compliance, we need a copy of these files sent to our offsite backup facility as well.
 
-I'm attaching credentials for our offsite network. Please connect and copy the files there too.
+I'm attaching credentials for our offsite network. Please connect and copy the files there too.{targetFilesList}
 
 Your payment has been substantially increased given the expanded scope.
 
-Regards,
+Sincerely,
 {clientName}`,
   },
 
@@ -365,15 +365,15 @@ Regards,
     fromId: 'CLIENT-{random}',
     fromName: '{clientName}',
     subject: 'Additional Files to Transfer',
-    body: `{username},
+    body: `Dear {username},
 
 We've identified more files that need to be included in this transfer operation.
 
-The additional files have been added to the source location. Please include them in the transfer to the destination.
+The additional files have been added to the source location. Please include them in the transfer to the destination.{targetFilesList}
 
 Payment adjusted accordingly.
 
-Regards,
+Sincerely,
 {clientName}`,
   },
 
@@ -382,15 +382,15 @@ Regards,
     fromId: 'CLIENT-{random}',
     fromName: '{clientName}',
     subject: 'Archive Copy Required',
-    body: `{username},
+    body: `Dear {username},
 
 In addition to the primary transfer, we need an archive copy on a separate server for audit purposes.
 
-Please also transfer the files to our archive server. It should appear when you scan the destination network.
+Please also transfer the files to our archive server. It should appear when you scan the destination network.{targetFilesList}
 
 Payment increased for the additional work.
 
-Regards,
+Sincerely,
 {clientName}`,
   },
 
@@ -399,15 +399,15 @@ Regards,
     fromId: 'CLIENT-{random}',
     fromName: '{clientName}',
     subject: 'Partner Network Transfer Required',
-    body: `{username},
+    body: `Dear {username},
 
 Our partner organization also needs a copy of these files for their records.
 
-I'm attaching credentials for our partner's network. Please connect and transfer the files there as well.
+I'm attaching credentials for our partner's network. Please connect and transfer the files there as well.{targetFilesList}
 
 Given the expanded scope, we've significantly increased your payment.
 
-Regards,
+Sincerely,
 {clientName}`,
   },
 };

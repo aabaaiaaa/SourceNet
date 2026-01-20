@@ -36,6 +36,7 @@ import triggerEventBus from '../core/triggerEventBus';
 import { executeScriptedEvent } from '../missions/ScriptedEventExecutor';
 import { initializePool, refreshPool, shouldRefreshPool, handleArcProgression, handleArcFailure } from '../missions/MissionPoolManager';
 import { shouldTriggerExtension, generateExtension, getObjectiveProgress } from '../missions/MissionExtensionGenerator';
+import networkRegistry from '../systems/NetworkRegistry';
 
 export const GameContext = createContext();
 
@@ -184,41 +185,31 @@ export const GameProvider = ({ children }) => {
     }
   }, [activeConnections, fileClipboard.sourceNetworkId, clearFileClipboard]);
 
-  // Update files in a specific file system within narEntries
-  // Note: State updates are batched by React. Components may see stale narEntries
-  // for one render cycle if they perform operations that immediately query updated values.
+  // Update files in a specific file system - uses NetworkRegistry as source of truth
+  // Note: This updates the global NetworkRegistry. The event 'fileSystemChanged' is emitted
+  // by the registry, which FileManager can subscribe to for live updates.
   const updateFileSystemFiles = useCallback((networkId, fileSystemId, updatedFiles) => {
     console.log(`📁 updateFileSystemFiles called: networkId=${networkId}, fsId=${fileSystemId}, fileCount=${updatedFiles?.length}`);
 
-    // Capture previous file count for logging (outside state updater)
-    const prevEntry = narEntries.find(e => e.networkId === networkId);
-    const prevFs = prevEntry?.fileSystems?.find(fs => fs.id === fileSystemId);
+    // Get previous file count from registry for logging
+    const prevFs = networkRegistry.getFileSystem(fileSystemId);
     const prevFileCount = prevFs?.files?.length;
 
-    setNarEntries(prev => {
-      const updated = prev.map(entry => {
-        if (entry.networkId !== networkId) return entry;
-        if (!entry.fileSystems) return entry;
+    // Update the registry (this will emit 'fileSystemChanged' event)
+    const success = networkRegistry.updateFiles(fileSystemId, updatedFiles);
 
-        return {
-          ...entry,
-          fileSystems: entry.fileSystems.map(fs => {
-            if (fs.id !== fileSystemId) return fs;
-            return { ...fs, files: updatedFiles };
-          }),
-        };
-      });
-      return updated;
-    });
-
-    // Log after state update (outside updater)
-    console.log(`📁 Updating fs ${fileSystemId} files from ${prevFileCount} to ${updatedFiles?.length}`);
-  }, [narEntries]);
+    if (success) {
+      console.log(`📁 Updated fs ${fileSystemId} files from ${prevFileCount} to ${updatedFiles?.length}`);
+    } else {
+      console.warn(`📁 Failed to update fs ${fileSystemId} - not found in registry`);
+    }
+  }, []);
 
   // Accumulate file operations for mission tracking (unique files per operation type)
+  // For paste operations, also track the destination IP for each file
   useEffect(() => {
     if (lastFileOperation && activeMission) {
-      const { operation, fileNames = [] } = lastFileOperation;
+      const { operation, fileNames = [], fileSystemIp } = lastFileOperation;
 
       setMissionFileOperations(prev => {
         const existingFiles = prev[operation] || new Set();
@@ -227,6 +218,21 @@ export const GameProvider = ({ children }) => {
         fileNames.forEach(name => updatedFiles.add(name));
         // Log inside updater to get accurate counts (logging is harmless side effect)
         console.log(`📊 Cumulative ${operation}: ${existingCount} + ${fileNames.length} new files`);
+
+        // For paste operations, track the destination IP for each file
+        // This allows objective checking to verify files were pasted to the correct location
+        if (operation === 'paste' && fileSystemIp) {
+          const existingDestinations = prev.pasteDestinations || new Map();
+          const updatedDestinations = new Map(existingDestinations);
+          fileNames.forEach(name => updatedDestinations.set(name, fileSystemIp));
+          console.log(`📍 Tracking paste destinations to ${fileSystemIp}: ${fileNames.join(', ')}`);
+          return {
+            ...prev,
+            [operation]: updatedFiles,
+            pasteDestinations: updatedDestinations
+          };
+        }
+
         return {
           ...prev,
           [operation]: updatedFiles
@@ -403,17 +409,57 @@ export const GameProvider = ({ children }) => {
 
       // Send extension message to player
       const templateId = `extension-${extension.messageTemplate}`;
+      // Format target files list for message (matching briefing message format)
+      const targetFilesList = extension.targetFiles && extension.targetFiles.length > 0
+        ? '\n\n📁 Additional files:\n' + extension.targetFiles.map(f => `• ${f}`).join('\n')
+        : '';
       const extensionMessage = createMessageFromTemplate(templateId, {
         username,
-        clientName: extension.clientName
+        clientName: extension.clientName,
+        targetFilesList
       });
 
       if (extensionMessage) {
         // Add NAR attachment if extension requires new network
         if (extension.narAttachment) {
+          const narAtt = extension.narAttachment;
+
+          // Register network structure in NetworkRegistry (with accessible: false until NAR activated)
+          networkRegistry.registerNetwork({
+            networkId: narAtt.networkId,
+            networkName: narAtt.networkName,
+            address: narAtt.address,
+            bandwidth: narAtt.bandwidth,
+            accessible: false,
+            discovered: true,
+          });
+
+          // Register devices and file systems from attachment
+          const deviceIps = [];
+          if (narAtt.fileSystems && Array.isArray(narAtt.fileSystems)) {
+            narAtt.fileSystems.forEach(fs => {
+              networkRegistry.registerDevice({
+                ip: fs.ip,
+                hostname: fs.name,
+                networkId: narAtt.networkId,
+                fileSystemId: fs.id,
+                accessible: false,
+              });
+              deviceIps.push(fs.ip);
+
+              networkRegistry.registerFileSystem({
+                id: fs.id,
+                files: fs.files || [],
+              });
+            });
+          }
+
+          // Add attachment with deviceIps (stripped of fileSystems to avoid stale data)
+          // eslint-disable-next-line no-unused-vars
+          const { fileSystems, ...attWithoutFileSystems } = narAtt;
           extensionMessage.attachments = [
             ...(extensionMessage.attachments || []),
-            extension.narAttachment
+            { ...attWithoutFileSystems, deviceIps }
           ];
         }
 
@@ -640,6 +686,8 @@ export const GameProvider = ({ children }) => {
     }
 
     // Pure state update (no side effects)
+    // Note: Network registration for NAR attachments is done in acceptMission()
+    // when the mission is accepted, before the briefing message is sent
     setMessages((prev) => [...prev, newMessage]);
 
     // Play notification chime after state update (outside updater)
@@ -756,6 +804,25 @@ export const GameProvider = ({ children }) => {
   // Clear pending VPN connection
   const clearPendingVpnConnection = useCallback(() => {
     setPendingVpnConnection(null);
+  }, []);
+
+  // Update NAR entry (legacy compatibility - used when granting/revoking network access)
+  // This keeps narEntries in sync with NetworkRegistry for backwards compatibility
+  const updateNarEntry = useCallback((networkId, updates) => {
+    setNarEntries(prev => {
+      const existingIndex = prev.findIndex(e => e.networkId === networkId);
+      if (existingIndex >= 0) {
+        // Update existing entry
+        const updated = [...prev];
+        updated[existingIndex] = { ...updated[existingIndex], ...updates };
+        return updated;
+      } else if (updates.create) {
+        // Create new entry if flagged
+        const { ...entryData } = updates;
+        return [...prev, { id: `nar-${networkId}`, networkId, ...entryData }];
+      }
+      return prev;
+    });
   }, []);
 
   // Deposit cheque
@@ -1071,26 +1138,76 @@ export const GameProvider = ({ children }) => {
       setMissionPool(prev => prev.filter(m => m.missionId !== mission.missionId));
     }
 
-    // Send the briefing message with NAR attachments (for procedural missions)
+    // Register network structures in NetworkRegistry BEFORE sending briefing message
+    // Networks are registered with accessible: false, discovered: true
+    // The player must activate the NAR attachment to grant access
+    if (mission.networks && Array.isArray(mission.networks)) {
+      mission.networks.forEach(network => {
+        // Register network
+        networkRegistry.registerNetwork({
+          networkId: network.networkId,
+          networkName: network.networkName,
+          address: network.address,
+          bandwidth: network.bandwidth,
+          accessible: false,
+          discovered: true,
+        });
+
+        // Register devices and file systems
+        if (network.fileSystems && Array.isArray(network.fileSystems)) {
+          network.fileSystems.forEach(fs => {
+            networkRegistry.registerDevice({
+              ip: fs.ip,
+              hostname: fs.name,
+              networkId: network.networkId,
+              fileSystemId: fs.id,
+              accessible: false,
+            });
+
+            networkRegistry.registerFileSystem({
+              id: fs.id,
+              files: fs.files || [],
+            });
+
+            console.log(`📡 NetworkRegistry: Registered ${fs.name} (${fs.ip}) on ${network.networkName}`);
+          });
+        }
+      });
+    }
+
+    // Send the briefing message (attachments already have minimal data from generateNarAttachments)
     if (mission.briefingMessage) {
-      // Add the briefing message with proper timestamp
-      const briefingWithTimestamp = {
-        ...mission.briefingMessage,
-        id: mission.briefingMessage.id || `msg-briefing-${mission.missionId}-${Date.now()}`,
-        timestamp: currentTime.toISOString(),
-        read: false,
+      // Helper to generate random ID segments (e.g., "TF8-99U")
+      const generateRandomId = () => {
+        return `${Math.random().toString(36).substring(2, 5).toUpperCase()}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
       };
 
-      // Check for duplicate before state update
-      const isDuplicate = messages.some(m => m.id === briefingWithTimestamp.id);
-      if (!isDuplicate) {
-        // Pure state update (no side effects)
-        setMessages(prev => [...prev, briefingWithTimestamp]);
-        // Play notification chime after state update (outside updater)
-        playNotificationChime();
-      }
+      // Helper to replace all placeholders in text
+      const replacePlaceholders = (text) => {
+        if (!text) return text;
+        return text
+          .replace(/\{username\}/g, username)
+          .replace(/\{managerName\}/g, managerName || '')
+          .replace(/\{clientName\}/g, mission.briefingMessage.fromName || mission.client);
+      };
+
+      // Add the briefing message with proper timestamp and placeholder replacement
+      const briefingWithTimestamp = {
+        id: mission.briefingMessage.id || `msg-briefing-${mission.missionId}-${Date.now()}`,
+        from: replacePlaceholders(mission.briefingMessage.from),
+        fromId: (mission.briefingMessage.fromId || '').replace(/\{random\}/g, generateRandomId()),
+        fromName: replacePlaceholders(mission.briefingMessage.fromName || mission.briefingMessage.from),
+        subject: replacePlaceholders(mission.briefingMessage.subject),
+        body: replacePlaceholders(mission.briefingMessage.body || ''),
+        timestamp: currentTime.toISOString(),
+        read: false,
+        archived: false,
+        attachments: mission.briefingMessage.attachments || [],
+      };
+
+      addMessage(briefingWithTimestamp);
     }
-  }, [currentTime, messages, playNotificationChime]);
+  }, [addMessage, currentTime, username, managerName]);
 
   // Complete mission objective
   // isPreCompleted: true if this objective was completed before becoming the "current" objective
@@ -1214,11 +1331,17 @@ export const GameProvider = ({ children }) => {
     // Update reputation
     setReputation(prev => Math.max(1, Math.min(11, prev + reputationChange)));
 
-    // Revoke NAR entries and disconnect if mission has networks with revokeOnComplete
+    // Revoke network access and disconnect if mission has networks with revokeOnComplete
     const networksToRevoke = activeMission.networks?.filter(network => network.revokeOnComplete) || [];
 
     if (networksToRevoke.length > 0) {
-      // Revoke all NAR entries for these networks
+      // Revoke access in NetworkRegistry for these networks
+      networksToRevoke.forEach(net => {
+        const reason = net.revokeReason || 'Mission access expired';
+        networkRegistry.revokeNetworkAccess(net.networkId, reason);
+      });
+
+      // Update legacy narEntries for backwards compatibility
       setNarEntries(prev => prev.map(entry => {
         const networkToRevoke = networksToRevoke.find(net => net.networkId === entry.networkId);
         if (networkToRevoke) {
@@ -1351,16 +1474,32 @@ export const GameProvider = ({ children }) => {
     if (consequences.messages && Array.isArray(consequences.messages) && consequences.messages.length > 0) {
       console.log(`📧 Found ${consequences.messages.length} failure messages to schedule`);
 
-      // Create messages from templates
+      // Create messages from templates or use direct body
       consequences.messages.forEach(msgConfig => {
         console.log(`📧 Processing message config:`, msgConfig);
 
-        const messageData = {
-          username: username,
-          managerName: managerName,
-        };
+        let message;
 
-        const message = createMessageFromTemplate(msgConfig.templateId, messageData);
+        if (msgConfig.templateId) {
+          // Use template system
+          const messageData = {
+            username: username,
+            managerName: managerName,
+          };
+          message = createMessageFromTemplate(msgConfig.templateId, messageData);
+        } else if (msgConfig.body) {
+          // Direct body - replace placeholders
+          const messageBody = msgConfig.body
+            .replace(/\{username\}/g, username)
+            .replace(/\{clientName\}/g, msgConfig.fromName || activeMission?.client || '');
+
+          message = {
+            ...msgConfig,
+            body: messageBody,
+            timestamp: currentTime.toISOString(),
+            read: false,
+          };
+        }
 
         if (message) {
           const delay = msgConfig.delay || 0;
@@ -1646,42 +1785,14 @@ export const GameProvider = ({ children }) => {
       if (operation === 'delete') {
         console.log(`🗑️ Sabotage deleting file: ${fileName}`);
 
-        // Capture file counts before deletion for logging (outside state updater)
-        const deletionLog = [];
-        narEntries.forEach(entry => {
-          entry.fileSystems?.forEach(fs => {
-            if (fs.files?.some(f => f.name === fileName)) {
-              deletionLog.push({ fsName: fs.name, prevCount: fs.files.length });
-            }
-          });
-        });
-
-        // Remove file by name from NAR entries (pure state update)
-        setNarEntries(currentEntries => {
-          return currentEntries.map(entry => {
-            if (entry.fileSystems) {
-              return {
-                ...entry,
-                fileSystems: entry.fileSystems.map(fs => {
-                  if (fs.files && fs.files.length > 0) {
-                    // Remove the file matching the fileName
-                    const remainingFiles = fs.files.filter(f => f.name !== fileName);
-                    return {
-                      ...fs,
-                      files: remainingFiles
-                    };
-                  }
-                  return fs;
-                })
-              };
-            }
-            return entry;
-          });
-        });
-
-        // Log deletions after state update (outside updater)
-        deletionLog.forEach(({ fsName, prevCount }) => {
-          console.log(`  🗑️ FS ${fsName}: Deleted ${fileName} (${prevCount} → ${prevCount - 1} files)`);
+        // Delete file from all file systems in NetworkRegistry
+        const allFileSystems = networkRegistry.getAllFileSystems();
+        allFileSystems.forEach(fs => {
+          if (fs.files?.some(f => f.name === fileName)) {
+            const updatedFiles = fs.files.filter(f => f.name !== fileName);
+            networkRegistry.updateFiles(fs.id, updatedFiles);
+            console.log(`  🗑️ FS ${fs.id}: Deleted ${fileName} (${fs.files.length} → ${updatedFiles.length} files)`);
+          }
         });
       }
     };
@@ -1691,7 +1802,7 @@ export const GameProvider = ({ children }) => {
     return () => {
       triggerEventBus.off('sabotageFileOperation', handleSabotageFileOperation);
     };
-  }, [setNarEntries]);
+  }, []); // No dependencies needed - only uses NetworkRegistry singleton
 
   // Listen for forced network disconnect
   useEffect(() => {
@@ -1727,20 +1838,35 @@ export const GameProvider = ({ children }) => {
   useEffect(() => {
     const handleRevokeNAREntry = (data) => {
       const { networkId, reason } = data;
-      console.log(`🔐 Revoking NAR entry for ${networkId}`);
+      const revokeReason = reason || 'Access credentials revoked by network administrator';
+      console.log(`🔐 Revoking network access for ${networkId}`);
 
-      setNarEntries(currentEntries => {
-        return currentEntries.map(entry => {
-          if (entry.networkId === networkId) {
-            return {
-              ...entry,
-              authorized: false,
-              revokedReason: reason || 'Access credentials revoked by network administrator'
-            };
-          }
-          return entry;
+      // Revoke access in NetworkRegistry
+      networkRegistry.revokeNetworkAccess(networkId, revokeReason);
+
+      // Update legacy narEntries for backwards compatibility
+      setNarEntries(prev => prev.map(entry =>
+        entry.networkId === networkId
+          ? { ...entry, authorized: false, revokedReason: revokeReason }
+          : entry
+      ));
+
+      // Find and disconnect any active connection to this network
+      const connectionToDisconnect = activeConnections.find(conn => conn.networkId === networkId);
+
+      if (connectionToDisconnect) {
+        // Disconnect from the revoked network
+        setActiveConnections(prev => prev.filter(conn => conn.networkId !== networkId));
+
+        // Emit networkDisconnected event after state update
+        queueMicrotask(() => {
+          triggerEventBus.emit('networkDisconnected', {
+            networkId: networkId,
+            networkName: connectionToDisconnect.networkName || networkId,
+            reason: revokeReason,
+          });
         });
-      });
+      }
     };
 
     triggerEventBus.on('revokeNAREntry', handleRevokeNAREntry);
@@ -1748,7 +1874,7 @@ export const GameProvider = ({ children }) => {
     return () => {
       triggerEventBus.off('revokeNAREntry', handleRevokeNAREntry);
     };
-  }, [setNarEntries]);
+  }, [activeConnections, setActiveConnections]);
 
   // Listen for mission status changes
   useEffect(() => {
@@ -1936,12 +2062,14 @@ export const GameProvider = ({ children }) => {
       extensionOffers,
       // Local SSD files
       localSSDFiles,
+      // Global Network System
+      networkRegistry: networkRegistry.getSnapshot(),
     };
 
     saveToLocalStorage(username, gameState, saveName);
   }, [username, playerMailId, currentTime, hardware, software, bankAccounts, messages, managerName, windows,
     reputation, reputationCountdown, activeMission, completedMissions, availableMissions, missionCooldowns,
-    narEntries, activeConnections, lastScanResults, discoveredDevices, fileManagerConnections, lastFileOperation,
+    activeConnections, lastScanResults, discoveredDevices, fileManagerConnections, lastFileOperation,
     downloadQueue, transactions, licensedSoftware, bankruptcyCountdown, lastInterestTime, bankingMessagesSent, reputationMessagesSent,
     proceduralMissionsEnabled, missionPool, pendingChainMissions, activeClientIds, clientStandings, extensionOffers, localSSDFiles]);
 
@@ -1980,7 +2108,7 @@ export const GameProvider = ({ children }) => {
     setCompletedMissions([]);
     setAvailableMissions([]);
     setMissionCooldowns({ easy: null, medium: null, hard: null });
-    setNarEntries([]);
+    setNarEntries([]); // Legacy - keep for now during migration
     setActiveConnections([]);
     setLastScanResults(null);
     setFileManagerConnections([]);
@@ -2015,6 +2143,8 @@ export const GameProvider = ({ children }) => {
     setActiveClientIds([]);
     setClientStandings({});
     setExtensionOffers({});
+    // Reset global network registry
+    networkRegistry.clear();
 
     // Check if should skip boot (E2E tests or scenarios)
     const urlParams = new URLSearchParams(window.location.search);
@@ -2028,13 +2158,8 @@ export const GameProvider = ({ children }) => {
     }
   }, []);
 
-  // Load game
-  const loadGame = useCallback((usernameToLoad, saveIndex = null) => {
-    const gameState = loadFromLocalStorage(usernameToLoad, saveIndex);
-
-    if (!gameState) {
-      return false;
-    }
+  // Apply game state from a saved state object (used by loadGame and loadScenario)
+  const applyGameState = useCallback((gameState) => {
     setUsername(gameState.username);
     setPlayerMailId(gameState.playerMailId);
     setCurrentTime(new Date(gameState.currentTime));
@@ -2047,12 +2172,13 @@ export const GameProvider = ({ children }) => {
     const seenMessageIds = new Set();
     const deduplicatedMessages = (gameState.messages || []).filter(msg => {
       if (msg.id && seenMessageIds.has(msg.id)) {
-        console.warn(`⚠️ Removing duplicate message ID '${msg.id}' from save`);
+        console.warn(`⚠️ Removing duplicate message ID '${msg.id}'`);
         return false;
       }
       if (msg.id) seenMessageIds.add(msg.id);
       return true;
     });
+
     setMessages(deduplicatedMessages);
 
     // Load extended state (with defaults for older save formats)
@@ -2062,7 +2188,7 @@ export const GameProvider = ({ children }) => {
     setCompletedMissions(gameState.completedMissions ?? []);
     setAvailableMissions(gameState.availableMissions ?? []);
     setMissionCooldowns(gameState.missionCooldowns ?? { easy: null, medium: null, hard: null });
-    setNarEntries(gameState.narEntries ?? []);
+    setNarEntries(gameState.narEntries ?? []); // Legacy - keep for migration from old saves
     setActiveConnections(gameState.activeConnections ?? []);
     setLastScanResults(gameState.lastScanResults ?? null);
     setDiscoveredDevices(
@@ -2115,6 +2241,14 @@ export const GameProvider = ({ children }) => {
     // Restore local SSD files
     setLocalSSDFiles(gameState.localSSDFiles ?? []);
 
+    // Restore global network registry
+    if (gameState.networkRegistry) {
+      networkRegistry.loadSnapshot(gameState.networkRegistry);
+    } else {
+      // No saved registry - clear it to ensure clean state
+      networkRegistry.clear();
+    }
+
     // Validate and fix window positions when loading
     const loadedWindows = (gameState.windows || []).map((w, index) => {
       // If position is missing or invalid, calculate a valid position
@@ -2157,9 +2291,19 @@ export const GameProvider = ({ children }) => {
     } else {
       setGamePhase('boot'); // Normal boot sequence
     }
-
-    return true;
   }, []);
+
+  // Load game
+  const loadGame = useCallback((usernameToLoad, saveIndex = null) => {
+    const gameState = loadFromLocalStorage(usernameToLoad, saveIndex);
+
+    if (!gameState) {
+      return false;
+    }
+
+    applyGameState(gameState);
+    return true;
+  }, [applyGameState]);
 
   // Context value
   const value = {
@@ -2206,8 +2350,10 @@ export const GameProvider = ({ children }) => {
     setAvailableMissions,
     missionCooldowns,
     setMissionCooldowns,
+    // Legacy: narEntries kept for backwards compatibility with scenarios/tests
     narEntries,
     setNarEntries,
+    updateNarEntry,
     activeConnections,
     setActiveConnections,
     lastScanResults,
@@ -2219,6 +2365,7 @@ export const GameProvider = ({ children }) => {
     setFileManagerConnections,
     lastFileOperation,
     setLastFileOperation,
+    missionFileOperations,
     downloadQueue,
     setDownloadQueue,
     transactions,
@@ -2290,10 +2437,13 @@ export const GameProvider = ({ children }) => {
     setSpecificTimeSpeed,
     saveGame,
     loadGame,
+    applyGameState,
     rebootSystem,
     resetGame,
     generateUsername,
     playAlarmSound,
+    // Global Network System
+    networkRegistry,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

@@ -74,13 +74,13 @@ export const checkNarEntryAddedObjective = (objective, narEntries) => {
 
 /**
  * Check if file operation objective is complete
- * @param {object} objective - Objective definition with targetFiles array
+ * @param {object} objective - Objective definition with targetFiles array and optional destination
  * @param {object} operationData - File operation completion data (last operation)
- * @param {object} cumulativeOperations - Cumulative file operations {paste: Set(['file1.txt', ...])}
+ * @param {object} cumulativeOperations - Cumulative file operations {paste: Set(['file1.txt', ...]), pasteDestinations: Map([['file1.txt', '192.168.50.20']])}
  * @returns {boolean} Objective complete
  */
 export const checkFileOperationObjective = (objective, operationData, cumulativeOperations = {}) => {
-  const { operation, targetFiles } = objective;
+  const { operation, targetFiles, destination } = objective;
 
   // Check if operation matches
   if (operationData.operation !== operation) return false;
@@ -88,6 +88,23 @@ export const checkFileOperationObjective = (objective, operationData, cumulative
   if (!targetFiles || targetFiles.length === 0) {
     // No specific files required - just check if operation happened
     return true;
+  }
+
+  // For paste operations with a destination requirement, check files were pasted to correct location
+  if (destination && operation === 'paste') {
+    const pasteDestinations = cumulativeOperations.pasteDestinations || new Map();
+    const completedAtDestination = targetFiles.filter(file => pasteDestinations.get(file) === destination);
+    console.log(`🔍 checkFileOperationObjective: ${operation} to ${destination} - ${completedAtDestination.length}/${targetFiles.length} target files at correct destination`);
+
+    // Debug: Log what files we're expecting vs what we have when there's a mismatch
+    if (completedAtDestination.length < targetFiles.length && pasteDestinations.size > 0) {
+      console.log(`  📋 Target files expected:`, targetFiles);
+      console.log(`  📋 Files pasted with destinations:`, [...pasteDestinations.entries()]);
+      const missing = targetFiles.filter(file => pasteDestinations.get(file) !== destination);
+      console.log(`  ❌ Missing/wrong destination files:`, missing);
+    }
+
+    return completedAtDestination.length >= targetFiles.length;
   }
 
   // Get the Set of completed files for this operation
@@ -110,15 +127,25 @@ export const checkFileOperationObjective = (objective, operationData, cumulative
 
 /**
  * Get progress for file operation objective
- * @param {object} objective - Objective definition with targetFiles array
+ * @param {object} objective - Objective definition with targetFiles array and optional destination
  * @param {object} cumulativeOperations - Cumulative file operations
  * @returns {object|null} Progress info {current, total} or null if no targetFiles
  */
 export const getFileOperationProgress = (objective, cumulativeOperations = {}) => {
-  const { operation, targetFiles } = objective;
+  const { operation, targetFiles, destination } = objective;
 
   if (!targetFiles || targetFiles.length === 0) {
     return null;
+  }
+
+  // For paste operations with destination requirement, only count files at correct location
+  if (destination && operation === 'paste') {
+    const pasteDestinations = cumulativeOperations.pasteDestinations || new Map();
+    const completedCount = targetFiles.filter(file => pasteDestinations.get(file) === destination).length;
+    return {
+      current: completedCount,
+      total: targetFiles.length
+    };
   }
 
   const completedFiles = cumulativeOperations[operation] || new Set();

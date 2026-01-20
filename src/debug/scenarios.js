@@ -8,8 +8,6 @@
  */
 
 import { isDebugMode } from './debugSystem';
-import storyMissionManager from '../missions/StoryMissionManager';
-import { TIME_SPEEDS } from '../constants/gameConstants';
 import { getScenarioFixture, getAvailableScenarios } from './fixtures';
 
 /**
@@ -86,61 +84,8 @@ export const loadScenario = (scenarioId, gameContext) => {
   console.log(`🔧 Loading debug scenario: ${scenarioId}`);
 
   try {
-    // Apply all state from fixture (same pattern as loadGame)
-    gameContext.setUsername(fixture.username);
-    gameContext.setPlayerMailId(fixture.playerMailId);
-    gameContext.setCurrentTime(new Date(fixture.currentTime));
-    gameContext.setHardware(fixture.hardware);
-    gameContext.setSoftware(fixture.software);
-    gameContext.setBankAccounts(fixture.bankAccounts);
-    gameContext.setManagerName(fixture.managerName);
-
-    // Deduplicate messages (some fixtures may have duplicate IDs from repeated event triggers)
-    const seenMessageIds = new Set();
-    const deduplicatedMessages = (fixture.messages || []).filter(msg => {
-      if (msg.id && seenMessageIds.has(msg.id)) {
-        console.warn(`⚠️ Removing duplicate message ID '${msg.id}' from scenario`);
-        return false;
-      }
-      if (msg.id) seenMessageIds.add(msg.id);
-      return true;
-    });
-    gameContext.setMessages(deduplicatedMessages);
-
-    // Extended state (with defaults for older save formats)
-    gameContext.setReputation(fixture.reputation ?? 9);
-    gameContext.setReputationCountdown(fixture.reputationCountdown ?? null);
-    gameContext.setActiveMission(fixture.activeMission ?? null);
-    gameContext.setCompletedMissions(fixture.completedMissions ?? []);
-    gameContext.setAvailableMissions(fixture.availableMissions ?? []);
-    gameContext.setMissionCooldowns(fixture.missionCooldowns ?? { easy: null, medium: null, hard: null });
-    gameContext.setNarEntries(fixture.narEntries ?? []);
-    gameContext.setActiveConnections(fixture.activeConnections ?? []);
-    gameContext.setLastScanResults(fixture.lastScanResults ?? null);
-    gameContext.setDiscoveredDevices(fixture.discoveredDevices ?? {});
-    gameContext.setFileManagerConnections(fixture.fileManagerConnections ?? []);
-    gameContext.setLastFileOperation(fixture.lastFileOperation ?? null);
-    gameContext.setDownloadQueue(fixture.downloadQueue ?? []);
-    gameContext.setTransactions(fixture.transactions ?? []);
-    gameContext.setLicensedSoftware(fixture.licensedSoftware ?? []);
-    gameContext.setBankruptcyCountdown(fixture.bankruptcyCountdown ?? null);
-    gameContext.setLastInterestTime(fixture.lastInterestTime ?? null);
-
-    // Procedural mission state
-    gameContext.setProceduralMissionsEnabled(fixture.proceduralMissionsEnabled ?? false);
-    gameContext.setMissionPool(fixture.missionPool ?? []);
-    gameContext.setPendingChainMissions(fixture.pendingChainMissions ?? []);
-    gameContext.setActiveClientIds(fixture.activeClientIds ?? new Set());
-    gameContext.setClientStandings(fixture.clientStandings ?? {});
-
-    // Restore story progression (prevents duplicate messages)
-    storyMissionManager.setFiredEvents(fixture.processedEvents ?? []);
-
-    // Close all windows for clean state
-    gameContext.setWindows([]);
-
-    // Reset time speed to normal
-    gameContext.setTimeSpeed(TIME_SPEEDS.NORMAL);
+    // Use shared applyGameState to restore all state (same as loadGame)
+    gameContext.applyGameState(fixture);
 
     console.log(`✅ Debug scenario loaded: ${scenarioId}`);
     return true;

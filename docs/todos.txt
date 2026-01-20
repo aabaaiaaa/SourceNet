@@ -53,7 +53,38 @@ If i've already scanned and discovered a particular file system, the objective t
 Some objectives require files to be copied from multiple locations and then pasted into a central location - because the way you copy (and real life copy functionality) only allows you to copy one selection of files, it's pointless to have objectives where you are asked to copy files from one location and a second location and then paste all in a third location.
 However, if the SSD drive on your terminal was accessible through the File Manager app too, then one of the options on the drop down for it would be your local machine, so then the player could copy and paste the files from multiple locations to your local machine and then copy them all to perform the final pasting of all files. Obviously, this special file system location should not have the same slow restrictions as remote locations would as you are accessing the files locally, so copying shouldn't take long at all. Deleting and repairing local files should still take time based on the file sizes, but should be much quicker than performing those operations remotely.
 Any files copied into your SSD must persist regardless of disconnection or NAR entry revocation - they should be accessible when not connected to any network - so this might need a change to the way the File Manager handles it's UI.
+---
+(done - needs testing)
+when pasting files, it seems the objective tracker doesn't check what location you are pasting into, it just waits for pasting to have happened. This is obviously wrong as if the objective is to paste files to a particular location, then not only does the pasting need to happen, but to a particular location too.
+---
+(done)
+when a mission gets a mission extension and a message is received to deal with additional files, the message really needs to list those additional files like the intro message does as it's not that obvious which files need to be copied too.
+---
+(done)
+when a mission is extended and lists additional files to be repaired, there doesn't seem to be any files that are then marked as corrupted and therefore need repairing. So seems like the mission extension system will need to alter the file system files and their properties in order to make this possible.
 
+
+(done - needs testing)
+there's story mission data that has network information as a starting state and there are generated missions that generate network starting state. there have been several situations where the data that makes up these networks changes, like files are copied and pasted, or deleted or repaired or all of these. then there's network data that lives within the NAR as well as network data that lives within the mission data. there needs to be a change to where the source of truth is for all situations when looking up the current state of a network. the way I see it is there's always a "starting state" of a network, so the starting devices and network details for a mission would be expected to be set in a particular way that would allow the mission to be completed - NAR entries are just about access to devices as well as networks, but it doesn't need to contain the whole structure, just what it is allowing access to. When a mission is started, all it's networks and devices and files etc could be added into a central global network system, which also then becomes the central place for all apps that are used to look up networks, devices and files.
+story missions and generated ones are both accepted through the same way, so there should be no issue in how these both work.
+however, the mission extension system will need the ability to make changes to this global network system. anytime a new NAR entry is supplied then new networks or devices or files could be added (merged into existing if they already exist). but there are other situations with the mission extension system where only properties on existing files might be changed and the issuing of a new NAR entry just doesn't fit in with the simulation from the player's perspective - they would expect those changes to have justed happened automatically. So the player would expect a new NAR entry if a) there's a new network to connect to, b) there are new devices to discover as these both represent "access right" type changes the player would think they'd need updated auth credentials. The player wouldn't expect changes to files or additional files being added to need a new NAR as it's potentially files in existing devices.
+also, the future idea of one global network system opens the game up to larger views of the entire network as a whole - it opens the possibility of hacking into systems that group entire networks share like a cloud hosting provider or being able to bounce your connection through multiple different networks to prevent being traced.
+
+(WIP)
+the message(s) msg-tutorial-network-credentials and msg-tutorial-2-network-update have a NAR attachment that seems to still have fileSystem values when saving. there has been a refactor of how and where network topology is generated, set and that NAR entries are only setting access levels to networks and/or devices. file systems are within devices so access to files is set at device level.
+---
+(done - needs testing - failing tests)
+refactor NAR entries to just be about access and for the network topology to be applied to the global network system immediately.
+---
+(planning)
+extend the debug panel to show all networks/devices/file systems/files registered with the NetworkRegistry - this is just a debug way of seeing all the data that is being generated as missions are accepted.
+
+
+
+
+
+(done - needs testing)
+looks like some messages in the saved debug states contain the placeholder text instead of the expected replacements.
 
 
 Review the systems in place for handling missions and scripted events and objective tracking as I need to understand how to picture these systems and how best they should integrate with each other as the biggest issues have come from changes in these areas. Each system needs to have a role and individual responsibility so there's not internal variables being changed by external systems. It will then aid in writing test cases for each system.
@@ -65,8 +96,7 @@ if any of the sessionStorage usages actaully required now? I thought they were j
 minimising the file manager and network scanner apps seems to reset some state in them so when you open them back up, the dropdowns are not selected anymore. It might not be just the dropdowns that are affected, but ideally no visuals should be affected once you open the app back up from minimising.
 
 
-(WIP)
-When the sabotage event happens and files are deleted, it should be deleting the log files that the player just repaired! Currently it's just adding log entries for non-existent files it's deleting.
+it seems that NAR attachments that are trying to name the NAR entries are cutting off replacements that contain single quotes (example, St. Mary's blah is turning into St.-Network or St.-Backup. Can you change this so a text replacement friendly version of the client can be used?
 
 
 (done)

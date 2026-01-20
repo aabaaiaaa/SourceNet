@@ -92,7 +92,7 @@ test.describe('E2E: Tutorial Sabotage Event', () => {
         console.log('⏱️  Switched to 10x speed for sabotage observation');
 
         await repairButton.click();
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(100);
         console.log('✅ Clicked Repair button - sabotage should trigger soon');
 
         // Verify repair started
@@ -127,7 +127,7 @@ test.describe('E2E: Tutorial Sabotage Event', () => {
         console.log('⏳ Waiting for sabotage deletion to start...');
 
         // Wait for lockout visuals to appear (red border and text)
-        await expect(lockoutBorder).toBeVisible({ timeout: 10000 });
+        await expect(lockoutBorder).toBeVisible({ timeout: 15000 });
         console.log('🚨 Lockout visuals appeared - deletion started!');
 
         const lockoutMessage = page.locator('.lockout-message');

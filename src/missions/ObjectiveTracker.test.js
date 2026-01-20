@@ -6,6 +6,7 @@ import {
   checkFileOperationObjective,
   checkNarEntryAddedObjective,
   checkMissionObjectives,
+  getFileOperationProgress,
 } from './ObjectiveTracker';
 
 describe('ObjectiveTracker', () => {
@@ -137,6 +138,149 @@ describe('ObjectiveTracker', () => {
       const operationData = { operation: 'delete', filesAffected: 8, fileNames: ['file1.txt'] };
 
       expect(checkFileOperationObjective(objective, operationData)).toBe(false);
+    });
+
+    describe('paste destination validation', () => {
+      it('should return true when files are pasted to correct destination', () => {
+        const objective = {
+          type: 'fileOperation',
+          operation: 'paste',
+          targetFiles: ['file1.txt', 'file2.txt'],
+          destination: '192.168.50.20'
+        };
+        const operationData = { operation: 'paste', filesAffected: 2, fileNames: ['file1.txt', 'file2.txt'] };
+        const cumulativeOps = {
+          paste: new Set(['file1.txt', 'file2.txt']),
+          pasteDestinations: new Map([['file1.txt', '192.168.50.20'], ['file2.txt', '192.168.50.20']])
+        };
+
+        expect(checkFileOperationObjective(objective, operationData, cumulativeOps)).toBe(true);
+      });
+
+      it('should return false when files are pasted to wrong destination', () => {
+        const objective = {
+          type: 'fileOperation',
+          operation: 'paste',
+          targetFiles: ['file1.txt', 'file2.txt'],
+          destination: '192.168.50.20'
+        };
+        const operationData = { operation: 'paste', filesAffected: 2, fileNames: ['file1.txt', 'file2.txt'] };
+        const cumulativeOps = {
+          paste: new Set(['file1.txt', 'file2.txt']),
+          pasteDestinations: new Map([['file1.txt', '192.168.50.99'], ['file2.txt', '192.168.50.99']])
+        };
+
+        expect(checkFileOperationObjective(objective, operationData, cumulativeOps)).toBe(false);
+      });
+
+      it('should return false when only some files are at correct destination', () => {
+        const objective = {
+          type: 'fileOperation',
+          operation: 'paste',
+          targetFiles: ['file1.txt', 'file2.txt'],
+          destination: '192.168.50.20'
+        };
+        const operationData = { operation: 'paste', filesAffected: 1, fileNames: ['file2.txt'] };
+        const cumulativeOps = {
+          paste: new Set(['file1.txt', 'file2.txt']),
+          pasteDestinations: new Map([['file1.txt', '192.168.50.99'], ['file2.txt', '192.168.50.20']])
+        };
+
+        expect(checkFileOperationObjective(objective, operationData, cumulativeOps)).toBe(false);
+      });
+
+      it('should work without destination requirement (backward compatibility)', () => {
+        const objective = {
+          type: 'fileOperation',
+          operation: 'paste',
+          targetFiles: ['file1.txt', 'file2.txt']
+          // No destination specified
+        };
+        const operationData = { operation: 'paste', filesAffected: 2, fileNames: ['file1.txt', 'file2.txt'] };
+        const cumulativeOps = { paste: new Set(['file1.txt', 'file2.txt']) };
+
+        expect(checkFileOperationObjective(objective, operationData, cumulativeOps)).toBe(true);
+      });
+
+      it('should return false when no pasteDestinations map exists but destination is required', () => {
+        const objective = {
+          type: 'fileOperation',
+          operation: 'paste',
+          targetFiles: ['file1.txt'],
+          destination: '192.168.50.20'
+        };
+        const operationData = { operation: 'paste', filesAffected: 1, fileNames: ['file1.txt'] };
+        const cumulativeOps = { paste: new Set(['file1.txt']) };
+
+        expect(checkFileOperationObjective(objective, operationData, cumulativeOps)).toBe(false);
+      });
+    });
+  });
+
+  describe('getFileOperationProgress', () => {
+    it('should return null if no targetFiles specified', () => {
+      const objective = { type: 'fileOperation', operation: 'repair' };
+      expect(getFileOperationProgress(objective, {})).toBe(null);
+    });
+
+    it('should return progress for standard file operation', () => {
+      const objective = {
+        type: 'fileOperation',
+        operation: 'repair',
+        targetFiles: ['file1.txt', 'file2.txt', 'file3.txt']
+      };
+      const cumulativeOps = { repair: new Set(['file1.txt', 'file2.txt']) };
+
+      const progress = getFileOperationProgress(objective, cumulativeOps);
+      expect(progress).toEqual({ current: 2, total: 3 });
+    });
+
+    it('should return progress for paste with destination - correct destination', () => {
+      const objective = {
+        type: 'fileOperation',
+        operation: 'paste',
+        targetFiles: ['file1.txt', 'file2.txt'],
+        destination: '192.168.50.20'
+      };
+      const cumulativeOps = {
+        paste: new Set(['file1.txt', 'file2.txt']),
+        pasteDestinations: new Map([['file1.txt', '192.168.50.20'], ['file2.txt', '192.168.50.20']])
+      };
+
+      const progress = getFileOperationProgress(objective, cumulativeOps);
+      expect(progress).toEqual({ current: 2, total: 2 });
+    });
+
+    it('should show zero progress for paste to wrong destination', () => {
+      const objective = {
+        type: 'fileOperation',
+        operation: 'paste',
+        targetFiles: ['file1.txt', 'file2.txt'],
+        destination: '192.168.50.20'
+      };
+      const cumulativeOps = {
+        paste: new Set(['file1.txt', 'file2.txt']),
+        pasteDestinations: new Map([['file1.txt', '192.168.50.99'], ['file2.txt', '192.168.50.99']])
+      };
+
+      const progress = getFileOperationProgress(objective, cumulativeOps);
+      expect(progress).toEqual({ current: 0, total: 2 });
+    });
+
+    it('should show partial progress when some files at correct destination', () => {
+      const objective = {
+        type: 'fileOperation',
+        operation: 'paste',
+        targetFiles: ['file1.txt', 'file2.txt'],
+        destination: '192.168.50.20'
+      };
+      const cumulativeOps = {
+        paste: new Set(['file1.txt', 'file2.txt']),
+        pasteDestinations: new Map([['file1.txt', '192.168.50.99'], ['file2.txt', '192.168.50.20']])
+      };
+
+      const progress = getFileOperationProgress(objective, cumulativeOps);
+      expect(progress).toEqual({ current: 1, total: 2 });
     });
   });
 

@@ -6,6 +6,13 @@
   "basePayout": 2000,
   "category": "story-tutorial",
   "oneTime": true,
+  "briefingMessage": {
+    "from": "SourceNet Manager",
+    "fromId": "SNET-MGR-{random}",
+    "fromName": "SourceNet Manager {managerName}",
+    "subject": "ClientA Network Credentials",
+    "body": "Perfect! Now that you've accepted the mission, here are the network credentials for ClientA-Corporate.\n\nClick the attachment above to add it to your Network Address Register. Then you can use your VPN Client to connect to their network.\n\nRemember the mission objectives:\n1. Connect to ClientA-Corporate network\n2. Scan the network to find file servers\n3. Use File Manager to repair corrupted log files\n\nYou've got this!\n\n- {managerName}"
+  },
   "triggers": {
     "start": {
       "type": "timeSinceEvent",
@@ -39,6 +46,7 @@
           "id": "fs-clienta-01",
           "ip": "192.168.50.10",
           "name": "fileserver-01",
+          "accessible": true,
           "files": [
             {
               "name": "log_2024_01.txt",

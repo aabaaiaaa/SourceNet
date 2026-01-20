@@ -24,6 +24,8 @@ const TEST_DATA = {
     missionTitle: 'Test Mission',
     payoutAmount: '1,000',
     chequeAmount: 1000,
+    // For extension messages - formatted file list
+    targetFilesList: '\n\n📁 Additional files:\n• test_file_1.dat\n• test_file_2.db',
 };
 
 /**

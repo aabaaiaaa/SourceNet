@@ -74,27 +74,30 @@ test.describe('E2E: NAR Revocation & Disconnection Notice', () => {
         await page.goto('/?skipBoot=true&debug=true');
         await completeBoot(page, 'revoked_tab_test');
 
-        // Setup NAR entry that's already revoked
+        // Setup networks in NetworkRegistry - one active, one revoked
         await page.evaluate(() => {
-            window.gameContext.setNarEntries([
-                {
-                    id: 'nar-active-1',
-                    networkId: 'active-network',
-                    networkName: 'Active Network',
-                    address: '10.0.0.0/8',
-                    authorized: true,
-                    status: 'active',
-                },
-                {
-                    id: 'nar-revoked-1',
-                    networkId: 'revoked-network',
-                    networkName: 'Revoked Network',
-                    address: '192.168.1.0/24',
-                    authorized: false,
-                    revokedReason: 'Mission access expired',
-                    status: 'active',
-                },
-            ]);
+            const registry = window.gameContext.networkRegistry;
+
+            // Register active network
+            registry.registerNetwork({
+                networkId: 'active-network',
+                networkName: 'Active Network',
+                address: '10.0.0.0/8',
+                bandwidth: 50,
+                accessible: true,
+                discovered: true,
+            });
+
+            // Register revoked network
+            registry.registerNetwork({
+                networkId: 'revoked-network',
+                networkName: 'Revoked Network',
+                address: '192.168.1.0/24',
+                bandwidth: 50,
+                accessible: false,
+                discovered: true,
+                revokedReason: 'Mission access expired',
+            });
         });
 
         // Install and open NAR app
@@ -106,6 +109,9 @@ test.describe('E2E: NAR Revocation & Disconnection Notice', () => {
         });
 
         await openApp(page, 'Network Address Register');
+
+        // Wait for app to mount and fetch networks
+        await page.waitForTimeout(500);
 
         // Both tabs should be visible (Revoked only appears when there are revoked entries)
         await expect(page.locator('.nar-tab:has-text("Active")')).toBeVisible();
@@ -129,18 +135,21 @@ test.describe('E2E: NAR Revocation & Disconnection Notice', () => {
         await page.goto('/?skipBoot=true&debug=true');
         await completeBoot(page, 'no_revoked_tab_test');
 
-        // Setup NAR with only active entries
+        // Setup network in NetworkRegistry - only active entry
         await page.evaluate(() => {
-            window.gameContext.setNarEntries([
-                {
-                    id: 'nar-active-1',
-                    networkId: 'active-network',
-                    networkName: 'Active Network',
-                    address: '10.0.0.0/8',
-                    authorized: true,
-                    status: 'active',
-                },
-            ]);
+            const registry = window.gameContext.networkRegistry;
+
+            registry.registerNetwork({
+                networkId: 'active-network',
+                networkName: 'Active Network',
+                address: '10.0.0.0/8',
+                bandwidth: 50,
+                accessible: true,
+                discovered: true,
+            });
+
+            // Emit event to notify components of registry changes
+            window.triggerEventBus.emit('networkRegistryLoaded');
         });
 
         // Install and open NAR app
@@ -166,16 +175,22 @@ test.describe('E2E: NAR Revocation & Disconnection Notice', () => {
         await page.goto('/?skipBoot=true&debug=true');
         await completeBoot(page, 'no_revoke_test');
 
-        // Setup NAR entry and connection
+        // Setup network in NetworkRegistry and active connection
         await page.evaluate(() => {
-            window.gameContext.setNarEntries([{
-                id: 'nar-persistent-1',
+            const registry = window.gameContext.networkRegistry;
+
+            registry.registerNetwork({
                 networkId: 'persistent-network',
                 networkName: 'Persistent Network',
                 address: '172.16.0.0/16',
-                authorized: true,
-                status: 'active',
-            }]);
+                bandwidth: 50,
+                accessible: true,
+                discovered: true,
+            });
+
+            // Emit event to notify components of registry changes
+            window.triggerEventBus.emit('networkRegistryLoaded');
+
             window.gameContext.setActiveConnections([{
                 networkId: 'persistent-network',
                 networkName: 'Persistent Network',
@@ -213,10 +228,11 @@ test.describe('E2E: NAR Revocation & Disconnection Notice', () => {
         // Network connection should still be active
         await expect(page.locator('.topbar-network .network-badge')).toHaveText('1');
 
-        // Verify NAR entry is still authorized
-        const narEntry = await page.evaluate(() => {
-            return window.gameContext.narEntries.find(e => e.networkId === 'persistent-network');
+        // Verify network is still accessible in registry
+        const networkAccessible = await page.evaluate(() => {
+            const network = window.gameContext.networkRegistry.getNetwork('persistent-network');
+            return network?.accessible;
         });
-        expect(narEntry.authorized).toBe(true);
+        expect(networkAccessible).toBe(true);
     });
 });

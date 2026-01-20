@@ -1,15 +1,15 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { GameContext } from '../../contexts/GameContext';
 import { GameProvider } from '../../contexts/GameContext';
 import NetworkAddressRegister from './NetworkAddressRegister';
+import networkRegistry from '../../systems/NetworkRegistry';
 
 const renderWithProvider = (component) => {
   return render(<GameProvider>{component}</GameProvider>);
 };
 
 const createMockContext = (overrides = {}) => ({
-  narEntries: [],
   activeConnections: [],
   setActiveConnections: vi.fn(),
   initiateVpnConnection: vi.fn(),
@@ -29,6 +29,14 @@ const renderWithMockContext = (component, contextOverrides = {}) => {
 };
 
 describe('NetworkAddressRegister Component', () => {
+  beforeEach(() => {
+    networkRegistry.reset();
+  });
+
+  afterEach(() => {
+    networkRegistry.reset();
+  });
+
   it('should render app title', () => {
     renderWithProvider(<NetworkAddressRegister />);
     expect(screen.getByText('Network Address Register')).toBeInTheDocument();
@@ -40,51 +48,86 @@ describe('NetworkAddressRegister Component', () => {
   });
 
   describe('Quick Connect functionality', () => {
-    const mockNarEntry = {
-      id: 'nar-1',
-      networkId: 'net-test',
-      networkName: 'Test Network',
-      address: '192.168.1.1',
-      status: 'active',
-      authorized: true,
+    const setupMockNetwork = (accessible = true, revokedReason = null) => {
+      networkRegistry.registerNetwork({
+        networkId: 'net-test',
+        networkName: 'Test Network',
+        address: '192.168.1.1',
+        bandwidth: 100,
+      });
+      if (accessible) {
+        networkRegistry.grantNetworkAccess('net-test', []);
+      } else if (revokedReason) {
+        // First grant then revoke to create a revoked state
+        networkRegistry.grantNetworkAccess('net-test', []);
+        networkRegistry.revokeNetworkAccess('net-test', revokedReason);
+      }
     };
 
-    it('should show Connect button for disconnected networks', () => {
-      renderWithMockContext(<NetworkAddressRegister />, {
-        narEntries: [mockNarEntry],
-        activeConnections: [],
-      });
+    it('should show Connect button for disconnected networks', async () => {
+      setupMockNetwork(true);
+      render(
+        <GameContext.Provider value={createMockContext({ activeConnections: [] })}>
+          <NetworkAddressRegister />
+        </GameContext.Provider>
+      );
 
-      expect(screen.getByRole('button', { name: 'Connect' })).toBeInTheDocument();
+      // Wait for the useEffect to run and state to update
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Connect' })).toBeInTheDocument();
+      });
     });
 
-    it('should call initiateVpnConnection when Connect is clicked', () => {
-      const { mockContext } = renderWithMockContext(<NetworkAddressRegister />, {
-        narEntries: [mockNarEntry],
-        activeConnections: [],
+    it('should call initiateVpnConnection when Connect is clicked', async () => {
+      setupMockNetwork(true);
+      const mockContext = createMockContext({ activeConnections: [] });
+      render(
+        <GameContext.Provider value={mockContext}>
+          <NetworkAddressRegister />
+        </GameContext.Provider>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Connect' })).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: 'Connect' }));
       expect(mockContext.initiateVpnConnection).toHaveBeenCalledWith('net-test');
     });
 
-    it('should show connected badge and disconnect button for connected networks', () => {
-      renderWithMockContext(<NetworkAddressRegister />, {
-        narEntries: [mockNarEntry],
+    it('should show connected badge and disconnect button for connected networks', async () => {
+      setupMockNetwork(true);
+      const mockContext = createMockContext({
         activeConnections: [{ networkId: 'net-test', networkName: 'Test Network' }],
       });
+      render(
+        <GameContext.Provider value={mockContext}>
+          <NetworkAddressRegister />
+        </GameContext.Provider>
+      );
 
-      expect(screen.getByText('✓ Connected')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('✓ Connected')).toBeInTheDocument();
+      });
       expect(screen.getByRole('button', { name: 'Disconnect' })).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: 'Connect' })).not.toBeInTheDocument();
     });
 
-    it('should call setActiveConnections when Disconnect is clicked', () => {
+    it('should call setActiveConnections when Disconnect is clicked', async () => {
+      setupMockNetwork(true);
       const mockSetActiveConnections = vi.fn();
-      renderWithMockContext(<NetworkAddressRegister />, {
-        narEntries: [mockNarEntry],
+      const mockContext = createMockContext({
         activeConnections: [{ networkId: 'net-test', networkName: 'Test Network' }],
         setActiveConnections: mockSetActiveConnections,
+      });
+      render(
+        <GameContext.Provider value={mockContext}>
+          <NetworkAddressRegister />
+        </GameContext.Provider>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Disconnect' })).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: 'Disconnect' }));
@@ -92,8 +135,14 @@ describe('NetworkAddressRegister Component', () => {
     });
 
     it('should not show Connect button for expired networks', () => {
+      // Network registered but not granted access (simulates expired)
+      networkRegistry.registerNetwork({
+        networkId: 'net-test',
+        networkName: 'Test Network',
+        address: '192.168.1.1',
+        bandwidth: 100,
+      });
       renderWithMockContext(<NetworkAddressRegister />, {
-        narEntries: [{ ...mockNarEntry, status: 'expired' }],
         activeConnections: [],
       });
 
@@ -101,8 +150,8 @@ describe('NetworkAddressRegister Component', () => {
     });
 
     it('should not show Connect button for revoked networks', () => {
+      setupMockNetwork(false, 'Access revoked');
       renderWithMockContext(<NetworkAddressRegister />, {
-        narEntries: [{ ...mockNarEntry, authorized: false }],
         activeConnections: [],
       });
 

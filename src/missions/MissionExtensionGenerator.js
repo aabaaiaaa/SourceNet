@@ -5,15 +5,17 @@
  * - Trigger at ~50% objective completion (25% chance) or post-completion (20% chance)
  * - Add 1-2 new objectives before the verification step
  * - Increase payout by 1.3-1.5x (mid-mission) or 1.5-1.8x (post-completion)
- * - May include new NAR credentials for additional network access
+ * - May include new NAR credentials for additional network/device access
  * 
  * Each mission type has 3 extension patterns:
- * - Pattern A: More work on same server (no new NAR)
- * - Pattern B: Additional server on same network (no new NAR)
- * - Pattern C: New network/server (new NAR required)
+ * - Pattern A: More work on same server (no new NAR - files added directly to registry)
+ * - Pattern B: Additional server on same network (NAR required for new device access)
+ * - Pattern C: New network/server (NAR required for new network access)
  */
 
 import { getClientById } from '../data/clientRegistry';
+import networkRegistry from '../systems/NetworkRegistry';
+import { generateSubnet, generateIpInSubnet, randomInt } from './networkUtils';
 
 // Extension configuration
 export const extensionConfig = {
@@ -43,30 +45,6 @@ function randomPick(arr) {
  */
 function randomRange(min, max) {
     return min + Math.random() * (max - min);
-}
-
-/**
- * Generate a random integer between min and max (inclusive)
- */
-function randomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-/**
- * Generate a random IP subnet
- */
-function generateSubnet() {
-    const second = randomInt(1, 254);
-    const third = randomInt(1, 254);
-    return `10.${second}.${third}.0/24`;
-}
-
-/**
- * Generate an IP within a subnet
- */
-function generateIpInSubnet(subnet, hostNum) {
-    const parts = subnet.split('.');
-    return `${parts[0]}.${parts[1]}.${parts[2]}.${hostNum}`;
 }
 
 /**
@@ -212,7 +190,7 @@ function generateExtensionFiles(industry, missionType, targetCount, corrupted = 
  */
 const extensionPatterns = {
     repair: {
-        // Pattern A: More corrupted files on same server
+        // Pattern A: More corrupted files on same server (no new NAR - files added directly to registry)
         moreFiles: (mission, client) => {
             const targetCount = randomInt(3, 5);
             const { files: newFiles, targetFiles } = generateExtensionFiles(client.industry, 'repair', targetCount, true);
@@ -220,16 +198,32 @@ const extensionPatterns = {
 
             if (!existingFs) return null;
 
-            // Add files to existing file system
+            // Get the file system ID from the mission data
+            const fileSystemId = existingFs.id;
+
+            // Add files directly to NetworkRegistry (this is the source of truth)
+            // The files are already marked as corrupted from generateExtensionFiles
+            const addSuccess = networkRegistry.addFilesToFileSystem(fileSystemId, newFiles);
+
+            if (!addSuccess) {
+                console.warn(`MissionExtensionGenerator: Failed to add files to file system ${fileSystemId}`);
+                return null;
+            }
+
+            console.log(`📁 Pattern A: Added ${newFiles.length} corrupted files to ${fileSystemId}`);
+
+            // Also update mission.networks for consistency (handler will use this)
             const updatedNetworks = mission.networks.map((net, idx) => {
                 if (idx === 0) {
                     return {
                         ...net,
                         fileSystems: net.fileSystems.map((fs, fsIdx) => {
                             if (fsIdx === 0) {
+                                // Get the current files from registry to stay in sync
+                                const registryFs = networkRegistry.getFileSystem(fs.id);
                                 return {
                                     ...fs,
-                                    files: [...fs.files, ...newFiles]
+                                    files: registryFs ? registryFs.files : [...fs.files, ...newFiles]
                                 };
                             }
                             return fs;
@@ -252,11 +246,13 @@ const extensionPatterns = {
                 }],
                 networks: updatedNetworks,
                 newNarRequired: false,
-                messageTemplate: 'moreCorruptedFiles'
+                registryUpdated: true, // Flag indicating files were added directly to registry
+                messageTemplate: 'moreCorruptedFiles',
+                targetFiles: targetFiles
             };
         },
 
-        // Pattern B: Second damaged server on same network
+        // Pattern B: Second damaged server on same network (NAR required for new device access)
         secondServer: (mission, client) => {
             const targetCount = randomInt(3, 4);
             const { files: newFiles, targetFiles } = generateExtensionFiles(client.industry, 'repair', targetCount, true);
@@ -267,8 +263,23 @@ const extensionPatterns = {
             const subnet = existingNet.address;
             const newIp = generateIpInSubnet(subnet, randomInt(30, 50));
             const newHostname = generateHostname(client.name, 'server', 2);
+            const newFileSystemId = `fs-ext-${Date.now()}`;
 
-            // Add new file system to existing network
+            // Register the new device and file system in NetworkRegistry
+            networkRegistry.registerDevice({
+                ip: newIp,
+                hostname: newHostname,
+                networkId: existingNet.networkId,
+                fileSystemId: newFileSystemId,
+                accessible: true,
+            });
+            networkRegistry.registerFileSystem({
+                id: newFileSystemId,
+                files: newFiles,
+            });
+            console.log(`📁 Pattern B: Registered new device ${newHostname} (${newIp}) with ${newFiles.length} corrupted files`);
+
+            // Add new file system to network data for mission tracking
             const updatedNetworks = mission.networks.map((net, idx) => {
                 if (idx === 0) {
                     return {
@@ -276,7 +287,7 @@ const extensionPatterns = {
                         fileSystems: [
                             ...net.fileSystems,
                             {
-                                id: `fs-ext-${Date.now()}`,
+                                id: newFileSystemId,
                                 ip: newIp,
                                 name: newHostname,
                                 files: newFiles
@@ -286,6 +297,22 @@ const extensionPatterns = {
                 }
                 return net;
             });
+
+            // Create NAR attachment with updated device access for existing network
+            const narAttachment = {
+                type: 'networkAddress',
+                networkId: existingNet.networkId,
+                networkName: existingNet.networkName,
+                address: existingNet.address,
+                bandwidth: existingNet.bandwidth,
+                // Only include the new device in the attachment
+                fileSystems: [{
+                    id: newFileSystemId,
+                    ip: newIp,
+                    name: newHostname,
+                    files: newFiles
+                }]
+            };
 
             return {
                 objectives: [
@@ -308,8 +335,11 @@ const extensionPatterns = {
                     }
                 ],
                 networks: updatedNetworks,
-                newNarRequired: false,
-                messageTemplate: 'additionalServer'
+                newNarRequired: true, // NAR required for new device access
+                narAttachment: narAttachment,
+                registryUpdated: true, // Device/fileSystem already registered
+                messageTemplate: 'additionalServer',
+                targetFiles: targetFiles
             };
         },
 
@@ -322,6 +352,28 @@ const extensionPatterns = {
             const newSubnet = generateSubnet();
             const newIp = generateIpInSubnet(newSubnet, 10);
             const newHostname = generateHostname(client.name, 'archive');
+            const newFileSystemId = `fs-ext-${Date.now()}`;
+
+            // Register the new network, device, and file system in NetworkRegistry
+            networkRegistry.registerNetwork({
+                networkId: newNetworkId,
+                networkName: `${client.name.split(' ')[0]}-Archive`,
+                address: newSubnet,
+                bandwidth: randomPick([25, 50, 75]),
+                accessible: true,
+            });
+            networkRegistry.registerDevice({
+                ip: newIp,
+                hostname: newHostname,
+                networkId: newNetworkId,
+                fileSystemId: newFileSystemId,
+                accessible: true,
+            });
+            networkRegistry.registerFileSystem({
+                id: newFileSystemId,
+                files: newFiles,
+            });
+            console.log(`📁 Pattern C: Registered new network ${newNetworkId} with device ${newHostname} (${newIp})`);
 
             const newNetwork = {
                 networkId: newNetworkId,
@@ -331,7 +383,7 @@ const extensionPatterns = {
                 revokeOnComplete: true,
                 revokeReason: 'Mission access expired',
                 fileSystems: [{
-                    id: `fs-ext-${Date.now()}`,
+                    id: newFileSystemId,
                     ip: newIp,
                     name: newHostname,
                     files: newFiles
@@ -376,13 +428,15 @@ const extensionPatterns = {
                 networks: [...mission.networks, newNetwork],
                 newNarRequired: true,
                 narNetwork: newNetwork,
-                messageTemplate: 'newNetworkRepair'
+                registryUpdated: true, // Network/device/fileSystem already registered
+                messageTemplate: 'newNetworkRepair',
+                targetFiles: targetFiles
             };
         }
     },
 
     backup: {
-        // Pattern A: Additional files to backup
+        // Pattern A: Additional files to backup (no NAR required - existing device)
         moreFiles: (mission, client) => {
             const targetCount = randomInt(3, 5);
             const { files: newFiles, targetFiles } = generateExtensionFiles(client.industry, 'backup', targetCount, false);
@@ -390,7 +444,10 @@ const extensionPatterns = {
 
             if (!existingFs) return null;
 
-            // Add files to existing source file system
+            // Add files directly to registry (Pattern A - no NAR needed)
+            networkRegistry.addFilesToFileSystem(existingFs.ip, newFiles);
+
+            // Also update mission.networks for mission tracking
             const updatedNetworks = mission.networks.map((net, idx) => {
                 if (idx === 0) {
                     return {
@@ -439,11 +496,13 @@ const extensionPatterns = {
                 ],
                 networks: updatedNetworks,
                 newNarRequired: false,
-                messageTemplate: 'additionalBackupFiles'
+                registryUpdated: true,
+                messageTemplate: 'additionalBackupFiles',
+                targetFiles: targetFiles
             };
         },
 
-        // Pattern B: Second backup destination on same/existing network
+        // Pattern B: Second backup destination on same/existing network (NAR required)
         secondDestination: (mission, client) => {
             const existingNet = mission.networks[0];
             if (!existingNet) return null;
@@ -456,19 +515,33 @@ const extensionPatterns = {
             const sourceFiles = mission.networks[0]?.fileSystems[0]?.files || [];
             const targetFileNames = sourceFiles.filter(f => f.targetFile).map(f => f.name).slice(0, 4);
 
-            // Add new backup destination to network
+            const newDevice = {
+                id: `device-ext-${Date.now()}`,
+                ip: newIp,
+                hostname: newHostname,
+                type: 'server',
+                accessible: true
+            };
+
+            const newFileSystem = {
+                id: `fs-ext-${Date.now()}`,
+                ip: newIp,
+                name: newHostname,
+                files: []
+            };
+
+            // Register new device/fileSystem to registry (Pattern B - NAR required)
+            networkRegistry.registerDevice(subnet, newDevice);
+            networkRegistry.registerFileSystem(newIp, newFileSystem);
+
+            // Also update mission.networks for mission tracking
             const updatedNetworks = mission.networks.map((net, idx) => {
                 if (idx === 0) {
                     return {
                         ...net,
                         fileSystems: [
                             ...net.fileSystems,
-                            {
-                                id: `fs-ext-${Date.now()}`,
-                                ip: newIp,
-                                name: newHostname,
-                                files: []
-                            }
+                            newFileSystem
                         ]
                     };
                 }
@@ -497,12 +570,18 @@ const extensionPatterns = {
                     }
                 ],
                 networks: updatedNetworks,
-                newNarRequired: false,
-                messageTemplate: 'secondaryBackupServer'
+                newNarRequired: true,
+                registryUpdated: true,
+                narAttachment: {
+                    networkAddress: subnet,
+                    deviceAccess: [newIp]
+                },
+                messageTemplate: 'secondaryBackupServer',
+                targetFiles: targetFileNames
             };
         },
 
-        // Pattern C: New backup network (new NAR)
+        // Pattern C: New backup network (new NAR required)
         newNetwork: (mission, client) => {
             const newNetworkId = `${client.id}-offsite-${Date.now()}`;
             const newSubnet = generateSubnet();
@@ -513,26 +592,50 @@ const extensionPatterns = {
             const sourceFiles = mission.networks[0]?.fileSystems[0]?.files || [];
             const targetFileNames = sourceFiles.filter(f => f.targetFile).map(f => f.name).slice(0, 4);
 
-            const newNetwork = {
+            const newDevice = {
+                id: `device-ext-${Date.now()}`,
+                ip: newIp,
+                hostname: newHostname,
+                type: 'server',
+                accessible: true
+            };
+
+            const newFileSystem = {
+                id: `fs-ext-${Date.now()}`,
+                ip: newIp,
+                name: newHostname,
+                files: []
+            };
+
+            const newNetworkData = {
                 networkId: newNetworkId,
                 networkName: `${client.name.split(' ')[0]}-Offsite`,
                 address: newSubnet,
                 bandwidth: randomPick([25, 50, 75]),
+                accessible: true
+            };
+
+            // Register new network/device/fileSystem to registry (Pattern C - NAR required)
+            networkRegistry.registerNetwork(newNetworkId, newNetworkData);
+            networkRegistry.registerDevice(newSubnet, newDevice);
+            networkRegistry.registerFileSystem(newIp, newFileSystem);
+
+            // Keep mission.networks format for mission tracking
+            const newNetworkForMission = {
+                networkId: newNetworkId,
+                networkName: newNetworkData.networkName,
+                address: newSubnet,
+                bandwidth: newNetworkData.bandwidth,
                 revokeOnComplete: true,
                 revokeReason: 'Mission access expired',
-                fileSystems: [{
-                    id: `fs-ext-${Date.now()}`,
-                    ip: newIp,
-                    name: newHostname,
-                    files: []
-                }]
+                fileSystems: [newFileSystem]
             };
 
             return {
                 objectives: [
                     {
                         id: `obj-ext-${Date.now()}-1`,
-                        description: `Connect to ${newNetwork.networkName} network`,
+                        description: `Connect to ${newNetworkData.networkName} network`,
                         type: 'networkConnection',
                         target: newNetworkId,
                         status: 'pending'
@@ -564,16 +667,18 @@ const extensionPatterns = {
                         status: 'pending'
                     }
                 ],
-                networks: [...mission.networks, newNetwork],
+                networks: [...mission.networks, newNetworkForMission],
                 newNarRequired: true,
-                narNetwork: newNetwork,
-                messageTemplate: 'offsiteBackup'
+                registryUpdated: true,
+                narNetwork: newNetworkForMission,
+                messageTemplate: 'offsiteBackup',
+                targetFiles: targetFileNames
             };
         }
     },
 
     transfer: {
-        // Pattern A: More files to transfer
+        // Pattern A: More files to transfer (no NAR required - existing device)
         moreFiles: (mission, client) => {
             const targetCount = randomInt(3, 5);
             const { files: newFiles, targetFiles } = generateExtensionFiles(client.industry, 'transfer', targetCount, false);
@@ -581,7 +686,10 @@ const extensionPatterns = {
 
             if (!existingFs) return null;
 
-            // Add files to source file system
+            // Add files directly to registry (Pattern A - no NAR needed)
+            networkRegistry.addFilesToFileSystem(existingFs.ip, newFiles);
+
+            // Also update mission.networks for mission tracking
             const updatedNetworks = mission.networks.map((net, idx) => {
                 if (idx === 0) {
                     return {
@@ -629,11 +737,13 @@ const extensionPatterns = {
                 ],
                 networks: updatedNetworks,
                 newNarRequired: false,
-                messageTemplate: 'additionalTransferFiles'
+                registryUpdated: true,
+                messageTemplate: 'additionalTransferFiles',
+                targetFiles: targetFiles
             };
         },
 
-        // Pattern B: Additional destination server
+        // Pattern B: Additional destination server (NAR required)
         secondDestination: (mission, client) => {
             const destNet = mission.networks[1] || mission.networks[0];
             if (!destNet) return null;
@@ -649,19 +759,33 @@ const extensionPatterns = {
 
             if (targetFileNames.length === 0) return null;
 
-            // Add new destination to network
+            const newDevice = {
+                id: `device-ext-${Date.now()}`,
+                ip: newIp,
+                hostname: newHostname,
+                type: 'server',
+                accessible: true
+            };
+
+            const newFileSystem = {
+                id: `fs-ext-${Date.now()}`,
+                ip: newIp,
+                name: newHostname,
+                files: []
+            };
+
+            // Register new device/fileSystem to registry (Pattern B - NAR required)
+            networkRegistry.registerDevice(subnet, newDevice);
+            networkRegistry.registerFileSystem(newIp, newFileSystem);
+
+            // Also update mission.networks for mission tracking
             const updatedNetworks = mission.networks.map((net) => {
                 if (net.networkId === destNet.networkId) {
                     return {
                         ...net,
                         fileSystems: [
                             ...net.fileSystems,
-                            {
-                                id: `fs-ext-${Date.now()}`,
-                                ip: newIp,
-                                name: newHostname,
-                                files: []
-                            }
+                            newFileSystem
                         ]
                     };
                 }
@@ -690,12 +814,18 @@ const extensionPatterns = {
                     }
                 ],
                 networks: updatedNetworks,
-                newNarRequired: false,
-                messageTemplate: 'archiveServer'
+                newNarRequired: true,
+                registryUpdated: true,
+                narAttachment: {
+                    networkAddress: subnet,
+                    deviceAccess: [newIp]
+                },
+                messageTemplate: 'archiveServer',
+                targetFiles: targetFileNames
             };
         },
 
-        // Pattern C: New destination network (new NAR)
+        // Pattern C: New destination network (new NAR required)
         newNetwork: (mission, client) => {
             const newNetworkId = `${client.id}-partner-${Date.now()}`;
             const newSubnet = generateSubnet();
@@ -709,26 +839,50 @@ const extensionPatterns = {
 
             if (targetFileNames.length === 0) return null;
 
-            const newNetwork = {
+            const newDevice = {
+                id: `device-ext-${Date.now()}`,
+                ip: newIp,
+                hostname: newHostname,
+                type: 'server',
+                accessible: true
+            };
+
+            const newFileSystem = {
+                id: `fs-ext-${Date.now()}`,
+                ip: newIp,
+                name: newHostname,
+                files: []
+            };
+
+            const newNetworkData = {
                 networkId: newNetworkId,
                 networkName: `${client.name.split(' ')[0]}-Partner`,
                 address: newSubnet,
                 bandwidth: randomPick([25, 50, 75]),
+                accessible: true
+            };
+
+            // Register new network/device/fileSystem to registry (Pattern C - NAR required)
+            networkRegistry.registerNetwork(newNetworkId, newNetworkData);
+            networkRegistry.registerDevice(newSubnet, newDevice);
+            networkRegistry.registerFileSystem(newIp, newFileSystem);
+
+            // Keep mission.networks format for mission tracking
+            const newNetworkForMission = {
+                networkId: newNetworkId,
+                networkName: newNetworkData.networkName,
+                address: newSubnet,
+                bandwidth: newNetworkData.bandwidth,
                 revokeOnComplete: true,
                 revokeReason: 'Mission access expired',
-                fileSystems: [{
-                    id: `fs-ext-${Date.now()}`,
-                    ip: newIp,
-                    name: newHostname,
-                    files: []
-                }]
+                fileSystems: [newFileSystem]
             };
 
             return {
                 objectives: [
                     {
                         id: `obj-ext-${Date.now()}-1`,
-                        description: `Connect to ${newNetwork.networkName} network`,
+                        description: `Connect to ${newNetworkData.networkName} network`,
                         type: 'networkConnection',
                         target: newNetworkId,
                         status: 'pending'
@@ -760,10 +914,12 @@ const extensionPatterns = {
                         status: 'pending'
                     }
                 ],
-                networks: [...mission.networks, newNetwork],
+                networks: [...mission.networks, newNetworkForMission],
                 newNarRequired: true,
-                narNetwork: newNetwork,
-                messageTemplate: 'partnerTransfer'
+                registryUpdated: true,
+                narNetwork: newNetworkForMission,
+                messageTemplate: 'partnerTransfer',
+                targetFiles: targetFileNames
             };
         }
     }
@@ -854,23 +1010,34 @@ export function generateExtension(mission, isPostCompletion = false) {
         : extensionConfig.midMissionMultiplier;
     const payoutMultiplier = randomRange(multiplierRange.min, multiplierRange.max);
 
-    // Generate NAR attachment if new network
+    // Generate NAR attachment for new network access
+    // Pattern B: narAttachment is directly provided (new device on existing network)
+    // Pattern C: narNetwork is provided (entire new network)
     let narAttachment = null;
-    if (extensionData.newNarRequired && extensionData.narNetwork) {
-        const net = extensionData.narNetwork;
-        narAttachment = {
-            type: 'networkAddress',
-            networkId: net.networkId,
-            networkName: net.networkName,
-            address: net.address,
-            bandwidth: net.bandwidth,
-            fileSystems: net.fileSystems.map(fs => ({
-                id: fs.id,
-                ip: fs.ip,
-                name: fs.name,
-                files: fs.files
-            }))
-        };
+    if (extensionData.newNarRequired) {
+        if (extensionData.narAttachment) {
+            // Pattern B: Direct attachment for new device access on existing network
+            narAttachment = {
+                type: 'networkAddress',
+                ...extensionData.narAttachment
+            };
+        } else if (extensionData.narNetwork) {
+            // Pattern C: Full network attachment
+            const net = extensionData.narNetwork;
+            narAttachment = {
+                type: 'networkAddress',
+                networkId: net.networkId,
+                networkName: net.networkName,
+                address: net.address,
+                bandwidth: net.bandwidth,
+                fileSystems: net.fileSystems.map(fs => ({
+                    id: fs.id,
+                    ip: fs.ip,
+                    name: fs.name,
+                    files: fs.files
+                }))
+            };
+        }
     }
 
     return {
@@ -881,7 +1048,8 @@ export function generateExtension(mission, isPostCompletion = false) {
         narAttachment,
         isPostCompletion,
         clientId: client.id,
-        clientName: client.name
+        clientName: client.name,
+        targetFiles: extensionData.targetFiles || []
     };
 }
 

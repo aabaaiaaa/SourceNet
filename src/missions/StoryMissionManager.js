@@ -15,6 +15,7 @@ console.log('🚀 StoryMissionManager.js module loaded!');
 
 import triggerEventBus from '../core/triggerEventBus';
 import { scheduleGameTimeCallback, rescheduleAllTimers, clearGameTimeCallback } from '../core/gameTimeScheduler';
+import { generateNarAttachments } from './networkUtils';
 
 class StoryMissionManager {
   constructor() {
@@ -310,6 +311,15 @@ class StoryMissionManager {
           type: 'verification',
           autoComplete: false, // Manual completion only
         });
+      }
+    }
+
+    // Auto-generate NAR attachments from networks[] if briefingMessage exists without attachments
+    // This ensures story missions can define networks in one place and have attachments auto-generated
+    if (missionDef.briefingMessage && missionDef.networks && Array.isArray(missionDef.networks) && missionDef.networks.length > 0) {
+      if (!missionDef.briefingMessage.attachments || missionDef.briefingMessage.attachments.length === 0) {
+        console.log(`🔧 Auto-generating NAR attachments for ${missionDef.missionId} from networks[]`);
+        missionDef.briefingMessage.attachments = generateNarAttachments(missionDef.networks);
       }
     }
 

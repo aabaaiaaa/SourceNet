@@ -5,6 +5,8 @@
  * and mission requirements. Uses network ID as seed for consistency.
  */
 
+import networkRegistry from './NetworkRegistry';
+
 /**
  * Simple seeded random number generator
  * @param {string} seed - Seed string (network ID)
@@ -60,21 +62,30 @@ function generateHostname(type, index, random) {
 }
 
 /**
- * Get required devices from narEntry file systems
- * @param {Object} narEntry - NAR entry with fileSystems
+ * Get required devices from NetworkRegistry for a given network
+ * @param {Object|string} networkOrId - Network object with id property, or network ID string
  * @returns {Array} Array of required device objects
  */
-export function getRequiredDevices(narEntry) {
-    if (!narEntry || !narEntry.fileSystems || narEntry.fileSystems.length === 0) {
+export function getRequiredDevices(networkOrId) {
+    if (!networkOrId) {
         return [];
     }
 
-    return narEntry.fileSystems.map(fs => ({
-        ip: fs.ip,
-        hostname: fs.name,
-        id: fs.id,
-        type: determineDeviceType(fs.name),
-        fileSystems: fs.files ? [`/${fs.name}/`] : [],
+    // Extract networkId from either a network object or string
+    const networkId = typeof networkOrId === 'string' ? networkOrId : (networkOrId.id || networkOrId.networkId);
+    if (!networkId) {
+        return [];
+    }
+
+    // Get all devices for this network from NetworkRegistry
+    const devices = networkRegistry.getNetworkDevices(networkId);
+
+    return devices.map(device => ({
+        ip: device.ip,
+        hostname: device.hostname,
+        id: device.fileSystemId || device.ip,
+        type: determineDeviceType(device.hostname),
+        fileSystems: device.fileSystemId ? [`/${device.hostname}/`] : [],
         required: true, // Mark as mission-critical
     }));
 }
@@ -135,18 +146,25 @@ export function generateRandomDevices(network, count, types, random, startIP = 3
 }
 
 /**
- * Generate devices for a network based on narEntry and scan type
- * @param {Object} narEntry - NAR entry with network info and fileSystems
+ * Generate devices for a network based on network data and scan type
+ * Uses NetworkRegistry as the primary source for network and device data
+ * @param {Object|string} networkOrId - Network object from registry, or network ID string
  * @param {string} scanType - 'quick' or 'deep'
  * @returns {Array} Array of device objects
  */
-export function generateDevicesForNetwork(narEntry, scanType = 'deep') {
-    if (!narEntry) {
+export function generateDevicesForNetwork(networkOrId, scanType = 'deep') {
+    if (!networkOrId) {
         return [];
     }
 
-    // Get required devices from narEntry fileSystems
-    const requiredDevices = getRequiredDevices(narEntry);
+    // Extract networkId from either a network object or string
+    const networkId = typeof networkOrId === 'string' ? networkOrId : (networkOrId.id || networkOrId.networkId);
+    if (!networkId) {
+        return [];
+    }
+
+    // Get required devices from registry
+    const requiredDevices = getRequiredDevices(networkId);
 
     // Quick scan only returns critical devices (fileserver, database)
     if (scanType === 'quick') {
@@ -156,7 +174,7 @@ export function generateDevicesForNetwork(narEntry, scanType = 'deep') {
     }
 
     // Deep scan includes required devices + random background devices
-    const random = createSeededRandom(narEntry.networkId);
+    const random = createSeededRandom(networkId);
 
     // Determine how many random devices to add (2-5 based on network)
     const randomCount = Math.floor(random() * 4) + 2;
@@ -170,8 +188,11 @@ export function generateDevicesForNetwork(narEntry, scanType = 'deep') {
         return Math.max(max, lastOctet);
     }, 10);
 
+    // Get network info from registry for address generation
+    const network = networkRegistry.getNetwork(networkId) || { address: '10.0.0.0/24' };
+
     const randomDevices = generateRandomDevices(
-        narEntry,
+        network,
         randomCount,
         backgroundTypes,
         random,

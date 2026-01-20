@@ -6,6 +6,13 @@
   "basePayout": 1000,
   "category": "story-tutorial",
   "oneTime": true,
+  "briefingMessage": {
+    "from": "SourceNet Manager",
+    "fromId": "SNET-MGR-{random}",
+    "fromName": "SourceNet Manager {managerName}",
+    "subject": "Updated Network Access - Backup Server",
+    "body": "Good, you accepted the restoration mission.\n\nI've negotiated with the client and secured NEW network credentials for you. After that disaster, they completely revoked your previous access, so this is a fresh NAR entry with different network permissions.\n\nThey've restructured their network access - you'll now connect to a different subnet with access to their backup-server. Click the attachment to add the new credentials to your Network Address Register.\n\nOnce you've added the credentials, use Network Scanner to find BOTH file systems: fileserver-01 (now empty after the sabotage) and backup-server (which has the backup copies).\n\nThen:\n1. Open TWO File Manager windows - one for each file system\n2. Copy all 8 log files from backup-server TO fileserver-01\n\nSimple copy job. Don't mess this up.\n\n- {managerName}"
+  },
   "triggers": {
     "start": {
       "type": "afterMissionComplete",
@@ -41,12 +48,14 @@
           "id": "fs-clienta-01",
           "ip": "192.168.50.10",
           "name": "fileserver-01",
+          "accessible": true,
           "files": []
         },
         {
           "id": "fs-clienta-backup",
           "ip": "192.168.50.20",
           "name": "backup-server",
+          "accessible": true,
           "files": [
             {
               "name": "log_2024_01.txt",

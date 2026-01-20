@@ -3,6 +3,7 @@ import { useGame } from '../../contexts/useGame';
 import { LOCAL_SSD_NETWORK_ID, LOCAL_SSD_BANDWIDTH, LOCAL_SSD_CAPACITY_GB } from '../../constants/gameConstants';
 import { calculateStorageUsed, calculateLocalFilesSize } from '../../systems/StorageSystem';
 import triggerEventBus from '../../core/triggerEventBus';
+import networkRegistry from '../../systems/NetworkRegistry';
 import './FileManager.css';
 
 const FileManager = () => {
@@ -12,7 +13,6 @@ const FileManager = () => {
   const setLastFileOperation = game.setLastFileOperation || (() => { });
   const registerBandwidthOperation = game.registerBandwidthOperation || (() => ({ operationId: null, estimatedTimeMs: 2000 }));
   const completeBandwidthOperation = game.completeBandwidthOperation || (() => { });
-  const narEntries = game.narEntries || [];
   const activeConnections = game.activeConnections || [];
   const discoveredDevices = game.discoveredDevices || {};
   const fileClipboard = game.fileClipboard || { files: [], sourceFileSystemId: '', sourceNetworkId: '' };
@@ -65,24 +65,33 @@ const FileManager = () => {
     isLocal: true,
   });
 
-  // Add remote file systems from connected networks
+  // Add remote file systems from connected networks using NetworkRegistry
   activeConnections.forEach((connection) => {
-    const narEntry = narEntries.find((entry) => entry.networkId === connection.networkId);
+    const network = networkRegistry.getNetwork(connection.networkId);
     const discoveredData = discoveredDevices[connection.networkId];
     const discovered = discoveredData instanceof Set ? discoveredData : new Set(discoveredData || []);
 
-    if (narEntry && narEntry.fileSystems) {
-      narEntry.fileSystems.forEach((fs) => {
-        // Only include filesystems whose IP has been discovered via Network Scanner
-        if (discovered.has(fs.ip)) {
-          availableFileSystems.push({
-            id: fs.id,
-            ip: fs.ip,
-            name: fs.name,
-            label: `${fs.ip} - ${fs.name}`,
-            files: fs.files || [],
-            networkId: narEntry.networkId,
-          });
+    if (network && network.accessible) {
+      // Get accessible devices from NetworkRegistry
+      const accessibleDevices = networkRegistry.getAccessibleDevices(connection.networkId);
+
+      accessibleDevices.forEach((device) => {
+        // Only include devices whose IP has been discovered via Network Scanner
+        if (discovered.has(device.ip)) {
+          // Get file system info from NetworkRegistry
+          if (device.fileSystemId) {
+            const fs = networkRegistry.getFileSystem(device.fileSystemId);
+            if (fs) {
+              availableFileSystems.push({
+                id: fs.id,
+                ip: device.ip,
+                name: device.hostname,
+                label: `${device.ip} - ${device.hostname}`,
+                files: fs.files || [],
+                networkId: connection.networkId,
+              });
+            }
+          }
         }
       });
     }
@@ -99,6 +108,24 @@ const FileManager = () => {
     selectedFileSystemRef.current = selectedFileSystem;
     currentNetworkIdRef.current = currentNetworkId;
   });
+
+  // Subscribe to fileSystemChanged events to refresh files when registry changes externally
+  // (e.g., mission extensions adding new corrupted files)
+  useEffect(() => {
+    const handleFileSystemChanged = ({ fileSystemId, files: updatedFiles }) => {
+      // Only update if we're currently viewing this file system
+      if (selectedFileSystemRef.current === fileSystemId) {
+        console.log(`📁 FileManager: Refreshing files for ${fileSystemId} (${updatedFiles?.length} files)`);
+        setFiles(updatedFiles.map(f => ({ ...f, selected: false })));
+      }
+    };
+
+    triggerEventBus.on('fileSystemChanged', handleFileSystemChanged);
+
+    return () => {
+      triggerEventBus.off('fileSystemChanged', handleFileSystemChanged);
+    };
+  }, []);
 
   // Subscribe to sabotage file operations from scripted events
   useEffect(() => {
@@ -194,7 +221,7 @@ const FileManager = () => {
                 // Update local SSD files directly
                 setLocalSSDFiles(filesToPersist);
               } else {
-                // Update remote file system via narEntries
+                // Update remote file system via NetworkRegistry
                 updateFileSystemFiles(networkId, fsId, filesToPersist);
               }
             }
@@ -237,11 +264,14 @@ const FileManager = () => {
       if (completedOps.length > 0) {
         const operation = completedOps[0].operation;
         const fileNames = completedOps.map(op => op.fileName);
+        // Include IP address for paste destination validation in objectives
+        const currentFs = availableFileSystemsRef.current.find(fs => fs.id === selectedFileSystemRef.current);
         const eventData = {
           operation,
           filesAffected: completedOps.length,
           fileNames,
           fileSystem: selectedFileSystem,
+          fileSystemIp: currentFs?.ip || null,
         };
         setLastFileOperation(eventData);
         triggerEventBus.emit('fileOperationComplete', eventData);
@@ -299,13 +329,13 @@ const FileManager = () => {
     return Math.max(2000, baseTimeSeconds * 1000 * multiplier);
   };
 
-  // Get network bandwidth from NAR entry (or local SSD constant)
+  // Get network bandwidth from NetworkRegistry (or local SSD constant)
   const getNetworkBandwidth = (networkId) => {
     if (networkId === LOCAL_SSD_NETWORK_ID) {
       return LOCAL_SSD_BANDWIDTH; // 4000 Mbps for local operations
     }
-    const narEntry = narEntries.find(e => e.networkId === networkId);
-    return narEntry?.bandwidth || 50; // Default 50 Mbps
+    const network = networkRegistry.getNetwork(networkId);
+    return network?.bandwidth || 50; // Default 50 Mbps
   };
 
   // Check if selected file system is still available (handles network disconnect)
@@ -603,7 +633,7 @@ const FileManager = () => {
 
   // Get clipboard source network name for display
   const clipboardSourceNetwork = fileClipboard.sourceNetworkId
-    ? narEntries.find(e => e.networkId === fileClipboard.sourceNetworkId)?.networkName || fileClipboard.sourceNetworkId
+    ? networkRegistry.getNetwork(fileClipboard.sourceNetworkId)?.networkName || fileClipboard.sourceNetworkId
     : '';
 
   // Calculate total clipboard size

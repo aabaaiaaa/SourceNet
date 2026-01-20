@@ -3,6 +3,7 @@ import { render, screen, fireEvent, within } from '@testing-library/react';
 import FileManager from './FileManager';
 import triggerEventBus from '../../core/triggerEventBus';
 import * as useGameModule from '../../contexts/useGame';
+import networkRegistry from '../../systems/NetworkRegistry';
 
 const renderWithProvider = (component) => {
   return render(component);
@@ -11,6 +12,7 @@ const renderWithProvider = (component) => {
 describe('FileManager Component - Initial Rendering', () => {
   beforeEach(() => {
     triggerEventBus.clear();
+    networkRegistry.reset();
     // Mock useGame to return default game state with no active connections
     vi.spyOn(useGameModule, 'useGame').mockReturnValue({
       activeConnections: [],
@@ -28,6 +30,7 @@ describe('FileManager Component - Initial Rendering', () => {
   afterEach(() => {
     vi.restoreAllMocks();
     triggerEventBus.clear();
+    networkRegistry.reset();
   });
 
   it('should render app title', () => {
@@ -59,7 +62,22 @@ describe('FileManager Component - Initial Rendering', () => {
 describe('FileManager Component - Connected State', () => {
   beforeEach(() => {
     triggerEventBus.clear();
-    // Mock useGame to return game state with active connections and NAR entries
+    networkRegistry.reset();
+
+    // Set up NetworkRegistry with file systems
+    networkRegistry.addNetwork('test-network', 'Test Network');
+    networkRegistry.addDevice('test-network', {
+      ip: '192.168.50.10',
+      name: 'fileserver-01',
+      accessible: true,
+    });
+    networkRegistry.addDevice('test-network', {
+      ip: '192.168.50.20',
+      name: 'backup-server',
+      accessible: true,
+    });
+
+    // Mock useGame to return game state with active connections
     vi.spyOn(useGameModule, 'useGame').mockReturnValue({
       activeConnections: [{ networkId: 'test-network', networkName: 'Test Network' }],
       narEntries: [{
@@ -67,20 +85,7 @@ describe('FileManager Component - Connected State', () => {
         networkName: 'Test Network',
         address: '192.168.50.0/24',
         bandwidth: 50,
-        fileSystems: [
-          {
-            id: 'fs-001',
-            ip: '192.168.50.10',
-            name: 'fileserver-01',
-            files: []
-          },
-          {
-            id: 'fs-002',
-            ip: '192.168.50.20',
-            name: 'backup-server',
-            files: []
-          }
-        ]
+        deviceAccess: ['192.168.50.10', '192.168.50.20'],
       }],
       // Mark IPs as discovered so filesystems appear
       discoveredDevices: {
@@ -98,6 +103,7 @@ describe('FileManager Component - Connected State', () => {
   afterEach(() => {
     vi.restoreAllMocks();
     triggerEventBus.clear();
+    networkRegistry.reset();
   });
 
   it('should show file system selector when connected to network', () => {
@@ -125,7 +131,7 @@ describe('FileManager Component - Connected State', () => {
   it('should show toolbar buttons when file system is selected', () => {
     renderWithProvider(<FileManager />);
     const select = screen.getByRole('combobox');
-    fireEvent.change(select, { target: { value: 'fs-001' } });
+    fireEvent.change(select, { target: { value: '192.168.50.10' } });
 
     expect(screen.getByRole('button', { name: /copy/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /paste/i })).toBeInTheDocument();
@@ -137,7 +143,17 @@ describe('FileManager Component - Connected State', () => {
 describe('FileManager Component - Button States', () => {
   beforeEach(() => {
     triggerEventBus.clear();
-    // Mock useGame to return game state with active connections and NAR entries
+    networkRegistry.reset();
+
+    // Set up NetworkRegistry with file system
+    networkRegistry.addNetwork('test-network', 'Test Network');
+    networkRegistry.addDevice('test-network', {
+      ip: '192.168.50.10',
+      name: 'fileserver-01',
+      accessible: true,
+    });
+
+    // Mock useGame to return game state with active connections
     vi.spyOn(useGameModule, 'useGame').mockReturnValue({
       activeConnections: [{ networkId: 'test-network', networkName: 'Test Network' }],
       narEntries: [{
@@ -145,14 +161,7 @@ describe('FileManager Component - Button States', () => {
         networkName: 'Test Network',
         address: '192.168.50.0/24',
         bandwidth: 50,
-        fileSystems: [
-          {
-            id: 'fs-001',
-            ip: '192.168.50.10',
-            name: 'fileserver-01',
-            files: []
-          }
-        ]
+        deviceAccess: ['192.168.50.10'],
       }],
       discoveredDevices: {
         'test-network': new Set(['192.168.50.10'])
@@ -169,12 +178,13 @@ describe('FileManager Component - Button States', () => {
   afterEach(() => {
     vi.restoreAllMocks();
     triggerEventBus.clear();
+    networkRegistry.reset();
   });
 
   it('should have paste button disabled when clipboard is empty', () => {
     renderWithProvider(<FileManager />);
     const select = screen.getByRole('combobox');
-    fireEvent.change(select, { target: { value: 'fs-001' } });
+    fireEvent.change(select, { target: { value: '192.168.50.10' } });
 
     const pasteButton = screen.getByRole('button', { name: /paste/i });
     expect(pasteButton).toBeDisabled();
@@ -183,7 +193,7 @@ describe('FileManager Component - Button States', () => {
   it('should have copy button enabled initially', () => {
     renderWithProvider(<FileManager />);
     const select = screen.getByRole('combobox');
-    fireEvent.change(select, { target: { value: 'fs-001' } });
+    fireEvent.change(select, { target: { value: '192.168.50.10' } });
 
     const copyButton = screen.getByRole('button', { name: /copy \(0\)/i });
     expect(copyButton).toBeDisabled(); // Disabled when no files selected
@@ -192,7 +202,7 @@ describe('FileManager Component - Button States', () => {
   it('should have delete button enabled initially', () => {
     renderWithProvider(<FileManager />);
     const select = screen.getByRole('combobox');
-    fireEvent.change(select, { target: { value: 'fs-001' } });
+    fireEvent.change(select, { target: { value: '192.168.50.10' } });
 
     const deleteButton = screen.getByRole('button', { name: /delete \(0\)/i });
     expect(deleteButton).toBeDisabled(); // Disabled when no files selected
@@ -200,6 +210,10 @@ describe('FileManager Component - Button States', () => {
 
   it('should clear clipboard after paste', () => {
     const mockSetFileClipboard = vi.fn();
+
+    // Set up file in NetworkRegistry
+    networkRegistry.addFileSystem('192.168.50.10', { name: 'existing.txt', size: '1 KB', corrupted: false });
+
     vi.spyOn(useGameModule, 'useGame').mockReturnValue({
       currentTime: new Date(),
       activeConnections: [{ networkId: 'test-network', networkName: 'Test Network' }],
@@ -208,14 +222,7 @@ describe('FileManager Component - Button States', () => {
         networkName: 'Test Network',
         address: '192.168.50.0/24',
         bandwidth: 50,
-        fileSystems: [
-          {
-            id: 'fs-001',
-            ip: '192.168.50.10',
-            name: 'fileserver-01',
-            files: [{ name: 'existing.txt', size: '1 KB', corrupted: false }]
-          }
-        ]
+        deviceAccess: ['192.168.50.10'],
       }],
       discoveredDevices: {
         'test-network': new Set(['192.168.50.10'])
@@ -234,7 +241,7 @@ describe('FileManager Component - Button States', () => {
 
     renderWithProvider(<FileManager />);
     const select = screen.getByRole('combobox');
-    fireEvent.change(select, { target: { value: 'fs-001' } });
+    fireEvent.change(select, { target: { value: '192.168.50.10' } });
 
     const pasteButton = screen.getByRole('button', { name: /paste \(1\)/i });
     fireEvent.click(pasteButton);
@@ -250,7 +257,17 @@ describe('FileManager Component - Button States', () => {
 describe('FileManager Component - Repair UI', () => {
   beforeEach(() => {
     triggerEventBus.clear();
-    // Mock useGame to return game state with active connections and NAR entries
+    networkRegistry.reset();
+
+    // Set up NetworkRegistry with file system
+    networkRegistry.addNetwork('test-network', 'Test Network');
+    networkRegistry.addDevice('test-network', {
+      ip: '192.168.50.10',
+      name: 'fileserver-01',
+      accessible: true,
+    });
+
+    // Mock useGame to return game state with active connections
     vi.spyOn(useGameModule, 'useGame').mockReturnValue({
       activeConnections: [{ networkId: 'test-network', networkName: 'Test Network' }],
       narEntries: [{
@@ -258,14 +275,7 @@ describe('FileManager Component - Repair UI', () => {
         networkName: 'Test Network',
         address: '192.168.50.0/24',
         bandwidth: 50,
-        fileSystems: [
-          {
-            id: 'fs-001',
-            ip: '192.168.50.10',
-            name: 'fileserver-01',
-            files: []
-          }
-        ]
+        deviceAccess: ['192.168.50.10'],
       }],
       discoveredDevices: {
         'test-network': new Set(['192.168.50.10'])
@@ -282,12 +292,13 @@ describe('FileManager Component - Repair UI', () => {
   afterEach(() => {
     vi.restoreAllMocks();
     triggerEventBus.clear();
+    networkRegistry.reset();
   });
 
   it('should have repair button disabled when no corrupted files exist', () => {
     renderWithProvider(<FileManager />);
     const select = screen.getByRole('combobox');
-    fireEvent.change(select, { target: { value: 'fs-001' } });
+    fireEvent.change(select, { target: { value: '192.168.50.10' } });
 
     // Repair button should be disabled (0 corrupted files selected)
     const repairButton = screen.getByRole('button', { name: /repair \(0\)/i });

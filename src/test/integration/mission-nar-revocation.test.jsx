@@ -4,6 +4,7 @@ import { GameProvider } from '../../contexts/GameContext';
 import { useGame } from '../../contexts/useGame';
 import triggerEventBus from '../../core/triggerEventBus';
 import TopBar from '../../components/ui/TopBar';
+import networkRegistry from '../../systems/NetworkRegistry';
 
 // Mock the game time scheduler to execute callbacks immediately
 vi.mock('../../core/gameTimeScheduler', () => ({
@@ -34,6 +35,7 @@ const renderWithProvider = (onRender) => {
 describe('Mission NAR Revocation', () => {
     beforeEach(() => {
         localStorage.clear();
+        networkRegistry.reset();
     });
 
     afterEach(() => {
@@ -494,6 +496,232 @@ describe('Mission NAR Revocation', () => {
                 const entry = gameState.narEntries.find(e => e.networkId === 'test-network');
                 expect(entry.authorized).toBe(true);
             });
+        });
+
+        it('should mark all devices as accessible: false when NAR entry is revoked', async () => {
+            let gameState;
+            renderWithProvider((game) => {
+                gameState = game;
+            });
+
+            // Initialize player
+            await act(async () => {
+                gameState.initializePlayer('TestPlayer');
+            });
+
+            // Register the network and devices in the NetworkRegistry
+            networkRegistry.addNetwork('test-network', 'Test Network');
+            networkRegistry.addDevice('test-network', {
+                ip: '192.168.1.10',
+                name: 'fileserver-1',
+                accessible: true,
+            });
+            networkRegistry.addDevice('test-network', {
+                ip: '192.168.1.11',
+                name: 'fileserver-2',
+                accessible: true,
+            });
+            networkRegistry.addDevice('test-network', {
+                ip: '192.168.1.12',
+                name: 'database-1',
+                accessible: true,
+            });
+            networkRegistry.addFileSystem('192.168.1.10', { name: 'doc.txt' });
+            networkRegistry.addFileSystem('192.168.1.11', { name: 'data.csv' });
+
+            // Add NAR entry with deviceAccess list
+            await act(async () => {
+                gameState.setNarEntries([{
+                    id: 'nar-test-1',
+                    networkId: 'test-network',
+                    networkName: 'Test Network',
+                    address: '192.168.1.0/24',
+                    authorized: true,
+                    status: 'active',
+                    deviceAccess: ['192.168.1.10', '192.168.1.11', '192.168.1.12'],
+                }]);
+            });
+
+            // Set up active mission with revokeOnComplete
+            const testMission = {
+                missionId: 'test-mission-1',
+                title: 'Test Mission',
+                client: 'Test Client',
+                difficulty: 'Easy',
+                objectives: [{ id: 'obj-1', description: 'Test objective', status: 'complete' }],
+                networks: [{
+                    networkId: 'test-network',
+                    networkName: 'Test Network',
+                    revokeOnComplete: true,
+                    revokeReason: 'Access credentials expired',
+                }],
+            };
+
+            await act(async () => {
+                gameState.setActiveMission(testMission);
+            });
+
+            // Complete the mission
+            await act(async () => {
+                gameState.completeMission('success', 1000, 1);
+            });
+
+            // Wait for revocation to process
+            await waitFor(() => {
+                const entry = gameState.narEntries.find(e => e.networkId === 'test-network');
+                expect(entry.authorized).toBe(false);
+            }, { timeout: 1000 });
+
+            // Verify all devices are marked as inaccessible in the NetworkRegistry
+            const devices = networkRegistry.getDevicesByNetwork('test-network');
+            expect(devices).toHaveLength(3);
+            expect(devices.every(d => d.accessible === false)).toBe(true);
+
+            // Verify files are still preserved in the NetworkRegistry
+            const fs1 = networkRegistry.getFileSystem('192.168.1.10');
+            const fs2 = networkRegistry.getFileSystem('192.168.1.11');
+            expect(fs1.files).toHaveLength(1);
+            expect(fs2.files).toHaveLength(1);
+        });
+    });
+
+    describe('Scripted event revokeNAREntry (sabotage path)', () => {
+        it('should revoke NAR entry via triggerEventBus revokeNAREntry event', async () => {
+            let gameState;
+            renderWithProvider((game) => {
+                gameState = game;
+            });
+
+            // Initialize player
+            await act(async () => {
+                gameState.initializePlayer('TestPlayer');
+            });
+
+            // Register network and devices in NetworkRegistry
+            networkRegistry.addNetwork('clienta-corporate', 'ClientA Corporate');
+            networkRegistry.addDevice('clienta-corporate', {
+                ip: '10.0.0.10',
+                name: 'workstation',
+                accessible: true,
+            });
+            networkRegistry.addDevice('clienta-corporate', {
+                ip: '10.0.0.11',
+                name: 'fileserver',
+                accessible: true,
+            });
+            networkRegistry.addFileSystem('10.0.0.10', { name: 'data.txt' });
+            networkRegistry.addFileSystem('10.0.0.11', { name: 'backup.zip' });
+
+            // Add NAR entry with deviceAccess list
+            await act(async () => {
+                gameState.setNarEntries([{
+                    id: 'nar-sabotage-1',
+                    networkId: 'clienta-corporate',
+                    networkName: 'ClientA Corporate',
+                    address: '10.0.0.0/24',
+                    authorized: true,
+                    status: 'active',
+                    deviceAccess: ['10.0.0.10', '10.0.0.11'],
+                }]);
+            });
+
+            // Verify NAR entry is authorized before event
+            const beforeEntry = gameState.narEntries.find(e => e.networkId === 'clienta-corporate');
+            expect(beforeEntry.authorized).toBe(true);
+
+            // Verify devices are accessible before event
+            expect(networkRegistry.getDevice('10.0.0.10').accessible).toBe(true);
+            expect(networkRegistry.getDevice('10.0.0.11').accessible).toBe(true);
+
+            // Emit the revokeNAREntry event directly (simulating sabotage scripted event)
+            await act(async () => {
+                triggerEventBus.emit('revokeNAREntry', {
+                    networkId: 'clienta-corporate',
+                    reason: 'Administrator revoked access',
+                });
+            });
+
+            // Wait for state to update
+            await waitFor(() => {
+                const entry = gameState.narEntries.find(e => e.networkId === 'clienta-corporate');
+                expect(entry.authorized).toBe(false);
+            }, { timeout: 1000 });
+
+            // Verify NAR entry is now revoked
+            const afterEntry = gameState.narEntries.find(e => e.networkId === 'clienta-corporate');
+            expect(afterEntry.authorized).toBe(false);
+            expect(afterEntry.revokedReason).toBe('Administrator revoked access');
+
+            // Verify devices are inaccessible in NetworkRegistry
+            expect(networkRegistry.getDevice('10.0.0.10').accessible).toBe(false);
+            expect(networkRegistry.getDevice('10.0.0.11').accessible).toBe(false);
+
+            // Verify files are still preserved in NetworkRegistry
+            const fs1 = networkRegistry.getFileSystem('10.0.0.10');
+            const fs2 = networkRegistry.getFileSystem('10.0.0.11');
+            expect(fs1.files).toHaveLength(1);
+            expect(fs2.files).toHaveLength(1);
+        });
+
+        it('should disconnect active VPN when NAR is revoked via event', async () => {
+            let gameState;
+            renderWithProvider((game) => {
+                gameState = game;
+            });
+
+            // Initialize player
+            await act(async () => {
+                gameState.initializePlayer('TestPlayer');
+            });
+
+            // Register network and device in NetworkRegistry
+            networkRegistry.addNetwork('clienta-corporate', 'ClientA Corporate');
+            networkRegistry.addDevice('clienta-corporate', {
+                ip: '10.0.0.10',
+                name: 'workstation',
+                accessible: true,
+            });
+
+            // Add NAR entry and active connection
+            await act(async () => {
+                gameState.setNarEntries([{
+                    id: 'nar-sabotage-2',
+                    networkId: 'clienta-corporate',
+                    networkName: 'ClientA Corporate',
+                    address: '10.0.0.0/24',
+                    authorized: true,
+                    status: 'active',
+                    deviceAccess: ['10.0.0.10'],
+                }]);
+                gameState.setActiveConnections([{
+                    networkId: 'clienta-corporate',
+                    networkName: 'ClientA Corporate',
+                    connectedAt: new Date().toISOString(),
+                }]);
+            });
+
+            // Verify connection is active
+            expect(gameState.activeConnections).toHaveLength(1);
+
+            // Emit revokeNAREntry event
+            await act(async () => {
+                triggerEventBus.emit('revokeNAREntry', {
+                    networkId: 'clienta-corporate',
+                    reason: 'Security breach detected',
+                });
+            });
+
+            // Wait for disconnection
+            await waitFor(() => {
+                expect(gameState.activeConnections).toHaveLength(0);
+            }, { timeout: 1000 });
+
+            // Verify NAR entry is revoked
+            const entry = gameState.narEntries.find(e => e.networkId === 'clienta-corporate');
+            expect(entry.authorized).toBe(false);
+
+            // Verify device is inaccessible in NetworkRegistry
+            expect(networkRegistry.getDevice('10.0.0.10').accessible).toBe(false);
         });
     });
 });

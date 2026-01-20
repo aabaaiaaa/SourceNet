@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   executeForceDisconnectAction,
   executeSetMissionStatusAction,
+  executeRevokeNAREntryAction,
   isPlayerControlBlocked,
   initializePlayerControlTracking,
 } from './ScriptedEventExecutor';
@@ -58,6 +59,56 @@ describe('ScriptedEventExecutor', () => {
 
       executeSetMissionStatusAction(action);
       expect(emitted).toBe(true);
+    });
+  });
+
+  describe('executeRevokeNAREntryAction', () => {
+    it('should emit revokeNAREntry event with correct data', () => {
+      let emitted = false;
+      let eventData = null;
+
+      triggerEventBus.on('revokeNAREntry', (data) => {
+        emitted = true;
+        eventData = data;
+      });
+
+      const action = {
+        type: 'revokeNAREntry',
+        network: 'clienta-corporate',
+        reason: 'Access credentials revoked by network administrator',
+      };
+
+      executeRevokeNAREntryAction(action);
+
+      expect(emitted).toBe(true);
+      expect(eventData.networkId).toBe('clienta-corporate');
+      expect(eventData.reason).toBe('Access credentials revoked by network administrator');
+    });
+
+    it('should use default reason when not provided', () => {
+      let eventData = null;
+
+      triggerEventBus.on('revokeNAREntry', (data) => {
+        eventData = data;
+      });
+
+      const action = {
+        type: 'revokeNAREntry',
+        network: 'test-network',
+      };
+
+      executeRevokeNAREntryAction(action);
+
+      expect(eventData.networkId).toBe('test-network');
+      expect(eventData.reason).toBe('Access credentials revoked by network administrator');
+    });
+
+    it('should call onComplete callback', () => {
+      const onComplete = vi.fn();
+      const action = { type: 'revokeNAREntry', network: 'test' };
+
+      executeRevokeNAREntryAction(action, onComplete);
+      expect(onComplete).toHaveBeenCalled();
     });
   });
 

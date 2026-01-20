@@ -1,21 +1,44 @@
 import { useState, useEffect, useRef } from 'react';
 import { useGame } from '../../contexts/useGame';
 import triggerEventBus from '../../core/triggerEventBus';
+import networkRegistry from '../../systems/NetworkRegistry';
 import './VPNClient.css';
 
 const VPNClient = () => {
-  const { narEntries, activeConnections, setActiveConnections, currentTime, pendingVpnConnection, clearPendingVpnConnection } = useGame();
+  const { activeConnections, setActiveConnections, currentTime, pendingVpnConnection, clearPendingVpnConnection } = useGame();
   const [selectedNetwork, setSelectedNetwork] = useState('');
   const [connecting, setConnecting] = useState(false);
   const [connectionStartTime, setConnectionStartTime] = useState(null);
   const [pendingConnection, setPendingConnection] = useState(null);
+  const [knownNetworks, setKnownNetworks] = useState([]);
   const animationFrameRef = useRef(null);
+
+  // Subscribe to network access changes to refresh known networks list
+  useEffect(() => {
+    const refreshNetworks = () => {
+      setKnownNetworks(networkRegistry.getKnownNetworks());
+    };
+
+    // Initial load
+    refreshNetworks();
+
+    // Listen for access changes and registry reloads
+    triggerEventBus.on('networkAccessGranted', refreshNetworks);
+    triggerEventBus.on('networkAccessRevoked', refreshNetworks);
+    triggerEventBus.on('networkRegistryLoaded', refreshNetworks);
+
+    return () => {
+      triggerEventBus.off('networkAccessGranted', refreshNetworks);
+      triggerEventBus.off('networkAccessRevoked', refreshNetworks);
+      triggerEventBus.off('networkRegistryLoaded', refreshNetworks);
+    };
+  }, []);
 
   // Auto-connect when initiated from NAR
   useEffect(() => {
     if (pendingVpnConnection && !connecting) {
-      const networkEntry = narEntries.find((e) => e.networkId === pendingVpnConnection);
-      if (networkEntry && networkEntry.authorized !== false && networkEntry.status !== 'expired') {
+      const network = networkRegistry.getNetwork(pendingVpnConnection);
+      if (network && network.accessible) {
         // Check if already connected
         const alreadyConnected = (activeConnections || []).some(
           conn => conn.networkId === pendingVpnConnection
@@ -24,9 +47,9 @@ const VPNClient = () => {
           setSelectedNetwork(pendingVpnConnection);
           // Start connection
           setPendingConnection({
-            networkId: networkEntry.networkId,
-            networkName: networkEntry.networkName,
-            address: networkEntry.address,
+            networkId: network.networkId,
+            networkName: network.networkName,
+            address: network.address,
           });
           setConnectionStartTime(currentTime.getTime());
           setConnecting(true);
@@ -34,7 +57,7 @@ const VPNClient = () => {
       }
       clearPendingVpnConnection();
     }
-  }, [pendingVpnConnection, narEntries, activeConnections, connecting, currentTime, clearPendingVpnConnection]);
+  }, [pendingVpnConnection, activeConnections, connecting, currentTime, clearPendingVpnConnection]);
 
   // Monitor game time for connection completion
   useEffect(() => {
@@ -81,29 +104,29 @@ const VPNClient = () => {
     };
   }, [connecting, connectionStartTime, currentTime, pendingConnection, activeConnections, setActiveConnections]);
 
-  // Get available networks from NAR (non-expired, authorized, and not already connected)
+  // Get available networks (accessible and not already connected)
   const connectedNetworkIds = new Set((activeConnections || []).map(conn => conn.networkId));
-  const availableNetworks = (narEntries || []).filter((entry) =>
-    entry.status !== 'expired' && entry.authorized !== false && !connectedNetworkIds.has(entry.networkId)
+  const availableNetworks = knownNetworks.filter((network) =>
+    network.accessible && !connectedNetworkIds.has(network.networkId)
   );
 
   const handleConnect = () => {
     if (!selectedNetwork || !currentTime) return;
 
-    const networkEntry = narEntries.find((e) => e.networkId === selectedNetwork);
-    if (!networkEntry) return;
+    const network = networkRegistry.getNetwork(selectedNetwork);
+    if (!network) return;
 
-    // Check if network entry is authorized
-    if (networkEntry.authorized === false) {
-      console.warn(`Cannot connect to ${networkEntry.networkId}: Access revoked`);
+    // Check if network is accessible
+    if (!network.accessible) {
+      console.warn(`Cannot connect to ${network.networkId}: Access revoked`);
       return;
     }
 
     // Start connection using game time
     setPendingConnection({
-      networkId: networkEntry.networkId,
-      networkName: networkEntry.networkName,
-      address: networkEntry.address,
+      networkId: network.networkId,
+      networkName: network.networkName,
+      address: network.address,
     });
     setConnectionStartTime(currentTime.getTime());
     setConnecting(true);

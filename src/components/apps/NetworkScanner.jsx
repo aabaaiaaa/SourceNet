@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useGame } from '../../contexts/useGame';
 import triggerEventBus from '../../core/triggerEventBus';
+import networkRegistry from '../../systems/NetworkRegistry';
 import { generateDevicesForNetwork } from '../../systems/NetworkDeviceGenerator';
 import './NetworkScanner.css';
 
@@ -14,7 +15,6 @@ const NetworkScanner = () => {
   const game = useGame();
   const { currentTime } = game;
   const activeConnections = game.activeConnections || [];
-  const narEntries = game.narEntries || [];
   const setLastScanResults = game.setLastScanResults || (() => { });
   const addDiscoveredDevices = game.addDiscoveredDevices || (() => { });
   const registerBandwidthOperation = game.registerBandwidthOperation || (() => ({ operationId: null, estimatedTimeMs: 5000 }));
@@ -79,11 +79,11 @@ const NetworkScanner = () => {
       // Scan complete
       completeBandwidthOperation(operationIdRef.current);
 
-      // Find the NAR entry for this network
-      const narEntry = narEntries.find(entry => entry.networkId === selectedNetwork);
+      // Get the network from NetworkRegistry
+      const network = networkRegistry.getNetwork(selectedNetwork);
 
       // Generate devices using the device generator
-      const machines = generateDevicesForNetwork(narEntry, scanType);
+      const machines = generateDevicesForNetwork(network, scanType);
 
       const results = {
         network: selectedNetwork,
@@ -108,7 +108,7 @@ const NetworkScanner = () => {
       setScanStartTime(null);
       console.log(`🔍 Scan complete: Found ${results.machines.length} machines`);
     }
-  }, [scanning, scanStartTime, currentTime, estimatedDuration, selectedNetwork, scanType, narEntries, completeBandwidthOperation, setLastScanResults, addDiscoveredDevices]);
+  }, [scanning, scanStartTime, currentTime, estimatedDuration, selectedNetwork, scanType, completeBandwidthOperation, setLastScanResults, addDiscoveredDevices]);
 
   const handleScan = () => {
     if (!selectedNetwork || scanning || !currentTime) return;

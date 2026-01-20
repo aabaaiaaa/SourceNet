@@ -10,10 +10,12 @@ import VPNClient from '../../components/apps/VPNClient';
 import TopBar from '../../components/ui/TopBar';
 import Desktop from '../../components/ui/Desktop';
 import triggerEventBus from '../../core/triggerEventBus';
+import networkRegistry from '../../systems/NetworkRegistry';
 import {
     createCompleteSaveState,
     setSaveInLocalStorage,
     createNetworkWithFileSystem,
+    populateNetworkRegistry,
 } from '../helpers/testData';
 
 // Helper component to load game state on mount
@@ -57,6 +59,7 @@ async function performNetworkScan(user, networkId, scanType = 'deep') {
 describe('File Manager Integration', () => {
     beforeEach(() => {
         localStorage.clear();
+        networkRegistry.reset();
     });
 
     it('should show "not connected" message when no active network connections', () => {
@@ -77,30 +80,40 @@ describe('File Manager Integration', () => {
     it('should display file systems from connected network after scanning', async () => {
         const user = userEvent.setup();
 
-        // Create network with two file systems
+        // Define file systems for the test
+        const fileSystems = [
+            {
+                id: 'fs-001',
+                ip: '192.168.50.10',
+                name: 'fileserver-01',
+                files: [
+                    { name: 'log_2024_01.txt', size: '2.5 KB', corrupted: false },
+                    { name: 'log_2024_02.txt', size: '3.1 KB', corrupted: false },
+                ],
+            },
+            {
+                id: 'fs-002',
+                ip: '192.168.50.20',
+                name: 'backup-server',
+                files: [
+                    { name: 'backup_jan.zip', size: '150 MB', corrupted: false },
+                ],
+            },
+        ];
+
+        // Populate NetworkRegistry with network data
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'corp-net-1',
+            networkName: 'Corporate Network',
+            fileSystems,
+        });
+
+        // Create NAR entry (now only contains deviceAccess, not fileSystems)
         const network = createNetworkWithFileSystem({
             networkId: 'corp-net-1',
             networkName: 'Corporate Network',
             address: '192.168.50.0/24',
-            fileSystems: [
-                {
-                    id: 'fs-001',
-                    ip: '192.168.50.10',
-                    name: 'fileserver-01',
-                    files: [
-                        { name: 'log_2024_01.txt', size: '2.5 KB', corrupted: false },
-                        { name: 'log_2024_02.txt', size: '3.1 KB', corrupted: false },
-                    ],
-                },
-                {
-                    id: 'fs-002',
-                    ip: '192.168.50.20',
-                    name: 'backup-server',
-                    files: [
-                        { name: 'backup_jan.zip', size: '150 MB', corrupted: false },
-                    ],
-                },
-            ],
+            fileSystems, // Used to populate deviceAccess list
         });
 
         const saveState = createCompleteSaveState({
@@ -116,6 +129,7 @@ describe('File Manager Integration', () => {
                 ],
                 // Explicitly set empty discoveredDevices to test scanning flow
                 discoveredDevices: {},
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -173,21 +187,29 @@ describe('File Manager Integration', () => {
     it('should show corrupted file indicators', async () => {
         const user = userEvent.setup({ delay: null });
 
+        const fileSystems = [
+            {
+                id: 'fs-001',
+                ip: '192.168.50.10',
+                name: 'fileserver-01',
+                files: [
+                    { name: 'corrupted_file.txt', size: '10 KB', corrupted: true },
+                    { name: 'clean_file.txt', size: '5 KB', corrupted: false },
+                ],
+            },
+        ];
+
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'corp-net-1',
+            networkName: 'Corporate Network',
+            fileSystems,
+        });
+
         const network = createNetworkWithFileSystem({
             networkId: 'corp-net-1',
             networkName: 'Corporate Network',
             address: '192.168.50.0/24',
-            fileSystems: [
-                {
-                    id: 'fs-001',
-                    ip: '192.168.50.10',
-                    name: 'fileserver-01',
-                    files: [
-                        { name: 'corrupted_file.txt', size: '10 KB', corrupted: true },
-                        { name: 'clean_file.txt', size: '5 KB', corrupted: false },
-                    ],
-                },
-            ],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -201,6 +223,10 @@ describe('File Manager Integration', () => {
                         address: network.address,
                     },
                 ],
+                discoveredDevices: {
+                    'corp-net-1': ['192.168.50.10'],
+                },
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -243,22 +269,30 @@ describe('File Manager Integration', () => {
     it('should complete repair operation on corrupted files', async () => {
         const user = userEvent.setup({ delay: null });
 
+        const fileSystems = [
+            {
+                id: 'fs-001',
+                ip: '192.168.50.10',
+                name: 'fileserver-01',
+                files: [
+                    { name: 'log_2024_01.txt', size: '2.5 KB', corrupted: true },
+                    { name: 'log_2024_02.txt', size: '3.1 KB', corrupted: true },
+                    { name: 'log_2024_03.txt', size: '2.8 KB', corrupted: false },
+                ],
+            },
+        ];
+
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'corp-net-1',
+            networkName: 'Corporate Network',
+            fileSystems,
+        });
+
         const network = createNetworkWithFileSystem({
             networkId: 'corp-net-1',
             networkName: 'Corporate Network',
             address: '192.168.50.0/24',
-            fileSystems: [
-                {
-                    id: 'fs-001',
-                    ip: '192.168.50.10',
-                    name: 'fileserver-01',
-                    files: [
-                        { name: 'log_2024_01.txt', size: '2.5 KB', corrupted: true },
-                        { name: 'log_2024_02.txt', size: '3.1 KB', corrupted: true },
-                        { name: 'log_2024_03.txt', size: '2.8 KB', corrupted: false },
-                    ],
-                },
-            ],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -272,6 +306,10 @@ describe('File Manager Integration', () => {
                         address: network.address,
                     },
                 ],
+                discoveredDevices: {
+                    'corp-net-1': ['192.168.50.10'],
+                },
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -335,18 +373,26 @@ describe('File Manager Integration', () => {
     it('should track file system connections for mission objectives', async () => {
         const user = userEvent.setup({ delay: null });
 
+        const fileSystems = [
+            {
+                id: 'fs-001',
+                ip: '192.168.50.10',
+                name: 'fileserver-01',
+                files: [],
+            },
+        ];
+
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'corp-net-1',
+            networkName: 'Corporate Network',
+            fileSystems,
+        });
+
         const network = createNetworkWithFileSystem({
             networkId: 'corp-net-1',
             networkName: 'Corporate Network',
             address: '192.168.50.0/24',
-            fileSystems: [
-                {
-                    id: 'fs-001',
-                    ip: '192.168.50.10',
-                    name: 'fileserver-01',
-                    files: [],
-                },
-            ],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -360,6 +406,10 @@ describe('File Manager Integration', () => {
                         address: network.address,
                     },
                 ],
+                discoveredDevices: {
+                    'corp-net-1': ['192.168.50.10'],
+                },
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -402,28 +452,36 @@ describe('File Manager Integration', () => {
     it('should switch between different file systems', async () => {
         const user = userEvent.setup({ delay: null });
 
+        const fileSystems = [
+            {
+                id: 'fs-001',
+                ip: '192.168.50.10',
+                name: 'fileserver-01',
+                files: [
+                    { name: 'file_a.txt', size: '1 KB', corrupted: false },
+                ],
+            },
+            {
+                id: 'fs-002',
+                ip: '192.168.50.20',
+                name: 'backup-server',
+                files: [
+                    { name: 'file_b.txt', size: '2 KB', corrupted: false },
+                ],
+            },
+        ];
+
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'corp-net-1',
+            networkName: 'Corporate Network',
+            fileSystems,
+        });
+
         const network = createNetworkWithFileSystem({
             networkId: 'corp-net-1',
             networkName: 'Corporate Network',
             address: '192.168.50.0/24',
-            fileSystems: [
-                {
-                    id: 'fs-001',
-                    ip: '192.168.50.10',
-                    name: 'fileserver-01',
-                    files: [
-                        { name: 'file_a.txt', size: '1 KB', corrupted: false },
-                    ],
-                },
-                {
-                    id: 'fs-002',
-                    ip: '192.168.50.20',
-                    name: 'backup-server',
-                    files: [
-                        { name: 'file_b.txt', size: '2 KB', corrupted: false },
-                    ],
-                },
-            ],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -437,6 +495,10 @@ describe('File Manager Integration', () => {
                         address: network.address,
                     },
                 ],
+                discoveredDevices: {
+                    'corp-net-1': ['192.168.50.10', '192.168.50.20'],
+                },
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -479,20 +541,28 @@ describe('File Manager Integration', () => {
     it('should integrate with VPN client for network connections', async () => {
         const user = userEvent.setup({ delay: null });
 
+        const fileSystems = [
+            {
+                id: 'fs-001',
+                ip: '192.168.50.10',
+                name: 'fileserver-01',
+                files: [
+                    { name: 'test_file.txt', size: '1 KB', corrupted: false },
+                ],
+            },
+        ];
+
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'corp-net-1',
+            networkName: 'Corporate Network',
+            fileSystems,
+        });
+
         const network = createNetworkWithFileSystem({
             networkId: 'corp-net-1',
             networkName: 'Corporate Network',
             address: '192.168.50.0/24',
-            fileSystems: [
-                {
-                    id: 'fs-001',
-                    ip: '192.168.50.10',
-                    name: 'fileserver-01',
-                    files: [
-                        { name: 'test_file.txt', size: '1 KB', corrupted: false },
-                    ],
-                },
-            ],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -500,6 +570,10 @@ describe('File Manager Integration', () => {
             overrides: {
                 narEntries: [network],
                 activeConnections: [], // Start with no connections
+                discoveredDevices: {
+                    'corp-net-1': ['192.168.50.10'],
+                },
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -553,19 +627,27 @@ describe('File Manager Integration', () => {
     it('should allow file selection by clicking', async () => {
         const user = userEvent.setup({ delay: null });
 
+        const fileSystems = [{
+            id: 'fs-001',
+            ip: '192.168.1.10',
+            name: 'server-01',
+            files: [
+                { name: 'file1.txt', size: '1.0 KB', corrupted: false },
+                { name: 'file2.txt', size: '2.0 KB', corrupted: false },
+                { name: 'file3.txt', size: '3.0 KB', corrupted: true },
+            ],
+        }];
+
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'test-net',
+            networkName: 'Test Network',
+            fileSystems,
+        });
+
         const network = createNetworkWithFileSystem({
             networkId: 'test-net',
             networkName: 'Test Network',
-            fileSystems: [{
-                id: 'fs-001',
-                ip: '192.168.1.10',
-                name: 'server-01',
-                files: [
-                    { name: 'file1.txt', size: '1.0 KB', corrupted: false },
-                    { name: 'file2.txt', size: '2.0 KB', corrupted: false },
-                    { name: 'file3.txt', size: '3.0 KB', corrupted: true },
-                ],
-            }],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -573,6 +655,10 @@ describe('File Manager Integration', () => {
             overrides: {
                 narEntries: [network],
                 activeConnections: [{ networkId: network.networkId, networkName: network.networkName }],
+                discoveredDevices: {
+                    'test-net': ['192.168.1.10'],
+                },
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -629,18 +715,26 @@ describe('File Manager Integration', () => {
     it('should copy selected files to clipboard', async () => {
         const user = userEvent.setup({ delay: null });
 
+        const fileSystems = [{
+            id: 'fs-001',
+            ip: '192.168.1.10',
+            name: 'server-01',
+            files: [
+                { name: 'doc1.txt', size: '5.0 KB', corrupted: false },
+                { name: 'doc2.txt', size: '10.0 KB', corrupted: false },
+            ],
+        }];
+
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'test-net',
+            networkName: 'Test Network',
+            fileSystems,
+        });
+
         const network = createNetworkWithFileSystem({
             networkId: 'test-net',
             networkName: 'Test Network',
-            fileSystems: [{
-                id: 'fs-001',
-                ip: '192.168.1.10',
-                name: 'server-01',
-                files: [
-                    { name: 'doc1.txt', size: '5.0 KB', corrupted: false },
-                    { name: 'doc2.txt', size: '10.0 KB', corrupted: false },
-                ],
-            }],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -648,6 +742,10 @@ describe('File Manager Integration', () => {
             overrides: {
                 narEntries: [network],
                 activeConnections: [{ networkId: network.networkId, networkName: network.networkName }],
+                discoveredDevices: {
+                    'test-net': ['192.168.1.10'],
+                },
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -700,19 +798,27 @@ describe('File Manager Integration', () => {
     it('should delete selected files', async () => {
         const user = userEvent.setup({ delay: null });
 
+        const fileSystems = [{
+            id: 'fs-001',
+            ip: '192.168.1.10',
+            name: 'server-01',
+            files: [
+                { name: 'old1.txt', size: '1.0 KB', corrupted: false },
+                { name: 'old2.txt', size: '1.5 KB', corrupted: false },
+                { name: 'keep.txt', size: '2.0 KB', corrupted: false },
+            ],
+        }];
+
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'test-net',
+            networkName: 'Test Network',
+            fileSystems,
+        });
+
         const network = createNetworkWithFileSystem({
             networkId: 'test-net',
             networkName: 'Test Network',
-            fileSystems: [{
-                id: 'fs-001',
-                ip: '192.168.1.10',
-                name: 'server-01',
-                files: [
-                    { name: 'old1.txt', size: '1.0 KB', corrupted: false },
-                    { name: 'old2.txt', size: '1.5 KB', corrupted: false },
-                    { name: 'keep.txt', size: '2.0 KB', corrupted: false },
-                ],
-            }],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -720,6 +826,10 @@ describe('File Manager Integration', () => {
             overrides: {
                 narEntries: [network],
                 activeConnections: [{ networkId: network.networkId, networkName: network.networkName }],
+                discoveredDevices: {
+                    'test-net': ['192.168.1.10'],
+                },
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -772,17 +882,25 @@ describe('File Manager Integration', () => {
     it('should paste files from clipboard', async () => {
         const user = userEvent.setup({ delay: null });
 
+        const fileSystems = [{
+            id: 'fs-001',
+            ip: '192.168.1.10',
+            name: 'server-01',
+            files: [
+                { name: 'source.txt', size: '5.0 KB', corrupted: false },
+            ],
+        }];
+
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'test-net',
+            networkName: 'Test Network',
+            fileSystems,
+        });
+
         const network = createNetworkWithFileSystem({
             networkId: 'test-net',
             networkName: 'Test Network',
-            fileSystems: [{
-                id: 'fs-001',
-                ip: '192.168.1.10',
-                name: 'server-01',
-                files: [
-                    { name: 'source.txt', size: '5.0 KB', corrupted: false },
-                ],
-            }],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -790,6 +908,10 @@ describe('File Manager Integration', () => {
             overrides: {
                 narEntries: [network],
                 activeConnections: [{ networkId: network.networkId, networkName: network.networkName }],
+                discoveredDevices: {
+                    'test-net': ['192.168.1.10'],
+                },
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -842,25 +964,33 @@ describe('File Manager Integration', () => {
     it('should clear clipboard after paste operation', async () => {
         const user = userEvent.setup({ delay: null });
 
+        const fileSystems = [
+            {
+                id: 'fs-source',
+                ip: '192.168.1.10',
+                name: 'source-server',
+                files: [
+                    { name: 'file-to-copy.txt', size: '5.0 KB', corrupted: false },
+                ],
+            },
+            {
+                id: 'fs-dest',
+                ip: '192.168.1.20',
+                name: 'dest-server',
+                files: [],
+            },
+        ];
+
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'test-net',
+            networkName: 'Test Network',
+            fileSystems,
+        });
+
         const network = createNetworkWithFileSystem({
             networkId: 'test-net',
             networkName: 'Test Network',
-            fileSystems: [
-                {
-                    id: 'fs-source',
-                    ip: '192.168.1.10',
-                    name: 'source-server',
-                    files: [
-                        { name: 'file-to-copy.txt', size: '5.0 KB', corrupted: false },
-                    ],
-                },
-                {
-                    id: 'fs-dest',
-                    ip: '192.168.1.20',
-                    name: 'dest-server',
-                    files: [],
-                },
-            ],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -868,6 +998,10 @@ describe('File Manager Integration', () => {
             overrides: {
                 narEntries: [network],
                 activeConnections: [{ networkId: network.networkId, networkName: network.networkName }],
+                discoveredDevices: {
+                    'test-net': ['192.168.1.10', '192.168.1.20'],
+                },
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -927,17 +1061,25 @@ describe('File Manager Integration', () => {
     it('should clear clipboard when disconnecting from source network', async () => {
         const user = userEvent.setup({ delay: null });
 
+        const fileSystems = [{
+            id: 'fs-001',
+            ip: '192.168.1.10',
+            name: 'server-01',
+            files: [
+                { name: 'data.txt', size: '3.0 KB', corrupted: false },
+            ],
+        }];
+
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'test-net',
+            networkName: 'Test Network',
+            fileSystems,
+        });
+
         const network = createNetworkWithFileSystem({
             networkId: 'test-net',
             networkName: 'Test Network',
-            fileSystems: [{
-                id: 'fs-001',
-                ip: '192.168.1.10',
-                name: 'server-01',
-                files: [
-                    { name: 'data.txt', size: '3.0 KB', corrupted: false },
-                ],
-            }],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -945,6 +1087,10 @@ describe('File Manager Integration', () => {
             overrides: {
                 narEntries: [network],
                 activeConnections: [{ networkId: network.networkId, networkName: network.networkName }],
+                discoveredDevices: {
+                    'test-net': ['192.168.1.10'],
+                },
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -1020,27 +1166,35 @@ describe('File Manager Integration', () => {
         const user = userEvent.setup({ delay: null });
 
         // Network with two file systems
+        const fileSystems = [
+            {
+                id: 'fs-1',
+                ip: '192.168.1.10',
+                name: 'server-1',
+                files: [
+                    { name: 'original.txt', size: '5.0 KB', corrupted: false },
+                ],
+            },
+            {
+                id: 'fs-2',
+                ip: '192.168.1.20',
+                name: 'server-2',
+                files: [
+                    { name: 'source-file.txt', size: '3.0 KB', corrupted: false },
+                ],
+            },
+        ];
+
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'test-net',
+            networkName: 'Test Network',
+            fileSystems,
+        });
+
         const network = createNetworkWithFileSystem({
             networkId: 'test-net',
             networkName: 'Test Network',
-            fileSystems: [
-                {
-                    id: 'fs-1',
-                    ip: '192.168.1.10',
-                    name: 'server-1',
-                    files: [
-                        { name: 'original.txt', size: '5.0 KB', corrupted: false },
-                    ],
-                },
-                {
-                    id: 'fs-2',
-                    ip: '192.168.1.20',
-                    name: 'server-2',
-                    files: [
-                        { name: 'source-file.txt', size: '3.0 KB', corrupted: false },
-                    ],
-                },
-            ],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -1048,6 +1202,10 @@ describe('File Manager Integration', () => {
             overrides: {
                 narEntries: [network],
                 activeConnections: [{ networkId: network.networkId, networkName: network.networkName }],
+                discoveredDevices: {
+                    'test-net': ['192.168.1.10', '192.168.1.20'],
+                },
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -1136,31 +1294,48 @@ describe('File Manager Integration', () => {
         const user = userEvent.setup({ delay: null });
 
         // Network with source file to copy
+        const sourceFileSystems = [{
+            id: 'fs-source',
+            ip: '10.0.0.1',
+            name: 'source-server',
+            files: [
+                { name: 'to-copy.txt', size: '5.0 KB', corrupted: false },
+            ],
+        }];
+
+        populateNetworkRegistry({
+            networkId: 'source-net',
+            networkName: 'Source Network',
+            fileSystems: sourceFileSystems,
+        });
+
         const sourceNetwork = createNetworkWithFileSystem({
             networkId: 'source-net',
             networkName: 'Source Network',
-            fileSystems: [{
-                id: 'fs-source',
-                ip: '10.0.0.1',
-                name: 'source-server',
-                files: [
-                    { name: 'to-copy.txt', size: '5.0 KB', corrupted: false },
-                ],
-            }],
+            fileSystems: sourceFileSystems,
         });
 
         // Network where we'll paste
+        const destFileSystems = [{
+            id: 'fs-dest',
+            ip: '10.0.0.2',
+            name: 'dest-server',
+            files: [
+                { name: 'existing.txt', size: '3.0 KB', corrupted: false },
+            ],
+        }];
+
+        // Capture snapshot after populating both networks
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'dest-net',
+            networkName: 'Dest Network',
+            fileSystems: destFileSystems,
+        });
+
         const destNetwork = createNetworkWithFileSystem({
             networkId: 'dest-net',
             networkName: 'Dest Network',
-            fileSystems: [{
-                id: 'fs-dest',
-                ip: '10.0.0.2',
-                name: 'dest-server',
-                files: [
-                    { name: 'existing.txt', size: '3.0 KB', corrupted: false },
-                ],
-            }],
+            fileSystems: destFileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -1171,6 +1346,11 @@ describe('File Manager Integration', () => {
                     { networkId: sourceNetwork.networkId, networkName: sourceNetwork.networkName },
                     { networkId: destNetwork.networkId, networkName: destNetwork.networkName },
                 ],
+                discoveredDevices: {
+                    'source-net': ['10.0.0.1'],
+                    'dest-net': ['10.0.0.2'],
+                },
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -1242,12 +1422,15 @@ describe('File Manager Integration', () => {
 
         await waitFor(() => {
             // Should only show source network's file system now
-            const select = screen.getAllByRole('combobox')[1]; // FileManager selector
+            // Re-query FileManager select to get fresh reference after state change
+            const fmContainer = document.querySelector('.file-manager');
+            const select = within(fmContainer).getByRole('combobox');
             expect(within(select).queryByText(/dest-server/i)).not.toBeInTheDocument();
         }, { timeout: 3000 });
 
         // Reconnect to dest network
-        const vpnDropdown = screen.getAllByRole('combobox')[0];
+        const vpnContainer = document.querySelector('.vpn-client');
+        const vpnDropdown = within(vpnContainer).getByRole('combobox');
         await user.selectOptions(vpnDropdown, 'dest-net');
 
         // Find the Connect button in the new-connection-section (not Disconnect)
@@ -1278,28 +1461,36 @@ describe('File Manager Integration', () => {
         const user = userEvent.setup({ delay: null });
 
         // Network with two file systems
+        const fileSystems = [
+            {
+                id: 'fs-source',
+                ip: '192.168.1.10',
+                name: 'source-server',
+                files: [
+                    { name: 'file1.txt', size: '5.0 KB', corrupted: false },
+                    { name: 'file2.txt', size: '3.0 KB', corrupted: false },
+                ],
+            },
+            {
+                id: 'fs-dest',
+                ip: '192.168.1.20',
+                name: 'dest-server',
+                files: [
+                    { name: 'existing.txt', size: '1.0 KB', corrupted: false },
+                ],
+            },
+        ];
+
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'test-net',
+            networkName: 'Test Network',
+            fileSystems,
+        });
+
         const network = createNetworkWithFileSystem({
             networkId: 'test-net',
             networkName: 'Test Network',
-            fileSystems: [
-                {
-                    id: 'fs-source',
-                    ip: '192.168.1.10',
-                    name: 'source-server',
-                    files: [
-                        { name: 'file1.txt', size: '5.0 KB', corrupted: false },
-                        { name: 'file2.txt', size: '3.0 KB', corrupted: false },
-                    ],
-                },
-                {
-                    id: 'fs-dest',
-                    ip: '192.168.1.20',
-                    name: 'dest-server',
-                    files: [
-                        { name: 'existing.txt', size: '1.0 KB', corrupted: false },
-                    ],
-                },
-            ],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -1308,6 +1499,10 @@ describe('File Manager Integration', () => {
                 software: ['mail', 'banking', 'portal', 'file-manager'],
                 narEntries: [network],
                 activeConnections: [{ networkId: network.networkId, networkName: network.networkName }],
+                discoveredDevices: {
+                    'test-net': ['192.168.1.10', '192.168.1.20'],
+                },
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -1418,32 +1613,49 @@ describe('File Manager Integration', () => {
         const user = userEvent.setup({ delay: null });
 
         // Two different networks
+        const fileSystems1 = [{
+            id: 'fs-a',
+            ip: '10.0.1.10',
+            name: 'server-a',
+            files: [
+                { name: 'data-a.txt', size: '10.0 KB', corrupted: false },
+            ],
+        }];
+
+        populateNetworkRegistry({
+            networkId: 'network-a',
+            networkName: 'Network A',
+            fileSystems: fileSystems1,
+        });
+
         const network1 = createNetworkWithFileSystem({
             networkId: 'network-a',
             networkName: 'Network A',
             bandwidth: 100,
-            fileSystems: [{
-                id: 'fs-a',
-                ip: '10.0.1.10',
-                name: 'server-a',
-                files: [
-                    { name: 'data-a.txt', size: '10.0 KB', corrupted: false },
-                ],
-            }],
+            fileSystems: fileSystems1,
+        });
+
+        const fileSystems2 = [{
+            id: 'fs-b',
+            ip: '10.0.2.10',
+            name: 'server-b',
+            files: [
+                { name: 'data-b.txt', size: '5.0 KB', corrupted: false },
+            ],
+        }];
+
+        // Capture snapshot after populating both networks
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'network-b',
+            networkName: 'Network B',
+            fileSystems: fileSystems2,
         });
 
         const network2 = createNetworkWithFileSystem({
             networkId: 'network-b',
             networkName: 'Network B',
             bandwidth: 50,
-            fileSystems: [{
-                id: 'fs-b',
-                ip: '10.0.2.10',
-                name: 'server-b',
-                files: [
-                    { name: 'data-b.txt', size: '5.0 KB', corrupted: false },
-                ],
-            }],
+            fileSystems: fileSystems2,
         });
 
         const saveState = createCompleteSaveState({
@@ -1455,6 +1667,11 @@ describe('File Manager Integration', () => {
                     { networkId: network1.networkId, networkName: network1.networkName },
                     { networkId: network2.networkId, networkName: network2.networkName },
                 ],
+                discoveredDevices: {
+                    'network-a': ['10.0.1.10'],
+                    'network-b': ['10.0.2.10'],
+                },
+                networkRegistry: registrySnapshot,
             },
         });
 
@@ -1552,28 +1769,36 @@ describe('File Manager Integration', () => {
         const user = userEvent.setup({ delay: null });
 
         // Create network with file systems
+        const fileSystems = [
+            {
+                id: 'fs-001',
+                ip: '192.168.50.10',
+                name: 'fileserver-01',
+                files: [
+                    { name: 'document.txt', size: '5 KB', corrupted: false },
+                ],
+            },
+            {
+                id: 'fs-002',
+                ip: '192.168.50.20',
+                name: 'backup-server',
+                files: [
+                    { name: 'backup.zip', size: '100 MB', corrupted: false },
+                ],
+            },
+        ];
+
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'corp-net-1',
+            networkName: 'Corporate Network',
+            fileSystems,
+        });
+
         const network = createNetworkWithFileSystem({
             networkId: 'corp-net-1',
             networkName: 'Corporate Network',
             address: '192.168.50.0/24',
-            fileSystems: [
-                {
-                    id: 'fs-001',
-                    ip: '192.168.50.10',
-                    name: 'fileserver-01',
-                    files: [
-                        { name: 'document.txt', size: '5 KB', corrupted: false },
-                    ],
-                },
-                {
-                    id: 'fs-002',
-                    ip: '192.168.50.20',
-                    name: 'backup-server',
-                    files: [
-                        { name: 'backup.zip', size: '100 MB', corrupted: false },
-                    ],
-                },
-            ],
+            fileSystems,
         });
 
         const saveState = createCompleteSaveState({
@@ -1591,6 +1816,7 @@ describe('File Manager Integration', () => {
                 discoveredDevices: {
                     'corp-net-1': ['192.168.50.10', '192.168.50.20']
                 },
+                networkRegistry: registrySnapshot,
             },
         });
 

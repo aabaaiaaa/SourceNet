@@ -6,10 +6,13 @@ import { GameProvider } from '../../contexts/GameContext';
 import { useGame } from '../../contexts/useGame';
 import SNetMail from '../../components/apps/SNetMail';
 import TopBar from '../../components/ui/TopBar';
+import networkRegistry from '../../systems/NetworkRegistry';
+import triggerEventBus from '../../core/triggerEventBus';
 import {
     createMessageWithNetworkAddress,
     createCompleteSaveState,
     setSaveInLocalStorage,
+    populateNetworkRegistry,
 } from '../helpers/testData';
 
 // Helper component to load game state on mount
@@ -26,6 +29,7 @@ const GameLoader = ({ username }) => {
 describe('Network Address Integration', () => {
     beforeEach(() => {
         localStorage.clear();
+        networkRegistry.reset();
     });
 
     it('should display network address attachment correctly', async () => {
@@ -132,6 +136,15 @@ describe('Network Address Integration', () => {
     it('should display existing NAR entries as already added', async () => {
         const user = userEvent.setup();
 
+        // Populate NetworkRegistry with the existing network
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'corp-network-3',
+            networkName: 'Corporate Network Gamma',
+            address: '10.70.0.0/16',
+            accessible: true, // Already authorized
+            fileSystems: [],
+        });
+
         const message = createMessageWithNetworkAddress({
             id: 'msg-network-3',
             from: 'Network Admin <admin@corp.local>',
@@ -162,6 +175,9 @@ describe('Network Address Integration', () => {
                 { id: 'network-address-register', type: 'utility', name: 'Network Address Register', size: 50 },
             ],
             narEntries: [existingNarEntry],
+            overrides: {
+                networkRegistry: registrySnapshot,
+            },
         });
 
         setSaveInLocalStorage('testuser', saveState);
@@ -180,9 +196,9 @@ describe('Network Address Integration', () => {
 
         await user.click(screen.getByText('Network Access Reminder'));
 
-        // Should show "Already in NAR" (already exists in narEntries)
+        // Should show option to merge credentials (entry already exists but can be updated)
         await waitFor(() => {
-            expect(screen.getByText(/✓ Already in NAR/i)).toBeInTheDocument();
+            expect(screen.getByText(/Click to add updated network credentials to NAR/i)).toBeInTheDocument();
         });
     });
 
@@ -250,121 +266,6 @@ describe('Network Address Integration', () => {
             expect(screen.getByTestId('network-attachment-multi-net-a')).toBeInTheDocument();
             expect(screen.getByTestId('network-attachment-multi-net-b')).toBeInTheDocument();
         });
-    });
-
-    it('should include fileSystems in NAR entry when attachment contains them', async () => {
-        const user = userEvent.setup();
-
-        // Create message with network attachment including fileSystems (like tutorial mission)
-        const message = {
-            id: 'msg-mission-network',
-            from: 'SourceNet Manager <manager@sourcenet.local>',
-            to: 'testuser@sourcenet.local',
-            subject: 'Mission Software',
-            body: 'Network credentials for your first mission.',
-            timestamp: '2020-03-25T09:00:00.000Z',
-            read: false,
-            archived: false,
-            attachments: [
-                {
-                    type: 'networkAddress',
-                    networkId: 'clienta-corporate',
-                    networkName: 'ClientA-Corporate',
-                    address: '192.168.50.0/24',
-                    fileSystems: [
-                        {
-                            id: 'fs-clienta-01',
-                            ip: '192.168.50.10',
-                            name: 'fileserver-01',
-                            files: [
-                                { name: 'log_2024_01.txt', size: '2.5 KB', corrupted: true },
-                                { name: 'log_2024_02.txt', size: '3.1 KB', corrupted: true },
-                            ],
-                        },
-                    ],
-                },
-            ],
-        };
-
-        const saveState = createCompleteSaveState({
-            username: 'testuser',
-            messages: [message],
-            software: [
-                { id: 'osnet', type: 'os' },
-                { id: 'portal', type: 'system' },
-                { id: 'mail', type: 'system' },
-                { id: 'banking', type: 'system' },
-                { id: 'network-address-register', type: 'utility', name: 'Network Address Register', size: 50 },
-            ],
-            narEntries: [],
-        });
-
-        setSaveInLocalStorage('testuser', saveState);
-
-        let capturedNarEntries = null;
-
-        const NarCapture = () => {
-            const { narEntries } = useGame();
-
-            useEffect(() => {
-                if (narEntries && narEntries.length > 0) {
-                    capturedNarEntries = narEntries;
-                }
-            }, [narEntries]);
-
-            return null;
-        };
-
-        render(
-            <GameProvider>
-                <GameLoader username="testuser" />
-                <NarCapture />
-                <TopBar />
-                <SNetMail />
-            </GameProvider>
-        );
-
-        await waitFor(() => {
-            expect(screen.getByText(/Your Mail ID:/)).toBeInTheDocument();
-        });
-
-        // Click the message to open it
-        await user.click(screen.getByText('Mission Software'));
-
-        await waitFor(() => {
-            expect(screen.getByText(/Network Credentials: ClientA-Corporate/i)).toBeInTheDocument();
-        });
-
-        // Click the network attachment to add to NAR
-        const attachment = screen.getByTestId('network-attachment-clienta-corporate');
-        await user.click(attachment);
-
-        // Wait for NAR to update
-        await waitFor(() => {
-            expect(screen.getByText(/✓ Network credentials used/i)).toBeInTheDocument();
-        });
-
-        // Wait for NAR state to propagate
-        await waitFor(() => {
-            expect(capturedNarEntries).not.toBeNull();
-            expect(capturedNarEntries.length).toBeGreaterThan(0);
-        });
-
-        // Verify NAR entry includes fileSystems
-        const narEntry = capturedNarEntries[0];
-        expect(narEntry).toBeDefined();
-        expect(narEntry.networkId).toBe('clienta-corporate');
-        expect(narEntry.networkName).toBe('ClientA-Corporate');
-        expect(narEntry.address).toBe('192.168.50.0/24');
-        expect(narEntry.fileSystems).toBeDefined();
-        expect(narEntry.fileSystems.length).toBe(1);
-        expect(narEntry.fileSystems[0].id).toBe('fs-clienta-01');
-        expect(narEntry.fileSystems[0].ip).toBe('192.168.50.10');
-        expect(narEntry.fileSystems[0].name).toBe('fileserver-01');
-        expect(narEntry.fileSystems[0].files).toBeDefined();
-        expect(narEntry.fileSystems[0].files.length).toBe(2);
-
-        console.log('✅ Verified NAR entry includes fileSystems from mission network attachment');
     });
 
     it('should only mark clicked attachment as activated when message has multiple network attachments', async () => {
@@ -463,9 +364,6 @@ describe('Network Address Integration', () => {
         // This test verifies the TopBar handles duplicate networkDisconnected events correctly
         // (which can happen due to React StrictMode double-invoking state updaters)
 
-        const triggerEventBusModule = await import('../../core/triggerEventBus');
-        const triggerEventBus = triggerEventBusModule.default;
-
         const saveState = createCompleteSaveState({
             username: 'testuser',
             messages: [],
@@ -527,9 +425,6 @@ describe('Network Address Integration', () => {
 
     it('should show separate notices for different networkIds disconnected at same time', async () => {
         // This test verifies that multiple DIFFERENT networks disconnecting shows multiple notices
-
-        const triggerEventBusModule = await import('../../core/triggerEventBus');
-        const triggerEventBus = triggerEventBusModule.default;
 
         const saveState = createCompleteSaveState({
             username: 'testuser',

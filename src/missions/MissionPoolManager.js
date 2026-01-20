@@ -21,7 +21,33 @@ const poolConfig = {
     max: 6,
     minAccessible: 2,
     arcChance: 0.2, // 20% chance to generate an arc instead of single mission
+    expirationMinutes: { min: 15, max: 60 }, // Missions expire in 15-60 game minutes
 };
+
+/**
+ * Calculate expiration time for a mission
+ * @param {Date} currentTime - Current game time
+ * @returns {string} ISO date string for expiration
+ */
+function calculateExpirationTime(currentTime) {
+    const { min, max } = poolConfig.expirationMinutes;
+    const expirationMinutes = min + Math.floor(Math.random() * (max - min + 1));
+    const expiresAt = new Date(currentTime.getTime() + expirationMinutes * 60 * 1000);
+    return expiresAt.toISOString();
+}
+
+/**
+ * Add expiration time to a mission
+ * @param {Object} mission - Mission object
+ * @param {Date} currentTime - Current game time
+ * @returns {Object} Mission with expiresAt set
+ */
+function addExpirationToMission(mission, currentTime) {
+    return {
+        ...mission,
+        expiresAt: calculateExpirationTime(currentTime)
+    };
+}
 
 /**
  * Initialize a new mission pool
@@ -46,14 +72,16 @@ export function initializePool(reputation, currentTime) {
 
         if (result) {
             if (result.arcId) {
-                // Arc - add first mission to pool, store rest in pending
-                pool.push(result.missions[0]);
-                activeClientIds.add(result.missions[0].clientId);
+                // Arc - add first mission to pool with expiration, store rest in pending (no expiration yet)
+                const firstMission = addExpirationToMission(result.missions[0], currentTime);
+                pool.push(firstMission);
+                activeClientIds.add(firstMission.clientId);
                 pendingArcMissions[result.arcId] = result.missions.slice(1);
             } else {
-                // Single mission
-                pool.push(result);
-                activeClientIds.add(result.clientId);
+                // Single mission - add expiration
+                const mission = addExpirationToMission(result, currentTime);
+                pool.push(mission);
+                activeClientIds.add(mission.clientId);
             }
         } else {
             // Couldn't generate mission - break to avoid infinite loop
@@ -237,14 +265,16 @@ export function refreshPool(poolState, reputation, currentTime, activeMissionId 
 
         if (result) {
             if (result.arcId) {
-                // Arc - add first mission to pool, store rest in pending
-                newMissions.push(result.missions[0]);
-                activeClients.add(result.missions[0].clientId);
+                // Arc - add first mission to pool with expiration, store rest in pending (no expiration yet)
+                const firstMission = addExpirationToMission(result.missions[0], currentTime);
+                newMissions.push(firstMission);
+                activeClients.add(firstMission.clientId);
                 newPendingArcMissions[result.arcId] = result.missions.slice(1);
             } else {
-                // Single mission
-                newMissions.push(result);
-                activeClients.add(result.clientId);
+                // Single mission - add expiration
+                const mission = addExpirationToMission(result, currentTime);
+                newMissions.push(mission);
+                activeClients.add(mission.clientId);
             }
 
             if (mustBeAccessible) {
@@ -266,10 +296,10 @@ export function refreshPool(poolState, reputation, currentTime, activeMissionId 
  * Handle arc mission progression when a mission is completed successfully
  * @param {Object} poolState - Current pool state
  * @param {Object} completedMissionData - Data about completed mission { missionId, arcId, arcName, ... }
- * @param {Date} _currentTime - Current game time (reserved for future use)
+ * @param {Date} currentTime - Current game time for setting expiration on next mission
  * @returns {Object} Updated pool state with next arc mission revealed (if applicable)
  */
-export function handleArcProgression(poolState, completedMissionData, _currentTime) {
+export function handleArcProgression(poolState, completedMissionData, currentTime) {
     const { missions, pendingArcMissions, activeClientIds, completedMissions = [] } = poolState;
 
     // Extract arc info from the mission data passed directly
@@ -303,8 +333,8 @@ export function handleArcProgression(poolState, completedMissionData, _currentTi
         };
     }
 
-    // Get next mission in arc
-    const nextMission = pendingMissions[0];
+    // Get next mission in arc and add expiration
+    const nextMission = addExpirationToMission(pendingMissions[0], currentTime);
     const remainingPending = pendingMissions.slice(1);
 
     // Update pending arc missions

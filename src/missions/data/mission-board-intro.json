@@ -84,64 +84,6 @@
           }
         ]
       }
-    },
-    {
-      "id": "tutorial-network-credentials",
-      "trigger": {
-        "type": "timeSinceEvent",
-        "event": "missionAccepted",
-        "conditions": [
-          {
-            "type": "eventData",
-            "match": {
-              "missionId": "tutorial-part-1"
-            }
-          }
-        ],
-        "delay": 3000
-      },
-      "message": {
-        "from": "SourceNet Manager",
-        "fromId": "SNET-MGR-{random}",
-        "fromName": "SourceNet Manager {managerName}",
-        "subject": "ClientA Network Credentials",
-        "body": "Perfect! Now that you've accepted the mission, here are the network credentials for ClientA-Corporate.\n\nClick the attachment above to add it to your Network Address Register. Then you can use your VPN Client to connect to their network.\n\nRemember the mission objectives:\n1. Connect to ClientA-Corporate network\n2. Scan the network to find file servers\n3. Use File Manager to repair corrupted log files\n\nYou've got this!\n\n- {managerName}",
-        "attachments": [
-          {
-            "type": "networkAddress",
-            "missionId": "tutorial-part-1"
-          }
-        ]
-      }
-    },
-    {
-      "id": "tutorial-2-network-update",
-      "trigger": {
-        "type": "timeSinceEvent",
-        "event": "missionAccepted",
-        "conditions": [
-          {
-            "type": "eventData",
-            "match": {
-              "missionId": "tutorial-part-2"
-            }
-          }
-        ],
-        "delay": 3000
-      },
-      "message": {
-        "from": "SourceNet Manager",
-        "fromId": "SNET-MGR-{random}",
-        "fromName": "SourceNet Manager {managerName}",
-        "subject": "Updated Network Access - Backup Server",
-        "body": "Good, you accepted the restoration mission.\n\nI've negotiated with the client and secured NEW network credentials for you. After that disaster, they completely revoked your previous access, so this is a fresh NAR entry with different network permissions.\n\nThey've restructured their network access - you'll now connect to a different subnet with access to their backup-server. Click the attachment to add the new credentials to your Network Address Register.\n\nOnce you've added the credentials, use Network Scanner to find BOTH file systems: fileserver-01 (now empty after the sabotage) and backup-server (which has the backup copies).\n\nThen:\n1. Open TWO File Manager windows - one for each file system\n2. Copy all 8 log files from backup-server TO fileserver-01\n\nSimple copy job. Don't mess this up.\n\n- {managerName}",
-        "attachments": [
-          {
-            "type": "networkAddress",
-            "missionId": "tutorial-part-2"
-          }
-        ]
-      }
     }
   ]
 }

@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '../../contexts/useGame';
 import { formatDateTime } from '../../utils/helpers';
-import { getMissionById } from '../../missions/missionData';
-import triggerEventBus from '../../core/triggerEventBus';
+import networkRegistry from '../../systems/NetworkRegistry';
 import './SNetMail.css';
 
 const SNetMail = () => {
-  const { playerMailId, messages, markMessageAsRead, archiveMessage, initiateChequeDeposit, activateLicense, narEntries, setNarEntries, software, updateMessage } = useGame();
+  const { playerMailId, messages, markMessageAsRead, archiveMessage, initiateChequeDeposit, activateLicense, software, updateMessage, updateNarEntry, narEntries } = useGame();
   const [activeTab, setActiveTab] = useState('inbox');
   const [selectedMessage, setSelectedMessage] = useState(null);
 
@@ -64,7 +63,7 @@ const SNetMail = () => {
   };
 
   const handleNetworkAddressClick = (message, attachment) => {
-    console.log('🔵 handleNetworkAddressClick called', { attachment, narEntries, software });
+    console.log('🔵 handleNetworkAddressClick called', { attachment });
 
     // Check if attachment already activated (one-time use)
     if (attachment.activated) {
@@ -72,7 +71,7 @@ const SNetMail = () => {
       return;
     }
 
-    // Only add if NAR is installed and network not already added
+    // Only add if NAR is installed
     const narInstalled = software?.some(s => (typeof s === 'string' ? s === 'network-address-register' : s.id === 'network-address-register'));
 
     if (!narInstalled) {
@@ -80,119 +79,80 @@ const SNetMail = () => {
       return;
     }
 
-    // Resolve network data - either from attachment directly or from mission lookup
-    let networkData = attachment;
+    // Network structure was already registered in NetworkRegistry when message was delivered
+    // Now we just grant access to the network and specified devices
+    const networkId = attachment.networkId;
 
-    // If attachment references a mission, look up the mission's network definition
-    if (attachment.missionId && !attachment.networkId) {
-      const mission = getMissionById(attachment.missionId);
-      if (mission && mission.networks && mission.networks.length > 0) {
-        networkData = mission.networks[0];
-        console.log('🔍 Resolved network data from mission:', attachment.missionId);
-      } else {
-        console.error('⚠️ Could not resolve mission network:', attachment.missionId);
-        return;
-      }
+    // Get device IPs - prefer deviceIps but fallback to fileSystems for backwards compatibility
+    let deviceIps = attachment.deviceIps || [];
+    if (deviceIps.length === 0 && attachment.fileSystems) {
+      deviceIps = attachment.fileSystems.map(fs => fs.ip).filter(Boolean);
     }
 
-    // Use functional update to avoid stale closure issues
-    setNarEntries((currentEntries) => {
-      console.log('🔵 setNarEntries called with currentEntries:', currentEntries);
-      const existingEntry = currentEntries?.find(entry => entry.networkId === networkData.networkId);
+    // Grant access via NetworkRegistry (single source of truth)
+    // This sets network.accessible = true and device.accessible = true for specified devices
+    const success = networkRegistry.grantNetworkAccess(networkId, deviceIps);
 
-      if (existingEntry) {
-        console.log('🔄 Network already in NAR, merging file systems');
+    if (success) {
+      console.log(`✅ NAR activated: Granted access to ${attachment.networkName} (${deviceIps.length} devices)`);
 
-        // Merge file systems - update existing ones, add new ones
-        const existingFileSystems = existingEntry.fileSystems || [];
-        const newFileSystems = networkData.fileSystems || [];
-        const mergedFileSystems = [...existingFileSystems];
-
-        newFileSystems.forEach(newFs => {
-          const existingFsIndex = mergedFileSystems.findIndex(fs => fs.id === newFs.id);
-          if (existingFsIndex >= 0) {
-            // Update existing file system
-            mergedFileSystems[existingFsIndex] = {
-              id: newFs.id,
-              ip: newFs.ip,
-              name: newFs.name,
-              files: newFs.files || [],
-            };
-            console.log(`  📝 Updated file system: ${newFs.name}`);
-          } else {
-            // Add new file system
-            mergedFileSystems.push({
-              id: newFs.id,
-              ip: newFs.ip,
-              name: newFs.name,
-              files: newFs.files || [],
-            });
-            console.log(`  ➕ Added file system: ${newFs.name}`);
+      // Merge files from attachment into existing filesystems
+      // This allows mission updates to add new files while preserving old ones
+      if (attachment.fileSystems) {
+        attachment.fileSystems.forEach(fs => {
+          if (fs.files && fs.files.length > 0) {
+            const existingFs = networkRegistry.getFileSystem(fs.id);
+            if (existingFs) {
+              // Merge files - add new files that don't exist
+              const existingFileNames = new Set(existingFs.files.map(f => f.name));
+              const newFiles = fs.files.filter(f => !existingFileNames.has(f.name));
+              if (newFiles.length > 0) {
+                networkRegistry.registerFileSystem({
+                  id: fs.id,
+                  files: [...existingFs.files, ...newFiles],
+                });
+                console.log(`📁 Merged ${newFiles.length} new files into ${fs.id}`);
+              }
+            }
           }
         });
-
-        // Update the existing NAR entry
-        // If entry was revoked, re-authorize it (new credentials from fresh attachment)
-        return currentEntries.map(entry =>
-          entry.networkId === networkData.networkId
-            ? { ...entry, fileSystems: mergedFileSystems, authorized: true, revokedReason: undefined }
-            : entry
-        );
       }
 
-      // Add network entry to NAR
-      const newEntry = {
-        id: `nar-${Date.now()}`,
-        networkId: networkData.networkId,
-        networkName: networkData.networkName,
-        address: networkData.address || '10.0.0.0/8',
-        bandwidth: networkData.bandwidth || 50,
-        status: 'active',
-        authorized: true,
-        dateAdded: new Date().toISOString(),
-        // Include file systems if provided (for mission-critical networks)
-        ...(networkData.fileSystems && {
-          fileSystems: networkData.fileSystems.map(fs => ({
-            id: fs.id,
-            ip: fs.ip,
-            name: fs.name,
-            files: fs.files || [],
-          })),
-        }),
-      };
-
-      console.log('✅ Network added to NAR:', networkData.networkName, newEntry);
-
-      // Emit event for objective tracking (deferred to allow state to update and re-render)
-      queueMicrotask(() => {
-        triggerEventBus.emit('narEntryAdded', {
-          networkId: networkData.networkId,
-          networkName: networkData.networkName,
-          entry: newEntry
+      // Update legacy narEntries for backwards compatibility with tests/saves
+      // Check if this network already exists in narEntries (re-authorization)
+      const existingEntry = narEntries?.find(e => e.networkId === networkId);
+      if (existingEntry) {
+        // Re-authorize existing entry
+        updateNarEntry(networkId, {
+          authorized: true,
+          revokedReason: undefined,
+          deviceAccess: [...new Set([...(existingEntry.deviceAccess || []), ...deviceIps])],
         });
-      });
-
-      return [...currentEntries, newEntry];
-    });
+      } else {
+        // Create new entry
+        updateNarEntry(networkId, {
+          create: true,
+          networkName: attachment.networkName,
+          address: attachment.address,
+          authorized: true,
+          addedAt: new Date().toISOString(),
+          status: 'active',
+          deviceAccess: deviceIps,
+        });
+      }
+    } else {
+      console.warn(`⚠️ Failed to grant access to ${networkId} - network may not be registered`);
+    }
 
     // Mark attachment as activated (one-time use)
     updateMessage(message.id, {
       attachments: message.attachments?.map(att => {
-        if (att.type === 'networkAddress' && att.networkId === networkData.networkId) {
+        if (att.type === 'networkAddress' && att.networkId === networkId) {
           return { ...att, activated: true };
         }
         return att;
       })
     });
-  };
-
-  // Helper to resolve network data for display (from mission if needed)
-  const resolveNetworkData = (attachment) => {
-    if (attachment.missionId && !attachment.networkId) {
-      const mission = getMissionById(attachment.missionId);
-      return mission?.networks?.[0] || attachment;
-    }
-    return attachment;
   };
 
   return (
@@ -333,11 +293,11 @@ const SNetMail = () => {
                       </div>
                     );
                   } else if (attachment.type === 'networkAddress') {
-                    // Resolve network data (from mission if needed)
-                    const networkData = resolveNetworkData(attachment);
+                    // Network data is now embedded directly in the attachment
+                    const networkData = attachment;
 
                     const narInstalled = software?.some(s => (typeof s === 'string' ? s === 'network-address-register' : s.id === 'network-address-register'));
-                    const existingEntry = narEntries?.find(entry => entry.networkId === networkData.networkId);
+                    const existingNetwork = networkRegistry.getNetwork(networkData.networkId);
                     const alreadyUsed = attachment.activated;
 
                     let statusText;
@@ -345,17 +305,19 @@ const SNetMail = () => {
                     if (alreadyUsed) {
                       statusText = '✓ Network credentials used';
                       isClickable = false;
-                    } else if (existingEntry && existingEntry.authorized === false) {
-                      // Entry exists and is revoked, but attachment is fresh - allow using new credentials
+                    } else if (existingNetwork && !existingNetwork.accessible && existingNetwork.revokedReason) {
+                      // Network was previously accessible but got revoked - show "updated" since player had it before
                       statusText = 'Click to add updated network credentials to NAR';
                       isClickable = narInstalled;
-                    } else if (existingEntry && existingEntry.authorized !== false) {
-                      statusText = '✓ Already in NAR';
-                      isClickable = false;
+                    } else if (existingNetwork && existingNetwork.accessible) {
+                      // Network is already accessible - allow merging new devices/files
+                      statusText = 'Click to add updated network credentials to NAR';
+                      isClickable = narInstalled;
                     } else if (!narInstalled) {
                       statusText = 'Install Network Address Register to use this attachment';
                       isClickable = false;
                     } else {
+                      // First time adding this network (either no existing entry, or exists but never activated)
                       statusText = 'Click to add to Network Address Register';
                     }
 
