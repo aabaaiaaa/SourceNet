@@ -116,6 +116,26 @@ function generateHostname(clientName, purpose, index = 1) {
 }
 
 /**
+ * Find hostname for a given IP address within mission networks
+ * @param {Object} mission - Mission data with networks
+ * @param {string} ip - IP address to look up
+ * @returns {string} Hostname or IP if not found
+ */
+function findHostnameByIp(mission, ip) {
+    if (!mission?.networks || !ip) return ip;
+    for (const network of mission.networks) {
+        if (network.fileSystems) {
+            for (const fs of network.fileSystems) {
+                if (fs.ip === ip && fs.name) {
+                    return fs.name;
+                }
+            }
+        }
+    }
+    return ip;
+}
+
+/**
  * Generate extension files based on industry and mission type
  * Returns { files, targetFiles, totalDataBytes }
  */
@@ -212,6 +232,10 @@ const extensionPatterns = {
 
             console.log(`📁 Pattern A: Added ${newFiles.length} corrupted files to ${fileSystemId}`);
 
+            // Get server hostname for objective description
+            const serverHostname = existingFs.name || 'server';
+            const serverIp = existingFs.ip;
+
             // Also update mission.networks for consistency (handler will use this)
             const updatedNetworks = mission.networks.map((net, idx) => {
                 if (idx === 0) {
@@ -236,7 +260,7 @@ const extensionPatterns = {
             return {
                 objectives: [{
                     id: `obj-ext-${Date.now()}-1`,
-                    description: `Repair ${targetFiles.length} additional corrupted files`,
+                    description: `Repair ${targetFiles.length} additional corrupted files on ${serverHostname} (${serverIp})`,
                     type: 'fileOperation',
                     operation: 'repair',
                     target: 'specific-files',
@@ -248,7 +272,10 @@ const extensionPatterns = {
                 newNarRequired: false,
                 registryUpdated: true, // Flag indicating files were added directly to registry
                 messageTemplate: 'moreCorruptedFiles',
-                targetFiles: targetFiles
+                targetFiles: targetFiles,
+                messageData: {
+                    serverName: `${serverHostname} (${serverIp})`
+                }
             };
         },
 
@@ -318,14 +345,14 @@ const extensionPatterns = {
                 objectives: [
                     {
                         id: `obj-ext-${Date.now()}-1`,
-                        description: `Connect to ${newHostname} file system`,
+                        description: `Connect to ${newHostname} (${newIp}) file system`,
                         type: 'fileSystemConnection',
                         target: newIp,
                         status: 'pending'
                     },
                     {
                         id: `obj-ext-${Date.now()}-2`,
-                        description: `Repair ${targetFiles.length} corrupted files on ${newHostname}`,
+                        description: `Repair ${targetFiles.length} corrupted files on ${newHostname} (${newIp})`,
                         type: 'fileOperation',
                         operation: 'repair',
                         target: 'specific-files',
@@ -339,7 +366,10 @@ const extensionPatterns = {
                 narAttachment: narAttachment,
                 registryUpdated: true, // Device/fileSystem already registered
                 messageTemplate: 'additionalServer',
-                targetFiles: targetFiles
+                targetFiles: targetFiles,
+                messageData: {
+                    serverName: `${newHostname} (${newIp})`
+                }
             };
         },
 
@@ -409,14 +439,14 @@ const extensionPatterns = {
                     },
                     {
                         id: `obj-ext-${Date.now()}-3`,
-                        description: `Connect to ${newHostname} file system`,
+                        description: `Connect to ${newHostname} (${newIp}) file system`,
                         type: 'fileSystemConnection',
                         target: newIp,
                         status: 'pending'
                     },
                     {
                         id: `obj-ext-${Date.now()}-4`,
-                        description: `Repair ${targetFiles.length} corrupted files`,
+                        description: `Repair ${targetFiles.length} corrupted files on ${newHostname} (${newIp})`,
                         type: 'fileOperation',
                         operation: 'repair',
                         target: 'specific-files',
@@ -430,7 +460,11 @@ const extensionPatterns = {
                 narNetwork: newNetwork,
                 registryUpdated: true, // Network/device/fileSystem already registered
                 messageTemplate: 'newNetworkRepair',
-                targetFiles: targetFiles
+                targetFiles: targetFiles,
+                messageData: {
+                    networkName: newNetwork.networkName,
+                    serverName: `${newHostname} (${newIp})`
+                }
             };
         }
     },
@@ -445,7 +479,7 @@ const extensionPatterns = {
             if (!existingFs) return null;
 
             // Add files directly to registry (Pattern A - no NAR needed)
-            networkRegistry.addFilesToFileSystem(existingFs.ip, newFiles);
+            networkRegistry.addFilesToFileSystem(existingFs.id, newFiles);
 
             // Also update mission.networks for mission tracking
             const updatedNetworks = mission.networks.map((net, idx) => {
@@ -466,9 +500,11 @@ const extensionPatterns = {
                 return net;
             });
 
-            // Find backup destination
-            const backupDest = mission.networks[0]?.fileSystems[1]?.ip ||
-                mission.networks[1]?.fileSystems[0]?.ip;
+            // Find backup destination (IP and hostname)
+            const backupFs = mission.networks[0]?.fileSystems[1] ||
+                mission.networks[1]?.fileSystems[0];
+            const backupDest = backupFs?.ip;
+            const backupHostname = backupFs?.name || 'backup server';
 
             return {
                 objectives: [
@@ -484,7 +520,7 @@ const extensionPatterns = {
                     },
                     {
                         id: `obj-ext-${Date.now()}-2`,
-                        description: `Paste ${targetFiles.length} additional files to backup`,
+                        description: `Paste ${targetFiles.length} additional files to ${backupHostname} (${backupDest})`,
                         type: 'fileOperation',
                         operation: 'paste',
                         target: 'specific-files',
@@ -498,7 +534,10 @@ const extensionPatterns = {
                 newNarRequired: false,
                 registryUpdated: true,
                 messageTemplate: 'additionalBackupFiles',
-                targetFiles: targetFiles
+                targetFiles: targetFiles,
+                messageData: {
+                    destinationServer: `${backupHostname} (${backupDest})`
+                }
             };
         },
 
@@ -531,8 +570,17 @@ const extensionPatterns = {
             };
 
             // Register new device/fileSystem to registry (Pattern B - NAR required)
-            networkRegistry.registerDevice(subnet, newDevice);
-            networkRegistry.registerFileSystem(newIp, newFileSystem);
+            networkRegistry.registerDevice({
+                ip: newIp,
+                hostname: newHostname,
+                networkId: existingNet.networkId,
+                fileSystemId: newFileSystem.id,
+                accessible: true,
+            });
+            networkRegistry.registerFileSystem({
+                id: newFileSystem.id,
+                files: newFileSystem.files,
+            });
 
             // Also update mission.networks for mission tracking
             const updatedNetworks = mission.networks.map((net, idx) => {
@@ -552,14 +600,14 @@ const extensionPatterns = {
                 objectives: [
                     {
                         id: `obj-ext-${Date.now()}-1`,
-                        description: `Connect to ${newHostname} (secondary backup)`,
+                        description: `Connect to ${newHostname} (${newIp}) secondary backup`,
                         type: 'fileSystemConnection',
                         target: newIp,
                         status: 'pending'
                     },
                     {
                         id: `obj-ext-${Date.now()}-2`,
-                        description: `Paste ${targetFileNames.length} files to secondary backup`,
+                        description: `Paste ${targetFileNames.length} files to ${newHostname} (${newIp})`,
                         type: 'fileOperation',
                         operation: 'paste',
                         target: 'specific-files',
@@ -577,7 +625,10 @@ const extensionPatterns = {
                     deviceAccess: [newIp]
                 },
                 messageTemplate: 'secondaryBackupServer',
-                targetFiles: targetFileNames
+                targetFiles: targetFileNames,
+                messageData: {
+                    serverName: `${newHostname} (${newIp})`
+                }
             };
         },
 
@@ -616,9 +667,24 @@ const extensionPatterns = {
             };
 
             // Register new network/device/fileSystem to registry (Pattern C - NAR required)
-            networkRegistry.registerNetwork(newNetworkId, newNetworkData);
-            networkRegistry.registerDevice(newSubnet, newDevice);
-            networkRegistry.registerFileSystem(newIp, newFileSystem);
+            networkRegistry.registerNetwork({
+                networkId: newNetworkId,
+                networkName: newNetworkData.networkName,
+                address: newSubnet,
+                bandwidth: newNetworkData.bandwidth,
+                accessible: true,
+            });
+            networkRegistry.registerDevice({
+                ip: newIp,
+                hostname: newHostname,
+                networkId: newNetworkId,
+                fileSystemId: newFileSystem.id,
+                accessible: true,
+            });
+            networkRegistry.registerFileSystem({
+                id: newFileSystem.id,
+                files: newFileSystem.files,
+            });
 
             // Keep mission.networks format for mission tracking
             const newNetworkForMission = {
@@ -650,14 +716,14 @@ const extensionPatterns = {
                     },
                     {
                         id: `obj-ext-${Date.now()}-3`,
-                        description: `Connect to ${newHostname} file system`,
+                        description: `Connect to ${newHostname} (${newIp}) file system`,
                         type: 'fileSystemConnection',
                         target: newIp,
                         status: 'pending'
                     },
                     {
                         id: `obj-ext-${Date.now()}-4`,
-                        description: `Paste ${targetFileNames.length} files to offsite backup`,
+                        description: `Paste ${targetFileNames.length} files to ${newHostname} (${newIp})`,
                         type: 'fileOperation',
                         operation: 'paste',
                         target: 'specific-files',
@@ -672,7 +738,11 @@ const extensionPatterns = {
                 registryUpdated: true,
                 narNetwork: newNetworkForMission,
                 messageTemplate: 'offsiteBackup',
-                targetFiles: targetFileNames
+                targetFiles: targetFileNames,
+                messageData: {
+                    networkName: newNetworkData.networkName,
+                    serverName: `${newHostname} (${newIp})`
+                }
             };
         }
     },
@@ -687,7 +757,7 @@ const extensionPatterns = {
             if (!existingFs) return null;
 
             // Add files directly to registry (Pattern A - no NAR needed)
-            networkRegistry.addFilesToFileSystem(existingFs.ip, newFiles);
+            networkRegistry.addFilesToFileSystem(existingFs.id, newFiles);
 
             // Also update mission.networks for mission tracking
             const updatedNetworks = mission.networks.map((net, idx) => {
@@ -708,8 +778,10 @@ const extensionPatterns = {
                 return net;
             });
 
-            // Find transfer destination
-            const destIp = mission.networks[1]?.fileSystems[0]?.ip;
+            // Find transfer destination (IP and hostname)
+            const destFs = mission.networks[1]?.fileSystems[0];
+            const destIp = destFs?.ip;
+            const destHostname = destFs?.name || 'destination server';
 
             return {
                 objectives: [
@@ -725,7 +797,7 @@ const extensionPatterns = {
                     },
                     {
                         id: `obj-ext-${Date.now()}-2`,
-                        description: `Paste ${targetFiles.length} additional files to destination`,
+                        description: `Paste ${targetFiles.length} additional files to ${destHostname} (${destIp})`,
                         type: 'fileOperation',
                         operation: 'paste',
                         target: 'specific-files',
@@ -739,7 +811,10 @@ const extensionPatterns = {
                 newNarRequired: false,
                 registryUpdated: true,
                 messageTemplate: 'additionalTransferFiles',
-                targetFiles: targetFiles
+                targetFiles: targetFiles,
+                messageData: {
+                    destinationServer: `${destHostname} (${destIp})`
+                }
             };
         },
 
@@ -775,8 +850,17 @@ const extensionPatterns = {
             };
 
             // Register new device/fileSystem to registry (Pattern B - NAR required)
-            networkRegistry.registerDevice(subnet, newDevice);
-            networkRegistry.registerFileSystem(newIp, newFileSystem);
+            networkRegistry.registerDevice({
+                ip: newIp,
+                hostname: newHostname,
+                networkId: destNet.networkId,
+                fileSystemId: newFileSystem.id,
+                accessible: true,
+            });
+            networkRegistry.registerFileSystem({
+                id: newFileSystem.id,
+                files: newFileSystem.files,
+            });
 
             // Also update mission.networks for mission tracking
             const updatedNetworks = mission.networks.map((net) => {
@@ -796,14 +880,14 @@ const extensionPatterns = {
                 objectives: [
                     {
                         id: `obj-ext-${Date.now()}-1`,
-                        description: `Connect to ${newHostname} (archive)`,
+                        description: `Connect to ${newHostname} (${newIp}) archive`,
                         type: 'fileSystemConnection',
                         target: newIp,
                         status: 'pending'
                     },
                     {
                         id: `obj-ext-${Date.now()}-2`,
-                        description: `Paste ${targetFileNames.length} files to archive server`,
+                        description: `Paste ${targetFileNames.length} files to ${newHostname} (${newIp})`,
                         type: 'fileOperation',
                         operation: 'paste',
                         target: 'specific-files',
@@ -821,7 +905,10 @@ const extensionPatterns = {
                     deviceAccess: [newIp]
                 },
                 messageTemplate: 'archiveServer',
-                targetFiles: targetFileNames
+                targetFiles: targetFileNames,
+                messageData: {
+                    serverName: `${newHostname} (${newIp})`
+                }
             };
         },
 
@@ -863,9 +950,24 @@ const extensionPatterns = {
             };
 
             // Register new network/device/fileSystem to registry (Pattern C - NAR required)
-            networkRegistry.registerNetwork(newNetworkId, newNetworkData);
-            networkRegistry.registerDevice(newSubnet, newDevice);
-            networkRegistry.registerFileSystem(newIp, newFileSystem);
+            networkRegistry.registerNetwork({
+                networkId: newNetworkId,
+                networkName: newNetworkData.networkName,
+                address: newSubnet,
+                bandwidth: newNetworkData.bandwidth,
+                accessible: true,
+            });
+            networkRegistry.registerDevice({
+                ip: newIp,
+                hostname: newHostname,
+                networkId: newNetworkId,
+                fileSystemId: newFileSystem.id,
+                accessible: true,
+            });
+            networkRegistry.registerFileSystem({
+                id: newFileSystem.id,
+                files: newFileSystem.files,
+            });
 
             // Keep mission.networks format for mission tracking
             const newNetworkForMission = {
@@ -897,14 +999,14 @@ const extensionPatterns = {
                     },
                     {
                         id: `obj-ext-${Date.now()}-3`,
-                        description: `Connect to ${newHostname} file system`,
+                        description: `Connect to ${newHostname} (${newIp}) file system`,
                         type: 'fileSystemConnection',
                         target: newIp,
                         status: 'pending'
                     },
                     {
                         id: `obj-ext-${Date.now()}-4`,
-                        description: `Paste ${targetFileNames.length} files to partner server`,
+                        description: `Paste ${targetFileNames.length} files to ${newHostname} (${newIp})`,
                         type: 'fileOperation',
                         operation: 'paste',
                         target: 'specific-files',
@@ -919,7 +1021,11 @@ const extensionPatterns = {
                 registryUpdated: true,
                 narNetwork: newNetworkForMission,
                 messageTemplate: 'partnerTransfer',
-                targetFiles: targetFileNames
+                targetFiles: targetFileNames,
+                messageData: {
+                    networkName: newNetworkData.networkName,
+                    serverName: `${newHostname} (${newIp})`
+                }
             };
         }
     }
@@ -1068,6 +1174,17 @@ export function getObjectiveProgress(objectives) {
 
     return { completed, total, isAllRealComplete };
 }
+
+// Export internal helpers for testing
+export {
+    randomPick,
+    randomRange,
+    getFileSizeProfile,
+    generateFileSize,
+    generateHostname,
+    generateExtensionFiles,
+    extensionPatterns,
+};
 
 export default {
     extensionConfig,

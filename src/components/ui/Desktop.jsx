@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useGame } from '../../contexts/useGame';
 import triggerEventBus from '../../core/triggerEventBus';
 import TopBar from './TopBar';
@@ -12,6 +12,10 @@ import InstallationQueue from './InstallationQueue';
 import DebugPanel from '../../debug/DebugPanel';
 import { isDebugMode } from '../../debug/debugSystem';
 import './Desktop.css';
+
+// Module-level subscription for scriptedEventStart to avoid missing events during React re-renders
+let scriptedEventSubscribed = false;
+let scriptedEventCallback = null;
 
 const Desktop = () => {
   const { windows, isPaused, setIsPaused, playAlarmSound, narEntries } = useGame();
@@ -54,8 +58,10 @@ const Desktop = () => {
   };
 
   // Subscribe to scripted event start for terminal lockout
+  // Uses module-level subscription to avoid missing events during React re-renders/strict mode
   useEffect(() => {
-    const handleScriptedEventStart = (data) => {
+    // Update the callback to use current state setters
+    scriptedEventCallback = (data) => {
       const { actions } = data;
 
       // Check if any action has playerControl: false
@@ -68,11 +74,18 @@ const Desktop = () => {
       }
     };
 
-    triggerEventBus.on('scriptedEventStart', handleScriptedEventStart);
+    // Only subscribe once at module level
+    if (!scriptedEventSubscribed) {
+      scriptedEventSubscribed = true;
+      triggerEventBus.on('scriptedEventStart', (data) => {
+        // Call the current callback (may be updated by re-renders)
+        if (scriptedEventCallback) {
+          scriptedEventCallback(data);
+        }
+      });
+    }
 
-    return () => {
-      triggerEventBus.off('scriptedEventStart', handleScriptedEventStart);
-    };
+    // Don't return cleanup - keep subscription active to avoid missing events
   }, []);
 
   // Subscribe to sabotage file operations to show visuals

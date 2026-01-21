@@ -67,12 +67,6 @@ test.describe('Scenario Generator: Post Tutorial Complete', () => {
         await page.waitForTimeout(30);
         await page.click('button:has-text("Repair (8)")');
 
-        // Perform these actions below because it seems that sometimes the sabotage triggering doesn't trigger without some interaction
-        await page.waitForTimeout(1000);
-        await setSpeed(1);
-        await page.click('text=☰');
-        await setSpeed(10);
-
         // Wait for forced disconnect overlay (sabotage will trigger after repair)
         const forcedDisconnectOverlay = page.locator('.forced-disconnect-overlay');
         await expect(forcedDisconnectOverlay).toBeVisible({ timeout: 40000 });

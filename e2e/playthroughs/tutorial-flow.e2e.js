@@ -499,12 +499,6 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await setSpeed(10);
         await repairButton.click();
 
-        // Perform these actions below because it seems that sometimes the sabotage triggering doesn't trigger without some interaction
-        await page.waitForTimeout(1000);
-        await setSpeed(1);
-        await page.click('text=☰');
-        await setSpeed(10);
-
         // Wait for forced disconnection overlay - it will appear after sabotage completes
         const forcedDisconnectOverlay = page.locator('.forced-disconnect-overlay');
         await expect(forcedDisconnectOverlay).toBeVisible({ timeout: 30000 });
@@ -947,8 +941,6 @@ test.describe('E2E: Tutorial Mission Flow', () => {
             }
         });
 
-        await setSpeed(100);
-        await page.waitForTimeout(1500); // File transfer
         await setSpeed(1);
 
         const fm2FilesAfterPaste = await fm2.locator('.file-item').count();

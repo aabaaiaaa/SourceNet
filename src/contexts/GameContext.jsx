@@ -416,7 +416,8 @@ export const GameProvider = ({ children }) => {
       const extensionMessage = createMessageFromTemplate(templateId, {
         username,
         clientName: extension.clientName,
-        targetFilesList
+        targetFilesList,
+        ...(extension.messageData || {})
       });
 
       if (extensionMessage) {

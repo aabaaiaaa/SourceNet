@@ -26,6 +26,10 @@ const TEST_DATA = {
     chequeAmount: 1000,
     // For extension messages - formatted file list
     targetFilesList: '\n\n📁 Additional files:\n• test_file_1.dat\n• test_file_2.db',
+    // For extension messages - server/destination names
+    serverName: 'test-server-01 (192.168.1.10)',
+    destinationServer: 'test-backup-01 (192.168.1.20)',
+    networkName: 'TestCorp-Archive',
 };
 
 /**

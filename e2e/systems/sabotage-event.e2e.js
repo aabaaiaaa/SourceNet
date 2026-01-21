@@ -89,6 +89,9 @@ test.describe('E2E: Tutorial Sabotage Event', () => {
         // STEP 5: Switch to 10x speed and click Repair
         // ========================================
         await setSpeed(10);
+        // Wait for React state to propagate to StoryMissionManager
+        // This ensures the scripted event delay (5000ms game time) uses 10x speed
+        await page.waitForTimeout(200);
         console.log('⏱️  Switched to 10x speed for sabotage observation');
 
         await repairButton.click();
@@ -99,6 +102,14 @@ test.describe('E2E: Tutorial Sabotage Event', () => {
         const repairLogEntry = fileManager.locator('.activity-log-entry .log-operation:has-text("REPAIR")').first();
         await expect(repairLogEntry).toBeVisible({ timeout: 5000 });
         console.log('✅ Repair operation started (visible in activity log)');
+
+        // Wait for all 8 repair entries to appear (indicating repair is complete)
+        const repairEntries = fileManager.locator('.activity-log-entry .log-operation:has-text("REPAIR")');
+        await expect(repairEntries).toHaveCount(8, { timeout: 10000 });
+        console.log('✅ All 8 files repaired');
+
+        // Give React time to process state updates and emit objectiveComplete
+        await page.waitForTimeout(500);
 
         // ========================================
         // STEP 6: Verify terminal lockout overlay appears (invisible at first)
@@ -114,19 +125,13 @@ test.describe('E2E: Tutorial Sabotage Event', () => {
             console.log('✅ App launcher blocked by lockout overlay (as expected)');
         });
 
-        // Check if visuals are hidden during delay (no red border yet)
-        const lockoutBorder = page.locator('.lockout-border-pulse');
-        const borderVisibleDuringDelay = await lockoutBorder.isVisible().catch(() => false);
-        if (!borderVisibleDuringDelay) {
-            console.log('✅ Lockout visuals hidden during delay period');
-        }
-
         // ========================================
         // STEP 7: Monitor progressive file deletion
         // ========================================
         console.log('⏳ Waiting for sabotage deletion to start...');
 
         // Wait for lockout visuals to appear (red border and text)
+        const lockoutBorder = page.locator('.lockout-border-pulse');
         await expect(lockoutBorder).toBeVisible({ timeout: 15000 });
         console.log('🚨 Lockout visuals appeared - deletion started!');
 

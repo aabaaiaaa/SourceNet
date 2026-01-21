@@ -1,7 +1,7 @@
 {
   "username": "scenario_user",
-  "playerMailId": "SNET-GN4-7SC-7R9",
-  "currentTime": "2020-03-25T09:12:33.000Z",
+  "playerMailId": "SNET-NKM-99K-EB6",
+  "currentTime": "2020-03-25T09:11:31.000Z",
   "hardware": {
     "cpu": {
       "id": "cpu-1ghz-single",
@@ -106,11 +106,11 @@
     {
       "id": "msg-welcome-manager",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-I11-FTT",
-      "fromName": "SourceNet Manager Alex",
-      "subject": "Hi from your manager - Alex",
-      "body": "Hey scenario_user!\n\nWelcome to the team! I'm Alex, and I'll be your manager here at SourceNet. I was present during your interview process and I have to say, you really impressed us with your skills and dedication.\n\nTo help you get started, I've attached a welcome bonus cheque for 1,000 credits. Just click on the attachment to deposit it into your bank account.\n\nTake some time to get comfortable with your setup. I'll be reaching out again soon with your first assignment.\n\nLooking forward to working with you!\n\n- Alex",
-      "timestamp": "2020-03-25T09:00:18.000Z",
+      "fromId": "SNET-MGR-X7Z-ILE",
+      "fromName": "SourceNet Manager Sam",
+      "subject": "Hi from your manager - Sam",
+      "body": "Hey scenario_user!\n\nWelcome to the team! I'm Sam, and I'll be your manager here at SourceNet. I was present during your interview process and I have to say, you really impressed us with your skills and dedication.\n\nTo help you get started, I've attached a welcome bonus cheque for 1,000 credits. Just click on the attachment to deposit it into your bank account.\n\nTake some time to get comfortable with your setup. I'll be reaching out again soon with your first assignment.\n\nLooking forward to working with you!\n\n- Sam",
+      "timestamp": "2020-03-25T09:00:17.000Z",
       "read": true,
       "archived": true,
       "attachments": [
@@ -124,11 +124,11 @@
     {
       "id": "msg-mission-board-license",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-RPN-QQK",
-      "fromName": "SourceNet Manager Alex",
+      "fromId": "SNET-MGR-KNV-PRA",
+      "fromName": "SourceNet Manager Sam",
       "subject": "Get Ready for Your First Mission",
-      "body": "Hey scenario_user!\n\nNow that you're all set up, it's time to get you started with actual work.\n\nI've attached a license for the SourceNet Mission Board application. This is where you'll find all available missions from our clients.\n\nTo get started:\n\n1. Click the attachment above to add the Mission Board license to your account\n2. Open the OSNet Portal from your app launcher\n3. Go to Software section - you'll see \"SourceNet Mission Board\" marked as \"Licensed\"\n4. Download and install it\n5. Once installed, open the Mission Board from your app launcher\n\nI've posted your first assignment there. It's a straightforward file repair job for one of our clients - perfect for learning the ropes.\n\nOnce you install the Mission Board, I'll send you the software licenses you'll need to complete the mission.\n\n- Alex",
-      "timestamp": "2020-03-25T09:00:59.000Z",
+      "body": "Hey scenario_user!\n\nNow that you're all set up, it's time to get you started with actual work.\n\nI've attached a license for the SourceNet Mission Board application. This is where you'll find all available missions from our clients.\n\nTo get started:\n\n1. Click the attachment above to add the Mission Board license to your account\n2. Open the OSNet Portal from your app launcher\n3. Go to Software section - you'll see \"SourceNet Mission Board\" marked as \"Licensed\"\n4. Download and install it\n5. Once installed, open the Mission Board from your app launcher\n\nI've posted your first assignment there. It's a straightforward file repair job for one of our clients - perfect for learning the ropes.\n\nOnce you install the Mission Board, I'll send you the software licenses you'll need to complete the mission.\n\n- Sam",
+      "timestamp": "2020-03-25T09:00:52.000Z",
       "read": true,
       "archived": true,
       "attachments": [
@@ -145,11 +145,11 @@
     {
       "id": "msg-tutorial-software-licenses",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-MKP-EDN",
-      "fromName": "SourceNet Manager Alex",
+      "fromId": "SNET-MGR-UEI-USG",
+      "fromName": "SourceNet Manager Sam",
       "subject": "Mission Software",
-      "body": "Great! Now that you have the Mission Board installed, let me get you set up with the tools you'll need for your first mission.\n\nI've attached free licenses for the essential software (total value: $1,350):\n\n- SourceNet VPN Client ($500): Secure access to client networks\n- Network Address Register ($200): Manages your network connections\n- Network Scanner ($300): Finds machines and file systems on networks\n- File Manager ($350): Access and repair files on remote systems\n\nInstallation steps:\n\n1. Click all the attachments above to add them to your account\n2. Open the Portal and install all four software applications\n3. Once installed, open the Mission Board and accept the \"Log File Repair\" mission\n\nWhen you accept the mission, you'll receive the network credentials for ClientA-Corporate as an attachment. Use the Network Address Register to add them to your NAR.\n\nThe mission objectives are straightforward:\n- Connect to ClientA-Corporate network via VPN\n- Scan the network to find their file server\n- Use File Manager to detect and repair corrupted log files\n\nYour Mission Board will track each objective as you complete them.\n\nGood luck!\n\n- Alex",
-      "timestamp": "2020-03-25T09:01:44.000Z",
+      "body": "Great! Now that you have the Mission Board installed, let me get you set up with the tools you'll need for your first mission.\n\nI've attached free licenses for the essential software (total value: $1,350):\n\n- SourceNet VPN Client ($500): Secure access to client networks\n- Network Address Register ($200): Manages your network connections\n- Network Scanner ($300): Finds machines and file systems on networks\n- File Manager ($350): Access and repair files on remote systems\n\nInstallation steps:\n\n1. Click all the attachments above to add them to your account\n2. Open the Portal and install all four software applications\n3. Once installed, open the Mission Board and accept the \"Log File Repair\" mission\n\nWhen you accept the mission, you'll receive the network credentials for ClientA-Corporate as an attachment. Use the Network Address Register to add them to your NAR.\n\nThe mission objectives are straightforward:\n- Connect to ClientA-Corporate network via VPN\n- Scan the network to find their file server\n- Use File Manager to detect and repair corrupted log files\n\nYour Mission Board will track each objective as you complete them.\n\nGood luck!\n\n- Sam",
+      "timestamp": "2020-03-25T09:01:32.000Z",
       "read": true,
       "archived": true,
       "attachments": [
@@ -188,13 +188,13 @@
       ]
     },
     {
-      "id": "msg-briefing-tutorial-part-1-1768946289647",
+      "id": "msg-briefing-tutorial-part-1-1769012189449",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-HY8-IYS",
-      "fromName": "SourceNet Manager Alex",
+      "fromId": "SNET-MGR-KIW-BI6",
+      "fromName": "SourceNet Manager Sam",
       "subject": "ClientA Network Credentials",
-      "body": "Perfect! Now that you've accepted the mission, here are the network credentials for ClientA-Corporate.\n\nClick the attachment above to add it to your Network Address Register. Then you can use your VPN Client to connect to their network.\n\nRemember the mission objectives:\n1. Connect to ClientA-Corporate network\n2. Scan the network to find file servers\n3. Use File Manager to repair corrupted log files\n\nYou've got this!\n\n- Alex",
-      "timestamp": "2020-03-25T09:04:23.000Z",
+      "body": "Perfect! Now that you've accepted the mission, here are the network credentials for ClientA-Corporate.\n\nClick the attachment above to add it to your Network Address Register. Then you can use your VPN Client to connect to their network.\n\nRemember the mission objectives:\n1. Connect to ClientA-Corporate network\n2. Scan the network to find file servers\n3. Use File Manager to repair corrupted log files\n\nYou've got this!\n\n- Sam",
+      "timestamp": "2020-03-25T09:04:17.000Z",
       "read": true,
       "archived": true,
       "attachments": [
@@ -211,63 +211,63 @@
       ]
     },
     {
-      "id": "bank-firstOverdraft-1768946309432",
+      "id": "bank-firstOverdraft-1769012208493",
       "from": "First Bank Ltd",
       "fromId": "SNET-FBL-000-001",
       "to": "scenario_user",
-      "toId": "SNET-GN4-7SC-7R9",
+      "toId": "SNET-NKM-99K-EB6",
       "subject": "Overdraft Notice - Interest Charges Apply",
       "body": "Dear scenario_user,\n\nYour account with First Bank Ltd is currently overdrawn.\n\nCurrent Balance: -9,000 credits\nOverdraft Interest Rate: 1% per minute (in-game time)\n\nInterest will be charged every minute until your balance returns to positive.\n\nBANKRUPTCY WARNING:\nIf your account remains overdrawn by MORE than 10,000 credits for 5 consecutive\nminutes, your account will be referred to financial authorities for asset seizure.\n\nWe recommend depositing funds immediately to avoid further charges.\n\nSincerely,\nFirst Bank Ltd",
-      "timestamp": "2020-03-25T09:05:40.000Z",
+      "timestamp": "2020-03-25T09:05:29.000Z",
       "read": true,
       "archived": true
     },
     {
       "id": "msg-manager-angry",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-1WU-60J",
-      "fromName": "SourceNet Manager Alex",
+      "fromId": "SNET-MGR-LQA-ERH",
+      "fromName": "SourceNet Manager Sam",
       "subject": "What happened?!",
-      "body": "scenario_user,\n\nWhat just happened?! I was monitoring your mission and I saw you DELETE all the log files instead of repairing them!\n\nThe client's network administrator had to forcibly disconnect you to prevent further damage and has REVOKED your network access credentials. Those files were CRITICAL for their audit compliance!\n\nThis is a critical lesson: network administrators can revoke your access at any time if they believe you're a security threat. Your NAR entry for ClientA-Corporate is now deauthorized and unusable. You'll need new credentials to reconnect.\n\nThe client is demanding 10,000 credits in compensation for the data loss and emergency recovery. SourceNet policy requires YOU to cover mission failures, so that amount has been deducted from your account.\n\nYour reputation has taken a serious hit. You went from Superb to Accident Prone. I know you impressed us in the interview, but this is completely unacceptable.\n\nYou need to be EXTREMELY careful. DO NOT become bankrupt. If you're overdrawn by more than 10,000 credits for 5 minutes, the financial authorities will seize your assets and SourceNet will not protect you.\n\nI'm giving you another chance, but you need to prove you can handle this work.\n\n- Alex",
-      "timestamp": "2020-03-25T09:05:50.000Z",
+      "body": "scenario_user,\n\nWhat just happened?! I was monitoring your mission and I saw you DELETE all the log files instead of repairing them!\n\nThe client's network administrator had to forcibly disconnect you to prevent further damage and has REVOKED your network access credentials. Those files were CRITICAL for their audit compliance!\n\nThis is a critical lesson: network administrators can revoke your access at any time if they believe you're a security threat. Your NAR entry for ClientA-Corporate is now deauthorized and unusable. You'll need new credentials to reconnect.\n\nThe client is demanding 10,000 credits in compensation for the data loss and emergency recovery. SourceNet policy requires YOU to cover mission failures, so that amount has been deducted from your account.\n\nYour reputation has taken a serious hit. You went from Superb to Accident Prone. I know you impressed us in the interview, but this is completely unacceptable.\n\nYou need to be EXTREMELY careful. DO NOT become bankrupt. If you're overdrawn by more than 10,000 credits for 5 minutes, the financial authorities will seize your assets and SourceNet will not protect you.\n\nI'm giving you another chance, but you need to prove you can handle this work.\n\n- Sam",
+      "timestamp": "2020-03-25T09:05:39.000Z",
       "read": true,
       "archived": true,
       "attachments": []
     },
     {
-      "id": "bank-approachingBankruptcy-1768946309433",
+      "id": "bank-approachingBankruptcy-1769012208493",
       "from": "First Bank Ltd",
       "fromId": "SNET-FBL-000-001",
       "to": "scenario_user",
-      "toId": "SNET-GN4-7SC-7R9",
+      "toId": "SNET-NKM-99K-EB6",
       "subject": "Warning: Approaching Bankruptcy Threshold",
       "body": "Dear scenario_user,\n\nWARNING: Your account balance is approaching the bankruptcy threshold.\n\nCurrent Balance: -9,000 credits\nBankruptcy Threshold: -10,000 credits\n\nYou are 1,000 credits away from the bankruptcy threshold.\n\nIf your balance drops below -10,000 credits for 5 consecutive minutes, your\naccount will be referred to financial authorities for asset seizure.\n\nPlease take immediate action to improve your account balance.\n\nSincerely,\nFirst Bank Ltd",
-      "timestamp": "2020-03-25T09:05:46.000Z",
+      "timestamp": "2020-03-25T09:05:35.000Z",
       "read": true,
       "archived": true
     },
     {
-      "id": "msg-1768946310411-blsyx4d2n",
+      "id": "msg-1769012209391-s3oecc6u3",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-3B3",
-      "fromName": "SourceNet Manager Alex",
+      "fromId": "SNET-MGR-DR0",
+      "fromName": "SourceNet Manager Sam",
       "subject": "Let's try something simpler",
-      "body": "scenario_user,\n\nOkay, I know that was rough. Let me give you a simpler task to help you recover.\n\nThe same client (TechCorp) kept backups of those log files you... deleted. They need you to RESTORE the backups by copying them back to the original location.\n\nThis should be straightforward - just copy files from one location to another. No repairing, no deleting, just copying. You can handle that, right?\n\nHere's what you need to do:\n\n1. Open the Mission Board and accept \"Log File Restoration\"\n2. Reconnect to ClientA-Corporate network (they've re-authorized you)\n3. Use Network Scanner to find BOTH file systems:\n   - fileserver-01 (original location - currently empty)\n   - backup-server (backup location - has the files you need to copy)\n4. Open TWO File Manager windows - one for each file system\n5. Copy all log files FROM backup-server TO fileserver-01\n\nThis mission pays 1,000 credits. It won't get you out of debt, but it's a start.\n\nYou need to work until you're back in the black (not overdrawn anymore). There are several missions available after this one - all basic file work. Boring stuff, but you're not in a position to be picky right now given your situation.\n\nOnce you're out of debt, I'll reach out again with better work.\n\nDon't mess this one up.\n\n- Alex",
-      "timestamp": "2020-03-25T09:06:09.000Z",
+      "body": "scenario_user,\n\nOkay, I know that was rough. Let me give you a simpler task to help you recover.\n\nThe same client (TechCorp) kept backups of those log files you... deleted. They need you to RESTORE the backups by copying them back to the original location.\n\nThis should be straightforward - just copy files from one location to another. No repairing, no deleting, just copying. You can handle that, right?\n\nHere's what you need to do:\n\n1. Open the Mission Board and accept \"Log File Restoration\"\n2. Reconnect to ClientA-Corporate network (they've re-authorized you)\n3. Use Network Scanner to find BOTH file systems:\n   - fileserver-01 (original location - currently empty)\n   - backup-server (backup location - has the files you need to copy)\n4. Open TWO File Manager windows - one for each file system\n5. Copy all log files FROM backup-server TO fileserver-01\n\nThis mission pays 1,000 credits. It won't get you out of debt, but it's a start.\n\nYou need to work until you're back in the black (not overdrawn anymore). There are several missions available after this one - all basic file work. Boring stuff, but you're not in a position to be picky right now given your situation.\n\nOnce you're out of debt, I'll reach out again with better work.\n\nDon't mess this one up.\n\n- Sam",
+      "timestamp": "2020-03-25T09:05:55.000Z",
       "read": true,
       "archived": true,
       "attachments": [],
-      "toId": "SNET-GN4-7SC-7R9",
+      "toId": "SNET-NKM-99K-EB6",
       "to": "scenario_user"
     },
     {
-      "id": "msg-briefing-tutorial-part-2-1768946312832",
+      "id": "msg-briefing-tutorial-part-2-1769012211883",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-F0J-HEE",
-      "fromName": "SourceNet Manager Alex",
+      "fromId": "SNET-MGR-Q9F-XI0",
+      "fromName": "SourceNet Manager Sam",
       "subject": "Updated Network Access - Backup Server",
-      "body": "Good, you accepted the restoration mission.\n\nI've negotiated with the client and secured NEW network credentials for you. After that disaster, they completely revoked your previous access, so this is a fresh NAR entry with different network permissions.\n\nThey've restructured their network access - you'll now connect to a different subnet with access to their backup-server. Click the attachment to add the new credentials to your Network Address Register.\n\nOnce you've added the credentials, use Network Scanner to find BOTH file systems: fileserver-01 (now empty after the sabotage) and backup-server (which has the backup copies).\n\nThen:\n1. Open TWO File Manager windows - one for each file system\n2. Copy all 8 log files from backup-server TO fileserver-01\n\nSimple copy job. Don't mess this up.\n\n- Alex",
-      "timestamp": "2020-03-25T09:09:03.000Z",
+      "body": "Good, you accepted the restoration mission.\n\nI've negotiated with the client and secured NEW network credentials for you. After that disaster, they completely revoked your previous access, so this is a fresh NAR entry with different network permissions.\n\nThey've restructured their network access - you'll now connect to a different subnet with access to their backup-server. Click the attachment to add the new credentials to your Network Address Register.\n\nOnce you've added the credentials, use Network Scanner to find BOTH file systems: fileserver-01 (now empty after the sabotage) and backup-server (which has the backup copies).\n\nThen:\n1. Open TWO File Manager windows - one for each file system\n2. Copy all 8 log files from backup-server TO fileserver-01\n\nSimple copy job. Don't mess this up.\n\n- Sam",
+      "timestamp": "2020-03-25T09:08:30.000Z",
       "read": true,
       "archived": true,
       "attachments": [
@@ -285,13 +285,13 @@
       ]
     },
     {
-      "id": "msg-1768946322405-txq840iem",
+      "id": "msg-1769012219324-69l7u3dbr",
       "from": "Client A - TechCorp Industries",
-      "fromId": "CLIENT-3TC",
+      "fromId": "CLIENT-DOI",
       "fromName": "Client A - TechCorp Industries",
       "subject": "Payment for Log File Restoration",
       "body": "Dear scenario_user,\n\nThank you for completing the work on \"Log File Restoration\".\n\nPlease find attached a digital cheque for 850 credits as agreed.\n\nSincerely,\nClient A - TechCorp Industries",
-      "timestamp": "2020-03-25T09:12:00.000Z",
+      "timestamp": "2020-03-25T09:09:14.000Z",
       "read": true,
       "archived": true,
       "attachments": [
@@ -305,11 +305,11 @@
     {
       "id": "msg-manager-better",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-RKT-BA0",
-      "fromName": "SourceNet Manager Alex",
+      "fromId": "SNET-MGR-5W0-OBN",
+      "fromName": "SourceNet Manager Sam",
       "subject": "Better",
-      "body": "scenario_user,\n\nOkay, that's more like it. Simple task, executed correctly.\n\nYou're still deep in debt (-8,000 credits), but at least you're moving in the right direction.\n\nDue to the recent global security exploit, there's a LOT of work available right now - mostly boring backup and file repair jobs. Not exciting work, but you need to take what you can get until you're back in the black.\n\nCheck the Mission Board - there are several missions available. Work through them until your account is positive again. Once you're out of debt, I'll reach out with better opportunities.\n\nYour reputation is still \"Accident Prone\" after that first mission disaster. You'll need to successfully complete missions to rebuild it.\n\nKeep working.\n\n- Alex",
-      "timestamp": "2020-03-25T09:12:09.000Z",
+      "body": "scenario_user,\n\nOkay, that's more like it. Simple task, executed correctly.\n\nYou're still deep in debt (-8,000 credits), but at least you're moving in the right direction.\n\nDue to the recent global security exploit, there's a LOT of work available right now - mostly boring backup and file repair jobs. Not exciting work, but you need to take what you can get until you're back in the black.\n\nCheck the Mission Board - there are several missions available. Work through them until your account is positive again. Once you're out of debt, I'll reach out with better opportunities.\n\nYour reputation is still \"Accident Prone\" after that first mission disaster. You'll need to successfully complete missions to rebuild it.\n\nKeep working.\n\n- Sam",
+      "timestamp": "2020-03-25T09:09:26.000Z",
       "read": false,
       "archived": false,
       "attachments": []
@@ -317,17 +317,17 @@
     {
       "id": "msg-manager-nar-info",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-AEG-U3G",
-      "fromName": "SourceNet Manager Alex",
+      "fromId": "SNET-MGR-IPZ-A22",
+      "fromName": "SourceNet Manager Sam",
       "subject": "About Network Access",
-      "body": "scenario_user,\n\nOne more thing - you may have noticed your network access to ClientA-Corporate was revoked after the mission completed.\n\nThis is standard procedure. Network credentials provided for missions are temporary - once a job is done (successfully or not), the client's access credentials are automatically invalidated. You'll see revoked entries in your Network Address Register (NAR) for record-keeping.\n\nDon't worry about losing access. Each new mission comes with fresh credentials. This keeps things clean and secure for both you and the clients.\n\nJust something to be aware of.\n\n- Alex",
-      "timestamp": "2020-03-25T09:12:19.000Z",
+      "body": "scenario_user,\n\nOne more thing - you may have noticed your network access to ClientA-Corporate was revoked after the mission completed.\n\nThis is standard procedure. Network credentials provided for missions are temporary - once a job is done (successfully or not), the client's access credentials are automatically invalidated. You'll see revoked entries in your Network Address Register (NAR) for record-keeping.\n\nDon't worry about losing access. Each new mission comes with fresh credentials. This keeps things clean and secure for both you and the clients.\n\nJust something to be aware of.\n\n- Sam",
+      "timestamp": "2020-03-25T09:09:29.000Z",
       "read": true,
       "archived": true,
       "attachments": []
     }
   ],
-  "managerName": "Alex",
+  "managerName": "Sam",
   "windows": [],
   "reputation": 3,
   "reputationCountdown": null,
@@ -340,7 +340,7 @@
       "client": "Client A - TechCorp Industries",
       "difficulty": "Beginner",
       "status": "failed",
-      "completionTime": "2020-03-25T09:05:40.000Z",
+      "completionTime": "2020-03-25T09:05:29.000Z",
       "payout": -10000,
       "reputationChange": -6,
       "failureReason": "Files deleted instead of repaired"
@@ -352,7 +352,7 @@
       "client": "Client A - TechCorp Industries",
       "difficulty": "Beginner",
       "status": "success",
-      "completionTime": "2020-03-25T09:12:00.000Z",
+      "completionTime": "2020-03-25T09:09:14.000Z",
       "payout": 850,
       "reputationChange": 0,
       "failureReason": null
@@ -372,7 +372,7 @@
       "networkName": "ClientA-Corporate",
       "address": "192.168.50.0/24",
       "authorized": false,
-      "addedAt": "2026-01-20T21:58:10.065Z",
+      "addedAt": "2026-01-21T16:16:29.846Z",
       "status": "active",
       "deviceAccess": [
         "192.168.50.10",
@@ -474,56 +474,56 @@
   "downloadQueue": [],
   "transactions": [
     {
-      "id": "txn-cheque-1768946282697",
-      "date": "2020-03-25T09:00:41.000Z",
+      "id": "txn-cheque-1769012182515",
+      "date": "2020-03-25T09:00:35.000Z",
       "type": "income",
       "amount": 1000,
       "description": "Cheque Deposit",
       "balanceAfter": 1000
     },
     {
-      "id": "txn-interest-1768946310709",
-      "date": "2020-03-25T09:06:40.000Z",
+      "id": "txn-interest-1769012209735",
+      "date": "2020-03-25T09:06:29.000Z",
       "type": "expense",
       "amount": -90,
       "description": "Overdraft Interest",
       "balanceAfter": -9090
     },
     {
-      "id": "txn-interest-1768946311328",
-      "date": "2020-03-25T09:07:40.000Z",
+      "id": "txn-interest-1769012210434",
+      "date": "2020-03-25T09:07:29.000Z",
       "type": "expense",
       "amount": -91,
       "description": "Overdraft Interest",
       "balanceAfter": -9181
     },
     {
-      "id": "txn-interest-1768946311946",
-      "date": "2020-03-25T09:08:40.000Z",
+      "id": "txn-interest-1769012211127",
+      "date": "2020-03-25T09:08:29.000Z",
       "type": "expense",
       "amount": -92,
       "description": "Overdraft Interest",
       "balanceAfter": -9273
     },
     {
-      "id": "txn-interest-1768946318196",
-      "date": "2020-03-25T09:09:40.000Z",
+      "id": "txn-interest-1769012219448",
+      "date": "2020-03-25T09:09:29.000Z",
       "type": "expense",
       "amount": -93,
       "description": "Overdraft Interest",
       "balanceAfter": -9366
     },
     {
-      "id": "txn-interest-1768946320454",
-      "date": "2020-03-25T09:10:40.000Z",
+      "id": "txn-interest-1769012220208",
+      "date": "2020-03-25T09:10:29.000Z",
       "type": "expense",
       "amount": -94,
       "description": "Overdraft Interest",
       "balanceAfter": -9460
     },
     {
-      "id": "txn-interest-1768946321054",
-      "date": "2020-03-25T09:11:40.000Z",
+      "id": "txn-interest-1769012227936",
+      "date": "2020-03-25T09:11:29.000Z",
       "type": "expense",
       "amount": -95,
       "description": "Overdraft Interest",
@@ -569,7 +569,7 @@
           ]
         }
       },
-      "remainingDelayMs": 8374
+      "remainingDelayMs": 8451
     },
     {
       "id": "storyEvent-14",
@@ -594,7 +594,7 @@
           ]
         }
       },
-      "remainingDelayMs": 9008
+      "remainingDelayMs": 9087
     },
     {
       "id": "storyEvent-17",
@@ -619,7 +619,7 @@
           ]
         }
       },
-      "remainingDelayMs": 10295
+      "remainingDelayMs": 10420
     },
     {
       "id": "storyEvent-20",
@@ -644,7 +644,7 @@
           ]
         }
       },
-      "remainingDelayMs": 10996
+      "remainingDelayMs": 11102
     },
     {
       "id": "storyEvent-23",
@@ -669,7 +669,7 @@
           ]
         }
       },
-      "remainingDelayMs": 11664
+      "remainingDelayMs": 11786
     },
     {
       "id": "storyEvent-26",
@@ -694,7 +694,7 @@
           ]
         }
       },
-      "remainingDelayMs": 12319
+      "remainingDelayMs": 12452
     }
   ],
   "bankingMessagesSent": {
@@ -724,7 +724,7 @@
         "bandwidth": 50,
         "accessible": false,
         "discovered": true,
-        "accessGrantedDate": "2026-01-20T21:58:33.998Z",
+        "accessGrantedDate": "2026-01-21T16:16:53.184Z",
         "revokedReason": "Mission access expired"
       }
     ],
@@ -852,6 +852,6 @@
       }
     ]
   },
-  "savedAt": "2026-01-20T21:58:54.758Z",
-  "saveName": "25/03/2020 09:12:33"
+  "savedAt": "2026-01-21T16:17:14.029Z",
+  "saveName": "25/03/2020 09:11:31"
 }

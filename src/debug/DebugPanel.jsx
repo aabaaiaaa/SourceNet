@@ -16,6 +16,7 @@ import { useGame } from '../contexts/useGame';
 import { getDebugScenarios, loadScenario } from './scenarios';
 import { getAllClients, getClientsGroupedByIndustry, getIndustryInfo } from '../data/clientRegistry';
 import { canAccessClientType } from '../systems/ReputationSystem';
+import networkRegistry from '../systems/NetworkRegistry';
 import './DebugPanel.css';
 
 const DebugPanel = ({ onClose }) => {
@@ -23,6 +24,9 @@ const DebugPanel = ({ onClose }) => {
   const [creditsInput, setCreditsInput] = useState('');
   const [reputationInput, setReputationInput] = useState('');
   const [statusMessage, setStatusMessage] = useState(null);
+  const [expandedNetworks, setExpandedNetworks] = useState({});
+  const [expandedDevices, setExpandedDevices] = useState({});
+  const [expandedFileSystems, setExpandedFileSystems] = useState({});
   const gameContext = useGame();
 
   // Get available scenarios dynamically
@@ -375,6 +379,140 @@ const DebugPanel = ({ onClose }) => {
     );
   };
 
+  const renderRegistryTab = () => {
+    const snapshot = networkRegistry.getSnapshot();
+    const { networks, devices, fileSystems } = snapshot;
+
+    const toggleNetwork = (networkId) => {
+      setExpandedNetworks(prev => ({ ...prev, [networkId]: !prev[networkId] }));
+    };
+
+    const toggleDevice = (deviceIp) => {
+      setExpandedDevices(prev => ({ ...prev, [deviceIp]: !prev[deviceIp] }));
+    };
+
+    const toggleFileSystem = (fsId) => {
+      setExpandedFileSystems(prev => ({ ...prev, [fsId]: !prev[fsId] }));
+    };
+
+    // Group devices by network
+    const devicesByNetwork = {};
+    devices.forEach(device => {
+      if (!devicesByNetwork[device.networkId]) {
+        devicesByNetwork[device.networkId] = [];
+      }
+      devicesByNetwork[device.networkId].push(device);
+    });
+
+    // Create a lookup for file systems by id
+    const fsById = {};
+    fileSystems.forEach(fs => {
+      fsById[fs.id] = fs;
+    });
+
+    return (
+      <div className="debug-registry">
+        <h3>Network Registry</h3>
+        <p className="debug-hint">
+          All networks, devices, file systems, and files registered from accepted missions.
+        </p>
+
+        <div className="registry-summary">
+          <span>Networks: {networks.length}</span>
+          <span>Devices: {devices.length}</span>
+          <span>File Systems: {fileSystems.length}</span>
+        </div>
+
+        {networks.length === 0 ? (
+          <div className="registry-empty">
+            <p>No networks registered yet.</p>
+            <p className="debug-hint">Accept a mission to populate the registry.</p>
+          </div>
+        ) : (
+          <div className="registry-tree">
+            {networks.map(network => (
+              <div key={network.networkId} className="registry-network">
+                <div
+                  className="registry-header network-header"
+                  onClick={() => toggleNetwork(network.networkId)}
+                >
+                  <span className="toggle-icon">{expandedNetworks[network.networkId] ? '▼' : '▶'}</span>
+                  <span className="network-name">🌐 {network.networkName || network.networkId}</span>
+                  <span className="network-subnet">{network.address}</span>
+                  <div className="network-status">
+                    {network.discovered && <span className="status-badge discovered">Discovered</span>}
+                    {network.accessible && <span className="status-badge has-access">Has Access</span>}
+                    {network.revokedReason && <span className="status-badge revoked">{network.revokedReason}</span>}
+                  </div>
+                </div>
+
+                {expandedNetworks[network.networkId] && (
+                  <div className="registry-children">
+                    {(devicesByNetwork[network.networkId] || []).map(device => {
+                      const deviceFs = device.fileSystemId ? fsById[device.fileSystemId] : null;
+                      return (
+                        <div key={device.ip} className="registry-device">
+                          <div
+                            className="registry-header device-header"
+                            onClick={() => toggleDevice(device.ip)}
+                          >
+                            <span className="toggle-icon">{expandedDevices[device.ip] ? '▼' : '▶'}</span>
+                            <span className="device-name">💻 {device.hostname || 'Unknown'}</span>
+                            <span className="device-ip">{device.ip}</span>
+                            <div className="device-status">
+                              {device.accessible && <span className="status-badge accessible">Accessible</span>}
+                              {deviceFs && <span className="status-badge has-fs">Has FS</span>}
+                            </div>
+                          </div>
+
+                          {expandedDevices[device.ip] && deviceFs && (
+                            <div className="registry-children">
+                              <div className="registry-filesystem">
+                                <div
+                                  className="registry-header filesystem-header"
+                                  onClick={() => toggleFileSystem(deviceFs.id)}
+                                >
+                                  <span className="toggle-icon">{expandedFileSystems[deviceFs.id] ? '▼' : '▶'}</span>
+                                  <span className="filesystem-name">📁 {deviceFs.id}</span>
+                                  <span className="filesystem-files">{deviceFs.files?.length || 0} files</span>
+                                </div>
+
+                                {expandedFileSystems[deviceFs.id] && deviceFs.files && deviceFs.files.length > 0 && (
+                                  <div className="registry-children files-list">
+                                    {deviceFs.files.map((file, idx) => (
+                                      <div key={idx} className="registry-file">
+                                        <span className="file-icon">📄</span>
+                                        <span className="file-name">{file.name}</span>
+                                        <span className="file-size">{file.size} bytes</span>
+                                        {file.corrupted && <span className="status-badge corrupted">Corrupted</span>}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                          {expandedDevices[device.ip] && !deviceFs && (
+                            <div className="registry-children">
+                              <div className="registry-empty-note">No file system</div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {(!devicesByNetwork[network.networkId] || devicesByNetwork[network.networkId].length === 0) && (
+                      <div className="registry-empty-note">No devices</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="debug-panel-overlay">
       <div className="debug-panel">
@@ -410,12 +548,19 @@ const DebugPanel = ({ onClose }) => {
           >
             Clients
           </button>
+          <button
+            className={`debug-tab ${activeTab === 'registry' ? 'active' : ''}`}
+            onClick={() => setActiveTab('registry')}
+          >
+            Registry
+          </button>
         </div>
 
         <div className="debug-content">
           {activeTab === 'scenarios' && renderScenariosTab()}
           {activeTab === 'state' && renderGameStateTab()}
           {activeTab === 'clients' && renderClientsTab()}
+          {activeTab === 'registry' && renderRegistryTab()}
         </div>
 
         <div className="debug-footer">

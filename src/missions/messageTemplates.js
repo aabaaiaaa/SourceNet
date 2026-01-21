@@ -263,7 +263,7 @@ When you're ready for more interesting work, I'll have it for you.
     subject: 'URGENT: More Corrupted Files Found',
     body: `Dear {username},
 
-While you've been working, our monitoring systems detected additional file corruption on the same server.
+While you've been working, our monitoring systems detected additional file corruption on {serverName}.
 
 These files need to be repaired as well - they're part of the same data set and equally critical to our operations.{targetFilesList}
 
@@ -280,7 +280,7 @@ Sincerely,
     subject: 'Additional Server Needs Attention',
     body: `Dear {username},
 
-Good progress so far. However, we've discovered that the corruption has spread to another server on the same network.
+Good progress so far. However, we've discovered that the corruption has spread to {serverName} on the same network.
 
 Please also repair the files on this additional system. The server should be visible when you scan the network.{targetFilesList}
 
@@ -297,9 +297,9 @@ Sincerely,
     subject: 'Urgent: Archive Network Also Affected',
     body: `Dear {username},
 
-We've just discovered that our archive network has also been hit by the same corruption issue.
+We've just discovered that our {networkName} network has also been hit by the same corruption issue.
 
-I'm attaching credentials for our archive network. Please connect and repair the affected files there as well.{targetFilesList}
+I'm attaching credentials for {networkName}. Please connect and repair the affected files on {serverName}.{targetFilesList}
 
 We're significantly increasing your payment given the expanded scope of work.
 
@@ -317,7 +317,7 @@ Sincerely,
 
 Our compliance team just identified additional files that need to be included in this backup operation.
 
-Please also copy these files to the backup destination. They've been added to the source directory.{targetFilesList}
+Please also copy these files to {destinationServer}. They've been added to the source directory.{targetFilesList}
 
 Payment has been adjusted upward for the additional work.
 
@@ -332,7 +332,7 @@ Sincerely,
     subject: 'Secondary Backup Required',
     body: `Dear {username},
 
-Management has requested that we also maintain a secondary backup on a different server for redundancy.
+Management has requested that we also maintain a secondary backup on {serverName} for redundancy.
 
 Please copy the files to our secondary backup server as well. It's on the same network - you should see it after scanning.{targetFilesList}
 
@@ -349,9 +349,9 @@ Sincerely,
     subject: 'Offsite Backup Also Required',
     body: `Dear {username},
 
-For disaster recovery compliance, we need a copy of these files sent to our offsite backup facility as well.
+For disaster recovery compliance, we need a copy of these files sent to our {networkName} facility as well.
 
-I'm attaching credentials for our offsite network. Please connect and copy the files there too.{targetFilesList}
+I'm attaching credentials for {networkName}. Please connect and copy the files to {serverName}.{targetFilesList}
 
 Your payment has been substantially increased given the expanded scope.
 
@@ -369,7 +369,7 @@ Sincerely,
 
 We've identified more files that need to be included in this transfer operation.
 
-The additional files have been added to the source location. Please include them in the transfer to the destination.{targetFilesList}
+The additional files have been added to the source location. Please include them in the transfer to {destinationServer}.{targetFilesList}
 
 Payment adjusted accordingly.
 
@@ -384,7 +384,7 @@ Sincerely,
     subject: 'Archive Copy Required',
     body: `Dear {username},
 
-In addition to the primary transfer, we need an archive copy on a separate server for audit purposes.
+In addition to the primary transfer, we need an archive copy on {serverName} for audit purposes.
 
 Please also transfer the files to our archive server. It should appear when you scan the destination network.{targetFilesList}
 
@@ -403,7 +403,7 @@ Sincerely,
 
 Our partner organization also needs a copy of these files for their records.
 
-I'm attaching credentials for our partner's network. Please connect and transfer the files there as well.{targetFilesList}
+I'm attaching credentials for {networkName}. Please connect and transfer the files to {serverName}.{targetFilesList}
 
 Given the expanded scope, we've significantly increased your payment.
 

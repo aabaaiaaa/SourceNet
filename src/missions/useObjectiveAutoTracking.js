@@ -38,14 +38,36 @@ export const useObjectiveAutoTracking = (
   const completedObjectiveIdsRef = useRef(new Set());
   const missionCompletedRef = useRef(null);
 
+  // Track latest values in refs to avoid stale closure issues
+  const gameStateRef = useRef(gameState);
+  const activeMissionRef = useRef(activeMission);
+
+  // Track latest file operation from event (more reliable than gameState due to React timing)
+  const lastFileOperationRef = useRef(null);
+
+  // Keep refs updated with latest values
+  useEffect(() => {
+    gameStateRef.current = gameState;
+    activeMissionRef.current = activeMission;
+  }, [gameState, activeMission]);
+
   // Memoized objective checker - handles multiple objectives completing at once
   const checkAndCompleteObjectives = useCallback(() => {
-    if (!enabled || !activeMission || !activeMission.objectives || processingRef.current) {
+    // Use refs to always get latest state (avoids stale closure from setTimeout)
+    const currentGameState = gameStateRef.current;
+    const currentMission = activeMissionRef.current;
+
+    // Use event-sourced lastFileOperation if available (more reliable than React state)
+    const effectiveGameState = lastFileOperationRef.current
+      ? { ...currentGameState, lastFileOperation: lastFileOperationRef.current }
+      : currentGameState;
+
+    if (!enabled || !currentMission || !currentMission.objectives || processingRef.current) {
       return;
     }
 
     // Don't process if we already completed this mission
-    const missionId = activeMission.missionId || activeMission.id;
+    const missionId = currentMission.missionId || currentMission.id;
     if (missionCompletedRef.current === missionId) {
       return;
     }
@@ -54,7 +76,7 @@ export const useObjectiveAutoTracking = (
 
     try {
       // Get ALL completable objectives (array)
-      const completableObjectives = checkMissionObjectives(activeMission, gameState);
+      const completableObjectives = checkMissionObjectives(currentMission, effectiveGameState);
 
       // Track which objectives are being completed this cycle
       const newlyCompletedIds = [];
@@ -66,7 +88,7 @@ export const useObjectiveAutoTracking = (
           newlyCompletedIds.push(objective.id);
 
           // Determine if this is a pre-completion (not the first incomplete objective)
-          const firstIncomplete = activeMission.objectives.find(obj => obj.status !== 'complete');
+          const firstIncomplete = currentMission.objectives.find(obj => obj.status !== 'complete');
           const isPreCompleted = firstIncomplete && firstIncomplete.id !== objective.id;
 
           console.log(`✅ Objective auto-completed${isPreCompleted ? ' (pre-completed)' : ''}: ${objective.description}`);
@@ -75,7 +97,7 @@ export const useObjectiveAutoTracking = (
           // Emit objectiveComplete event for scripted event triggers
           triggerEventBus.emit('objectiveComplete', {
             objectiveId: objective.id,
-            missionId: activeMission.missionId,
+            missionId: currentMission.missionId,
             objective: objective
           });
         }
@@ -83,7 +105,7 @@ export const useObjectiveAutoTracking = (
 
       // Check if all objectives now complete (after this batch)
       if (newlyCompletedIds.length > 0) {
-        const updatedObjectives = activeMission.objectives.map((obj) =>
+        const updatedObjectives = currentMission.objectives.map((obj) =>
           completedObjectiveIdsRef.current.has(obj.id) ? { ...obj, status: 'complete' } : obj
         );
 
@@ -92,9 +114,9 @@ export const useObjectiveAutoTracking = (
           missionCompletedRef.current = missionId;
 
           // Calculate payout and reputation change
-          const basePayout = activeMission.basePayout || 0;
+          const basePayout = currentMission.basePayout || 0;
           const payout = calculateMissionPayout(basePayout, reputation);
-          const reputationChange = activeMission.consequences?.success?.reputation ?? 1;
+          const reputationChange = currentMission.consequences?.success?.reputation ?? 1;
 
           // Small delay to allow state to settle before completing mission
           setTimeout(() => completeMission('success', payout, reputationChange), 100);
@@ -103,25 +125,29 @@ export const useObjectiveAutoTracking = (
     } finally {
       processingRef.current = false;
     }
-  }, [activeMission, gameState, reputation, completeMissionObjective, completeMission, enabled]);
+  }, [enabled, reputation, completeMissionObjective, completeMission]);  // Removed activeMission and gameState since we use refs
 
   // Subscribe to relevant game events
   useEffect(() => {
     if (!enabled) return;
 
-    const events = [
-      'networkConnected',
-      'networkScanComplete',
-      'fileSystemConnected',
-      'fileOperationComplete',
-      'narEntryAdded',
+    const eventHandlers = [
+      { event: 'networkConnected', handler: () => setTimeout(checkAndCompleteObjectives, 50) },
+      { event: 'networkScanComplete', handler: () => setTimeout(checkAndCompleteObjectives, 50) },
+      { event: 'fileSystemConnected', handler: () => setTimeout(checkAndCompleteObjectives, 50) },
+      { event: 'narEntryAdded', handler: () => setTimeout(checkAndCompleteObjectives, 50) },
+      {
+        event: 'fileOperationComplete',
+        handler: (data) => {
+          // Store the operation data directly from the event (avoids React state timing issues)
+          lastFileOperationRef.current = data;
+          setTimeout(checkAndCompleteObjectives, 50);
+        }
+      },
     ];
 
-    const unsubscribers = events.map((eventType) =>
-      triggerEventBus.on(eventType, () => {
-        // Small delay to ensure state has updated before checking
-        setTimeout(checkAndCompleteObjectives, 50);
-      })
+    const unsubscribers = eventHandlers.map(({ event, handler }) =>
+      triggerEventBus.on(event, handler)
     );
 
     return () => {
