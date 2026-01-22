@@ -48,6 +48,7 @@ export const GameProvider = ({ children }) => {
   const [currentTime, setCurrentTime] = useState(new Date(GAME_START_DATE));
   const [timeSpeed, setTimeSpeed] = useState(TIME_SPEEDS.NORMAL);
   const [isPaused, setIsPaused] = useState(false);
+  const [isRebooting, setIsRebooting] = useState(false);
 
   // Hardware/Software
   const [hardware, setHardware] = useState(STARTING_HARDWARE);
@@ -953,20 +954,9 @@ export const GameProvider = ({ children }) => {
 
   // Time management
   useEffect(() => {
-    if (isPaused) {
+    // Time only runs during desktop phase and when not paused
+    if (isPaused || gamePhase !== 'desktop') {
       return;
-    }
-
-    // Check if this is an active reboot (time should continue)
-    const isActiveReboot = sessionStorage.getItem('is_active_reboot') === 'true';
-
-    // Time only runs during:
-    // - Desktop (normal gameplay)
-    // - Rebooting/Boot during an active reboot (game continues)
-    if (gamePhase === 'desktop' || (isActiveReboot && (gamePhase === 'rebooting' || gamePhase === 'boot'))) {
-      // Time runs
-    } else {
-      return; // Don't run time
     }
 
     // Update interval based on time speed for smooth ticking
@@ -2078,9 +2068,11 @@ export const GameProvider = ({ children }) => {
   const rebootSystem = useCallback(() => {
     // Close all windows but keep all other state
     setWindows([]);
-    // Mark that this is a reboot (time should continue)
-    localStorage.setItem('osnet_rebooting', 'true');
-    sessionStorage.setItem('is_active_reboot', 'true');
+    // Mark that this is a reboot (for short boot animation)
+    setIsRebooting(true);
+    // Reset time speed and pause during reboot sequence
+    setTimeSpeed(TIME_SPEEDS.NORMAL);
+    setIsPaused(true);
     // Go to reboot animation phase
     setGamePhase('rebooting');
   }, []);
@@ -2321,6 +2313,8 @@ export const GameProvider = ({ children }) => {
     setTimeSpeed,
     isPaused,
     setIsPaused,
+    isRebooting,
+    setIsRebooting,
     hardware,
     setHardware,
     software,

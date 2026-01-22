@@ -107,26 +107,10 @@ describe('GameRoot Component - gamePhase Logic', () => {
     });
   });
 
-  describe('Scenario sessionStorage namespacing', () => {
-    it('should store scenario applied status with scenario name in key', async () => {
-      window.sessionStorage.clear();
-
-      // Simulate a scenario being applied
-      window.sessionStorage.setItem('scenarioApplied_test-scenario', 'true');
-
-      expect(window.sessionStorage.getItem('scenarioApplied_test-scenario')).toBe('true');
-      expect(window.sessionStorage.getItem('scenarioApplied_other-scenario')).toBeNull();
-    });
-
-    it('should not share sessionStorage flags between different scenarios', () => {
-      window.sessionStorage.setItem('scenarioApplied_scenario-a', 'true');
-      window.sessionStorage.setItem('scenarioApplied_scenario-b', 'true');
-
-      expect(window.sessionStorage.getItem('scenarioApplied_scenario-a')).toBe('true');
-      expect(window.sessionStorage.getItem('scenarioApplied_scenario-b')).toBe('true');
-      expect(window.sessionStorage.getItem('scenarioApplied_scenario-c')).toBeNull();
-    });
-  });
+  // Note: Scenario tracking now uses a module-scoped Set instead of sessionStorage.
+  // This prevents scenarios from being re-applied during React Strict Mode remounts.
+  // Direct testing of the Set is not necessary as this is an implementation detail.
+  // Scenario loading behavior is covered by E2E tests.
 
   describe('GamePhase initialization from GameContext', () => {
     it('gamePhase should always initialize to boot in GameContext', () => {

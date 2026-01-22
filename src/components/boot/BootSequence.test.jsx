@@ -17,6 +17,9 @@ vi.mock('../../contexts/useGame', () => {
             setGamePhase: vi.fn(),
             hardware: mockHardware,
             username: null,
+            isRebooting: false,
+            setIsRebooting: vi.fn(),
+            setIsPaused: vi.fn(),
         })),
     };
 });
@@ -47,6 +50,9 @@ describe('BootSequence', () => {
                 network: { name: 'Test Network', speed: 100 },
             },
             username: null,
+            isRebooting: false,
+            setIsRebooting: vi.fn(),
+            setIsPaused: vi.fn(),
         });
     });
 
@@ -128,6 +134,9 @@ describe('BootSequence', () => {
                     network: { name: 'Test Network', speed: 100 },
                 },
                 username: null, // New game
+                isRebooting: false,
+                setIsRebooting: vi.fn(),
+                setIsPaused: vi.fn(),
             });
 
             render(<BootSequence />);
@@ -154,6 +163,9 @@ describe('BootSequence', () => {
                     network: { name: 'Test Network', speed: 100 },
                 },
                 username: 'existingUser', // Loading save
+                isRebooting: false,
+                setIsRebooting: vi.fn(),
+                setIsPaused: vi.fn(),
             });
 
             render(<BootSequence />);
@@ -167,12 +179,27 @@ describe('BootSequence', () => {
             expect(screen.getByText(/OSNet BIOS/i)).toBeInTheDocument();
         });
 
-        it('should clear osnet_rebooting flag after checking', () => {
-            localStorage.setItem('osnet_rebooting', 'true');
+        it('should clear isRebooting flag after boot starts', () => {
+            const mockSetIsRebooting = vi.fn();
+            useGame.mockReturnValue({
+                setGamePhase: vi.fn(),
+                hardware: {
+                    motherboard: { name: 'Test Motherboard' },
+                    cpu: { name: 'Test CPU' },
+                    memory: [{ capacity: '8GB' }],
+                    storage: [{ capacity: '256GB SSD' }],
+                    powerSupply: { wattage: 500 },
+                    network: { name: 'Test Network', speed: 100 },
+                },
+                username: 'TestUser',
+                isRebooting: true,
+                setIsRebooting: mockSetIsRebooting,
+                setIsPaused: vi.fn(),
+            });
 
             render(<BootSequence />);
 
-            expect(localStorage.getItem('osnet_rebooting')).toBeNull();
+            expect(mockSetIsRebooting).toHaveBeenCalledWith(false);
         });
     });
 
@@ -198,6 +225,9 @@ describe('BootSequence', () => {
                     network: { name: 'Test Network', speed: 100 },
                 },
                 username: null, // First boot
+                isRebooting: false,
+                setIsRebooting: vi.fn(),
+                setIsPaused: vi.fn(),
             });
 
             render(<BootSequence />);
@@ -221,6 +251,9 @@ describe('BootSequence', () => {
                     network: { name: 'Test Network', speed: 100 },
                 },
                 username: 'TestUser', // Loading save
+                isRebooting: false,
+                setIsRebooting: vi.fn(),
+                setIsPaused: vi.fn(),
             });
 
             render(<BootSequence />);
@@ -256,23 +289,57 @@ describe('BootSequence', () => {
     });
 
     // ========================================================================
-    // Storage interaction
+    // Reboot state interaction
     // ========================================================================
 
-    describe('storage interaction', () => {
-        it('should check localStorage for reboot flag', () => {
-            localStorage.setItem('osnet_rebooting', 'true');
+    describe('reboot state interaction', () => {
+        it('should use short boot when isRebooting is true', async () => {
+            useGame.mockReturnValue({
+                setGamePhase: vi.fn(),
+                hardware: {
+                    motherboard: { name: 'Test Motherboard' },
+                    cpu: { name: 'Test CPU' },
+                    memory: [{ capacity: '8GB' }],
+                    storage: [{ capacity: '256GB SSD' }],
+                    powerSupply: { wattage: 500 },
+                    network: { name: 'Test Network', speed: 100 },
+                },
+                username: 'TestUser',
+                isRebooting: true,
+                setIsRebooting: vi.fn(),
+                setIsPaused: vi.fn(),
+            });
 
             render(<BootSequence />);
 
-            // Flag should be cleared
-            expect(localStorage.getItem('osnet_rebooting')).toBeNull();
+            // Short boot should render BIOS quickly
+            await act(async () => {
+                vi.advanceTimersByTime(1000);
+            });
+            expect(screen.getByText(/OSNet BIOS/i)).toBeInTheDocument();
         });
 
-        it('should not set reboot flag during normal boot', () => {
+        it('should not call setIsRebooting when not rebooting', () => {
+            const mockSetIsRebooting = vi.fn();
+            useGame.mockReturnValue({
+                setGamePhase: vi.fn(),
+                hardware: {
+                    motherboard: { name: 'Test Motherboard' },
+                    cpu: { name: 'Test CPU' },
+                    memory: [{ capacity: '8GB' }],
+                    storage: [{ capacity: '256GB SSD' }],
+                    powerSupply: { wattage: 500 },
+                    network: { name: 'Test Network', speed: 100 },
+                },
+                username: null,
+                isRebooting: false,
+                setIsRebooting: mockSetIsRebooting,
+                setIsPaused: vi.fn(),
+            });
+
             render(<BootSequence />);
 
-            expect(localStorage.getItem('osnet_rebooting')).toBeNull();
+            expect(mockSetIsRebooting).not.toHaveBeenCalled();
         });
     });
 });

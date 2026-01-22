@@ -358,11 +358,13 @@ class StoryMissionManager {
 
     switch (type) {
       case 'messageRead': {
-        // Check if this is the message that was just read (from event data)
-        // OR if it's already marked as read in gameState
-        if (eventData?.messageId === condition.messageId) {
-          return true; // The message is being read right now
+        // If the event has a messageId, it must match exactly
+        // (prevents triggering when a DIFFERENT message is read)
+        if (eventData?.messageId !== undefined) {
+          return eventData.messageId === condition.messageId;
         }
+        // If no messageId in event data (e.g., triggered by softwareInstalled event),
+        // fall back to checking gameState - was this message already read?
         const message = gameState?.messages?.find(m => m.id === condition.messageId);
         return message?.read === true;
       }

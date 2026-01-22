@@ -75,16 +75,8 @@ extend the debug panel to show all networks/devices/file systems/files registere
 
 
 
-
-
-(done - needs testing)
-looks like some messages in the saved debug states contain the placeholder text instead of the expected replacements.
-
-
 Review the systems in place for handling missions and scripted events and objective tracking as I need to understand how to picture these systems and how best they should integrate with each other as the biggest issues have come from changes in these areas. Each system needs to have a role and individual responsibility so there's not internal variables being changed by external systems. It will then aid in writing test cases for each system.
 
-
-if any of the sessionStorage usages actaully required now? I thought they were just to attempt to fix a bug and turns out they were not critical to fixing it?
 
 
 minimising the file manager and network scanner apps seems to reset some state in them so when you open them back up, the dropdowns are not selected anymore. It might not be just the dropdowns that are affected, but ideally no visuals should be affected once you open the app back up from minimising.
@@ -93,22 +85,5 @@ minimising the file manager and network scanner apps seems to reset some state i
 it seems that NAR attachments that are trying to name the NAR entries are cutting off replacements that contain single quotes (example, St. Mary's blah is turning into St.-Network or St.-Backup. Can you change this so a text replacement friendly version of the client can be used?
 
 
-(done)
-The File Manager shows filesystems on the network even before the network scanner has scanned the network to discover those devices. The point of the network scanner is to discover devices on the network - in this tutorial mission, you are being shown that more devices can be discovered over time.
-
-
-(done)
-The Network Scanner is still showing "disconnected from network" even once you reconnect to the network.
-
-
-(done)
-At the end of the tutorial part 2 mission, when you are disconnected because you've finished the mission, the connection popup is showing 2 entries for disconnection (the message "Disconnecting from ClientA-Corporate due to access revocation" shows twice in the console).
-
-
 (done - needs testing)
-Just like how pasting clears the clipboard, if you disconnect from the network that contains the files you've copied, the clipboard should also clear for those files that are copied for that same network. Currently the clipboard doesn't appear to clear on disconnection as when you reconnect, they are still in the clipboard. Obviously, if you disconnect from a differet network that is not related to the files, then the clipboard shouldn't clear those files. But given you can only copy one series of files from the same location, if the first is from the disconnected network, then all would be.
-
-
-(done - needs testing)
-In the File Manager, if you paste in some files then switch to another file system in the same instance of the File Manager, if you were to switch back to the original file system, you do not see the files that you pasted in. When manipulating files in File Manager, they should stay that way. I understand that for the particular case of the tutorial missions when you are revisiting the same network that the 2nd NAR entry you receive will change the network based on what is set in the mission data, but you could write that down to the network having whatever you did previous undone.
-The persistance of these changes to files I would expect to persist between a disconnect and reconnecting as long as the NAR entry you are using is the same one (hasn't been revoked/deauthed).
+it seems that when loading the post tutorial scenario, there are multiple story events scheduled to run that all attempt to send the message with the ID msg-mission-board-license. Given this is meant to trigger at the beginning of the game, you shouldn't expect it to trigger again nor multiple times again. I think this is highlighting that there is an issue with how this is triggered or how story events are being saved and loaded again.

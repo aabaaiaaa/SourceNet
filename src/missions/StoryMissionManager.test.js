@@ -187,19 +187,41 @@ describe('StoryMissionManager', () => {
     });
 
     it('should evaluate messageRead condition correctly', () => {
+      // messageRead condition behavior:
+      // 1. If eventData has messageId, it must match exactly
+      // 2. If eventData has no messageId (trigger from different event), fall back to gameState
+
+      // Correct match: eventData has the matching messageId
       const result1 = storyMissionManager.evaluateCondition(
         { type: 'messageRead', messageId: 'msg-1' },
-        {},
+        { messageId: 'msg-1' },  // eventData indicates msg-1 was just read
         { messages: [{ id: 'msg-1', read: true }] }
       );
       expect(result1).toBe(true);
 
+      // No match: eventData has different messageId
       const result2 = storyMissionManager.evaluateCondition(
         { type: 'messageRead', messageId: 'msg-2' },
-        {},
+        { messageId: 'msg-1' },  // eventData indicates msg-1 was just read, not msg-2
         { messages: [{ id: 'msg-2', read: false }] }
       );
       expect(result2).toBe(false);
+
+      // Fallback to gameState: no messageId in eventData (e.g., from softwareInstalled event)
+      const result3 = storyMissionManager.evaluateCondition(
+        { type: 'messageRead', messageId: 'msg-1' },
+        {},  // no messageId in eventData
+        { messages: [{ id: 'msg-1', read: true }] }
+      );
+      expect(result3).toBe(true);
+
+      // Fallback to gameState: message not yet read
+      const result4 = storyMissionManager.evaluateCondition(
+        { type: 'messageRead', messageId: 'msg-1' },
+        {},  // no messageId in eventData
+        { messages: [{ id: 'msg-1', read: false }] }
+      );
+      expect(result4).toBe(false);
     });
 
     it('should evaluate softwareInstalled condition correctly', () => {
@@ -234,13 +256,41 @@ describe('StoryMissionManager', () => {
       expect(result2).toBe(false);
     });
 
+    it('should only trigger messageRead condition for the exact message being read, not for any message read when target is already read', () => {
+      // Bug scenario: msg-A is already read in gameState
+      // When user reads msg-B (different message), the messageRead event fires with messageId: 'msg-B'
+      // The condition checking for msg-A should NOT pass, because msg-B is being read, not msg-A
+
+      storyMissionManager.setGameStateGetter(() => ({
+        messages: [
+          { id: 'msg-A', read: true },  // Already read
+          { id: 'msg-B', read: false }, // About to be read
+        ],
+      }));
+
+      const condition = { type: 'messageRead', messageId: 'msg-A' };
+
+      // When msg-B is read (eventData has messageId: 'msg-B'), 
+      // the condition for msg-A should NOT pass
+      const result = storyMissionManager.evaluateCondition(
+        condition,
+        { messageId: 'msg-B' }, // Reading a DIFFERENT message
+        { messages: [{ id: 'msg-A', read: true }, { id: 'msg-B', read: true }] }
+      );
+
+      // This should be FALSE - we're reading msg-B, not msg-A
+      // The fact that msg-A is already read in gameState should NOT cause this to pass
+      expect(result).toBe(false);
+    });
+
     it('should check all conditions with AND logic', () => {
       const conditions = [
         { type: 'messageRead', messageId: 'msg-1' },
         { type: 'softwareInstalled', softwareId: 'app-1' },
       ];
 
-      // Both conditions met
+      // Both conditions met - no messageId in eventData means it falls back to gameState for messageRead
+      // This simulates a softwareInstalled event triggering the check
       const result1 = storyMissionManager.checkAllConditions(conditions, {});
       expect(result1).toBe(true);
 

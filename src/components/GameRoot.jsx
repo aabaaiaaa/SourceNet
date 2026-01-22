@@ -32,24 +32,12 @@ const applyScenarioFixture = (fixture, gameContext) => {
   }
 };
 
+// Module-scoped Set to track applied scenarios (persists across React Strict Mode remounts)
+const appliedScenarios = new Set();
+
 const GameRoot = () => {
   const gameContext = useGame();
   const { gamePhase, setGamePhase } = gameContext;
-
-  // Use sessionStorage to persist across component remounts (React Strict Mode)
-  // Namespace with scenario name to avoid cross-test contamination
-  const getScenarioApplied = (scenarioName) => {
-    if (typeof window !== 'undefined' && scenarioName) {
-      return sessionStorage.getItem(`scenarioApplied_${scenarioName}`) === 'true';
-    }
-    return false;
-  };
-
-  const setScenarioApplied = (scenarioName, value) => {
-    if (typeof window !== 'undefined' && scenarioName) {
-      sessionStorage.setItem(`scenarioApplied_${scenarioName}`, value.toString());
-    }
-  };
 
   // Expose game context globally for e2e testing
   useEffect(() => {
@@ -69,16 +57,16 @@ const GameRoot = () => {
     const scenarioName = urlParams.get('scenario');
 
     // Early return if scenario already applied
-    if (scenarioName && getScenarioApplied(scenarioName)) {
+    if (scenarioName && appliedScenarios.has(scenarioName)) {
       // Scenario already loaded, skip reloading
       return;
-    } else if (scenarioName && !getScenarioApplied(scenarioName)) {
+    } else if (scenarioName && !appliedScenarios.has(scenarioName)) {
       const fixture = getScenarioFixture(scenarioName);
 
       if (fixture) {
         const success = applyScenarioFixture(fixture, gameContext);
         if (success) {
-          setScenarioApplied(scenarioName, true);
+          appliedScenarios.add(scenarioName);
           setGamePhase('desktop'); // Skip boot and go straight to desktop
           console.log(`✅ Scenario '${scenarioName}' loaded successfully`);
           return;

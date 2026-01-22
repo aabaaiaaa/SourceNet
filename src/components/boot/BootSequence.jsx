@@ -3,24 +3,23 @@ import { useGame } from '../../contexts/useGame';
 import './BootSequence.css';
 
 const BootSequence = () => {
-  const { setGamePhase, hardware, username } = useGame();
+  const { setGamePhase, hardware, username, isRebooting, setIsRebooting, setIsPaused } = useGame();
   const [bootLines, setBootLines] = useState([]);
   const [bootComplete, setBootComplete] = useState(false);
   const [showLogo, setShowLogo] = useState(false);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    // Check if this is a reboot (should always use short boot)
-    const isRebooting = localStorage.getItem('osnet_rebooting') === 'true';
-
-    // Clear reboot flag immediately
-    localStorage.removeItem('osnet_rebooting');
-
     // Determine boot type based on context:
     // - Rebooting → short boot (system already set up)
     // - Loading save (username exists) → short boot (OS already installed in save)
     // - New game (no username) → long boot (fresh OS installation)
     const isFirstBoot = !isRebooting && !username;
+
+    // Clear reboot flag immediately (consumed)
+    if (isRebooting) {
+      setIsRebooting(false);
+    }
 
     console.log('[BootSequence] isRebooting:', isRebooting, 'username:', username, 'isFirstBoot:', isFirstBoot);
 
@@ -121,20 +120,20 @@ const BootSequence = () => {
     }, lineDelay);
 
     return () => clearInterval(interval);
-  }, [hardware, username]);
+  }, [hardware, username, isRebooting, setIsRebooting]);
 
   useEffect(() => {
     if (bootComplete) {
       setTimeout(() => {
-        // Clear active reboot flag when boot completes
-        sessionStorage.removeItem('is_active_reboot');
+        // Unpause the game when boot completes
+        setIsPaused(false);
 
         // If username already exists (loading a save), go to desktop
         // Otherwise go to username selection (new game)
         setGamePhase(username ? 'desktop' : 'username');
       }, 2000);
     }
-  }, [bootComplete, setGamePhase, username]);
+  }, [bootComplete, setGamePhase, username, setIsPaused]);
 
   return (
     <div className="boot-screen">

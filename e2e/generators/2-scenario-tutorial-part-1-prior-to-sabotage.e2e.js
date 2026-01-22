@@ -49,21 +49,26 @@ test.describe('Scenario Generator: Tutorial Part 1 - Prior to Sabotage', () => {
         await page.goto('/');
         await page.evaluate(() => {
             localStorage.clear();
-            sessionStorage.clear();
         });
         await page.goto('/?scenario=fresh-start');
         await expect(page.locator('.desktop')).toBeVisible({ timeout: 15000 });
         await page.waitForFunction(() => window.gameContext?.setSpecificTimeSpeed, { timeout: 10000 });
 
         // ========================================
-        // STEP 2: Install Mission Board and required software
+        // STEP 2: Install Mission Board (already licensed in fresh-start scenario)
         // ========================================
+        // The fresh-start scenario already has:
+        // - msg-mission-board-license READ
+        // - Mission Board LICENSED
+        // So we just need to install it, which will trigger the tutorial-software-licenses event
+
         await page.click('text=☰');
         await page.click('text=OSNet Portal');
+        await expect(page.locator('button:has-text("Software")')).toBeVisible({ timeout: 5000 });
         await page.click('button:has-text("Software")');
         await page.waitForTimeout(200);
 
-        // Install Mission Board (already licensed)
+        // Install Mission Board (now licensed from reading the message)
         await page.locator('button:has-text("Install")').first().click();
         await setSpeed(100);
         await page.waitForTimeout(300);
@@ -76,6 +81,7 @@ test.describe('Scenario Generator: Tutorial Part 1 - Prior to Sabotage', () => {
         if (await backBtn.isVisible()) await backBtn.click();
 
         // Wait for story event message to arrive (5s delay + processing time)
+        // This message arrives after reading "Get Ready" + installing Mission Board
         const softwareMsg = page.locator('.message-item:has-text("Mission Software")').first();
         await expect(softwareMsg).toBeVisible({ timeout: 10000 });
         await softwareMsg.click();

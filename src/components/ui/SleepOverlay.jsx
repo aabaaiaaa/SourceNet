@@ -9,6 +9,8 @@ const SleepOverlay = () => {
         setActiveConnections,
         saveGame,
         setGamePhase,
+        setIsPaused,
+        setTimeSpeed,
     } = useGame();
 
     const [networksToDisconnect, setNetworksToDisconnect] = useState([]);
@@ -17,6 +19,12 @@ const SleepOverlay = () => {
     const [isComplete, setIsComplete] = useState(false);
     const [initialConnections, setInitialConnections] = useState(null);
     const hasInitialized = useRef(false);
+
+    // Pause game and reset time speed when sleep starts
+    useEffect(() => {
+        setIsPaused(true);
+        setTimeSpeed(1); // Reset to 1x (TIME_SPEEDS.NORMAL)
+    }, [setIsPaused, setTimeSpeed]);
 
     const completeSleep = () => {
         setIsComplete(true);
