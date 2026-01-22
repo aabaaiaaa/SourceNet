@@ -116,26 +116,6 @@ function generateHostname(clientName, purpose, index = 1) {
 }
 
 /**
- * Find hostname for a given IP address within mission networks
- * @param {Object} mission - Mission data with networks
- * @param {string} ip - IP address to look up
- * @returns {string} Hostname or IP if not found
- */
-function findHostnameByIp(mission, ip) {
-    if (!mission?.networks || !ip) return ip;
-    for (const network of mission.networks) {
-        if (network.fileSystems) {
-            for (const fs of network.fileSystems) {
-                if (fs.ip === ip && fs.name) {
-                    return fs.name;
-                }
-            }
-        }
-    }
-    return ip;
-}
-
-/**
  * Generate extension files based on industry and mission type
  * Returns { files, targetFiles, totalDataBytes }
  */
@@ -554,14 +534,6 @@ const extensionPatterns = {
             const sourceFiles = mission.networks[0]?.fileSystems[0]?.files || [];
             const targetFileNames = sourceFiles.filter(f => f.targetFile).map(f => f.name).slice(0, 4);
 
-            const newDevice = {
-                id: `device-ext-${Date.now()}`,
-                ip: newIp,
-                hostname: newHostname,
-                type: 'server',
-                accessible: true
-            };
-
             const newFileSystem = {
                 id: `fs-ext-${Date.now()}`,
                 ip: newIp,
@@ -642,14 +614,6 @@ const extensionPatterns = {
             // Get existing target files to backup
             const sourceFiles = mission.networks[0]?.fileSystems[0]?.files || [];
             const targetFileNames = sourceFiles.filter(f => f.targetFile).map(f => f.name).slice(0, 4);
-
-            const newDevice = {
-                id: `device-ext-${Date.now()}`,
-                ip: newIp,
-                hostname: newHostname,
-                type: 'server',
-                accessible: true
-            };
 
             const newFileSystem = {
                 id: `fs-ext-${Date.now()}`,
@@ -834,14 +798,6 @@ const extensionPatterns = {
 
             if (targetFileNames.length === 0) return null;
 
-            const newDevice = {
-                id: `device-ext-${Date.now()}`,
-                ip: newIp,
-                hostname: newHostname,
-                type: 'server',
-                accessible: true
-            };
-
             const newFileSystem = {
                 id: `fs-ext-${Date.now()}`,
                 ip: newIp,
@@ -925,14 +881,6 @@ const extensionPatterns = {
             const targetFileNames = existingTargets.slice(0, Math.min(4, existingTargets.length));
 
             if (targetFileNames.length === 0) return null;
-
-            const newDevice = {
-                id: `device-ext-${Date.now()}`,
-                ip: newIp,
-                hostname: newHostname,
-                type: 'server',
-                accessible: true
-            };
 
             const newFileSystem = {
                 id: `fs-ext-${Date.now()}`,

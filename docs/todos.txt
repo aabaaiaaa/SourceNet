@@ -69,14 +69,8 @@ there's story mission data that has network information as a starting state and 
 story missions and generated ones are both accepted through the same way, so there should be no issue in how these both work.
 however, the mission extension system will need the ability to make changes to this global network system. anytime a new NAR entry is supplied then new networks or devices or files could be added (merged into existing if they already exist). but there are other situations with the mission extension system where only properties on existing files might be changed and the issuing of a new NAR entry just doesn't fit in with the simulation from the player's perspective - they would expect those changes to have justed happened automatically. So the player would expect a new NAR entry if a) there's a new network to connect to, b) there are new devices to discover as these both represent "access right" type changes the player would think they'd need updated auth credentials. The player wouldn't expect changes to files or additional files being added to need a new NAR as it's potentially files in existing devices.
 also, the future idea of one global network system opens the game up to larger views of the entire network as a whole - it opens the possibility of hacking into systems that group entire networks share like a cloud hosting provider or being able to bounce your connection through multiple different networks to prevent being traced.
-
-(WIP)
-the message(s) msg-tutorial-network-credentials and msg-tutorial-2-network-update have a NAR attachment that seems to still have fileSystem values when saving. there has been a refactor of how and where network topology is generated, set and that NAR entries are only setting access levels to networks and/or devices. file systems are within devices so access to files is set at device level.
 ---
-(done - needs testing - failing tests)
-refactor NAR entries to just be about access and for the network topology to be applied to the global network system immediately.
----
-(planning)
+(done - needs testing)
 extend the debug panel to show all networks/devices/file systems/files registered with the NetworkRegistry - this is just a debug way of seeing all the data that is being generated as missions are accepted.
 
 

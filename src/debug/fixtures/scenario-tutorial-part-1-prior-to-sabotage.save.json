@@ -1,7 +1,7 @@
 {
   "username": "scenario_user",
-  "playerMailId": "SNET-NKM-99K-EB6",
-  "currentTime": "2020-03-25T09:05:02.000Z",
+  "playerMailId": "SNET-XGG-IIY-L3Y",
+  "currentTime": "2020-03-25T09:04:19.000Z",
   "hardware": {
     "cpu": {
       "id": "cpu-1ghz-single",
@@ -106,11 +106,11 @@
     {
       "id": "msg-welcome-manager",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-X7Z-ILE",
-      "fromName": "SourceNet Manager Sam",
-      "subject": "Hi from your manager - Sam",
-      "body": "Hey scenario_user!\n\nWelcome to the team! I'm Sam, and I'll be your manager here at SourceNet. I was present during your interview process and I have to say, you really impressed us with your skills and dedication.\n\nTo help you get started, I've attached a welcome bonus cheque for 1,000 credits. Just click on the attachment to deposit it into your bank account.\n\nTake some time to get comfortable with your setup. I'll be reaching out again soon with your first assignment.\n\nLooking forward to working with you!\n\n- Sam",
-      "timestamp": "2020-03-25T09:00:17.000Z",
+      "fromId": "SNET-MGR-AS2-ORB",
+      "fromName": "SourceNet Manager Jordan",
+      "subject": "Hi from your manager - Jordan",
+      "body": "Hey scenario_user!\n\nWelcome to the team! I'm Jordan, and I'll be your manager here at SourceNet. I was present during your interview process and I have to say, you really impressed us with your skills and dedication.\n\nTo help you get started, I've attached a welcome bonus cheque for 1,000 credits. Just click on the attachment to deposit it into your bank account.\n\nTake some time to get comfortable with your setup. I'll be reaching out again soon with your first assignment.\n\nLooking forward to working with you!\n\n- Jordan",
+      "timestamp": "2020-03-25T09:00:18.000Z",
       "read": true,
       "archived": false,
       "attachments": [
@@ -124,11 +124,11 @@
     {
       "id": "msg-mission-board-license",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-KNV-PRA",
-      "fromName": "SourceNet Manager Sam",
+      "fromId": "SNET-MGR-TVI-DHP",
+      "fromName": "SourceNet Manager Jordan",
       "subject": "Get Ready for Your First Mission",
-      "body": "Hey scenario_user!\n\nNow that you're all set up, it's time to get you started with actual work.\n\nI've attached a license for the SourceNet Mission Board application. This is where you'll find all available missions from our clients.\n\nTo get started:\n\n1. Click the attachment above to add the Mission Board license to your account\n2. Open the OSNet Portal from your app launcher\n3. Go to Software section - you'll see \"SourceNet Mission Board\" marked as \"Licensed\"\n4. Download and install it\n5. Once installed, open the Mission Board from your app launcher\n\nI've posted your first assignment there. It's a straightforward file repair job for one of our clients - perfect for learning the ropes.\n\nOnce you install the Mission Board, I'll send you the software licenses you'll need to complete the mission.\n\n- Sam",
-      "timestamp": "2020-03-25T09:00:52.000Z",
+      "body": "Hey scenario_user!\n\nNow that you're all set up, it's time to get you started with actual work.\n\nI've attached a license for the SourceNet Mission Board application. This is where you'll find all available missions from our clients.\n\nTo get started:\n\n1. Click the attachment above to add the Mission Board license to your account\n2. Open the OSNet Portal from your app launcher\n3. Go to Software section - you'll see \"SourceNet Mission Board\" marked as \"Licensed\"\n4. Download and install it\n5. Once installed, open the Mission Board from your app launcher\n\nI've posted your first assignment there. It's a straightforward file repair job for one of our clients - perfect for learning the ropes.\n\nOnce you install the Mission Board, I'll send you the software licenses you'll need to complete the mission.\n\n- Jordan",
+      "timestamp": "2020-03-25T09:00:51.000Z",
       "read": true,
       "archived": false,
       "attachments": [
@@ -145,11 +145,11 @@
     {
       "id": "msg-tutorial-software-licenses",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-UEI-USG",
-      "fromName": "SourceNet Manager Sam",
+      "fromId": "SNET-MGR-FVT-698",
+      "fromName": "SourceNet Manager Jordan",
       "subject": "Mission Software",
-      "body": "Great! Now that you have the Mission Board installed, let me get you set up with the tools you'll need for your first mission.\n\nI've attached free licenses for the essential software (total value: $1,350):\n\n- SourceNet VPN Client ($500): Secure access to client networks\n- Network Address Register ($200): Manages your network connections\n- Network Scanner ($300): Finds machines and file systems on networks\n- File Manager ($350): Access and repair files on remote systems\n\nInstallation steps:\n\n1. Click all the attachments above to add them to your account\n2. Open the Portal and install all four software applications\n3. Once installed, open the Mission Board and accept the \"Log File Repair\" mission\n\nWhen you accept the mission, you'll receive the network credentials for ClientA-Corporate as an attachment. Use the Network Address Register to add them to your NAR.\n\nThe mission objectives are straightforward:\n- Connect to ClientA-Corporate network via VPN\n- Scan the network to find their file server\n- Use File Manager to detect and repair corrupted log files\n\nYour Mission Board will track each objective as you complete them.\n\nGood luck!\n\n- Sam",
-      "timestamp": "2020-03-25T09:01:32.000Z",
+      "body": "Great! Now that you have the Mission Board installed, let me get you set up with the tools you'll need for your first mission.\n\nI've attached free licenses for the essential software (total value: $1,350):\n\n- SourceNet VPN Client ($500): Secure access to client networks\n- Network Address Register ($200): Manages your network connections\n- Network Scanner ($300): Finds machines and file systems on networks\n- File Manager ($350): Access and repair files on remote systems\n\nInstallation steps:\n\n1. Click all the attachments above to add them to your account\n2. Open the Portal and install all four software applications\n3. Once installed, open the Mission Board and accept the \"Log File Repair\" mission\n\nWhen you accept the mission, you'll receive the network credentials for ClientA-Corporate as an attachment. Use the Network Address Register to add them to your NAR.\n\nThe mission objectives are straightforward:\n- Connect to ClientA-Corporate network via VPN\n- Scan the network to find their file server\n- Use File Manager to detect and repair corrupted log files\n\nYour Mission Board will track each objective as you complete them.\n\nGood luck!\n\n- Jordan",
+      "timestamp": "2020-03-25T09:01:28.000Z",
       "read": true,
       "archived": false,
       "attachments": [
@@ -188,13 +188,13 @@
       ]
     },
     {
-      "id": "msg-briefing-tutorial-part-1-1769012189449",
+      "id": "msg-briefing-tutorial-part-1-1769083075175",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-KIW-BI6",
-      "fromName": "SourceNet Manager Sam",
+      "fromId": "SNET-MGR-501-JF6",
+      "fromName": "SourceNet Manager Jordan",
       "subject": "ClientA Network Credentials",
-      "body": "Perfect! Now that you've accepted the mission, here are the network credentials for ClientA-Corporate.\n\nClick the attachment above to add it to your Network Address Register. Then you can use your VPN Client to connect to their network.\n\nRemember the mission objectives:\n1. Connect to ClientA-Corporate network\n2. Scan the network to find file servers\n3. Use File Manager to repair corrupted log files\n\nYou've got this!\n\n- Sam",
-      "timestamp": "2020-03-25T09:04:17.000Z",
+      "body": "Perfect! Now that you've accepted the mission, here are the network credentials for ClientA-Corporate.\n\nClick the attachment above to add it to your Network Address Register. Then you can use your VPN Client to connect to their network.\n\nRemember the mission objectives:\n1. Connect to ClientA-Corporate network\n2. Scan the network to find file servers\n3. Use File Manager to repair corrupted log files\n\nYou've got this!\n\n- Jordan",
+      "timestamp": "2020-03-25T09:03:43.000Z",
       "read": true,
       "archived": false,
       "attachments": [
@@ -211,7 +211,7 @@
       ]
     }
   ],
-  "managerName": "Sam",
+  "managerName": "Jordan",
   "windows": [],
   "reputation": 9,
   "reputationCountdown": null,
@@ -450,8 +450,8 @@
         "tutorial-part-2"
       ]
     },
-    "startTime": "2020-03-25T09:04:17.000Z",
-    "acceptedTime": "2020-03-25T09:04:17.000Z",
+    "startTime": "2020-03-25T09:03:43.000Z",
+    "acceptedTime": "2020-03-25T09:03:43.000Z",
     "deadlineTime": null
   },
   "completedMissions": [],
@@ -469,7 +469,7 @@
       "networkName": "ClientA-Corporate",
       "address": "192.168.50.0/24",
       "authorized": true,
-      "addedAt": "2026-01-21T16:16:29.846Z",
+      "addedAt": "2026-01-22T11:57:55.621Z",
       "status": "active",
       "deviceAccess": [
         "192.168.50.10"
@@ -526,7 +526,7 @@
   "downloadQueue": [],
   "transactions": [
     {
-      "id": "txn-cheque-1769012182515",
+      "id": "txn-cheque-1769083067936",
       "date": "2020-03-25T09:00:35.000Z",
       "type": "income",
       "amount": 1000,
@@ -577,7 +577,7 @@
         "bandwidth": 50,
         "accessible": true,
         "discovered": true,
-        "accessGrantedDate": "2026-01-21T16:16:29.846Z"
+        "accessGrantedDate": "2026-01-22T11:57:55.621Z"
       }
     ],
     "devices": [
@@ -652,6 +652,6 @@
       }
     ]
   },
-  "savedAt": "2026-01-21T16:16:35.802Z",
-  "saveName": "25/03/2020 09:05:02"
+  "savedAt": "2026-01-22T11:58:01.595Z",
+  "saveName": "25/03/2020 09:04:19"
 }
