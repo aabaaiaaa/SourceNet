@@ -87,15 +87,6 @@ export const canInstallSoftware = (freeSpace, requiredSpace) => {
  * @returns {string} Formatted string "Apps: X GB | Files: Y GB | Z GB free"
  */
 export const formatStorage = (appsUsed, filesUsed, total) => {
-  // Support legacy 2-arg call: formatStorage(used, total)
-  // When called with 2 args, 'total' is undefined
-  if (total === undefined) {
-    const used = appsUsed;
-    const totalCapacity = filesUsed;
-    const free = calculateStorageFree(totalCapacity, used);
-    return `${used.toFixed(1)} GB used / ${free.toFixed(1)} GB free`;
-  }
-
   const totalUsed = appsUsed + filesUsed;
   const free = calculateStorageFree(total, totalUsed);
 

@@ -54,16 +54,13 @@ describe('Mission NAR Revocation', () => {
                 gameState.initializePlayer('TestPlayer');
             });
 
-            // Add a NAR entry
-            await act(async () => {
-                gameState.setNarEntries([{
-                    id: 'nar-test-1',
-                    networkId: 'test-network',
-                    networkName: 'Test Network',
-                    address: '192.168.1.0/24',
-                    authorized: true,
-                    status: 'active',
-                }]);
+            // Register network in NetworkRegistry (accessible: true = authorized)
+            networkRegistry.registerNetwork({
+                networkId: 'test-network',
+                networkName: 'Test Network',
+                address: '192.168.1.0/24',
+                accessible: true,
+                discovered: true,
             });
 
             // Set up active mission with revokeOnComplete
@@ -90,11 +87,11 @@ describe('Mission NAR Revocation', () => {
                 gameState.completeMission('success', 1000, 1);
             });
 
-            // Wait for the scheduled callback to execute
+            // Wait for the scheduled callback to execute - check NetworkRegistry
             await waitFor(() => {
-                const entry = gameState.narEntries.find(e => e.networkId === 'test-network');
-                expect(entry.authorized).toBe(false);
-                expect(entry.revokedReason).toBe('Test mission completed');
+                const network = networkRegistry.getNetwork('test-network');
+                expect(network.accessible).toBe(false);
+                expect(network.revokedReason).toBe('Test mission completed');
             }, { timeout: 1000 });
         });
 
@@ -109,16 +106,17 @@ describe('Mission NAR Revocation', () => {
                 gameState.initializePlayer('TestPlayer');
             });
 
-            // Add NAR entry and active connection
+            // Register network in NetworkRegistry (accessible: true = authorized)
+            networkRegistry.registerNetwork({
+                networkId: 'test-network',
+                networkName: 'Test Network',
+                address: '192.168.1.0/24',
+                accessible: true,
+                discovered: true,
+            });
+
+            // Set active connection
             await act(async () => {
-                gameState.setNarEntries([{
-                    id: 'nar-test-1',
-                    networkId: 'test-network',
-                    networkName: 'Test Network',
-                    address: '192.168.1.0/24',
-                    authorized: true,
-                    status: 'active',
-                }]);
                 gameState.setActiveConnections([{
                     networkId: 'test-network',
                     networkName: 'Test Network',
@@ -172,16 +170,17 @@ describe('Mission NAR Revocation', () => {
                 gameState.initializePlayer('TestPlayer');
             });
 
-            // Add NAR entry and active connection
+            // Register network in NetworkRegistry (accessible: true = authorized)
+            networkRegistry.registerNetwork({
+                networkId: 'test-network',
+                networkName: 'Test Network',
+                address: '192.168.1.0/24',
+                accessible: true,
+                discovered: true,
+            });
+
+            // Set active connection
             await act(async () => {
-                gameState.setNarEntries([{
-                    id: 'nar-test-1',
-                    networkId: 'test-network',
-                    networkName: 'Test Network',
-                    address: '192.168.1.0/24',
-                    authorized: true,
-                    status: 'active',
-                }]);
                 gameState.setActiveConnections([{
                     networkId: 'test-network',
                     networkName: 'Test Network',
@@ -245,16 +244,17 @@ describe('Mission NAR Revocation', () => {
                 gameState.initializePlayer('TestPlayer');
             });
 
-            // Add NAR entry and active connection
+            // Register network in NetworkRegistry (accessible: true = authorized)
+            networkRegistry.registerNetwork({
+                networkId: 'clienta-corporate',
+                networkName: 'ClientA-Corporate',
+                address: '192.168.50.0/24',
+                accessible: true,
+                discovered: true,
+            });
+
+            // Set active connection
             await act(async () => {
-                gameState.setNarEntries([{
-                    id: 'nar-test-1',
-                    networkId: 'clienta-corporate',
-                    networkName: 'ClientA-Corporate',
-                    address: '192.168.50.0/24',
-                    authorized: true,
-                    status: 'active',
-                }]);
                 gameState.setActiveConnections([{
                     networkId: 'clienta-corporate',
                     networkName: 'ClientA-Corporate',
@@ -325,34 +325,31 @@ describe('Mission NAR Revocation', () => {
                 gameState.initializePlayer('TestPlayer');
             });
 
-            // Add multiple NAR entries and active connections
+            // Register multiple networks in NetworkRegistry (accessible: true = authorized)
+            networkRegistry.registerNetwork({
+                networkId: 'network-alpha',
+                networkName: 'Alpha Corp',
+                address: '192.168.1.0/24',
+                accessible: true,
+                discovered: true,
+            });
+            networkRegistry.registerNetwork({
+                networkId: 'network-beta',
+                networkName: 'Beta Industries',
+                address: '192.168.2.0/24',
+                accessible: true,
+                discovered: true,
+            });
+            networkRegistry.registerNetwork({
+                networkId: 'network-gamma',
+                networkName: 'Gamma Systems',
+                address: '192.168.3.0/24',
+                accessible: true,
+                discovered: true,
+            });
+
+            // Set active connections
             await act(async () => {
-                gameState.setNarEntries([
-                    {
-                        id: 'nar-test-1',
-                        networkId: 'network-alpha',
-                        networkName: 'Alpha Corp',
-                        address: '192.168.1.0/24',
-                        authorized: true,
-                        status: 'active',
-                    },
-                    {
-                        id: 'nar-test-2',
-                        networkId: 'network-beta',
-                        networkName: 'Beta Industries',
-                        address: '192.168.2.0/24',
-                        authorized: true,
-                        status: 'active',
-                    },
-                    {
-                        id: 'nar-test-3',
-                        networkId: 'network-gamma',
-                        networkName: 'Gamma Systems',
-                        address: '192.168.3.0/24',
-                        authorized: true,
-                        status: 'active',
-                    }
-                ]);
                 gameState.setActiveConnections([
                     {
                         networkId: 'network-alpha',
@@ -454,16 +451,13 @@ describe('Mission NAR Revocation', () => {
                 gameState.initializePlayer('TestPlayer');
             });
 
-            // Add NAR entry
-            await act(async () => {
-                gameState.setNarEntries([{
-                    id: 'nar-test-1',
-                    networkId: 'test-network',
-                    networkName: 'Test Network',
-                    address: '192.168.1.0/24',
-                    authorized: true,
-                    status: 'active',
-                }]);
+            // Register network in NetworkRegistry (accessible: true = authorized)
+            networkRegistry.registerNetwork({
+                networkId: 'test-network',
+                networkName: 'Test Network',
+                address: '192.168.1.0/24',
+                accessible: true,
+                discovered: true,
             });
 
             // Set up mission WITHOUT revokeOnComplete
@@ -489,12 +483,12 @@ describe('Mission NAR Revocation', () => {
                 gameState.completeMission('success', 1000, 1);
             });
 
-            // Wait a bit and verify NAR entry is still authorized
+            // Wait a bit and verify NAR entry is still authorized via NetworkRegistry
             await new Promise(resolve => setTimeout(resolve, 100));
 
             await waitFor(() => {
-                const entry = gameState.narEntries.find(e => e.networkId === 'test-network');
-                expect(entry.authorized).toBe(true);
+                const network = networkRegistry.getNetwork('test-network');
+                expect(network.accessible).toBe(true);
             });
         });
 
@@ -510,37 +504,37 @@ describe('Mission NAR Revocation', () => {
             });
 
             // Register the network and devices in the NetworkRegistry
-            networkRegistry.addNetwork('test-network', 'Test Network');
-            networkRegistry.addDevice('test-network', {
+            networkRegistry.registerNetwork({
+                networkId: 'test-network',
+                networkName: 'Test Network',
+                address: '192.168.1.0/24',
+                accessible: true,
+                discovered: true,
+            });
+            networkRegistry.registerDevice({
                 ip: '192.168.1.10',
-                name: 'fileserver-1',
+                hostname: 'fileserver-1',
+                networkId: 'test-network',
+                fileSystemId: 'fs-1',
                 accessible: true,
             });
-            networkRegistry.addDevice('test-network', {
+            networkRegistry.registerDevice({
                 ip: '192.168.1.11',
-                name: 'fileserver-2',
+                hostname: 'fileserver-2',
+                networkId: 'test-network',
+                fileSystemId: 'fs-2',
                 accessible: true,
             });
-            networkRegistry.addDevice('test-network', {
+            networkRegistry.registerDevice({
                 ip: '192.168.1.12',
-                name: 'database-1',
+                hostname: 'database-1',
+                networkId: 'test-network',
+                fileSystemId: 'fs-3',
                 accessible: true,
             });
-            networkRegistry.addFileSystem('192.168.1.10', { name: 'doc.txt' });
-            networkRegistry.addFileSystem('192.168.1.11', { name: 'data.csv' });
-
-            // Add NAR entry with deviceAccess list
-            await act(async () => {
-                gameState.setNarEntries([{
-                    id: 'nar-test-1',
-                    networkId: 'test-network',
-                    networkName: 'Test Network',
-                    address: '192.168.1.0/24',
-                    authorized: true,
-                    status: 'active',
-                    deviceAccess: ['192.168.1.10', '192.168.1.11', '192.168.1.12'],
-                }]);
-            });
+            networkRegistry.registerFileSystem({ id: 'fs-1', files: [{ name: 'doc.txt' }] });
+            networkRegistry.registerFileSystem({ id: 'fs-2', files: [{ name: 'data.csv' }] });
+            networkRegistry.registerFileSystem({ id: 'fs-3', files: [] });
 
             // Set up active mission with revokeOnComplete
             const testMission = {
@@ -566,20 +560,20 @@ describe('Mission NAR Revocation', () => {
                 gameState.completeMission('success', 1000, 1);
             });
 
-            // Wait for revocation to process
+            // Wait for revocation to process - check NetworkRegistry
             await waitFor(() => {
-                const entry = gameState.narEntries.find(e => e.networkId === 'test-network');
-                expect(entry.authorized).toBe(false);
+                const network = networkRegistry.getNetwork('test-network');
+                expect(network.accessible).toBe(false);
             }, { timeout: 1000 });
 
             // Verify all devices are marked as inaccessible in the NetworkRegistry
-            const devices = networkRegistry.getDevicesByNetwork('test-network');
+            const devices = networkRegistry.getNetworkDevices('test-network');
             expect(devices).toHaveLength(3);
             expect(devices.every(d => d.accessible === false)).toBe(true);
 
             // Verify files are still preserved in the NetworkRegistry
-            const fs1 = networkRegistry.getFileSystem('192.168.1.10');
-            const fs2 = networkRegistry.getFileSystem('192.168.1.11');
+            const fs1 = networkRegistry.getFileSystem('fs-1');
+            const fs2 = networkRegistry.getFileSystem('fs-2');
             expect(fs1.files).toHaveLength(1);
             expect(fs2.files).toHaveLength(1);
         });
@@ -598,36 +592,33 @@ describe('Mission NAR Revocation', () => {
             });
 
             // Register network and devices in NetworkRegistry
-            networkRegistry.addNetwork('clienta-corporate', 'ClientA Corporate');
-            networkRegistry.addDevice('clienta-corporate', {
+            networkRegistry.registerNetwork({
+                networkId: 'clienta-corporate',
+                networkName: 'ClientA Corporate',
+                address: '10.0.0.0/24',
+                accessible: true,
+                discovered: true,
+            });
+            networkRegistry.registerDevice({
                 ip: '10.0.0.10',
-                name: 'workstation',
+                hostname: 'workstation',
+                networkId: 'clienta-corporate',
+                fileSystemId: 'fs-ws',
                 accessible: true,
             });
-            networkRegistry.addDevice('clienta-corporate', {
+            networkRegistry.registerDevice({
                 ip: '10.0.0.11',
-                name: 'fileserver',
+                hostname: 'fileserver',
+                networkId: 'clienta-corporate',
+                fileSystemId: 'fs-srv',
                 accessible: true,
             });
-            networkRegistry.addFileSystem('10.0.0.10', { name: 'data.txt' });
-            networkRegistry.addFileSystem('10.0.0.11', { name: 'backup.zip' });
+            networkRegistry.registerFileSystem({ id: 'fs-ws', files: [{ name: 'data.txt' }] });
+            networkRegistry.registerFileSystem({ id: 'fs-srv', files: [{ name: 'backup.zip' }] });
 
-            // Add NAR entry with deviceAccess list
-            await act(async () => {
-                gameState.setNarEntries([{
-                    id: 'nar-sabotage-1',
-                    networkId: 'clienta-corporate',
-                    networkName: 'ClientA Corporate',
-                    address: '10.0.0.0/24',
-                    authorized: true,
-                    status: 'active',
-                    deviceAccess: ['10.0.0.10', '10.0.0.11'],
-                }]);
-            });
-
-            // Verify NAR entry is authorized before event
-            const beforeEntry = gameState.narEntries.find(e => e.networkId === 'clienta-corporate');
-            expect(beforeEntry.authorized).toBe(true);
+            // Verify network is accessible before event
+            const beforeNetwork = networkRegistry.getNetwork('clienta-corporate');
+            expect(beforeNetwork.accessible).toBe(true);
 
             // Verify devices are accessible before event
             expect(networkRegistry.getDevice('10.0.0.10').accessible).toBe(true);
@@ -641,24 +632,24 @@ describe('Mission NAR Revocation', () => {
                 });
             });
 
-            // Wait for state to update
+            // Wait for state to update - check NetworkRegistry
             await waitFor(() => {
-                const entry = gameState.narEntries.find(e => e.networkId === 'clienta-corporate');
-                expect(entry.authorized).toBe(false);
+                const network = networkRegistry.getNetwork('clienta-corporate');
+                expect(network.accessible).toBe(false);
             }, { timeout: 1000 });
 
-            // Verify NAR entry is now revoked
-            const afterEntry = gameState.narEntries.find(e => e.networkId === 'clienta-corporate');
-            expect(afterEntry.authorized).toBe(false);
-            expect(afterEntry.revokedReason).toBe('Administrator revoked access');
+            // Verify network is now revoked
+            const afterNetwork = networkRegistry.getNetwork('clienta-corporate');
+            expect(afterNetwork.accessible).toBe(false);
+            expect(afterNetwork.revokedReason).toBe('Administrator revoked access');
 
             // Verify devices are inaccessible in NetworkRegistry
             expect(networkRegistry.getDevice('10.0.0.10').accessible).toBe(false);
             expect(networkRegistry.getDevice('10.0.0.11').accessible).toBe(false);
 
             // Verify files are still preserved in NetworkRegistry
-            const fs1 = networkRegistry.getFileSystem('10.0.0.10');
-            const fs2 = networkRegistry.getFileSystem('10.0.0.11');
+            const fs1 = networkRegistry.getFileSystem('fs-ws');
+            const fs2 = networkRegistry.getFileSystem('fs-srv');
             expect(fs1.files).toHaveLength(1);
             expect(fs2.files).toHaveLength(1);
         });
@@ -675,24 +666,23 @@ describe('Mission NAR Revocation', () => {
             });
 
             // Register network and device in NetworkRegistry
-            networkRegistry.addNetwork('clienta-corporate', 'ClientA Corporate');
-            networkRegistry.addDevice('clienta-corporate', {
+            networkRegistry.registerNetwork({
+                networkId: 'clienta-corporate',
+                networkName: 'ClientA Corporate',
+                address: '10.0.0.0/24',
+                accessible: true,
+                discovered: true,
+            });
+            networkRegistry.registerDevice({
                 ip: '10.0.0.10',
-                name: 'workstation',
+                hostname: 'workstation',
+                networkId: 'clienta-corporate',
+                fileSystemId: 'fs-ws',
                 accessible: true,
             });
 
-            // Add NAR entry and active connection
+            // Set active connection
             await act(async () => {
-                gameState.setNarEntries([{
-                    id: 'nar-sabotage-2',
-                    networkId: 'clienta-corporate',
-                    networkName: 'ClientA Corporate',
-                    address: '10.0.0.0/24',
-                    authorized: true,
-                    status: 'active',
-                    deviceAccess: ['10.0.0.10'],
-                }]);
                 gameState.setActiveConnections([{
                     networkId: 'clienta-corporate',
                     networkName: 'ClientA Corporate',
@@ -716,9 +706,9 @@ describe('Mission NAR Revocation', () => {
                 expect(gameState.activeConnections).toHaveLength(0);
             }, { timeout: 1000 });
 
-            // Verify NAR entry is revoked
-            const entry = gameState.narEntries.find(e => e.networkId === 'clienta-corporate');
-            expect(entry.authorized).toBe(false);
+            // Verify network is revoked via NetworkRegistry
+            const network = networkRegistry.getNetwork('clienta-corporate');
+            expect(network.accessible).toBe(false);
 
             // Verify device is inaccessible in NetworkRegistry
             expect(networkRegistry.getDevice('10.0.0.10').accessible).toBe(false);

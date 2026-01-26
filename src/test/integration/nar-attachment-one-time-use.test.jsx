@@ -217,6 +217,18 @@ describe('NAR Attachment One-Time Use', () => {
         const user = userEvent.setup();
         const stateRef = { current: null };
 
+        // Populate NetworkRegistry with revoked network
+        const registrySnapshot = populateNetworkRegistry({
+            networkId: 'corp-net-1',
+            networkName: 'Corp Network',
+            address: '10.0.0.0/24',
+            accessible: false, // Revoked
+            revokedReason: 'Network access revoked by mission',
+            fileSystems: [
+                { id: 'fs-001', ip: '10.0.0.10', name: 'fileserver', files: [], accessible: false },
+            ],
+        });
+
         const message = createMessageWithNetworkAddress({
             id: 'msg-old',
             from: 'Admin <admin@corp.local>',
@@ -249,6 +261,9 @@ describe('NAR Attachment One-Time Use', () => {
                     ],
                 },
             ],
+            overrides: {
+                networkRegistry: registrySnapshot,
+            },
         });
 
         setSaveInLocalStorage('testuser', saveState);
@@ -277,9 +292,9 @@ describe('NAR Attachment One-Time Use', () => {
         // Network should still be revoked, attachment still shows as used
         expect(screen.getByText('✓ Network credentials used')).toBeInTheDocument();
 
-        // Verify NAR entry state - should remain unauthorized
-        const narEntry = stateRef.current.narEntries.find(e => e.networkId === 'corp-net-1');
-        expect(narEntry.authorized).toBe(false);
+        // Verify network state via NetworkRegistry - should remain unauthorized
+        const network = networkRegistry.getNetwork('corp-net-1');
+        expect(network.accessible).toBe(false);
     });
 
     it('should show merge option for fresh attachment on already-authorized network', async () => {
@@ -406,9 +421,9 @@ describe('NAR Attachment One-Time Use', () => {
             });
 
             // Verify all devices are accessible via NetworkRegistry
-            const narEntry = stateRef.current.narEntries.find(e => e.networkId === 'corp-net-1');
-            expect(narEntry).toBeDefined();
-            expect(narEntry.authorized).toBe(true);
+            const network = networkRegistry.getNetwork('corp-net-1');
+            expect(network).toBeDefined();
+            expect(network.accessible).toBe(true);
 
             const devices = networkRegistry.getNetworkDevices('corp-net-1');
             expect(devices).toHaveLength(2);
@@ -497,10 +512,9 @@ describe('NAR Attachment One-Time Use', () => {
             expect(networkAttachment.activated).toBe(true);
 
             // Verify both devices are now in NAR and accessible via NetworkRegistry
-            const narEntry = stateRef.current.narEntries.find(e => e.networkId === 'corp-net-1');
-            expect(narEntry).toBeDefined();
-            expect(narEntry.authorized).toBe(true);
-            expect(narEntry.deviceAccess).toHaveLength(2);
+            const network = networkRegistry.getNetwork('corp-net-1');
+            expect(network).toBeDefined();
+            expect(network.accessible).toBe(true);
 
             const device1 = networkRegistry.getDevice('10.0.0.10');
             const device2 = networkRegistry.getDevice('10.0.0.11');
@@ -585,9 +599,9 @@ describe('NAR Attachment One-Time Use', () => {
             });
 
             // Verify NAR is re-authorized and device is accessible via NetworkRegistry
-            const narEntry = stateRef.current.narEntries.find(e => e.networkId === 'corp-net-1');
-            expect(narEntry.authorized).toBe(true);
-            expect(narEntry.revokedReason).toBeUndefined();
+            const network = networkRegistry.getNetwork('corp-net-1');
+            expect(network.accessible).toBe(true);
+            expect(network.revokedReason).toBeFalsy(); // Could be null or undefined
             expect(networkRegistry.getDevice('10.0.0.10').accessible).toBe(true);
         });
 
@@ -661,9 +675,9 @@ describe('NAR Attachment One-Time Use', () => {
                 expect(screen.getByText('✓ Network credentials used')).toBeInTheDocument();
             });
 
-            // Verify NAR is re-authorized
-            const narEntry = stateRef.current.narEntries.find(e => e.networkId === 'corp-net-1');
-            expect(narEntry.authorized).toBe(true);
+            // Verify NAR is re-authorized via NetworkRegistry
+            const network = networkRegistry.getNetwork('corp-net-1');
+            expect(network.accessible).toBe(true);
 
             // Device-A should be accessible, device-B should remain inaccessible via NetworkRegistry
             expect(networkRegistry.getDevice('10.0.0.10').accessible).toBe(true);
@@ -748,9 +762,8 @@ describe('NAR Attachment One-Time Use', () => {
             });
 
             // Verify NAR is re-authorized with both devices accessible via NetworkRegistry
-            const narEntry = stateRef.current.narEntries.find(e => e.networkId === 'corp-net-1');
-            expect(narEntry.authorized).toBe(true);
-            expect(narEntry.deviceAccess).toHaveLength(2);
+            const network = networkRegistry.getNetwork('corp-net-1');
+            expect(network.accessible).toBe(true);
 
             expect(networkRegistry.getDevice('10.0.0.10').accessible).toBe(true);
             expect(networkRegistry.getDevice('10.0.0.11').accessible).toBe(true);

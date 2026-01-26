@@ -16,7 +16,6 @@ describe('FileManager Component - Initial Rendering', () => {
     // Mock useGame to return default game state with no active connections
     vi.spyOn(useGameModule, 'useGame').mockReturnValue({
       activeConnections: [],
-      narEntries: [],
       discoveredDevices: {},
       fileClipboard: { files: [], sourceFileSystemId: '', sourceNetworkId: '' },
       setFileClipboard: vi.fn(),
@@ -76,13 +75,6 @@ describe('FileManager Component - Connected State', () => {
     // Mock useGame to return game state with active connections
     vi.spyOn(useGameModule, 'useGame').mockReturnValue({
       activeConnections: [{ networkId: 'test-network', networkName: 'Test Network' }],
-      narEntries: [{
-        networkId: 'test-network',
-        networkName: 'Test Network',
-        address: '192.168.50.0/24',
-        bandwidth: 50,
-        deviceAccess: ['192.168.50.10', '192.168.50.20'],
-      }],
       // Mark IPs as discovered so filesystems appear
       discoveredDevices: {
         'test-network': new Set(['192.168.50.10', '192.168.50.20'])
@@ -152,13 +144,6 @@ describe('FileManager Component - Button States', () => {
     // Mock useGame to return game state with active connections
     vi.spyOn(useGameModule, 'useGame').mockReturnValue({
       activeConnections: [{ networkId: 'test-network', networkName: 'Test Network' }],
-      narEntries: [{
-        networkId: 'test-network',
-        networkName: 'Test Network',
-        address: '192.168.50.0/24',
-        bandwidth: 50,
-        deviceAccess: ['192.168.50.10'],
-      }],
       discoveredDevices: {
         'test-network': new Set(['192.168.50.10'])
       },
@@ -213,13 +198,6 @@ describe('FileManager Component - Button States', () => {
     vi.spyOn(useGameModule, 'useGame').mockReturnValue({
       currentTime: new Date(),
       activeConnections: [{ networkId: 'test-network', networkName: 'Test Network' }],
-      narEntries: [{
-        networkId: 'test-network',
-        networkName: 'Test Network',
-        address: '192.168.50.0/24',
-        bandwidth: 50,
-        deviceAccess: ['192.168.50.10'],
-      }],
       discoveredDevices: {
         'test-network': new Set(['192.168.50.10'])
       },
@@ -266,13 +244,6 @@ describe('FileManager Component - Repair UI', () => {
     // Mock useGame to return game state with active connections
     vi.spyOn(useGameModule, 'useGame').mockReturnValue({
       activeConnections: [{ networkId: 'test-network', networkName: 'Test Network' }],
-      narEntries: [{
-        networkId: 'test-network',
-        networkName: 'Test Network',
-        address: '192.168.50.0/24',
-        bandwidth: 50,
-        deviceAccess: ['192.168.50.10'],
-      }],
       discoveredDevices: {
         'test-network': new Set(['192.168.50.10'])
       },

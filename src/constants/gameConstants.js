@@ -1,5 +1,8 @@
 // Game Constants for SourceNet
 
+// Version
+export const APP_VERSION = '0.1.0-alpha';
+
 // Starting date/time
 export const GAME_START_DATE = new Date('2020-03-25T09:00:00');
 

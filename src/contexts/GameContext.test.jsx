@@ -153,7 +153,6 @@ describe('GameContext', () => {
                 'setMessages',
                 'setHardware',
                 'setSoftware',
-                'setNarEntries',
                 'setAvailableMissions',
                 'setActiveMission',
                 'setCompletedMissions',

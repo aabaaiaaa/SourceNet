@@ -119,7 +119,6 @@ export const GameProvider = ({ children }) => {
   const [missionCooldowns, setMissionCooldowns] = useState({ easy: null, medium: null, hard: null });
 
   // Network System
-  const [narEntries, setNarEntries] = useState([]); // Network Address Register entries
   const [activeConnections, setActiveConnections] = useState([]); // Currently connected networks
   const [lastScanResults, setLastScanResults] = useState(null); // Last network scan results
   const [discoveredDevices, setDiscoveredDevices] = useState({}); // Map of networkId -> Set of discovered IPs
@@ -947,25 +946,6 @@ export const GameProvider = ({ children }) => {
     setPendingVpnConnection(null);
   }, []);
 
-  // Update NAR entry (legacy compatibility - used when granting/revoking network access)
-  // This keeps narEntries in sync with NetworkRegistry for backwards compatibility
-  const updateNarEntry = useCallback((networkId, updates) => {
-    setNarEntries(prev => {
-      const existingIndex = prev.findIndex(e => e.networkId === networkId);
-      if (existingIndex >= 0) {
-        // Update existing entry
-        const updated = [...prev];
-        updated[existingIndex] = { ...updated[existingIndex], ...updates };
-        return updated;
-      } else if (updates.create) {
-        // Create new entry if flagged
-        const { ...entryData } = updates;
-        return [...prev, { id: `nar-${networkId}`, networkId, ...entryData }];
-      }
-      return prev;
-    });
-  }, []);
-
   // Deposit cheque
   const depositCheque = useCallback((messageId, accountId) => {
     const message = messages.find((m) => m.id === messageId);
@@ -1471,19 +1451,6 @@ export const GameProvider = ({ children }) => {
         networkRegistry.revokeNetworkAccess(net.networkId, reason);
       });
 
-      // Update legacy narEntries for backwards compatibility
-      setNarEntries(prev => prev.map(entry => {
-        const networkToRevoke = networksToRevoke.find(net => net.networkId === entry.networkId);
-        if (networkToRevoke) {
-          return {
-            ...entry,
-            authorized: false,
-            revokedReason: networkToRevoke.revokeReason || 'Mission access expired',
-          };
-        }
-        return entry;
-      }));
-
       // Calculate which connections will be disconnected (before state update)
       const connectionsToDisconnect = activeConnections.filter(conn =>
         networksToRevoke.some(net => net.networkId === conn.networkId)
@@ -1872,7 +1839,6 @@ export const GameProvider = ({ children }) => {
       fileManagerConnections,
       lastFileOperation,
       missionFileOperations, // Cumulative file operations for objectives with count requirements
-      narEntries, // For NAR entry added objectives
     },
     reputation,
     completeMissionObjective,
@@ -1973,13 +1939,6 @@ export const GameProvider = ({ children }) => {
 
       // Revoke access in NetworkRegistry
       networkRegistry.revokeNetworkAccess(networkId, revokeReason);
-
-      // Update legacy narEntries for backwards compatibility
-      setNarEntries(prev => prev.map(entry =>
-        entry.networkId === networkId
-          ? { ...entry, authorized: false, revokedReason: revokeReason }
-          : entry
-      ));
 
       // Find and disconnect any active connection to this network
       const connectionToDisconnect = activeConnections.find(conn => conn.networkId === networkId);
@@ -2159,7 +2118,6 @@ export const GameProvider = ({ children }) => {
       completedMissions,
       availableMissions,
       missionCooldowns,
-      narEntries,
       activeConnections,
       lastScanResults,
       discoveredDevices: Object.fromEntries(
@@ -2240,7 +2198,6 @@ export const GameProvider = ({ children }) => {
     setCompletedMissions([]);
     setAvailableMissions([]);
     setMissionCooldowns({ easy: null, medium: null, hard: null });
-    setNarEntries([]); // Legacy - keep for now during migration
     setActiveConnections([]);
     setLastScanResults(null);
     setFileManagerConnections([]);
@@ -2320,7 +2277,6 @@ export const GameProvider = ({ children }) => {
     setCompletedMissions(gameState.completedMissions ?? []);
     setAvailableMissions(gameState.availableMissions ?? []);
     setMissionCooldowns(gameState.missionCooldowns ?? { easy: null, medium: null, hard: null });
-    setNarEntries(gameState.narEntries ?? []); // Legacy - keep for migration from old saves
     setActiveConnections(gameState.activeConnections ?? []);
     setLastScanResults(gameState.lastScanResults ?? null);
     setDiscoveredDevices(
@@ -2484,10 +2440,6 @@ export const GameProvider = ({ children }) => {
     setAvailableMissions,
     missionCooldowns,
     setMissionCooldowns,
-    // Legacy: narEntries kept for backwards compatibility with scenarios/tests
-    narEntries,
-    setNarEntries,
-    updateNarEntry,
     activeConnections,
     setActiveConnections,
     lastScanResults,

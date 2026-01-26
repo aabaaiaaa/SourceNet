@@ -18,7 +18,7 @@ let scriptedEventSubscribed = false;
 let scriptedEventCallback = null;
 
 const Desktop = () => {
-  const { windows, isPaused, setIsPaused, playAlarmSound, narEntries } = useGame();
+  const { windows, isPaused, setIsPaused, playAlarmSound } = useGame();
   const [showDebugPanel, setShowDebugPanel] = useState(false);
   const [forcedDisconnection, setForcedDisconnection] = useState(null);
   const [isTerminalLocked, setIsTerminalLocked] = useState(false);
@@ -29,9 +29,8 @@ const Desktop = () => {
     const handleForcedDisconnection = (data) => {
       console.log('🚨 Forced disconnection event received:', data);
 
-      // Get network name from NAR entries
-      const narEntry = narEntries?.find(e => e.networkId === data.networkId);
-      const networkName = narEntry?.networkName || data.networkId;
+      // Get network name from event data or use networkId as fallback
+      const networkName = data.networkName || data.networkId;
 
       setForcedDisconnection({
         networkId: data.networkId,
@@ -51,7 +50,7 @@ const Desktop = () => {
     return () => {
       triggerEventBus.off('forcedDisconnection', handleForcedDisconnection);
     };
-  }, [playAlarmSound, narEntries]);
+  }, [playAlarmSound]);
 
   const handleAcknowledgeDisconnection = () => {
     setForcedDisconnection(null);

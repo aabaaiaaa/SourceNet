@@ -5,7 +5,7 @@ import networkRegistry from '../../systems/NetworkRegistry';
 import './SNetMail.css';
 
 const SNetMail = () => {
-  const { playerMailId, messages, markMessageAsRead, archiveMessage, initiateChequeDeposit, activateLicense, software, updateMessage, updateNarEntry, narEntries } = useGame();
+  const { playerMailId, messages, markMessageAsRead, archiveMessage, initiateChequeDeposit, activateLicense, software, updateMessage } = useGame();
   const [activeTab, setActiveTab] = useState('inbox');
   const [selectedMessage, setSelectedMessage] = useState(null);
 
@@ -115,29 +115,6 @@ const SNetMail = () => {
               }
             }
           }
-        });
-      }
-
-      // Update legacy narEntries for backwards compatibility with tests/saves
-      // Check if this network already exists in narEntries (re-authorization)
-      const existingEntry = narEntries?.find(e => e.networkId === networkId);
-      if (existingEntry) {
-        // Re-authorize existing entry
-        updateNarEntry(networkId, {
-          authorized: true,
-          revokedReason: undefined,
-          deviceAccess: [...new Set([...(existingEntry.deviceAccess || []), ...deviceIps])],
-        });
-      } else {
-        // Create new entry
-        updateNarEntry(networkId, {
-          create: true,
-          networkName: attachment.networkName,
-          address: attachment.address,
-          authorized: true,
-          addedAt: new Date().toISOString(),
-          status: 'active',
-          deviceAccess: deviceIps,
         });
       }
     } else {

@@ -1,5 +1,15 @@
 # CLAUDE.md
 
+## ⚠️ Pre-1.0 Development
+
+This project is in active pre-1.0 development (version 0.1.0-alpha). **Do NOT add:**
+- Backward compatibility code
+- Legacy support for old save formats
+- Migration code for deprecated features
+- Version checking for old data structures
+
+Breaking changes are expected and acceptable. Remove legacy code rather than maintain it.
+
 ## Commands
 - `npm run dev` - Start dev server (http://localhost:5173)
 - `npm test` - Run unit tests (626 tests)

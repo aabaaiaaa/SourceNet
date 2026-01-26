@@ -38,11 +38,6 @@ const setupTestState = async (page) => {
             ],
             bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance: 2000 }],
             messages: [],
-            narEntries: [
-                { id: 'nar-1', networkId: 'test-network-1', networkName: 'Source Network 1', address: '10.0.1.0/24', discovered: true },
-                { id: 'nar-2', networkId: 'test-network-2', networkName: 'Source Network 2', address: '10.0.2.0/24', discovered: true },
-                { id: 'nar-3', networkId: 'destination-network', networkName: 'Destination Network', address: '10.0.3.0/24', discovered: true },
-            ],
             managerName: 'Test Manager',
             windows: [],
             reputation: 10,

@@ -76,14 +76,14 @@ describe('StorageSystem', () => {
   });
 
   describe('formatStorage', () => {
-    it('should format storage display string', () => {
-      const formatted = formatStorage(14.5, 90);
-      expect(formatted).toBe('14.5 GB used / 75.5 GB free');
+    it('should format storage display string with apps only', () => {
+      const formatted = formatStorage(14.5, 0, 90);
+      expect(formatted).toBe('Apps: 14.5 GB | 75.5 GB free');
     });
 
-    it('should handle decimal values', () => {
-      const formatted = formatStorage(13.7, 90);
-      expect(formatted).toBe('13.7 GB used / 76.3 GB free');
+    it('should format storage display string with apps and files', () => {
+      const formatted = formatStorage(13.0, 0.7, 90);
+      expect(formatted).toBe('Apps: 13.0 GB | Files: 0.7 GB | 76.3 GB free');
     });
   });
 });

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { storyEvents, tutorialMissions, postTutorialMissions, allMissions } from '../../missions/missionData';
+import { storyEvents, tutorialMissions, allMissions } from '../../missions/missionData';
 
 /**
  * JSON Validation Tests
@@ -109,23 +109,7 @@ describe('Mission JSON Validation', () => {
     });
   });
 
-  describe('Post-Tutorial Missions - Structure Validation', () => {
-    it('should have requirements', () => {
-      postTutorialMissions.forEach((mission) => {
-        expect(mission.requirements).toBeDefined();
-        expect(mission.requirements.software).toBeDefined();
-        expect(Array.isArray(mission.requirements.software)).toBe(true);
-      });
-    });
 
-    it('should have consequences', () => {
-      postTutorialMissions.forEach((mission) => {
-        expect(mission.consequences).toBeDefined();
-        expect(mission.consequences.success).toBeDefined();
-        expect(mission.consequences.failure).toBeDefined();
-      });
-    });
-  });
 
   describe('Trigger Condition Validation', () => {
     it('should have valid condition fields', () => {

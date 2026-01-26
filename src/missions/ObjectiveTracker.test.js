@@ -206,19 +206,6 @@ describe('ObjectiveTracker', () => {
         expect(checkFileOperationObjective(objective, operationData, cumulativeOps)).toBe(false);
       });
 
-      it('should work without destination requirement (backward compatibility)', () => {
-        const objective = {
-          type: 'fileOperation',
-          operation: 'paste',
-          targetFiles: ['file1.txt', 'file2.txt']
-          // No destination specified
-        };
-        const operationData = { operation: 'paste', filesAffected: 2, fileNames: ['file1.txt', 'file2.txt'] };
-        const cumulativeOps = { paste: new Set(['file1.txt', 'file2.txt']) };
-
-        expect(checkFileOperationObjective(objective, operationData, cumulativeOps)).toBe(true);
-      });
-
       it('should return false when no pasteDestinations map exists but destination is required', () => {
         const objective = {
           type: 'fileOperation',

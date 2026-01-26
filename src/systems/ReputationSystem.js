@@ -31,8 +31,6 @@ export const REPUTATION_TIERS = {
       'gov-library',
       'cultural-local',
       'nonprofit-community',
-      // Legacy types for backward compatibility
-      'library', 'museum'
     ],
   },
   2: {
@@ -49,8 +47,6 @@ export const REPUTATION_TIERS = {
       'health-clinic',
       'corp-small',
       'ship-courier',
-      // Legacy
-      'small-business', 'non-profit'
     ],
   },
   3: {
@@ -69,8 +65,6 @@ export const REPUTATION_TIERS = {
       'ship-courier',
       'util-local',
       'emerg-volunteer',
-      // Legacy
-      'small-business', 'medium-business'
     ],
   },
   4: {
@@ -90,8 +84,6 @@ export const REPUTATION_TIERS = {
       'ship-courier',
       'util-local',
       'emerg-volunteer',
-      // Legacy
-      'medium-business', 'retail'
     ],
   },
   5: {
@@ -116,8 +108,6 @@ export const REPUTATION_TIERS = {
       'ship-logistics',
       'util-local',
       'emerg-volunteer',
-      // Legacy
-      'medium-business'
     ],
   },
   6: {
@@ -146,8 +136,6 @@ export const REPUTATION_TIERS = {
       'util-regional',
       'emerg-volunteer',
       'emerg-municipal',
-      // Legacy
-      'medium-business', 'large-business'
     ],
   },
   7: {
@@ -176,8 +164,6 @@ export const REPUTATION_TIERS = {
       'util-regional',
       'emerg-volunteer',
       'emerg-municipal',
-      // Legacy
-      'large-business', 'corporation'
     ],
   },
   8: {
@@ -211,8 +197,6 @@ export const REPUTATION_TIERS = {
       'util-regional',
       'emerg-volunteer',
       'emerg-municipal',
-      // Legacy
-      'corporation', 'financial'
     ],
   },
   9: {
@@ -247,8 +231,6 @@ export const REPUTATION_TIERS = {
       'emerg-volunteer',
       'emerg-municipal',
       'emerg-federal',
-      // Legacy
-      'corporation', 'bank', 'government'
     ],
   },
   10: {

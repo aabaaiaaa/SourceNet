@@ -98,8 +98,7 @@ describe('Mechanics Integration', () => {
       expect(gameContext.activeMission).toBeDefined();
       expect(gameContext.completedMissions).toBeDefined();
 
-      // Network state
-      expect(gameContext.narEntries).toBeDefined();
+      // Network state (activeConnections only - narEntries removed, use NetworkRegistry)
       expect(gameContext.activeConnections).toBeDefined();
 
       // Transaction state

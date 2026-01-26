@@ -313,7 +313,6 @@ test.describe('Window Management', () => {
                             completedMissions: [],
                             availableMissions: [],
                             missionCooldowns: { easy: null, medium: null, hard: null },
-                            narEntries: [],
                             activeConnections: [],
                             lastScanResults: null,
                             fileManagerConnections: [],

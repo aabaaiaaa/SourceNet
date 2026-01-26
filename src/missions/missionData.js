@@ -31,13 +31,6 @@ export const tutorialMissions = [
 ];
 
 /**
- * Post-tutorial missions are now procedurally generated.
- * See MissionGenerator.js and MissionPoolManager.js for the new system.
- * @deprecated - Use procedural mission system instead
- */
-export const postTutorialMissions = [];
-
-/**
  * All missions combined (tutorial only, procedural replaces post-tutorial)
  */
 export const allMissions = [
@@ -86,7 +79,6 @@ export const initializeAllMissions = (storyMissionManager) => {
 export default {
   storyEvents,
   tutorialMissions,
-  postTutorialMissions,
   allMissions,
   getMissionById,
   getMissionsByCategory,

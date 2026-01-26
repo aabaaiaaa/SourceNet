@@ -77,22 +77,22 @@ describe('ReputationSystem', () => {
   });
 
   describe('canAccessMission', () => {
-    it('should allow access to library missions at Tier 1', () => {
-      expect(canAccessMission('library', 1)).toBe(true);
+    it('should allow access to gov-library missions at Tier 1', () => {
+      expect(canAccessMission('gov-library', 1)).toBe(true);
     });
 
-    it('should not allow access to bank missions at Tier 1', () => {
-      expect(canAccessMission('bank', 1)).toBe(false);
+    it('should not allow access to bank-national missions at Tier 1', () => {
+      expect(canAccessMission('bank-national', 1)).toBe(false);
     });
 
-    it('should allow access to bank missions at Tier 9', () => {
-      expect(canAccessMission('bank', 9)).toBe(true);
+    it('should allow access to bank-national missions at Tier 8+', () => {
+      expect(canAccessMission('bank-national', 8)).toBe(true);
     });
 
     it('should allow access to all missions at Tier 10-11', () => {
-      expect(canAccessMission('bank', 10)).toBe(true);
-      expect(canAccessMission('government', 10)).toBe(true);
-      expect(canAccessMission('library', 11)).toBe(true);
+      expect(canAccessMission('bank-national', 10)).toBe(true);
+      expect(canAccessMission('gov-federal', 10)).toBe(true);
+      expect(canAccessMission('gov-library', 11)).toBe(true);
     });
   });
 
@@ -215,13 +215,13 @@ describe('ReputationSystem', () => {
     });
 
     it('should have appropriate client types per tier', () => {
-      // Tier 1: Only non-critical
-      expect(REPUTATION_TIERS[1].clientTypes).toContain('library');
-      expect(REPUTATION_TIERS[1].clientTypes).toContain('museum');
+      // Tier 1: Only non-critical (gov-library, cultural-local, nonprofit-community)
+      expect(REPUTATION_TIERS[1].clientTypes).toContain('gov-library');
+      expect(REPUTATION_TIERS[1].clientTypes).toContain('cultural-local');
 
-      // Tier 9: Banks and government
-      expect(REPUTATION_TIERS[9].clientTypes).toContain('bank');
-      expect(REPUTATION_TIERS[9].clientTypes).toContain('government');
+      // Tier 8: Banks and federal government
+      expect(REPUTATION_TIERS[8].clientTypes).toContain('bank-national');
+      expect(REPUTATION_TIERS[8].clientTypes).toContain('gov-federal');
 
       // Tier 10-11: All
       expect(REPUTATION_TIERS[10].clientTypes).toContain('all');

@@ -72,7 +72,7 @@ test.describe('E2E: Network Address Attachment Flow', () => {
                         ],
                     },
                 ],
-                narEntries: [],
+
                 managerName: 'Test Manager',
                 windows: [],
                 reputation: 10,
@@ -183,7 +183,7 @@ test.describe('E2E: Network Address Attachment Flow', () => {
                         ],
                     },
                 ],
-                narEntries: [],
+
                 managerName: 'Test Manager',
                 windows: [],
                 reputation: 10,
@@ -281,7 +281,7 @@ test.describe('E2E: Network Address Attachment Flow', () => {
                         ],
                     },
                 ],
-                narEntries: [],
+
                 managerName: 'Test Manager',
                 windows: [],
                 reputation: 10,

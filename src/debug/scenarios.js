@@ -59,10 +59,6 @@ const getScenarioDescription = (name, fixture) => {
   return `${credits.toLocaleString()} credits, ${messages} messages, ${licensed} licenses`;
 };
 
-// Legacy: Keep DEBUG_SCENARIOS for backwards compatibility with existing tests
-// This will be populated dynamically from fixtures
-export const DEBUG_SCENARIOS = getDebugScenarios();
-
 /**
  * Load a debug scenario from fixture
  * @param {string} scenarioId - Scenario ID (e.g., 'fresh-start')
@@ -98,8 +94,8 @@ export const loadScenario = (scenarioId, gameContext) => {
 // Expose to window for browser console access (dev mode only)
 if (isDebugMode()) {
   window.debugLoadScenario = (scenarioId, gameContext) => loadScenario(scenarioId, gameContext);
-  window.debugScenarios = DEBUG_SCENARIOS;
+  window.debugScenarios = getDebugScenarios();
   window.getDebugScenarios = getDebugScenarios;
 }
 
-export default { loadScenario, DEBUG_SCENARIOS, getDebugScenarios };
+export default { loadScenario, getDebugScenarios };
