@@ -36,6 +36,7 @@ import triggerEventBus from '../core/triggerEventBus';
 import { executeScriptedEvent } from '../missions/ScriptedEventExecutor';
 import { initializePool, refreshPool, shouldRefreshPool, handleArcProgression, handleArcFailure, generatePoolMission, addExpirationToMission, poolConfig } from '../missions/MissionPoolManager';
 import { shouldTriggerExtension, generateExtension, getObjectiveProgress } from '../missions/MissionExtensionGenerator';
+import { checkObjectiveImpossible } from '../missions/ObjectiveTracker';
 import networkRegistry from '../systems/NetworkRegistry';
 
 export const GameContext = createContext();
@@ -149,9 +150,6 @@ export const GameProvider = ({ children }) => {
 
   // Track failed missions to prevent duplicate penalty application
   const failedMissionsRef = useRef(new Set());
-
-  // Track missions with pending regeneration timers to prevent duplicate scheduling
-  const regenerationTimersRef = useRef(new Map()); // missionId -> timerId
 
   // Ref to hold the latest completeMission function
   const completeMissionRef = useRef(null);
@@ -312,117 +310,165 @@ export const GameProvider = ({ children }) => {
     }
   }, [reputation]); // Only trigger on reputation change
 
-  // Auto-regenerate missions after expiration (1 minute game time delay)
+  // Auto-regenerate missions after expiration (immediate generation, hidden for 1 game minute)
   useEffect(() => {
     if (!proceduralMissionsEnabled || missionPool.length === 0) return;
 
     const currentTimeMs = currentTime.getTime();
     const activeMissionId = activeMission?.missionId || null;
 
-    // Check each mission for expiration
-    missionPool.forEach(mission => {
+    // Find expired missions that need regeneration
+    const expiredMissions = missionPool.filter(mission => {
       // Skip active mission
-      if (mission.missionId === activeMissionId) return;
-
+      if (mission.missionId === activeMissionId) return false;
       // Skip if no expiration time
-      if (!mission.expiresAt) return;
+      if (!mission.expiresAt) return false;
+      // Skip if already has a replacement generated
+      if (mission.replacementGeneratedAt) return false;
+      // Check if expired
+      return currentTimeMs > new Date(mission.expiresAt).getTime();
+    });
 
-      const expiresAtMs = new Date(mission.expiresAt).getTime();
+    if (expiredMissions.length === 0) return;
 
-      // Check if mission is expired and not already scheduled for regeneration
-      if (currentTimeMs > expiresAtMs && !regenerationTimersRef.current.has(mission.missionId)) {
-        // Skip if pool is already at max capacity (excluding the expired mission)
-        const nonExpiredCount = missionPool.filter(m => {
-          if (m.missionId === mission.missionId) return false;
-          if (!m.expiresAt) return true;
-          return currentTimeMs <= new Date(m.expiresAt).getTime();
-        }).length;
+    // Process each expired mission
+    const newMissions = [];
+    const newPendingArcs = {};
+    const expiredMissionsToMark = new Map(); // missionId -> replacementGeneratedAt timestamp
+    const clientIdsToAdd = new Set();
+    const arcIdsToCleanup = new Set();
 
-        if (nonExpiredCount >= poolConfig.max) {
-          console.log(`⏭️ Mission "${mission.title}" expired but pool at max capacity - skipping regeneration`);
-          return;
+    expiredMissions.forEach(mission => {
+      // Check pool capacity (excluding expired missions)
+      const nonExpiredCount = missionPool.filter(m => {
+        if (expiredMissionsToMark.has(m.missionId) || m.missionId === mission.missionId) return false;
+        if (!m.expiresAt) return true;
+        return currentTimeMs <= new Date(m.expiresAt).getTime();
+      }).length + newMissions.length;
+
+      if (nonExpiredCount >= poolConfig.max) {
+        console.log(`⏭️ Mission "${mission.title}" expired but pool at max capacity - removing without replacement`);
+        // Mark for removal without replacement
+        expiredMissionsToMark.set(mission.missionId, { removeImmediately: true });
+        if (mission.arcId) arcIdsToCleanup.add(mission.arcId);
+        return;
+      }
+
+      // Build current activeClientIds set (excluding this expired mission's client, including new ones)
+      const currentActiveClients = new Set([
+        ...activeClientIds.filter(id => id !== mission.clientId),
+        ...clientIdsToAdd
+      ]);
+
+      // Generate replacement mission immediately
+      const result = generatePoolMission(reputation, currentTime, currentActiveClients, false);
+
+      if (result) {
+        let newMission;
+        // Set visibleAt to 1 game minute from now
+        const visibleAt = new Date(currentTimeMs + poolConfig.regenerationDelayMs).toISOString();
+
+        if (result.arcId) {
+          // Arc - add first mission with expiration and visibleAt, store rest in pending
+          newMission = {
+            ...addExpirationToMission(result.missions[0], currentTime),
+            visibleAt,
+            replacesExpiredMissionId: mission.missionId
+          };
+          newPendingArcs[result.arcId] = result.missions.slice(1);
+        } else {
+          // Single mission - add expiration and visibleAt
+          newMission = {
+            ...addExpirationToMission(result, currentTime),
+            visibleAt,
+            replacesExpiredMissionId: mission.missionId
+          };
         }
 
-        console.log(`⏰ Mission "${mission.title}" expired - scheduling regeneration in 1 game minute`);
-
-        // Schedule regeneration after 1 minute game time
-        const timerId = scheduleGameTimeCallback(() => {
-          // Remove timer from tracking
-          regenerationTimersRef.current.delete(mission.missionId);
-
-          // Build current activeClientIds set (excluding the expired mission's client)
-          const currentActiveClients = new Set(activeClientIds.filter(id => id !== mission.clientId));
-
-          // Generate replacement mission
-          const result = generatePoolMission(reputation, currentTime, currentActiveClients, false);
-
-          if (result) {
-            let newMission;
-            if (result.arcId) {
-              // Arc - add first mission with expiration, store rest in pending
-              newMission = addExpirationToMission(result.missions[0], currentTime);
-              setPendingChainMissions(prev => ({
-                ...prev,
-                [result.arcId]: result.missions.slice(1)
-              }));
-            } else {
-              // Single mission - add expiration
-              newMission = addExpirationToMission(result, currentTime);
-            }
-
-            console.log(`🔄 Regenerated mission: "${newMission.title}" (replacing expired "${mission.title}")`);
-
-            // Update pool: remove expired mission, add new one
-            setMissionPool(prev => [
-              ...prev.filter(m => m.missionId !== mission.missionId),
-              newMission
-            ]);
-
-            // Update active client IDs
-            setActiveClientIds(prev => [
-              ...prev.filter(id => id !== mission.clientId),
-              newMission.clientId
-            ]);
-          } else {
-            console.log(`⚠️ Failed to generate replacement mission for expired "${mission.title}"`);
-            // Still remove the expired mission from pool
-            setMissionPool(prev => prev.filter(m => m.missionId !== mission.missionId));
-            setActiveClientIds(prev => prev.filter(id => id !== mission.clientId));
-          }
-
-          // If expired mission was part of an arc, clean up pending arc missions
-          if (mission.arcId) {
-            setPendingChainMissions(prev => {
-              const newPending = { ...prev };
-              delete newPending[mission.arcId];
-              return newPending;
-            });
-          }
-        }, poolConfig.regenerationDelayMs, timeSpeed);
-
-        // Track the timer
-        regenerationTimersRef.current.set(mission.missionId, timerId);
+        console.log(`🔄 Regenerated mission: "${newMission.title}" (replacing expired "${mission.title}") - visible at ${visibleAt}`);
+        newMissions.push(newMission);
+        clientIdsToAdd.add(newMission.clientId);
+        // Mark expired mission with timestamp so we know replacement was generated
+        expiredMissionsToMark.set(mission.missionId, { replacementGeneratedAt: currentTime.toISOString() });
+      } else {
+        console.log(`⚠️ Failed to generate replacement mission for expired "${mission.title}"`);
+        // Mark for removal since no replacement could be generated
+        expiredMissionsToMark.set(mission.missionId, { removeImmediately: true });
       }
+
+      if (mission.arcId) arcIdsToCleanup.add(mission.arcId);
     });
 
-    // Cleanup: clear timers for missions that no longer exist (e.g., were accepted)
-    regenerationTimersRef.current.forEach((timerId, missionId) => {
-      const missionExists = missionPool.some(m => m.missionId === missionId);
-      if (!missionExists) {
-        console.log(`🧹 Clearing regeneration timer for removed mission ${missionId}`);
-        clearGameTimeCallback(timerId);
-        regenerationTimersRef.current.delete(missionId);
+    // Batch update state if there are changes
+    if (expiredMissionsToMark.size > 0) {
+      setMissionPool(prev => [
+        // Update expired missions with marker, or remove if no replacement
+        ...prev.map(m => {
+          const markData = expiredMissionsToMark.get(m.missionId);
+          if (markData) {
+            if (markData.removeImmediately) return null; // Will be filtered out
+            return { ...m, replacementGeneratedAt: markData.replacementGeneratedAt };
+          }
+          return m;
+        }).filter(Boolean),
+        ...newMissions
+      ]);
+
+      // Only add new client IDs - expired mission clients stay until their mission is filtered out
+      if (clientIdsToAdd.size > 0) {
+        setActiveClientIds(prev => [...prev, ...clientIdsToAdd]);
       }
+
+      if (Object.keys(newPendingArcs).length > 0) {
+        setPendingChainMissions(prev => ({ ...prev, ...newPendingArcs }));
+      }
+
+      if (arcIdsToCleanup.size > 0) {
+        setPendingChainMissions(prev => {
+          const newPending = { ...prev };
+          arcIdsToCleanup.forEach(arcId => delete newPending[arcId]);
+          return newPending;
+        });
+      }
+    }
+  }, [proceduralMissionsEnabled, missionPool, currentTime, activeMission?.missionId, activeClientIds, reputation]);
+
+  // Cleanup expired missions once their replacements become visible
+  useEffect(() => {
+    if (!proceduralMissionsEnabled || missionPool.length === 0) return;
+
+    const currentTimeMs = currentTime.getTime();
+
+    // Find expired missions whose replacements are now visible
+    const expiredToRemove = missionPool.filter(mission => {
+      if (!mission.replacementGeneratedAt) return false;
+      // Find the replacement
+      const replacement = missionPool.find(m => m.replacesExpiredMissionId === mission.missionId);
+      if (!replacement) return true; // Replacement missing, remove expired mission
+      // Check if replacement is now visible
+      if (!replacement.visibleAt) return true; // No visibleAt means visible immediately
+      return new Date(replacement.visibleAt).getTime() <= currentTimeMs;
     });
 
-    // Cleanup on unmount
-    return () => {
-      regenerationTimersRef.current.forEach((timerId) => {
-        clearGameTimeCallback(timerId);
-      });
-      regenerationTimersRef.current.clear();
-    };
-  }, [proceduralMissionsEnabled, missionPool, currentTime, activeMission?.missionId, activeClientIds, reputation, timeSpeed]);
+    if (expiredToRemove.length > 0) {
+      const expiredIds = new Set(expiredToRemove.map(m => m.missionId));
+      const clientIdsToRemove = new Set(expiredToRemove.map(m => m.clientId));
+
+      setMissionPool(prev => prev
+        .filter(m => !expiredIds.has(m.missionId))
+        .map(m => {
+          // Clear the replacesExpiredMissionId link since expired mission is now removed
+          if (m.replacesExpiredMissionId && expiredIds.has(m.replacesExpiredMissionId)) {
+            const { replacesExpiredMissionId: _unused, ...rest } = m;
+            return rest;
+          }
+          return m;
+        })
+      );
+
+      setActiveClientIds(prev => prev.filter(id => !clientIdsToRemove.has(id)));
+    }
+  }, [proceduralMissionsEnabled, missionPool, currentTime]);
 
   // Handle arc progression/failure when missions complete
   useEffect(() => {
@@ -1473,7 +1519,53 @@ export const GameProvider = ({ children }) => {
         });
       });
     }
-  }, [activeMission, currentTime, bankAccounts, timeSpeed]);
+
+    // Send failure messages if mission failed
+    if (status === 'failed') {
+      const consequences = activeMission.consequences?.failure || {};
+
+      // Determine which message variant to use based on failure reason
+      let messageVariantKey = 'incomplete';
+      if (failureReason === 'deadline') {
+        messageVariantKey = 'deadline';
+      } else if (failureReason && (failureReason.includes('no longer exist') || failureReason.includes('deleted'))) {
+        messageVariantKey = 'filesDeleted';
+      }
+
+      // Select appropriate message - prefer messageVariants if available
+      let messagesToSend = [];
+      if (consequences.messageVariants && consequences.messageVariants[messageVariantKey]) {
+        messagesToSend = [consequences.messageVariants[messageVariantKey]];
+      } else if (consequences.messages && Array.isArray(consequences.messages) && consequences.messages.length > 0) {
+        messagesToSend = consequences.messages;
+      }
+
+      // Schedule failure messages
+      messagesToSend.forEach(msgConfig => {
+        let message;
+
+        if (msgConfig.body) {
+          const messageBody = msgConfig.body
+            .replace(/\{username\}/g, username)
+            .replace(/\{clientName\}/g, msgConfig.fromName || activeMission.client || '');
+
+          message = {
+            ...msgConfig,
+            body: messageBody,
+            timestamp: currentTime.toISOString(),
+            read: false,
+          };
+        }
+
+        if (message) {
+          const delay = msgConfig.delay || 0;
+          scheduleGameTimeCallback(() => {
+            addMessage(message);
+          }, delay, timeSpeed);
+        }
+      });
+    }
+  }, [activeMission, currentTime, bankAccounts, timeSpeed, username, addMessage]);
 
   // Keep completeMissionRef updated
   useEffect(() => {
@@ -1558,21 +1650,34 @@ export const GameProvider = ({ children }) => {
 
     console.log(`❌ About to check for failure messages`);
     console.log(`❌ consequences.messages:`, consequences.messages);
-    console.log(`❌ Array.isArray:`, Array.isArray(consequences.messages));
-    console.log(`❌ messages.length:`, consequences.messages?.length);
-    console.log(`❌ Full condition check:`, {
-      hasMessages: !!consequences.messages,
-      isArray: Array.isArray(consequences.messages),
-      hasLength: consequences.messages?.length > 0,
-      overall: consequences.messages && Array.isArray(consequences.messages) && consequences.messages.length > 0
-    });
+    console.log(`❌ consequences.messageVariants:`, consequences.messageVariants);
+
+    // Determine which message to use based on failure reason
+    // Map specific failure reasons to message variant keys
+    let messageVariantKey = 'incomplete'; // default
+    if (failureReason === 'deadline') {
+      messageVariantKey = 'deadline';
+    } else if (failureReason.includes('no longer exist') || failureReason.includes('deleted')) {
+      messageVariantKey = 'filesDeleted';
+    }
+    console.log(`❌ Using message variant: ${messageVariantKey} (failureReason: ${failureReason})`);
+
+    // Select the appropriate message - prefer messageVariants if available
+    let messagesToSend = [];
+    if (consequences.messageVariants && consequences.messageVariants[messageVariantKey]) {
+      messagesToSend = [consequences.messageVariants[messageVariantKey]];
+      console.log(`📧 Using messageVariant for ${messageVariantKey}`);
+    } else if (consequences.messages && Array.isArray(consequences.messages) && consequences.messages.length > 0) {
+      messagesToSend = consequences.messages;
+      console.log(`📧 Using default messages array`);
+    }
 
     // Schedule failure messages (if any)
-    if (consequences.messages && Array.isArray(consequences.messages) && consequences.messages.length > 0) {
-      console.log(`📧 Found ${consequences.messages.length} failure messages to schedule`);
+    if (messagesToSend.length > 0) {
+      console.log(`📧 Found ${messagesToSend.length} failure messages to schedule`);
 
       // Create messages from templates or use direct body
-      consequences.messages.forEach(msgConfig => {
+      messagesToSend.forEach(msgConfig => {
         console.log(`📧 Processing message config:`, msgConfig);
 
         let message;
@@ -1995,6 +2100,49 @@ export const GameProvider = ({ children }) => {
 
     return () => {
       triggerEventBus.off('missionStatusChanged', handleMissionStatusChanged);
+    };
+  }, [activeMission]);
+
+  // Listen for file system changes to detect impossible objectives
+  // When a mission-critical file is deleted, the mission should fail
+  useEffect(() => {
+    if (!activeMission) return;
+
+    const handleFileSystemChanged = () => {
+      // Check all incomplete fileOperation objectives
+      const fileOperationObjectives = activeMission.objectives?.filter(
+        obj => obj.type === 'fileOperation' && obj.status !== 'complete'
+      ) || [];
+
+      if (fileOperationObjectives.length === 0) return;
+
+      // Check each objective to see if it's now impossible
+      for (const objective of fileOperationObjectives) {
+        const impossibleResult = checkObjectiveImpossible(
+          objective,
+          networkRegistry,
+          activeMission.networks
+        );
+
+        if (impossibleResult) {
+          const { missingFiles } = impossibleResult;
+          console.log(`❌ Mission objective impossible - required file(s) no longer exist: ${missingFiles.join(', ')}`);
+
+          // Emit mission failed event - this will trigger NAR revocation which disconnects
+          // the player and automatically clears the clipboard
+          triggerEventBus.emit('missionStatusChanged', {
+            status: 'failed',
+            failureReason: `Required file(s) no longer exist: ${missingFiles.join(', ')}`,
+          });
+          return; // Only need to fail once
+        }
+      }
+    };
+
+    triggerEventBus.on('fileSystemChanged', handleFileSystemChanged);
+
+    return () => {
+      triggerEventBus.off('fileSystemChanged', handleFileSystemChanged);
     };
   }, [activeMission]);
 

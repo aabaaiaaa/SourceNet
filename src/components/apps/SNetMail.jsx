@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useGame } from '../../contexts/useGame';
 import { formatDateTime } from '../../utils/helpers';
 import networkRegistry from '../../systems/NetworkRegistry';
+import triggerEventBus from '../../core/triggerEventBus';
 import './SNetMail.css';
 
 const SNetMail = () => {
@@ -95,6 +96,12 @@ const SNetMail = () => {
 
     if (success) {
       console.log(`✅ NAR activated: Granted access to ${attachment.networkName} (${deviceIps.length} devices)`);
+
+      // Emit narEntryAdded event for objective tracking
+      triggerEventBus.emit('narEntryAdded', {
+        networkId,
+        networkName: attachment.networkName,
+      });
 
       // Merge files from attachment into existing filesystems
       // This allows mission updates to add new files while preserving old ones

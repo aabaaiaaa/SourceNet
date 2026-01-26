@@ -61,6 +61,10 @@ const TopBar = () => {
     reputationCountdown,
     software,
     getBandwidthInfo,
+    // Subscribe to these to trigger re-renders when bandwidth operations change
+    // (the actual values are used by getBandwidthInfo internally)
+    bandwidthOperations: _bandwidthOperations,
+    downloadQueue: _downloadQueue,
     localSSDFiles,
   } = useGame();
 

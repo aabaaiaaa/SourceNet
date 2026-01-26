@@ -8,6 +8,7 @@ import {
   checkMissionObjectives,
   getFileOperationProgress,
   getFileOperationDetails,
+  checkObjectiveImpossible,
 } from './ObjectiveTracker';
 
 describe('ObjectiveTracker', () => {
@@ -516,6 +517,198 @@ describe('ObjectiveTracker', () => {
         totalRequired: 2,
         totalCompleted: 0
       });
+    });
+  });
+
+  describe('checkObjectiveImpossible', () => {
+    // Mock NetworkRegistry with getFileSystem method
+    const createMockRegistry = (fileSystems) => ({
+      getFileSystem: (id) => fileSystems[id] || null
+    });
+
+    it('should return null for non-fileOperation objectives', () => {
+      const objective = { type: 'networkConnection', target: 'test-network', status: 'pending' };
+      const mockRegistry = createMockRegistry({});
+      const missionNetworks = [];
+
+      expect(checkObjectiveImpossible(objective, mockRegistry, missionNetworks)).toBe(null);
+    });
+
+    it('should return null for completed objectives', () => {
+      const objective = {
+        type: 'fileOperation',
+        operation: 'repair',
+        targetFiles: ['file1.txt'],
+        status: 'complete'
+      };
+      const mockRegistry = createMockRegistry({});
+      const missionNetworks = [];
+
+      expect(checkObjectiveImpossible(objective, mockRegistry, missionNetworks)).toBe(null);
+    });
+
+    it('should return null for objectives without targetFiles', () => {
+      const objective = {
+        type: 'fileOperation',
+        operation: 'repair',
+        status: 'pending'
+      };
+      const mockRegistry = createMockRegistry({});
+      const missionNetworks = [];
+
+      expect(checkObjectiveImpossible(objective, mockRegistry, missionNetworks)).toBe(null);
+    });
+
+    it('should return null for objectives with empty targetFiles', () => {
+      const objective = {
+        type: 'fileOperation',
+        operation: 'repair',
+        targetFiles: [],
+        status: 'pending'
+      };
+      const mockRegistry = createMockRegistry({});
+      const missionNetworks = [];
+
+      expect(checkObjectiveImpossible(objective, mockRegistry, missionNetworks)).toBe(null);
+    });
+
+    it('should return null when all target files exist', () => {
+      const objective = {
+        type: 'fileOperation',
+        operation: 'repair',
+        targetFiles: ['file1.txt', 'file2.txt'],
+        status: 'pending'
+      };
+      const mockRegistry = createMockRegistry({
+        'fs-001': { id: 'fs-001', files: [{ name: 'file1.txt' }, { name: 'file2.txt' }, { name: 'other.txt' }] }
+      });
+      const missionNetworks = [{
+        networkId: 'test-network',
+        fileSystems: [{ id: 'fs-001', ip: '192.168.1.10' }]
+      }];
+
+      expect(checkObjectiveImpossible(objective, mockRegistry, missionNetworks)).toBe(null);
+    });
+
+    it('should return missing files when some target files are deleted', () => {
+      const objective = {
+        type: 'fileOperation',
+        operation: 'repair',
+        targetFiles: ['file1.txt', 'file2.txt', 'file3.txt'],
+        status: 'pending'
+      };
+      const mockRegistry = createMockRegistry({
+        'fs-001': { id: 'fs-001', files: [{ name: 'file1.txt' }] }  // file2 and file3 missing
+      });
+      const missionNetworks = [{
+        networkId: 'test-network',
+        fileSystems: [{ id: 'fs-001', ip: '192.168.1.10' }]
+      }];
+
+      const result = checkObjectiveImpossible(objective, mockRegistry, missionNetworks);
+      expect(result).not.toBe(null);
+      expect(result.objective).toBe(objective);
+      expect(result.missingFiles).toEqual(['file2.txt', 'file3.txt']);
+    });
+
+    it('should return missing files when all target files are deleted', () => {
+      const objective = {
+        type: 'fileOperation',
+        operation: 'copy',
+        targetFiles: ['report.dat', 'backup.db'],
+        status: 'pending'
+      };
+      const mockRegistry = createMockRegistry({
+        'fs-001': { id: 'fs-001', files: [] }  // All files deleted
+      });
+      const missionNetworks = [{
+        networkId: 'test-network',
+        fileSystems: [{ id: 'fs-001', ip: '192.168.1.10' }]
+      }];
+
+      const result = checkObjectiveImpossible(objective, mockRegistry, missionNetworks);
+      expect(result).not.toBe(null);
+      expect(result.missingFiles).toEqual(['report.dat', 'backup.db']);
+    });
+
+    it('should check files across multiple file systems in mission', () => {
+      const objective = {
+        type: 'fileOperation',
+        operation: 'repair',
+        targetFiles: ['file1.txt', 'file2.txt'],
+        status: 'pending'
+      };
+      const mockRegistry = createMockRegistry({
+        'fs-001': { id: 'fs-001', files: [{ name: 'file1.txt' }] },
+        'fs-002': { id: 'fs-002', files: [{ name: 'file2.txt' }] }
+      });
+      const missionNetworks = [{
+        networkId: 'test-network-1',
+        fileSystems: [{ id: 'fs-001', ip: '192.168.1.10' }]
+      }, {
+        networkId: 'test-network-2',
+        fileSystems: [{ id: 'fs-002', ip: '192.168.2.10' }]
+      }];
+
+      // All files exist across the two file systems
+      expect(checkObjectiveImpossible(objective, mockRegistry, missionNetworks)).toBe(null);
+    });
+
+    it('should handle missing file system in registry gracefully', () => {
+      const objective = {
+        type: 'fileOperation',
+        operation: 'repair',
+        targetFiles: ['file1.txt'],
+        status: 'pending'
+      };
+      const mockRegistry = createMockRegistry({});  // No file systems registered
+      const missionNetworks = [{
+        networkId: 'test-network',
+        fileSystems: [{ id: 'fs-nonexistent', ip: '192.168.1.10' }]
+      }];
+
+      const result = checkObjectiveImpossible(objective, mockRegistry, missionNetworks);
+      expect(result).not.toBe(null);
+      expect(result.missingFiles).toEqual(['file1.txt']);
+    });
+
+    it('should handle null or undefined missionNetworks', () => {
+      const objective = {
+        type: 'fileOperation',
+        operation: 'repair',
+        targetFiles: ['file1.txt'],
+        status: 'pending'
+      };
+      const mockRegistry = createMockRegistry({});
+
+      const result1 = checkObjectiveImpossible(objective, mockRegistry, null);
+      expect(result1).not.toBe(null);
+      expect(result1.missingFiles).toEqual(['file1.txt']);
+
+      const result2 = checkObjectiveImpossible(objective, mockRegistry, undefined);
+      expect(result2).not.toBe(null);
+      expect(result2.missingFiles).toEqual(['file1.txt']);
+    });
+
+    it('should work for paste objectives checking source files', () => {
+      const objective = {
+        type: 'fileOperation',
+        operation: 'paste',
+        targetFiles: ['data.enc', 'config.cfg'],
+        destination: '192.168.2.10',
+        status: 'pending'
+      };
+      const mockRegistry = createMockRegistry({
+        'fs-source': { id: 'fs-source', files: [{ name: 'data.enc' }] }  // config.cfg was deleted
+      });
+      const missionNetworks = [{
+        networkId: 'test-network',
+        fileSystems: [{ id: 'fs-source', ip: '192.168.1.10' }]
+      }];
+
+      const result = checkObjectiveImpossible(objective, mockRegistry, missionNetworks);
+      expect(result).not.toBe(null);
+      expect(result.missingFiles).toEqual(['config.cfg']);
     });
   });
 });

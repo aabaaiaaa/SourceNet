@@ -221,6 +221,63 @@ export const areAllObjectivesComplete = (objectives) => {
 };
 
 /**
+ * Check if a file operation objective is impossible to complete
+ * because its target files no longer exist in any of the mission's file systems.
+ * 
+ * @param {object} objective - Objective to check
+ * @param {object} networkRegistry - NetworkRegistry instance to query file systems
+ * @param {array} missionNetworks - Mission's networks array with fileSystems
+ * @returns {object|null} { objective, missingFiles } if impossible, null if still completable
+ */
+export const checkObjectiveImpossible = (objective, networkRegistry, missionNetworks) => {
+  // Only fileOperation objectives can become impossible
+  if (objective.type !== 'fileOperation') {
+    return null;
+  }
+
+  // Already completed objectives cannot become impossible
+  if (objective.status === 'complete') {
+    return null;
+  }
+
+  // No target files means objective doesn't depend on specific files
+  const targetFiles = objective.targetFiles;
+  if (!targetFiles || targetFiles.length === 0) {
+    return null;
+  }
+
+  // For 'paste' operations, the files need to exist at the source to be pasted
+  // For 'copy', 'repair', 'delete' operations, files need to exist to be operated on
+  // Collect all file names from all mission file systems
+  const allExistingFiles = new Set();
+
+  if (missionNetworks && Array.isArray(missionNetworks)) {
+    for (const network of missionNetworks) {
+      const fileSystems = network.fileSystems || [];
+      for (const fsData of fileSystems) {
+        // Get current file system state from registry
+        const fs = networkRegistry.getFileSystem(fsData.id);
+        if (fs && fs.files) {
+          fs.files.forEach(f => allExistingFiles.add(f.name));
+        }
+      }
+    }
+  }
+
+  // Check which target files are missing
+  const missingFiles = targetFiles.filter(fileName => !allExistingFiles.has(fileName));
+
+  if (missingFiles.length > 0) {
+    return {
+      objective,
+      missingFiles
+    };
+  }
+
+  return null;
+};
+
+/**
  * Check if a single objective is complete based on game state
  * @param {object} objective - Objective to check
  * @param {object} gameState - Current game state

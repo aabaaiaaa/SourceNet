@@ -13,6 +13,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import triggerEventBus from '../core/triggerEventBus';
+import networkRegistry from '../systems/NetworkRegistry';
 import { checkMissionObjectives, areAllObjectivesComplete } from './ObjectiveTracker';
 import { calculateMissionPayout } from '../systems/MissionSystem';
 
@@ -58,9 +59,15 @@ export const useObjectiveAutoTracking = (
     const currentMission = activeMissionRef.current;
 
     // Use event-sourced lastFileOperation if available (more reliable than React state)
-    const effectiveGameState = lastFileOperationRef.current
-      ? { ...currentGameState, lastFileOperation: lastFileOperationRef.current }
-      : currentGameState;
+    // Also derive narEntries from networkRegistry (accessible networks)
+    const accessibleNetworks = networkRegistry.getSnapshot().networks.filter(n => n.accessible);
+    const narEntries = accessibleNetworks.map(n => ({ networkId: n.networkId, authorized: true }));
+
+    const effectiveGameState = {
+      ...currentGameState,
+      narEntries,
+      ...(lastFileOperationRef.current ? { lastFileOperation: lastFileOperationRef.current } : {}),
+    };
 
     if (!enabled || !currentMission || !currentMission.objectives || processingRef.current) {
       return;

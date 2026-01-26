@@ -90,11 +90,29 @@ const MissionBoard = () => {
 
   const installedSoftwareIds = software || [];
 
-  // Combine story missions and procedural pool
+  // Combine story missions and procedural pool, filtering out not-yet-visible and replaced expired missions
   const allAvailableMissions = [
     ...(availableMissions || []),
     ...(proceduralMissionsEnabled ? (missionPool || []) : [])
-  ];
+  ].filter(mission => {
+    // Hide missions that aren't visible yet (regenerated missions have a 1 min delay)
+    if (mission.visibleAt && new Date(mission.visibleAt) > new Date(currentTime)) {
+      return false;
+    }
+    // Hide expired missions that have a visible replacement
+    // (expired missions stay visible until their replacement becomes visible)
+    if (mission.replacementGeneratedAt) {
+      // Find the replacement mission
+      const replacement = missionPool.find(m => m.replacesExpiredMissionId === mission.missionId);
+      if (replacement) {
+        // If replacement is now visible, hide this expired mission
+        if (!replacement.visibleAt || new Date(replacement.visibleAt) <= new Date(currentTime)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  });
 
   const handleAcceptMission = (mission) => {
     const validation = canAcceptMission(mission, installedSoftwareIds, reputation, activeMission);

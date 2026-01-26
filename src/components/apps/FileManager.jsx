@@ -34,7 +34,6 @@ const FileManager = () => {
   const [isLogCollapsed, setIsLogCollapsed] = useState(false);
   const animationFrameRef = useRef(null);
   const activeOperationsRef = useRef(new Map()); // Map of fileIndex -> {startTime, duration, operation, operationId}
-  const logEndRef = useRef(null);
   const currentTimeRef = useRef(currentTime);
   const logIdCounterRef = useRef(0);
 
@@ -198,13 +197,6 @@ const FileManager = () => {
       triggerEventBus.off('sabotageFileOperation', handleSabotageOperation);
     };
   }, [addLogEntry]);
-
-  // Auto-scroll log to bottom when new entries added
-  useEffect(() => {
-    if (logEndRef.current && !isLogCollapsed && logEndRef.current.scrollIntoView) {
-      logEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [activityLog, isLogCollapsed]);
 
   // Animation loop for file operation progress using game time
   useEffect(() => {
@@ -975,7 +967,6 @@ const FileManager = () => {
                 </div>
               ))
             )}
-            <div ref={logEndRef} />
           </div>
         )}
       </div>

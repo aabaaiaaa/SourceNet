@@ -100,6 +100,7 @@ test.describe('E2E: Tutorial Sabotage Event', () => {
 
         // Verify repair started
         const repairLogEntry = fileManager.locator('.activity-log-entry .log-operation:has-text("REPAIR")').first();
+        await repairLogEntry.scrollIntoViewIfNeeded();
         await expect(repairLogEntry).toBeVisible({ timeout: 5000 });
         console.log('✅ Repair operation started (visible in activity log)');
 
@@ -184,6 +185,7 @@ test.describe('E2E: Tutorial Sabotage Event', () => {
 
         // Verify DELETE entries have proper structure (no special sabotage styling)
         const firstDeleteEntry = fileManager.locator('.activity-log-entry:has(.log-operation:has-text("DELETE"))').first();
+        await firstDeleteEntry.scrollIntoViewIfNeeded();
         await expect(firstDeleteEntry).toBeVisible();
         console.log('✅ DELETE operations logged as normal entries');
 

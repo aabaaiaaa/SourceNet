@@ -20,11 +20,12 @@ There is logic to help name the NAR entries based on the client/mission for gene
 Once a mission expires in the mission board app, after 1 minute of in game time and new mission should be generated.
 
 
+(done - needs testing)
 When performing file operations, the File Manager app automatically scrolls down to the log at the bottom of the app. I don't think it should do this as the player might not expect it - we don't do this anywhere else at the moment. But it might mean e2e tests might need to scroll if they are looking for visible elements.
 
 
-(test)
-If you can fail a mission.
+(done)
+You can fail if you delete files you need.
 
 (done)
 The game is not at version 1.0 yet. Can you make a change that allows this to be known so any future development does not attempt to use backward compatibility or cater for legacy support for old code.

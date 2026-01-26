@@ -824,12 +824,13 @@ function generateBriefingMessage(client, missionType, networks, timeLimitMinutes
 
 /**
  * Generate failure consequences for a mission
+ * Includes message variants for different failure reasons (deadline, incomplete, filesDeleted)
+ * The actual message used is selected at failure time based on the failureReason
  * @param {Object} client - Client object
  * @param {number} basePayout - Mission payout
- * @param {string} failureReason - Why mission might fail (deadline, etc)
- * @returns {Object} Failure consequences object
+ * @returns {Object} Failure consequences object with messageVariants
  */
-function generateFailureConsequences(client, basePayout, failureReason = 'incomplete') {
+function generateFailureConsequences(client, basePayout) {
     const failureMessages = {
         deadline: [
             `Unfortunately, you failed to complete the task within the required timeframe. We've had to find alternative solutions.`,
@@ -839,16 +840,20 @@ function generateFailureConsequences(client, basePayout, failureReason = 'incomp
         incomplete: [
             `We're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.`,
             `The mission was not completed as requested. This has caused significant inconvenience to our operations.`
+        ],
+        filesDeleted: [
+            `Critical files required for this task have been deleted. We cannot proceed and must terminate this engagement immediately.`,
+            `The files we needed you to work with no longer exist. Your access has been revoked effective immediately.`,
+            `We've detected that essential mission files have been removed from our systems. This mission cannot be completed.`
         ]
     };
 
-    const messageBody = `Dear {username},\n\n${randomPick(failureMessages[failureReason] || failureMessages.incomplete)}\n\nSincerely,\n{clientName}`;
-
-    return {
-        credits: -Math.floor(basePayout * 0.25),
-        reputation: -1,
-        messages: [{
-            id: `msg-failure-${Date.now()}`,
+    // Generate a message variant for each failure reason type
+    const messageVariants = {};
+    for (const [reason, templates] of Object.entries(failureMessages)) {
+        const messageBody = `Dear {username},\n\n${randomPick(templates)}\n\nSincerely,\n{clientName}`;
+        messageVariants[reason] = {
+            id: `msg-failure-${reason}-${Date.now()}`,
             from: client.name,
             fromId: client.id,
             fromName: client.name,
@@ -856,7 +861,16 @@ function generateFailureConsequences(client, basePayout, failureReason = 'incomp
             body: messageBody,
             attachments: [],
             delay: 2000
-        }]
+        };
+    }
+
+    return {
+        credits: -Math.floor(basePayout * 0.25),
+        reputation: -1,
+        // Default message for backwards compatibility
+        messages: [messageVariants.incomplete],
+        // All message variants for dynamic selection at failure time
+        messageVariants
     };
 }
 
@@ -962,7 +976,7 @@ export function generateRepairMission(client, options = {}) {
         },
         consequences: {
             success: generateSuccessConsequences(client, basePayout),
-            failure: generateFailureConsequences(client, basePayout, hasTimed ? 'deadline' : 'incomplete')
+            failure: generateFailureConsequences(client, basePayout)
         },
         timeLimitMinutes,
         briefingMessage: generateBriefingMessage(client, 'repair', infra.networks, timeLimitMinutes, briefingContext),
@@ -1048,7 +1062,7 @@ export function generateBackupMission(client, options = {}) {
         },
         consequences: {
             success: generateSuccessConsequences(client, basePayout),
-            failure: generateFailureConsequences(client, basePayout, hasTimed ? 'deadline' : 'incomplete')
+            failure: generateFailureConsequences(client, basePayout)
         },
         timeLimitMinutes,
         briefingMessage: generateBriefingMessage(client, 'backup', infra.networks, timeLimitMinutes, briefingContext),
@@ -1130,7 +1144,7 @@ export function generateTransferMission(client, options = {}) {
         },
         consequences: {
             success: generateSuccessConsequences(client, basePayout),
-            failure: generateFailureConsequences(client, basePayout, hasTimed ? 'deadline' : 'incomplete')
+            failure: generateFailureConsequences(client, basePayout)
         },
         timeLimitMinutes,
         briefingMessage: generateBriefingMessage(client, 'transfer', infra.networks, timeLimitMinutes, briefingContext),
@@ -1315,7 +1329,7 @@ export function generateRestoreFromBackupMission(client, options = {}) {
         },
         consequences: {
             success: generateSuccessConsequences(client, basePayout),
-            failure: generateFailureConsequences(client, basePayout, hasTimed ? 'deadline' : 'incomplete')
+            failure: generateFailureConsequences(client, basePayout)
         },
         timeLimitMinutes,
         briefingMessage: generateBriefingMessage(client, 'restore', networks, timeLimitMinutes, briefingContext),
@@ -1481,7 +1495,7 @@ export function generateRepairAndBackupMission(client, options = {}) {
         },
         consequences: {
             success: generateSuccessConsequences(client, basePayout),
-            failure: generateFailureConsequences(client, basePayout, hasTimed ? 'deadline' : 'incomplete')
+            failure: generateFailureConsequences(client, basePayout)
         },
         timeLimitMinutes,
         briefingMessage: generateBriefingMessage(client, 'repair-backup', networks, timeLimitMinutes, briefingContext),
