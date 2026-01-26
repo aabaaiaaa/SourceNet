@@ -52,10 +52,12 @@ describe('Window Management Integration', () => {
     const minimizeBtn = screen.getByTitle('Minimize');
     fireEvent.click(minimizeBtn);
 
-    // Verify window moved to minimized bar
+    // Verify window moved to minimized bar (window is now hidden via CSS, not removed)
     await waitFor(() => {
-      expect(screen.getByText('SNet Mail')).toBeInTheDocument();
       expect(container.querySelector('.minimized-window')).toBeInTheDocument();
+      // Window should be hidden (display: none) but still in DOM
+      const windowWrapper = container.querySelector('.desktop-content > div');
+      expect(windowWrapper.style.display).toBe('none');
     });
 
     // Restore window
@@ -186,5 +188,101 @@ describe('Window Management Integration', () => {
     const windows = container.querySelectorAll('.window');
     expect(windows[0].style.left).not.toEqual(windows[1].style.left);
     expect(windows[0].style.top).not.toEqual(windows[1].style.top);
+  });
+
+  it('should preserve app state (dropdown selections) across minimize/restore', async () => {
+    // Create save state with file-manager installed and a connected network
+    const saveState = createCompleteSaveState({
+      username: 'test_user',
+      overrides: {
+        software: ['mail', 'banking', 'portal', 'file-manager'],
+        narEntries: [
+          {
+            networkId: 'test-network-1',
+            networkName: 'Test Network',
+            dateAdded: Date.now(),
+            accessLevel: 'user',
+            credentials: { username: 'user', password: 'pass' },
+            hasAccess: true,
+          },
+        ],
+        activeConnections: [
+          {
+            networkId: 'test-network-1',
+            accessLevel: 'user',
+            connectedAt: Date.now(),
+          },
+        ],
+      },
+    });
+
+    setSaveInLocalStorage('test_user', saveState);
+
+    const { container } = render(
+      <GameProvider>
+        <GameLoader username="test_user" />
+        <Desktop />
+      </GameProvider>
+    );
+
+    await waitFor(() => expect(screen.getByText('☰')).toBeInTheDocument(), { timeout: 10000 });
+
+    // Open File Manager
+    const appLauncher = screen.getByText('☰');
+    fireEvent.mouseEnter(appLauncher.parentElement);
+    await waitFor(() => {
+      const menuButtons = screen.getAllByText('File Manager');
+      const menuButton = menuButtons.find(el => el.tagName === 'BUTTON');
+      expect(menuButton).toBeInTheDocument();
+    });
+    const menuButtons = screen.getAllByText('File Manager');
+    const fileManagerBtn = menuButtons.find(el => el.tagName === 'BUTTON');
+    fireEvent.click(fileManagerBtn);
+
+    // Wait for File Manager window to appear
+    await waitFor(() => {
+      const windows = container.querySelectorAll('.window');
+      expect(windows).toHaveLength(1);
+    });
+
+    // Find and interact with the file system dropdown
+    const fileSystemDropdown = container.querySelector('.file-manager select');
+    expect(fileSystemDropdown).toBeInTheDocument();
+
+    // Select a network from the dropdown (if available) or local storage
+    const options = fileSystemDropdown.querySelectorAll('option');
+    const selectableOption = Array.from(options).find(opt => opt.value !== '');
+
+    if (selectableOption) {
+      fireEvent.change(fileSystemDropdown, { target: { value: selectableOption.value } });
+
+      // Verify selection was made
+      expect(fileSystemDropdown.value).toBe(selectableOption.value);
+      const selectedValue = selectableOption.value;
+
+      // Minimize the window
+      const minimizeBtn = screen.getByTitle('Minimize');
+      fireEvent.click(minimizeBtn);
+
+      // Verify window is minimized (appears in minimized bar)
+      await waitFor(() => {
+        expect(container.querySelector('.minimized-window')).toBeInTheDocument();
+      });
+
+      // Restore the window
+      const minimizedWindow = container.querySelector('.minimized-window');
+      fireEvent.click(minimizedWindow);
+
+      // Verify window is restored
+      await waitFor(() => {
+        const windows = container.querySelectorAll('.window');
+        expect(windows).toHaveLength(1);
+      });
+
+      // Verify dropdown selection is preserved
+      const restoredDropdown = container.querySelector('.file-manager select');
+      expect(restoredDropdown).toBeInTheDocument();
+      expect(restoredDropdown.value).toBe(selectedValue);
+    }
   });
 });

@@ -43,19 +43,15 @@ describe('FileManager Component - Initial Rendering', () => {
     expect(screen.getByText('Remote File System Access')).toBeInTheDocument();
   });
 
-  it('should show not connected message when no network connection', () => {
+  it('should show Local SSD in file system selector when no VPN connection', () => {
     renderWithProvider(<FileManager />);
-    expect(screen.getByText(/Not connected to any networks/i)).toBeInTheDocument();
+    expect(screen.getByRole('combobox')).toBeInTheDocument();
+    expect(screen.getByText(/Local SSD/i)).toBeInTheDocument();
   });
 
-  it('should display VPN Client prompt when not connected', () => {
+  it('should show file system selector with Local SSD when no VPN connected', () => {
     renderWithProvider(<FileManager />);
-    expect(screen.getByText(/Use VPN Client to connect/i)).toBeInTheDocument();
-  });
-
-  it('should not show file system selector when not connected', () => {
-    renderWithProvider(<FileManager />);
-    expect(screen.queryByText('Select File System')).not.toBeInTheDocument();
+    expect(screen.getByText('Select File System')).toBeInTheDocument();
   });
 });
 

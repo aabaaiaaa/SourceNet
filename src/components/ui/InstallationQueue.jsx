@@ -34,7 +34,7 @@ const formatTimeRemaining = (seconds) => {
  * Shows active downloads/installations in bottom-right corner of desktop
  */
 const InstallationQueue = () => {
-  const { downloadQueue, hardware } = useGame();
+  const { downloadQueue, hardware, activeConnections } = useGame();
 
   // Only show if there are active downloads
   const activeDownloads = (downloadQueue || []).filter(
@@ -49,7 +49,7 @@ const InstallationQueue = () => {
   const downloadingCount = activeDownloads.filter((item) => item.status === 'downloading').length;
   const bandwidthShare = calculateBandwidthShare(downloadingCount);
   const adapterSpeed = getAdapterSpeed(hardware);
-  const connectionSpeed = getNetworkBandwidth();
+  const connectionSpeed = getNetworkBandwidth(activeConnections);
   const effectiveSpeed = calculateAvailableBandwidth(adapterSpeed, connectionSpeed, 1);
   const downloadSpeedMBps = calculateTransferSpeed(effectiveSpeed * bandwidthShare) || 0;
 

@@ -8,15 +8,26 @@
  * - File transfer speed calculations
  */
 
+import networkRegistry from './NetworkRegistry';
+
 /**
  * Get network connection bandwidth limit
- * @param {string} _networkId - Network ID (unused, for future network-specific limits)
- * @returns {number} Bandwidth limit in Mbps
+ * When connected to VPN networks, returns the maximum bandwidth available from connected networks.
+ * When not connected, returns Infinity (no network limit - only adapter limits speed).
+ * @param {Array} activeConnections - Array of active network connections
+ * @returns {number} Bandwidth limit in Mbps (or Infinity if no network limit)
  */
-export const getNetworkBandwidth = (_networkId) => {
-  // Most networks have 50 Mbps typical limit
-  // Could be enhanced with network-specific limits
-  return 50; // Mbps
+export const getNetworkBandwidth = (activeConnections = []) => {
+  if (!activeConnections || activeConnections.length === 0) {
+    // No VPN connections - "the internet" has no bandwidth limit
+    // Player's network adapter will be the only limiting factor
+    return Infinity;
+  }
+  // Use the maximum bandwidth available from connected networks
+  return activeConnections.reduce((max, conn) => {
+    const network = networkRegistry.getNetwork(conn.networkId);
+    return Math.max(max, network?.bandwidth || Infinity);
+  }, 0);
 };
 
 /**

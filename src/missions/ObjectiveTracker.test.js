@@ -140,6 +140,22 @@ describe('ObjectiveTracker', () => {
       expect(checkFileOperationObjective(objective, operationData)).toBe(false);
     });
 
+    it('should complete copy objective when files are copied individually then another operation occurs', () => {
+      // This tests the scenario where user copies files one-by-one, then does another operation (e.g. paste)
+      // The cumulative copy Set should still satisfy the objective even when last operation was not 'copy'
+      const objective = {
+        type: 'fileOperation',
+        operation: 'copy',
+        targetFiles: ['file1.txt', 'file2.txt', 'file3.txt']
+      };
+      // Last operation was paste, not copy
+      const operationData = { operation: 'paste', filesAffected: 3, fileNames: ['file1.txt', 'file2.txt', 'file3.txt'] };
+      // But all files were copied cumulatively
+      const cumulativeOps = { copy: new Set(['file1.txt', 'file2.txt', 'file3.txt']) };
+
+      expect(checkFileOperationObjective(objective, operationData, cumulativeOps)).toBe(true);
+    });
+
     describe('paste destination validation', () => {
       it('should return true when files are pasted to correct destination', () => {
         const objective = {

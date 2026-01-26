@@ -34,7 +34,7 @@ import { BANKING_MESSAGES, HR_MESSAGES } from '../core/systemMessages';
 import { getReputationTier } from '../systems/ReputationSystem';
 import triggerEventBus from '../core/triggerEventBus';
 import { executeScriptedEvent } from '../missions/ScriptedEventExecutor';
-import { initializePool, refreshPool, shouldRefreshPool, handleArcProgression, handleArcFailure } from '../missions/MissionPoolManager';
+import { initializePool, refreshPool, shouldRefreshPool, handleArcProgression, handleArcFailure, generatePoolMission, addExpirationToMission, poolConfig } from '../missions/MissionPoolManager';
 import { shouldTriggerExtension, generateExtension, getObjectiveProgress } from '../missions/MissionExtensionGenerator';
 import networkRegistry from '../systems/NetworkRegistry';
 
@@ -150,6 +150,9 @@ export const GameProvider = ({ children }) => {
 
   // Track failed missions to prevent duplicate penalty application
   const failedMissionsRef = useRef(new Set());
+
+  // Track missions with pending regeneration timers to prevent duplicate scheduling
+  const regenerationTimersRef = useRef(new Map()); // missionId -> timerId
 
   // Ref to hold the latest completeMission function
   const completeMissionRef = useRef(null);
@@ -292,6 +295,118 @@ export const GameProvider = ({ children }) => {
       setActiveClientIds(newPoolState.activeClientIds);
     }
   }, [reputation]); // Only trigger on reputation change
+
+  // Auto-regenerate missions after expiration (1 minute game time delay)
+  useEffect(() => {
+    if (!proceduralMissionsEnabled || missionPool.length === 0) return;
+
+    const currentTimeMs = currentTime.getTime();
+    const activeMissionId = activeMission?.missionId || null;
+
+    // Check each mission for expiration
+    missionPool.forEach(mission => {
+      // Skip active mission
+      if (mission.missionId === activeMissionId) return;
+
+      // Skip if no expiration time
+      if (!mission.expiresAt) return;
+
+      const expiresAtMs = new Date(mission.expiresAt).getTime();
+
+      // Check if mission is expired and not already scheduled for regeneration
+      if (currentTimeMs > expiresAtMs && !regenerationTimersRef.current.has(mission.missionId)) {
+        // Skip if pool is already at max capacity (excluding the expired mission)
+        const nonExpiredCount = missionPool.filter(m => {
+          if (m.missionId === mission.missionId) return false;
+          if (!m.expiresAt) return true;
+          return currentTimeMs <= new Date(m.expiresAt).getTime();
+        }).length;
+
+        if (nonExpiredCount >= poolConfig.max) {
+          console.log(`⏭️ Mission "${mission.title}" expired but pool at max capacity - skipping regeneration`);
+          return;
+        }
+
+        console.log(`⏰ Mission "${mission.title}" expired - scheduling regeneration in 1 game minute`);
+
+        // Schedule regeneration after 1 minute game time
+        const timerId = scheduleGameTimeCallback(() => {
+          // Remove timer from tracking
+          regenerationTimersRef.current.delete(mission.missionId);
+
+          // Build current activeClientIds set (excluding the expired mission's client)
+          const currentActiveClients = new Set(activeClientIds.filter(id => id !== mission.clientId));
+
+          // Generate replacement mission
+          const result = generatePoolMission(reputation, currentTime, currentActiveClients, false);
+
+          if (result) {
+            let newMission;
+            if (result.arcId) {
+              // Arc - add first mission with expiration, store rest in pending
+              newMission = addExpirationToMission(result.missions[0], currentTime);
+              setPendingChainMissions(prev => ({
+                ...prev,
+                [result.arcId]: result.missions.slice(1)
+              }));
+            } else {
+              // Single mission - add expiration
+              newMission = addExpirationToMission(result, currentTime);
+            }
+
+            console.log(`🔄 Regenerated mission: "${newMission.title}" (replacing expired "${mission.title}")`);
+
+            // Update pool: remove expired mission, add new one
+            setMissionPool(prev => [
+              ...prev.filter(m => m.missionId !== mission.missionId),
+              newMission
+            ]);
+
+            // Update active client IDs
+            setActiveClientIds(prev => [
+              ...prev.filter(id => id !== mission.clientId),
+              newMission.clientId
+            ]);
+          } else {
+            console.log(`⚠️ Failed to generate replacement mission for expired "${mission.title}"`);
+            // Still remove the expired mission from pool
+            setMissionPool(prev => prev.filter(m => m.missionId !== mission.missionId));
+            setActiveClientIds(prev => prev.filter(id => id !== mission.clientId));
+          }
+
+          // If expired mission was part of an arc, clean up pending arc missions
+          if (mission.arcId) {
+            setPendingChainMissions(prev => {
+              const newPending = { ...prev };
+              delete newPending[mission.arcId];
+              return newPending;
+            });
+          }
+        }, poolConfig.regenerationDelayMs, timeSpeed);
+
+        // Track the timer
+        regenerationTimersRef.current.set(mission.missionId, timerId);
+      }
+    });
+
+    // Cleanup: clear timers for missions that no longer exist (e.g., were accepted)
+    regenerationTimersRef.current.forEach((timerId, missionId) => {
+      const missionExists = missionPool.some(m => m.missionId === missionId);
+      if (!missionExists) {
+        console.log(`🧹 Clearing regeneration timer for removed mission ${missionId}`);
+        clearGameTimeCallback(timerId);
+        regenerationTimersRef.current.delete(missionId);
+      }
+    });
+
+    // Cleanup on unmount
+    return () => {
+      regenerationTimersRef.current.forEach((timerId) => {
+        clearGameTimeCallback(timerId);
+      });
+      regenerationTimersRef.current.clear();
+    };
+  }, [proceduralMissionsEnabled, missionPool, currentTime, activeMission?.missionId, activeClientIds, reputation, timeSpeed]);
 
   // Handle arc progression/failure when missions complete
   useEffect(() => {
@@ -497,7 +612,8 @@ export const GameProvider = ({ children }) => {
     hardware,
     handleDownloadComplete,
     currentTime,
-    gamePhase === 'desktop' // Only run when on desktop
+    gamePhase === 'desktop', // Only run when on desktop
+    activeConnections
   );
 
   // ===== BANDWIDTH SYSTEM =====
@@ -516,11 +632,16 @@ export const GameProvider = ({ children }) => {
   // Calculate current bandwidth info
   const getBandwidthInfo = useCallback(() => {
     const adapterSpeed = getAdapterSpeed(hardware);
-    const connectionSpeed = getNetworkBandwidth();
+    const connectionSpeed = getNetworkBandwidth(activeConnections);
     const maxBandwidth = Math.min(adapterSpeed, connectionSpeed);
     const activeCount = getActiveBandwidthOperationCount();
     const bandwidthPerOperation = activeCount > 0 ? maxBandwidth / activeCount : maxBandwidth;
     const transferSpeedMBps = calculateTransferSpeed(bandwidthPerOperation);
+    // Determine what's limiting speed - only meaningful when connected to VPN
+    // (connectionSpeed is Infinity when not connected to any network)
+    const limitedBy = connectionSpeed === Infinity
+      ? null
+      : (adapterSpeed <= connectionSpeed ? 'adapter' : 'network');
 
     return {
       maxBandwidth,
@@ -528,8 +649,9 @@ export const GameProvider = ({ children }) => {
       bandwidthPerOperation,
       transferSpeedMBps,
       usagePercent: Math.min(100, (activeCount / 4) * 100), // Cap visual at 4 ops
+      limitedBy,
     };
-  }, [hardware, getActiveBandwidthOperationCount]);
+  }, [hardware, activeConnections, getActiveBandwidthOperationCount]);
 
   // Register a bandwidth operation (returns operation info including estimated time)
   const registerBandwidthOperation = useCallback((type, sizeInMB, metadata = {}) => {
@@ -549,7 +671,7 @@ export const GameProvider = ({ children }) => {
 
     // Calculate estimated time with the new operation included
     const adapterSpeed = getAdapterSpeed(hardware);
-    const connectionSpeed = getNetworkBandwidth();
+    const connectionSpeed = getNetworkBandwidth(activeConnections);
     const maxBandwidth = Math.min(adapterSpeed, connectionSpeed);
     const newActiveCount = getActiveBandwidthOperationCount() + 1;
     const bandwidthShare = maxBandwidth / newActiveCount;

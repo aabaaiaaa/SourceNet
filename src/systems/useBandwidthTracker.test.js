@@ -69,8 +69,8 @@ describe('useBandwidthTracker', () => {
       const { result } = renderHook(() => useBandwidthTracker(hardware));
 
       // maxBandwidth is Math.min(adapterSpeed, connectionSpeed)
-      // connectionSpeed defaults to 50 Mbps, so max is 50
-      expect(result.current.maxBandwidth).toBe(50);
+      // With no active connections, connectionSpeed is Infinity, so max equals adapter speed
+      expect(result.current.maxBandwidth).toBe(250);
     });
 
     it('should have 0% bandwidth usage when no operations', () => {
@@ -137,8 +137,8 @@ describe('useBandwidthTracker', () => {
 
       expect(result.current.activeOperationCount).toBe(2);
       expect(result.current.bandwidthUsagePercent).toBe(50); // 2 operations = 50%
-      // maxBandwidth is 50 (min of 250 adapter and 50 connection), so 50 / 2 = 25
-      expect(result.current.bandwidthPerOperation).toBe(25);
+      // maxBandwidth is 250 (adapter speed, no connection limit), so 250 / 2 = 125
+      expect(result.current.bandwidthPerOperation).toBe(125);
     });
   });
 
@@ -243,11 +243,12 @@ describe('useBandwidthTracker', () => {
     });
 
     it('should account for existing operations', () => {
-      const hardware = { networkAdapter: { speed: 250 } };
+      // Use a slower adapter to make timing differences more apparent
+      const hardware = { networkAdapter: { speed: 16 } };
 
       const { result } = renderHook(() => useBandwidthTracker(hardware));
 
-      // Get time with no other operations
+      // Get time with no other operations (16 Mbps = 2 MB/s, 10 MB = 5s = 5000ms)
       const timeAlone = result.current.getEstimatedTime(10);
 
       // Add an operation
@@ -255,7 +256,7 @@ describe('useBandwidthTracker', () => {
         result.current.registerOperation('download', 100);
       });
 
-      // Get time with one other operation
+      // Get time with one other operation (bandwidth halved = time doubled)
       const timeWithOther = result.current.getEstimatedTime(10);
 
       // Time should be longer when sharing bandwidth

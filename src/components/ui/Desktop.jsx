@@ -149,11 +149,14 @@ const Desktop = () => {
 
       <div className="desktop-content">
         {/* OSNet logo watermark will be in CSS background */}
-        {windows
-          .filter((w) => !w.minimized)
-          .map((window) => (
-            <Window key={window.id} window={window} />
-          ))}
+        {windows.map((window) => (
+          <div
+            key={window.id}
+            style={{ display: window.minimized ? 'none' : 'contents' }}
+          >
+            <Window window={window} />
+          </div>
+        ))}
       </div>
 
       <MinimizedWindowBar />

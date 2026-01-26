@@ -16,6 +16,7 @@
 import { getClientById } from '../data/clientRegistry';
 import networkRegistry from '../systems/NetworkRegistry';
 import { generateSubnet, generateIpInSubnet, randomInt } from './networkUtils';
+import { getSanitizedNamePrefix } from '../utils/helpers';
 
 // Extension configuration
 export const extensionConfig = {
@@ -111,7 +112,7 @@ function generateFileSize(filename, missionType) {
  * Generate a server hostname
  */
 function generateHostname(clientName, purpose, index = 1) {
-    const prefix = clientName.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+    const prefix = getSanitizedNamePrefix(clientName, { lowercase: true });
     return `${prefix}-${purpose}-${String(index).padStart(2, '0')}`;
 }
 
@@ -367,7 +368,7 @@ const extensionPatterns = {
             // Register the new network, device, and file system in NetworkRegistry
             networkRegistry.registerNetwork({
                 networkId: newNetworkId,
-                networkName: `${client.name.split(' ')[0]}-Archive`,
+                networkName: `${getSanitizedNamePrefix(client.name)}-Archive`,
                 address: newSubnet,
                 bandwidth: randomPick([25, 50, 75]),
                 accessible: true,
@@ -387,7 +388,7 @@ const extensionPatterns = {
 
             const newNetwork = {
                 networkId: newNetworkId,
-                networkName: `${client.name.split(' ')[0]}-Archive`,
+                networkName: `${getSanitizedNamePrefix(client.name)}-Archive`,
                 address: newSubnet,
                 bandwidth: randomPick([25, 50, 75]),
                 revokeOnComplete: true,
@@ -593,8 +594,17 @@ const extensionPatterns = {
                 newNarRequired: true,
                 registryUpdated: true,
                 narAttachment: {
-                    networkAddress: subnet,
-                    deviceAccess: [newIp]
+                    type: 'networkAddress',
+                    networkId: existingNet.networkId,
+                    networkName: existingNet.networkName,
+                    address: existingNet.address,
+                    bandwidth: existingNet.bandwidth,
+                    fileSystems: [{
+                        id: newFileSystem.id,
+                        ip: newIp,
+                        name: newHostname,
+                        files: []
+                    }]
                 },
                 messageTemplate: 'secondaryBackupServer',
                 targetFiles: targetFileNames,
@@ -624,7 +634,7 @@ const extensionPatterns = {
 
             const newNetworkData = {
                 networkId: newNetworkId,
-                networkName: `${client.name.split(' ')[0]}-Offsite`,
+                networkName: `${getSanitizedNamePrefix(client.name)}-Offsite`,
                 address: newSubnet,
                 bandwidth: randomPick([25, 50, 75]),
                 accessible: true
@@ -857,8 +867,17 @@ const extensionPatterns = {
                 newNarRequired: true,
                 registryUpdated: true,
                 narAttachment: {
-                    networkAddress: subnet,
-                    deviceAccess: [newIp]
+                    type: 'networkAddress',
+                    networkId: destNet.networkId,
+                    networkName: destNet.networkName,
+                    address: destNet.address,
+                    bandwidth: destNet.bandwidth,
+                    fileSystems: [{
+                        id: newFileSystem.id,
+                        ip: newIp,
+                        name: newHostname,
+                        files: []
+                    }]
                 },
                 messageTemplate: 'archiveServer',
                 targetFiles: targetFileNames,
@@ -891,7 +910,7 @@ const extensionPatterns = {
 
             const newNetworkData = {
                 networkId: newNetworkId,
-                networkName: `${client.name.split(' ')[0]}-Partner`,
+                networkName: `${getSanitizedNamePrefix(client.name)}-Partner`,
                 address: newSubnet,
                 bandwidth: randomPick([25, 50, 75]),
                 accessible: true
@@ -1103,7 +1122,8 @@ export function generateExtension(mission, isPostCompletion = false) {
         isPostCompletion,
         clientId: client.id,
         clientName: client.name,
-        targetFiles: extensionData.targetFiles || []
+        targetFiles: extensionData.targetFiles || [],
+        messageData: extensionData.messageData || {}
     };
 }
 

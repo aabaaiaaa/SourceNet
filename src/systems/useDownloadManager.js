@@ -42,6 +42,7 @@ const COMPLETED_DISPLAY_DURATION = 2000;
  * @param {function} onDownloadComplete - Callback when download completes (receives softwareId)
  * @param {Date} currentTime - Current game time
  * @param {boolean} enabled - Whether download management is enabled (default: true)
+ * @param {Array} activeConnections - Active network connections
  */
 export const useDownloadManager = (
   downloadQueue,
@@ -49,7 +50,8 @@ export const useDownloadManager = (
   hardware,
   onDownloadComplete,
   currentTime,
-  enabled = true
+  enabled = true,
+  activeConnections = []
 ) => {
   const _intervalRef = useRef(null); // Reserved for future interval-based updates
   const completedItemsRef = useRef(new Set());
@@ -74,7 +76,7 @@ export const useDownloadManager = (
 
     // Get effective network speed (minimum of adapter and connection)
     const adapterSpeed = getAdapterSpeed(hardware);
-    const connectionSpeed = getNetworkBandwidth();
+    const connectionSpeed = getNetworkBandwidth(activeConnections);
     const effectiveSpeed = calculateAvailableBandwidth(
       adapterSpeed,
       connectionSpeed,

@@ -58,14 +58,15 @@ export const createBandwidthOperation = (type, id, sizeInMB, metadata = {}) => {
  * Hook to track bandwidth operations
  *
  * @param {object} hardware - Player's hardware for adapter speed
+ * @param {Array} activeConnections - Active network connections
  * @returns {object} Bandwidth tracking state and functions
  */
-export const useBandwidthTracker = (hardware) => {
+export const useBandwidthTracker = (hardware, activeConnections = []) => {
   const [operations, setOperations] = useState([]);
 
   // Get network speeds
   const adapterSpeed = getAdapterSpeed(hardware);
-  const connectionSpeed = getNetworkBandwidth();
+  const connectionSpeed = getNetworkBandwidth(activeConnections);
   const maxBandwidth = Math.min(adapterSpeed, connectionSpeed);
 
   // Calculate active operations count

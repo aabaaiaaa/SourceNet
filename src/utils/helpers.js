@@ -261,3 +261,46 @@ export const hasSaves = () => {
   const saves = getAllSaves();
   return Object.keys(saves).length > 0;
 };
+
+/**
+ * Get a sanitized name prefix from a client/organization name.
+ * Strips special characters, takes enough words to reach at least minLength characters.
+ * 
+ * @param {string} name - The full name (e.g., "St. Mary's Regional Hospital")
+ * @param {Object} options - Configuration options
+ * @param {boolean} options.lowercase - If true, returns lowercase (for hostnames). Default false (PascalCase).
+ * @param {number} options.minLength - Minimum character length before stopping. Default 4.
+ * @returns {string} Sanitized prefix (e.g., "StMarys" or "stmarys")
+ * 
+ * @example
+ * getSanitizedNamePrefix("St. Mary's Regional Hospital") // "StMarys"
+ * getSanitizedNamePrefix("St. Mary's Regional Hospital", { lowercase: true }) // "stmarys"
+ * getSanitizedNamePrefix("Bob's Auto Parts") // "Bobs"
+ * getSanitizedNamePrefix("First Community Credit Union") // "First"
+ */
+export const getSanitizedNamePrefix = (name, options = {}) => {
+  const { lowercase = false, minLength = 4 } = options;
+
+  // Split into words and sanitize each word (remove non-alphanumeric)
+  const words = name.split(' ').map(word => word.replace(/[^a-zA-Z0-9]/g, ''));
+
+  // Accumulate words until we have at least minLength characters
+  let result = '';
+  for (const word of words) {
+    if (!word) continue; // Skip empty words
+
+    // Capitalize first letter for PascalCase
+    const formattedWord = word.charAt(0).toUpperCase() + word.slice(1);
+    result += formattedWord;
+
+    if (result.length >= minLength) break;
+  }
+
+  // Ensure we have at least one word even if it's short
+  if (!result && words.length > 0) {
+    result = words.find(w => w) || 'Unknown';
+    result = result.charAt(0).toUpperCase() + result.slice(1);
+  }
+
+  return lowercase ? result.toLowerCase() : result;
+};

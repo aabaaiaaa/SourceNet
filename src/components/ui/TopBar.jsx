@@ -4,6 +4,7 @@ import { MULTI_INSTANCE_APPS } from '../../constants/gameConstants';
 import { formatDateTime, getAllSavesFlat } from '../../utils/helpers';
 import { getReputationTier } from '../../systems/ReputationSystem';
 import { calculateStorageUsed, calculateLocalFilesSize, formatStorage } from '../../systems/StorageSystem';
+import networkRegistry from '../../systems/NetworkRegistry';
 import triggerEventBus from '../../core/triggerEventBus';
 import { scheduleGameTimeCallback, clearGameTimeCallback } from '../../core/gameTimeScheduler';
 import './TopBar.css';
@@ -351,11 +352,18 @@ const TopBar = () => {
             {showNetworkPreview && (
               <div className="notification-preview">
                 <div className="preview-header">Connected Networks:</div>
-                {activeConnections.map((conn, idx) => (
-                  <div key={idx} className="preview-item">
-                    {conn.networkName || conn.networkId}
-                  </div>
-                ))}
+                {activeConnections.map((conn, idx) => {
+                  const network = networkRegistry.getNetwork(conn.networkId);
+                  const bandwidth = network?.bandwidth || 50;
+                  const speedMBps = (bandwidth / 8).toFixed(1);
+                  const speedColor = bandwidth >= 75 ? '#32CD32' : bandwidth >= 50 ? '#FFD700' : '#FFA500';
+                  return (
+                    <div key={idx} className="preview-item network-connection-item">
+                      <span className="connection-name">{conn.networkName || conn.networkId}</span>
+                      <span className="connection-bandwidth" style={{ color: speedColor }}>{speedMBps} MB/s</span>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -409,6 +417,11 @@ const TopBar = () => {
                   <div className="preview-item">
                     Active Operations: {bandwidthInfo.activeOperations}
                   </div>
+                  {bandwidthInfo.limitedBy === 'adapter' && activeConnections?.length > 0 && (
+                    <div className="preview-item-small bandwidth-limited">
+                      ⚠️ Limited by network adapter
+                    </div>
+                  )}
                   {bandwidthInfo.usagePercent > 0 && (
                     <div className="bandwidth-usage-bar">
                       <div

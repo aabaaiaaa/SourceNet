@@ -288,6 +288,12 @@ const FileManager = () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
+      // Clean up any pending bandwidth operations on unmount
+      activeOperationsRef.current.forEach((opData) => {
+        if (opData.operationId) {
+          completeBandwidthOperation(opData.operationId);
+        }
+      });
     };
   }, [operatingFiles.size, currentTime, selectedFileSystem, completeBandwidthOperation, setLastFileOperation, addLogEntry]);
 
@@ -373,7 +379,12 @@ const FileManager = () => {
     setSelectedFileSystem(fileSystemId);
     setCurrentNetworkId(fileSystem.networkId);
 
-    // Clear any ongoing operations
+    // Complete any ongoing bandwidth operations before clearing
+    activeOperationsRef.current.forEach((opData) => {
+      if (opData.operationId) {
+        completeBandwidthOperation(opData.operationId);
+      }
+    });
     activeOperationsRef.current.clear();
     setOperatingFiles(new Set());
     setFileProgress({});
@@ -625,8 +636,8 @@ const FileManager = () => {
     });
   };
 
-  // Check if connected to any network
-  const isConnected = activeConnections.length > 0;
+  // Check if any file systems are available (Local SSD is always available)
+  const hasFileSystems = availableFileSystems.length > 0;
   const hasOperations = operatingFiles.size > 0;
   const selectedFiles = files.filter(f => f.selected);
   const selectedCorruptedCount = files.filter(f => f.selected && f.corrupted).length;
@@ -648,12 +659,7 @@ const FileManager = () => {
         <p className="fm-subtitle">Remote File System Access</p>
       </div>
 
-      {!isConnected ? (
-        <div className="empty-state">
-          <p>Not connected to any networks.</p>
-          <p>Use VPN Client to connect to a network first.</p>
-        </div>
-      ) : (
+      {hasFileSystems && (
         <>
           <div className="fm-controls">
             <select

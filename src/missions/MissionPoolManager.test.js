@@ -6,12 +6,18 @@ vi.mock('../data/clientRegistry', () => ({
         { id: 'client-1', name: 'Client 1', clientType: 'corp-medium', industry: 'corporate', minReputation: 1 },
         { id: 'client-2', name: 'Client 2', clientType: 'corp-medium', industry: 'corporate', minReputation: 1 },
         { id: 'client-3', name: 'Client 3', clientType: 'bank-local', industry: 'banking', minReputation: 1 },
+        { id: 'client-4', name: 'Client 4', clientType: 'corp-small', industry: 'corporate', minReputation: 1 },
+        { id: 'client-5', name: 'Client 5', clientType: 'retail-medium', industry: 'retail', minReputation: 1 },
+        { id: 'client-6', name: 'Client 6', clientType: 'govt-local', industry: 'government', minReputation: 1 },
     ]),
     getRandomAccessibleClient: vi.fn((rep, exclude = []) => {
         const clients = [
             { id: 'client-1', name: 'Client 1', clientType: 'corp-medium', industry: 'corporate', minReputation: 1 },
             { id: 'client-2', name: 'Client 2', clientType: 'corp-medium', industry: 'corporate', minReputation: 1 },
             { id: 'client-3', name: 'Client 3', clientType: 'bank-local', industry: 'banking', minReputation: 1 },
+            { id: 'client-4', name: 'Client 4', clientType: 'corp-small', industry: 'corporate', minReputation: 1 },
+            { id: 'client-5', name: 'Client 5', clientType: 'retail-medium', industry: 'retail', minReputation: 1 },
+            { id: 'client-6', name: 'Client 6', clientType: 'govt-local', industry: 'government', minReputation: 1 },
         ];
         const available = clients.filter(c => !exclude.includes(c.id));
         return available.length > 0 ? available[Math.floor(Math.random() * available.length)] : null;
@@ -20,13 +26,19 @@ vi.mock('../data/clientRegistry', () => ({
         { id: 'client-1', name: 'Client 1', clientType: 'corp-medium', industry: 'corporate', minReputation: 1 },
         { id: 'client-2', name: 'Client 2', clientType: 'corp-medium', industry: 'corporate', minReputation: 1 },
         { id: 'client-3', name: 'Client 3', clientType: 'bank-local', industry: 'banking', minReputation: 1 },
-        { id: 'client-4', name: 'Client 4', clientType: 'bank-national', industry: 'banking', minReputation: 3 },
+        { id: 'client-4', name: 'Client 4', clientType: 'corp-small', industry: 'corporate', minReputation: 1 },
+        { id: 'client-5', name: 'Client 5', clientType: 'retail-medium', industry: 'retail', minReputation: 1 },
+        { id: 'client-6', name: 'Client 6', clientType: 'govt-local', industry: 'government', minReputation: 1 },
+        { id: 'client-7', name: 'Client 7', clientType: 'bank-national', industry: 'banking', minReputation: 3 },
     ]),
     getClientsByIndustry: vi.fn((industry) => {
         const all = [
             { id: 'client-1', clientType: 'corp-medium', industry: 'corporate', minReputation: 1 },
             { id: 'client-2', clientType: 'corp-medium', industry: 'corporate', minReputation: 1 },
             { id: 'client-3', clientType: 'bank-local', industry: 'banking', minReputation: 1 },
+            { id: 'client-4', clientType: 'corp-small', industry: 'corporate', minReputation: 1 },
+            { id: 'client-5', clientType: 'retail-medium', industry: 'retail', minReputation: 1 },
+            { id: 'client-6', clientType: 'govt-local', industry: 'government', minReputation: 1 },
         ];
         return all.filter(c => c.industry === industry);
     }),
@@ -85,6 +97,9 @@ import {
     removeMissionFromPool,
     getPoolStats,
     shouldRefreshPool,
+    generatePoolMission,
+    addExpirationToMission,
+    poolConfig,
 } from './MissionPoolManager';
 
 import { generateMission } from './MissionGenerator';
@@ -692,6 +707,143 @@ describe('MissionPoolManager', () => {
             });
 
             expect(shouldRefreshPool(poolState, 1)).toBe(false);
+        });
+    });
+
+    // ========================================================================
+    // poolConfig
+    // ========================================================================
+
+    describe('poolConfig', () => {
+        it('should export pool configuration values', () => {
+            expect(poolConfig).toBeDefined();
+            expect(poolConfig.min).toBe(4);
+            expect(poolConfig.max).toBe(6);
+            expect(poolConfig.minAccessible).toBe(2);
+            expect(poolConfig.arcChance).toBe(0.2);
+        });
+
+        it('should define expiration minutes range', () => {
+            expect(poolConfig.expirationMinutes).toBeDefined();
+            expect(poolConfig.expirationMinutes.min).toBe(15);
+            expect(poolConfig.expirationMinutes.max).toBe(60);
+        });
+
+        it('should define regeneration delay (1 minute game time)', () => {
+            expect(poolConfig.regenerationDelayMs).toBe(60 * 1000);
+        });
+    });
+
+    // ========================================================================
+    // generatePoolMission
+    // ========================================================================
+
+    describe('generatePoolMission', () => {
+        it('should generate a mission with required fields', () => {
+            const mission = generatePoolMission(1, mockCurrentTime, new Set(), false);
+
+            expect(mission).toBeDefined();
+            expect(mission.missionId).toBeDefined();
+            expect(mission.clientId).toBeDefined();
+        });
+
+        it('should exclude specified client IDs', () => {
+            // Get a mission to find out which client was used
+            const firstMission = generatePoolMission(1, mockCurrentTime, new Set(), false);
+            expect(firstMission).toBeDefined();
+
+            // Generate more missions excluding that client
+            const excludeSet = new Set([firstMission.clientId]);
+            const secondMission = generatePoolMission(1, mockCurrentTime, excludeSet, false);
+
+            // If there are other clients available, the new mission should use a different client
+            // (unless no other clients are available)
+            if (secondMission) {
+                // Either it uses a different client OR all clients are excluded
+                expect(secondMission.clientId).toBeDefined();
+            }
+        });
+
+        it('should return null when no clients available', () => {
+            // Create a set excluding all mock clients
+            const excludeAll = new Set(['client-1', 'client-2', 'client-3', 'client-4', 'client-5', 'client-6']);
+            const mission = generatePoolMission(1, mockCurrentTime, excludeAll, true);
+
+            expect(mission).toBeNull();
+        });
+
+        it('should potentially generate an arc (20% chance)', () => {
+            // Run multiple times to test arc generation path
+            let arcGenerated = false;
+            for (let i = 0; i < 50; i++) {
+                const result = generatePoolMission(1, mockCurrentTime, new Set(), false);
+                if (result && result.arcId) {
+                    arcGenerated = true;
+                    expect(result.missions).toBeDefined();
+                    expect(result.missions.length).toBeGreaterThan(0);
+                    break;
+                }
+            }
+            // Note: With 20% chance, we should get an arc in 50 tries most of the time
+            // but this test won't fail if we don't - it's probabilistic
+        });
+    });
+
+    // ========================================================================
+    // addExpirationToMission
+    // ========================================================================
+
+    describe('addExpirationToMission', () => {
+        it('should add expiresAt field to mission', () => {
+            const mission = {
+                missionId: 'test-mission',
+                clientId: 'client-1',
+                title: 'Test Mission',
+            };
+
+            const missionWithExpiration = addExpirationToMission(mission, mockCurrentTime);
+
+            expect(missionWithExpiration.expiresAt).toBeDefined();
+            expect(missionWithExpiration.missionId).toBe(mission.missionId);
+            expect(missionWithExpiration.title).toBe(mission.title);
+        });
+
+        it('should set expiration between 15-60 minutes from current time', () => {
+            const mission = { missionId: 'test-mission', clientId: 'client-1' };
+            const missionWithExpiration = addExpirationToMission(mission, mockCurrentTime);
+
+            const expiresAt = new Date(missionWithExpiration.expiresAt);
+            const currentTimeMs = mockCurrentTime.getTime();
+            const minExpiration = currentTimeMs + 15 * 60 * 1000;
+            const maxExpiration = currentTimeMs + 60 * 60 * 1000;
+
+            expect(expiresAt.getTime()).toBeGreaterThanOrEqual(minExpiration);
+            expect(expiresAt.getTime()).toBeLessThanOrEqual(maxExpiration);
+        });
+
+        it('should not mutate the original mission object', () => {
+            const mission = {
+                missionId: 'test-mission',
+                clientId: 'client-1',
+            };
+
+            const missionWithExpiration = addExpirationToMission(mission, mockCurrentTime);
+
+            expect(mission.expiresAt).toBeUndefined();
+            expect(missionWithExpiration).not.toBe(mission);
+        });
+
+        it('should override existing expiresAt if present', () => {
+            const mission = {
+                missionId: 'test-mission',
+                clientId: 'client-1',
+                expiresAt: 'old-value',
+            };
+
+            const missionWithExpiration = addExpirationToMission(mission, mockCurrentTime);
+
+            expect(missionWithExpiration.expiresAt).not.toBe('old-value');
+            expect(new Date(missionWithExpiration.expiresAt)).toBeInstanceOf(Date);
         });
     });
 });

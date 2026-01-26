@@ -16,6 +16,7 @@
 
 import { getClientById } from '../data/clientRegistry';
 import { generateSubnet, generateIpInSubnet, generateNarAttachments, randomInt } from './networkUtils';
+import { getSanitizedNamePrefix } from '../utils/helpers';
 
 // Track generated mission IDs to ensure uniqueness
 let missionIdCounter = 0;
@@ -56,7 +57,7 @@ function randomPick(arr) {
  * @returns {string} Generated hostname
  */
 function generateHostname(client, purpose, index = 1) {
-    const prefix = client.name.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+    const prefix = getSanitizedNamePrefix(client.name, { lowercase: true });
     return `${prefix}-${purpose}-${String(index).padStart(2, '0')}`;
 }
 
@@ -288,7 +289,7 @@ export function generateNetworkInfrastructure(client, missionType, targetFileCou
 
     networks.push({
         networkId: primaryNetworkId,
-        networkName: `${client.name.split(' ')[0]}-Network`,
+        networkName: `${getSanitizedNamePrefix(client.name)}-Network`,
         address: primarySubnet,
         bandwidth: randomPick([25, 50, 75, 100]),
         revokeOnComplete: true,
@@ -327,7 +328,7 @@ export function generateNetworkInfrastructure(client, missionType, targetFileCou
 
         networks.push({
             networkId: secondaryNetworkId,
-            networkName: `${client.name.split(' ')[0]}-Backup`,
+            networkName: `${getSanitizedNamePrefix(client.name)}-Backup`,
             address: secondarySubnet,
             bandwidth: randomPick([25, 50, 75, 100]),
             revokeOnComplete: true,
@@ -1181,7 +1182,7 @@ export function generateRestoreFromBackupMission(client, options = {}) {
 
     const networks = [{
         networkId: primaryNetworkId,
-        networkName: `${client.name.split(' ')[0]}-Network`,
+        networkName: `${getSanitizedNamePrefix(client.name)}-Network`,
         address: primarySubnet,
         bandwidth: randomPick([25, 50, 75, 100]),
         revokeOnComplete: true,
@@ -1356,7 +1357,7 @@ export function generateRepairAndBackupMission(client, options = {}) {
 
     const networks = [{
         networkId: primaryNetworkId,
-        networkName: `${client.name.split(' ')[0]}-Network`,
+        networkName: `${getSanitizedNamePrefix(client.name)}-Network`,
         address: primarySubnet,
         bandwidth: randomPick([25, 50, 75, 100]),
         revokeOnComplete: true,

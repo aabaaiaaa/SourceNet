@@ -107,6 +107,22 @@
   border-radius: 3px;
 }
 
+.network-connection-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.connection-name {
+  flex: 1;
+}
+
+.connection-bandwidth {
+  font-size: 0.85em;
+  font-family: monospace;
+}
+
 .topbar-credits {
   cursor: pointer;
   padding: 6px 12px;
@@ -415,6 +431,12 @@
   height: 100%;
   background: linear-gradient(90deg, #4CAF50, #81C784);
   transition: width 0.2s ease;
+}
+
+.bandwidth-limited {
+  color: #DAA520;
+  font-style: italic;
+  margin-top: 4px;
 }
 
 /* Disconnection Notice Styles */

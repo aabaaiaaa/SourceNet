@@ -16,12 +16,13 @@ import { getRandomStoryline } from './arcStorylines';
 import { canAccessClientType } from '../systems/ReputationSystem';
 
 // Configuration for mission pool
-const poolConfig = {
+export const poolConfig = {
     min: 4,
     max: 6,
     minAccessible: 2,
     arcChance: 0.2, // 20% chance to generate an arc instead of single mission
     expirationMinutes: { min: 15, max: 60 }, // Missions expire in 15-60 game minutes
+    regenerationDelayMs: 60 * 1000, // 1 minute game time delay before regenerating expired mission
 };
 
 /**
@@ -42,7 +43,7 @@ function calculateExpirationTime(currentTime) {
  * @param {Date} currentTime - Current game time
  * @returns {Object} Mission with expiresAt set
  */
-function addExpirationToMission(mission, currentTime) {
+export function addExpirationToMission(mission, currentTime) {
     return {
         ...mission,
         expiresAt: calculateExpirationTime(currentTime)
@@ -106,7 +107,7 @@ export function initializePool(reputation, currentTime) {
  * @param {boolean} mustBeAccessible - Whether mission must be accessible at current rep
  * @returns {Object|null} Generated mission or arc
  */
-function generatePoolMission(reputation, currentTime, excludeClientIds, mustBeAccessible) {
+export function generatePoolMission(reputation, currentTime, excludeClientIds, mustBeAccessible) {
     // Get available clients
     let client;
 
@@ -515,5 +516,8 @@ export default {
     handleArcFailure,
     removeMissionFromPool,
     getPoolStats,
-    shouldRefreshPool
+    shouldRefreshPool,
+    generatePoolMission,
+    addExpirationToMission,
+    poolConfig
 };

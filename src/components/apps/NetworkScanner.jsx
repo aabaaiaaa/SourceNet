@@ -29,6 +29,15 @@ const NetworkScanner = () => {
   const [disconnectionMessage, setDisconnectionMessage] = useState(null);
   const operationIdRef = useRef(null);
 
+  // Clean up any pending bandwidth operations on unmount
+  useEffect(() => {
+    return () => {
+      if (operationIdRef.current) {
+        completeBandwidthOperation(operationIdRef.current);
+      }
+    };
+  }, [completeBandwidthOperation]);
+
   // Check if selected network is still connected
   const isNetworkConnected = selectedNetwork && activeConnections.some(
     conn => conn.networkId === selectedNetwork

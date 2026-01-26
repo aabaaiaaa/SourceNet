@@ -1,89 +1,16 @@
 TODOs
 
-(wip - testing)
-Once the tutorial part 2 mission is completed, there should be other missions then made available (they should be similar beginner missions). There should be some mission types already created in the phase 2 spec, or some will need to be created. At least there should be missions like the tutorial missions where you need to repair files or copy files or delete files.
-There are some mission data files already, but they aren't being used at the moment. I would like to start making some post tutorial missions available once you complete the tutorial part 2 mission, so the mission board does has some missions available. I would like to see what types of missions can be created based on the software that is currently available.
-There are some missions suggested in the phase 2 docs that require more than the software already available and they will need to be skipped for this initial change. However, there's a lot of variation that could be used to create unique missions that use copy/delete/repair files and different filesystems as well as file sytems across different networks too. So the idea would be to create missions that feel more involved than just copy from a to b location. Also, the narrative of these missions matter so coming up with believable narratives is important - I'm happy for you to embelish stories for each.
-Ideally I'm looking for around 7 unique missions for now.
-The plan is to have some missions that require a better reputation so the player cannot access those until they've worked a bit to repair their rep after the tutorial missions.
--- (WIP!!!!!) - WORKING ON THIS NOW
-need to create a new generated scenario - Prior to tutorial part 2 verify mission completion objective - so that another e2e test can load this scenario up and that last objective can be completed automatically and then trigger the post tutorial game state (that the generated missions load up in the mission board).
-This game state will need to be saved immediately after the 2nd from last mission objective is completed as the last mission objective "verify mission completion" is a timed event and is only a short time.
-Then a new e2e test can be created to test the error above and iterate on this without needing to go through the whole tutorial missions over and over.
-
-(WIP - missions are better but have objectives like copy files, but not to paste them anywhere, which doesn't make sense - it should be to copy them to a location, not just copy them)
-the mission generator system is not fit for purpose because it generates missions that have unsupported objectives. there are core building blocks of apps and systems like the message system and scripted event system that could be used to create varying sized missions with different narratives based on all the client/back story.
-I need you to review the mission generator and plan out changes that allow actual compatible objectives to be created that make sense.
-You'll need to review network structures, what devices can be seen and how apps interact with those networks.
-VPN client allows connecting to multiple netowkrs as well as disconnecting.
-Netowrk scanner discovers devices on a network.
-File Manager allows file systems that have been discovered to have their files listed (if there are any files). It also allows file operations like copy, delete and repair be done (repair on corrupted files only).
-THe NAR app allows you to see all entries you have access to as well as ones you've gotten revoked from. It also has a connect/disconnect function that links through to the VPN client.
-NAR entries are always shared through a message as an attachment.
-NAR entries can be revoked at the end of missions too.
-There's no limit to the number of NAR entry attachments a mission might need, as each NAR entry gives you access to at least 1 network of devices.
-The file manager has the ability to have multiple instances open so a player can copy from one network and paste into another (if they had previously connected to 2 separate networks).
-Missions could have time based objectives (needs to be completed by a time else fail. And missions in the mission board should have expiration dates.
-All missions MUST have a "verify mission completion" objective that is added to the end of all other objectives. This serves as a cooldown so the player can see that once the last real mission objective is complete, there's time for them to see the completion happen. But this delay also serves as a way to extend missions by adding in an additional objective to the mission.
-As an example of a basic mission structure:
-1. message from the client of the mission with some mission narrative and the NAR entry in order to access their network. One NAR entry as a minimum but they could provide multiple NAR entries for multiple networks.
-2. VPN client is used to connect to the network or networks.
-3. network scanner discovers devices.
-4. File manager can be used to access file systems and manipulate files using copy/paste/delete/repair. The actions required should be based on the narrative of the mission.
-5. There could be any number of networks/devices that make up the mission and therefore have multiple levels of objectives that need fulfilling.
-6. Once all mission objectives completed, it's just the "verify mission completion" objective that will auto-complete IF there's no scripted event that happens.
-7. Scripted events can trigger on any event or after a particular objective, so for example a message from the client could be sent with additional mission information or NAR entries for new devices that need interacting with.
-8. Message from client with the payout for the mission.
-You can look at the tutorial parts 1 + 2 for some examples, but this is not the limit.
-
-
-(WIP - needs testing)
-mission extensions
-
-(wip - needs testing)
-missions are mostly to do with copy/delete/repair of files at the moment. But the objectives are often about operating on all the files that are present on a file system, instead of being only some of the files and having to check which files should be operated out of all the files.
-also, there should be more variation on the number of file systems that are generated. There's no limit to the number of file systems that could exist - for example back up mission might be backing up from multiple locations/networks to a central location.
-the file types and names and sizes need to vary more. epsecially with backup missions as would might expect very large files for backup missions. also for repair missions, there might be large DB files that need repairing AND then a backup taken.
-There could be backup missions where you restore from the backup, but need to delete the corrupt files first and then restore from the backup.
----
-(done - needs testing)
-If i've already scanned and discovered a particular file system, the objective tracker should mark the objective as completed, even if I scanned it BEFORE I reached that objective - it shouldn't matter the order you completed objectives.
----
-(done - needs testing)
-Some objectives require files to be copied from multiple locations and then pasted into a central location - because the way you copy (and real life copy functionality) only allows you to copy one selection of files, it's pointless to have objectives where you are asked to copy files from one location and a second location and then paste all in a third location.
-However, if the SSD drive on your terminal was accessible through the File Manager app too, then one of the options on the drop down for it would be your local machine, so then the player could copy and paste the files from multiple locations to your local machine and then copy them all to perform the final pasting of all files. Obviously, this special file system location should not have the same slow restrictions as remote locations would as you are accessing the files locally, so copying shouldn't take long at all. Deleting and repairing local files should still take time based on the file sizes, but should be much quicker than performing those operations remotely.
-Any files copied into your SSD must persist regardless of disconnection or NAR entry revocation - they should be accessible when not connected to any network - so this might need a change to the way the File Manager handles it's UI.
----
-(done - needs testing)
-when pasting files, it seems the objective tracker doesn't check what location you are pasting into, it just waits for pasting to have happened. This is obviously wrong as if the objective is to paste files to a particular location, then not only does the pasting need to happen, but to a particular location too.
----
-(done)
-when a mission gets a mission extension and a message is received to deal with additional files, the message really needs to list those additional files like the intro message does as it's not that obvious which files need to be copied too.
----
-(done)
-when a mission is extended and lists additional files to be repaired, there doesn't seem to be any files that are then marked as corrupted and therefore need repairing. So seems like the mission extension system will need to alter the file system files and their properties in order to make this possible.
-
-
-(done - needs testing)
-there's story mission data that has network information as a starting state and there are generated missions that generate network starting state. there have been several situations where the data that makes up these networks changes, like files are copied and pasted, or deleted or repaired or all of these. then there's network data that lives within the NAR as well as network data that lives within the mission data. there needs to be a change to where the source of truth is for all situations when looking up the current state of a network. the way I see it is there's always a "starting state" of a network, so the starting devices and network details for a mission would be expected to be set in a particular way that would allow the mission to be completed - NAR entries are just about access to devices as well as networks, but it doesn't need to contain the whole structure, just what it is allowing access to. When a mission is started, all it's networks and devices and files etc could be added into a central global network system, which also then becomes the central place for all apps that are used to look up networks, devices and files.
-story missions and generated ones are both accepted through the same way, so there should be no issue in how these both work.
-however, the mission extension system will need the ability to make changes to this global network system. anytime a new NAR entry is supplied then new networks or devices or files could be added (merged into existing if they already exist). but there are other situations with the mission extension system where only properties on existing files might be changed and the issuing of a new NAR entry just doesn't fit in with the simulation from the player's perspective - they would expect those changes to have justed happened automatically. So the player would expect a new NAR entry if a) there's a new network to connect to, b) there are new devices to discover as these both represent "access right" type changes the player would think they'd need updated auth credentials. The player wouldn't expect changes to files or additional files being added to need a new NAR as it's potentially files in existing devices.
-also, the future idea of one global network system opens the game up to larger views of the entire network as a whole - it opens the possibility of hacking into systems that group entire networks share like a cloud hosting provider or being able to bounce your connection through multiple different networks to prevent being traced.
----
-(done - needs testing)
-extend the debug panel to show all networks/devices/file systems/files registered with the NetworkRegistry - this is just a debug way of seeing all the data that is being generated as missions are accepted.
-
-
-
 Review the systems in place for handling missions and scripted events and objective tracking as I need to understand how to picture these systems and how best they should integrate with each other as the biggest issues have come from changes in these areas. Each system needs to have a role and individual responsibility so there's not internal variables being changed by external systems. It will then aid in writing test cases for each system.
 
 
-
-minimising the file manager and network scanner apps seems to reset some state in them so when you open them back up, the dropdowns are not selected anymore. It might not be just the dropdowns that are affected, but ideally no visuals should be affected once you open the app back up from minimising.
-
-
-it seems that NAR attachments that are trying to name the NAR entries are cutting off replacements that contain single quotes (example, St. Mary's blah is turning into St.-Network or St.-Backup. Can you change this so a text replacement friendly version of the client can be used?
+There's sometimes a situation when files that are being pasted to a specific location are not registering as being pasted there even though the file is shown in the expected backup file system. Now given as a developer I can see the console log messages, I could see that one file just didn't have the same IP as the other files I pasted. I cannot say why this was the case, but I was using 2 app instances of the File Manager app, so maybe when I'm performing operations in one on another file system it interferes with the other operations in the other File Manager instance. So there might be multiple areas that need looking at here. 1) I'd like to be able to perform operations in one instance of File Manager that do not interfere with operations in another File Manager app - they do share the copy and paste abilities, but that seems logical. 2) It might help to update the active mission objectives in the mission board app to show the details of which files are needed in what locations and which of those the player has been detected to have completed - then at least the player could atttempt to retry the dodgy file that has not registered correctly.
+To add something else to try to reproduce this or another issue, if you have two File Manager instances and you have each pasting a file into the same location from two different locations, you do not end up with both files pasting correctly in the shared location. Create a test for this that fails first, then write a fix.
 
 
-(done - needs testing)
-it seems that when loading the post tutorial scenario, there are multiple story events scheduled to run that all attempt to send the message with the ID msg-mission-board-license. Given this is meant to trigger at the beginning of the game, you shouldn't expect it to trigger again nor multiple times again. I think this is highlighting that there is an issue with how this is triggered or how story events are being saved and loaded again.
+When pasting files to a location in the File Manager app, it currently shows a progress bar, but can it also show the transfer rate as well as it would be nice that for large file transfers the player might decide to perform a disconnection from other networks to free up bandwidth to make the transfer faster.
+
+
+There is logic to help name the NAR entries based on the client/mission for generated missions, but this logic which is to have at least 4 characters to a network name is not enough as in situations like "Metro Police Department" it might be that there's a few "Metro" type clients, so I need this logic to take at least 10 characters to help there be better uniqueness for network NAR attachment names.
+
+(WIP - needs testing as it didn't work first time)
+Once a mission expires in the mission board app, after 1 minute of in game time and new mission should be generated.

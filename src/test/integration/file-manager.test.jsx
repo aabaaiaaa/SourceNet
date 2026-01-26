@@ -62,19 +62,17 @@ describe('File Manager Integration', () => {
         networkRegistry.reset();
     });
 
-    it('should show "not connected" message when no active network connections', () => {
+    it('should show Local SSD in file system selector even without VPN connections', () => {
         render(
             <GameProvider>
                 <FileManager />
             </GameProvider>
         );
 
-        // Should show not connected message
-        expect(screen.getByText(/Not connected to any networks/i)).toBeInTheDocument();
-        expect(screen.getByText(/Use VPN Client to connect/i)).toBeInTheDocument();
-
-        // Should not show file system selector
-        expect(screen.queryByText('Select File System')).not.toBeInTheDocument();
+        // Should show file system selector with Local SSD available
+        expect(screen.getByText('Select File System')).toBeInTheDocument();
+        expect(screen.getByRole('combobox')).toBeInTheDocument();
+        expect(screen.getByText(/Local SSD/i)).toBeInTheDocument();
     });
 
     it('should display file systems from connected network after scanning', async () => {
@@ -596,26 +594,24 @@ describe('File Manager Integration', () => {
             expect(vpnSelect).toHaveTextContent(/Corporate Network/);
         });
 
-        // File Manager should show not connected
-        expect(screen.getByText(/Not connected to any networks/i)).toBeInTheDocument();
+        // File Manager should show Local SSD available (no VPN required for local access)
+        const fileManagerContainer = document.querySelector('.file-manager');
+        expect(within(fileManagerContainer).getByText(/Local SSD/i)).toBeInTheDocument();
 
-        // Connect via VPN Client
+        // Connect via VPN Client to get access to remote file systems
         const vpnSelect = screen.getAllByRole('combobox')[0]; // VPN Client selector
         await user.selectOptions(vpnSelect, 'corp-net-1');
 
         const connectButton = screen.getByRole('button', { name: /connect/i });
         await user.click(connectButton);
 
-        // Wait for connection to complete (uses real timers, takes ~3 seconds)
+        // Wait for connection to complete and remote file system to appear
         await waitFor(() => {
-            expect(screen.getByText('Select File System')).toBeInTheDocument();
+            const fmSelect = within(fileManagerContainer).getByRole('combobox');
+            expect(fmSelect).toHaveTextContent(/fileserver-01/i);
         }, { timeout: 5000 });
 
-        // Should not show "not connected" message anymore
-        expect(screen.queryByText(/Not connected to any networks/i)).not.toBeInTheDocument();
-
-        // Can now select file system in File Manager (use specific container since VPN dropdown is hidden when connected)
-        const fileManagerContainer = document.querySelector('.file-manager');
+        // Can now select remote file system in File Manager
         const fileManagerSelect = within(fileManagerContainer).getByRole('combobox');
         await user.selectOptions(fileManagerSelect, 'fs-001');
 
@@ -1143,8 +1139,9 @@ describe('File Manager Integration', () => {
             expect(screen.queryByText(/📋 Clipboard/i)).not.toBeInTheDocument();
         }, { timeout: 2000 });
 
-        // FileManager should show not connected
-        expect(screen.getByText(/Not connected to any networks/i)).toBeInTheDocument();
+        // FileManager should still show Local SSD available after VPN disconnect
+        const fmContainerAfterDisconnect = document.querySelector('.file-manager');
+        expect(within(fmContainerAfterDisconnect).getByText(/Local SSD/i)).toBeInTheDocument();
 
         // Reconnect to the same network - first select the network from dropdown
         const vpnDropdown = screen.getAllByRole('combobox')[0]; // VPN network dropdown

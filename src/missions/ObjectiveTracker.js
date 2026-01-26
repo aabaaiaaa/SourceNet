@@ -82,13 +82,15 @@ export const checkNarEntryAddedObjective = (objective, narEntries) => {
 export const checkFileOperationObjective = (objective, operationData, cumulativeOperations = {}) => {
   const { operation, targetFiles, destination } = objective;
 
-  // Check if operation matches
-  if (operationData.operation !== operation) return false;
-
   if (!targetFiles || targetFiles.length === 0) {
-    // No specific files required - just check if operation happened
+    // No specific files required - just check if operation type matches
+    if (operationData.operation !== operation) return false;
     return true;
   }
+
+  // For objectives with targetFiles, we rely on cumulative tracking.
+  // Don't require operationData.operation to match - files may be copied individually
+  // and subsequent operations (e.g. paste) would cause the check to fail otherwise.
 
   // For paste operations with a destination requirement, check files were pasted to correct location
   if (destination && operation === 'paste') {

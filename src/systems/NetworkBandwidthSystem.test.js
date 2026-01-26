@@ -10,8 +10,9 @@ import {
 
 describe('NetworkBandwidthSystem', () => {
   describe('getNetworkBandwidth', () => {
-    it('should return default 50 Mbps for any network', () => {
-      expect(getNetworkBandwidth('test-network')).toBe(50);
+    it('should return Infinity when no connections (adapter is the only limit)', () => {
+      expect(getNetworkBandwidth([])).toBe(Infinity);
+      expect(getNetworkBandwidth()).toBe(Infinity);
     });
   });
 

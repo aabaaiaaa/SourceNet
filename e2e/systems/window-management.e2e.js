@@ -362,8 +362,8 @@ test.describe('Window Management', () => {
             await saveItem.locator('button:has-text("Load")').click();
             await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
-            // Verify window state persisted
-            const openWindowsAfterLoad = await page.locator('.window').count();
+            // Verify window state persisted (count only visible windows, not hidden minimized ones)
+            const openWindowsAfterLoad = await page.locator('.window:visible').count();
             const minimizedWindowsAfterLoad = await page.locator('.minimized-window').count();
 
 
