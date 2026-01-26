@@ -370,7 +370,7 @@ describe('generateFileSize', () => {
 describe('generateHostname', () => {
     it('should create hostname from client name and purpose', () => {
         const hostname = generateHostname('Test Client', 'server', 1);
-        expect(hostname).toBe('test-server-01');
+        expect(hostname).toBe('testclient-server-01');
     });
 
     it('should sanitize special characters', () => {

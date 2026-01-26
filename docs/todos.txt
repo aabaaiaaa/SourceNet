@@ -3,14 +3,32 @@ TODOs
 Review the systems in place for handling missions and scripted events and objective tracking as I need to understand how to picture these systems and how best they should integrate with each other as the biggest issues have come from changes in these areas. Each system needs to have a role and individual responsibility so there's not internal variables being changed by external systems. It will then aid in writing test cases for each system.
 
 
+(done)
 There's sometimes a situation when files that are being pasted to a specific location are not registering as being pasted there even though the file is shown in the expected backup file system. Now given as a developer I can see the console log messages, I could see that one file just didn't have the same IP as the other files I pasted. I cannot say why this was the case, but I was using 2 app instances of the File Manager app, so maybe when I'm performing operations in one on another file system it interferes with the other operations in the other File Manager instance. So there might be multiple areas that need looking at here. 1) I'd like to be able to perform operations in one instance of File Manager that do not interfere with operations in another File Manager app - they do share the copy and paste abilities, but that seems logical. 2) It might help to update the active mission objectives in the mission board app to show the details of which files are needed in what locations and which of those the player has been detected to have completed - then at least the player could atttempt to retry the dodgy file that has not registered correctly.
 To add something else to try to reproduce this or another issue, if you have two File Manager instances and you have each pasting a file into the same location from two different locations, you do not end up with both files pasting correctly in the shared location. Create a test for this that fails first, then write a fix.
 
 
-When pasting files to a location in the File Manager app, it currently shows a progress bar, but can it also show the transfer rate as well as it would be nice that for large file transfers the player might decide to perform a disconnection from other networks to free up bandwidth to make the transfer faster.
+(done)
+When pasting files to a location in the File Manager app, it currently shows a progress bar, but can it also show the transfer rate and time (in game time) till complete as well as it would be nice that for large file transfers the player might decide to perform a disconnection from other networks to free up bandwidth to make the transfer faster.
 
 
+(done)
 There is logic to help name the NAR entries based on the client/mission for generated missions, but this logic which is to have at least 4 characters to a network name is not enough as in situations like "Metro Police Department" it might be that there's a few "Metro" type clients, so I need this logic to take at least 10 characters to help there be better uniqueness for network NAR attachment names.
 
-(WIP - needs testing as it didn't work first time)
+
+(done - needs testing as it didn't work first time)
 Once a mission expires in the mission board app, after 1 minute of in game time and new mission should be generated.
+
+
+When performing file operations, the File Manager app automatically scrolls down to the log at the bottom of the app. I don't think it should do this as the player might not expect it - we don't do this anywhere else at the moment. But it might mean e2e tests might need to scroll if they are looking for visible elements.
+
+
+(test)
+If you can fail a mission.
+
+(planning)
+The game is not at version 1.0 yet. Can you make a change that allows this to be known so any future development does not attempt to use backward compatibility or cater for legacy support for old code.
+
+
+The mission generation system seems to be working very well. I want to extend the scope of the client list by having a location property that can be associated with clients. For example, some clients might cover multiple regions or counties whereas some smaller clients might only operate locally. Another example could be Government departments, which might be broken down into particular areas. Some locations could be international or on remote islands, and some locations might be at sea for any oil rig/wind turbine farms or boat related clients like cruse ships or large container ships.
+There is already several dynamic layers to how clients are generated and it should be expected that over the cause of this development, the layers that are available to make clients and missions more unique will increase to make them feel fresh and to allow more client specific missions.

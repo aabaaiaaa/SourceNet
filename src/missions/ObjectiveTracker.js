@@ -160,6 +160,57 @@ export const getFileOperationProgress = (objective, cumulativeOperations = {}) =
 };
 
 /**
+ * Get detailed file status for file operation objective
+ * Returns which files are completed and which are still pending
+ * @param {object} objective - Objective definition with targetFiles array and optional destination
+ * @param {object} cumulativeOperations - Cumulative file operations
+ * @returns {object|null} Detailed status {targetFiles, completedFiles, pendingFiles, destination} or null if no targetFiles
+ */
+export const getFileOperationDetails = (objective, cumulativeOperations = {}) => {
+  const { operation, targetFiles, destination } = objective;
+
+  if (!targetFiles || targetFiles.length === 0) {
+    return null;
+  }
+
+  // For paste operations with destination requirement
+  if (destination && operation === 'paste') {
+    const pasteDestinations = cumulativeOperations.pasteDestinations || new Map();
+    const completedFiles = targetFiles.filter(file => pasteDestinations.get(file) === destination);
+    const pendingFiles = targetFiles.filter(file => pasteDestinations.get(file) !== destination);
+
+    // Also track files pasted to wrong location
+    const wrongLocationFiles = pendingFiles.filter(file => pasteDestinations.has(file));
+
+    return {
+      operation,
+      targetFiles,
+      completedFiles,
+      pendingFiles,
+      wrongLocationFiles,
+      destination,
+      totalRequired: targetFiles.length,
+      totalCompleted: completedFiles.length
+    };
+  }
+
+  const completedFilesSet = cumulativeOperations[operation] || new Set();
+  const completedFiles = targetFiles.filter(file => completedFilesSet.has(file));
+  const pendingFiles = targetFiles.filter(file => !completedFilesSet.has(file));
+
+  return {
+    operation,
+    targetFiles,
+    completedFiles,
+    pendingFiles,
+    wrongLocationFiles: [],
+    destination: null,
+    totalRequired: targetFiles.length,
+    totalCompleted: completedFiles.length
+  };
+};
+
+/**
  * Check if all objectives are complete
  * @param {array} objectives - Mission objectives
  * @returns {boolean} All complete

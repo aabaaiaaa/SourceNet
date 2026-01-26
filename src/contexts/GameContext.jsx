@@ -209,6 +209,23 @@ export const GameProvider = ({ children }) => {
     }
   }, []);
 
+  // Add files to a specific file system atomically - prevents race conditions
+  // Use this instead of updateFileSystemFiles when adding new files during paste operations
+  const addFilesToFileSystem = useCallback((networkId, fileSystemId, newFiles) => {
+    console.log(`📁 addFilesToFileSystem called: networkId=${networkId}, fsId=${fileSystemId}, newFileCount=${newFiles?.length}`);
+
+    // Add files atomically using NetworkRegistry (this will emit 'fileSystemChanged' event)
+    const success = networkRegistry.addFilesToFileSystem(fileSystemId, newFiles);
+
+    if (success) {
+      console.log(`📁 Added ${newFiles?.length} files to fs ${fileSystemId}`);
+    } else {
+      console.warn(`📁 Failed to add files to fs ${fileSystemId} - not found in registry`);
+    }
+
+    return success;
+  }, []);
+
   // Accumulate file operations for mission tracking (unique files per operation type)
   // For paste operations, also track the destination IP for each file
   useEffect(() => {
@@ -2508,6 +2525,7 @@ export const GameProvider = ({ children }) => {
     setFileClipboard,
     clearFileClipboard,
     updateFileSystemFiles,
+    addFilesToFileSystem,
 
     // Local SSD
     localSSDFiles,

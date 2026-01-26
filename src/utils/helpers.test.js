@@ -13,6 +13,7 @@ import {
   getAllSaves,
   deleteSave,
   hasSaves,
+  getSanitizedNamePrefix,
 } from './helpers';
 
 describe('generateMailId', () => {
@@ -345,6 +346,80 @@ describe('localStorage save/load functions', () => {
       // Verify save worked
       const saves = getAllSaves();
       expect(saves['agent_1234']).toBeDefined();
+    });
+  });
+});
+
+describe('getSanitizedNamePrefix', () => {
+  describe('default behavior (minLength = 10)', () => {
+    it('should accumulate words until at least 10 characters', () => {
+      expect(getSanitizedNamePrefix('Metro Police Department')).toBe('MetroPolice');
+      expect(getSanitizedNamePrefix('Metro Transit Authority')).toBe('MetroTransit');
+      expect(getSanitizedNamePrefix('First Community Credit Union')).toBe('FirstCommunity');
+    });
+
+    it('should return PascalCase by default', () => {
+      expect(getSanitizedNamePrefix("St. Mary's Regional Hospital")).toBe('StMarysRegional');
+    });
+
+    it('should handle names that are already long enough with first word', () => {
+      expect(getSanitizedNamePrefix('International Business Machines')).toBe('International');
+    });
+
+    it('should handle short names that cannot reach minLength', () => {
+      expect(getSanitizedNamePrefix('Bob Co')).toBe('BobCo');
+      expect(getSanitizedNamePrefix('A B C')).toBe('ABC');
+    });
+  });
+
+  describe('lowercase option', () => {
+    it('should return lowercase when lowercase option is true', () => {
+      expect(getSanitizedNamePrefix('Metro Police Department', { lowercase: true })).toBe('metropolice');
+      expect(getSanitizedNamePrefix("St. Mary's Regional Hospital", { lowercase: true })).toBe('stmarysregional');
+    });
+  });
+
+  describe('custom minLength option', () => {
+    it('should respect custom minLength', () => {
+      expect(getSanitizedNamePrefix('Metro Police Department', { minLength: 4 })).toBe('Metro');
+      expect(getSanitizedNamePrefix('Metro Police Department', { minLength: 15 })).toBe('MetroPoliceDepartment');
+    });
+
+    it('should combine lowercase and custom minLength', () => {
+      expect(getSanitizedNamePrefix('Metro Police Department', { lowercase: true, minLength: 4 })).toBe('metro');
+    });
+  });
+
+  describe('special character handling', () => {
+    it('should remove apostrophes and other special characters', () => {
+      expect(getSanitizedNamePrefix("Bob's Auto Parts")).toBe('BobsAutoParts');
+      expect(getSanitizedNamePrefix("O'Brien & Associates")).toBe('OBrienAssociates');
+    });
+
+    it('should remove periods', () => {
+      expect(getSanitizedNamePrefix('Dr. Smith Medical Center')).toBe('DrSmithMedical');
+    });
+
+    it('should handle multiple special characters', () => {
+      expect(getSanitizedNamePrefix('A.B.C. Corp & Co.')).toBe('ABCCorpCo');
+    });
+  });
+
+  describe('edge cases', () => {
+    it('should handle single word names', () => {
+      expect(getSanitizedNamePrefix('Microsoft')).toBe('Microsoft');
+    });
+
+    it('should handle empty string', () => {
+      expect(getSanitizedNamePrefix('')).toBe('Unknown');
+    });
+
+    it('should handle names with only special characters', () => {
+      expect(getSanitizedNamePrefix('--- & ---')).toBe('Unknown');
+    });
+
+    it('should handle names with numbers', () => {
+      expect(getSanitizedNamePrefix('Area 51 Research Lab')).toBe('Area51Research');
     });
   });
 });

@@ -122,6 +122,18 @@ describe('GameContext', () => {
             expect(capturedContext.setReputationMessagesSent).toBeTypeOf('function');
         });
 
+        it('should export addFilesToFileSystem function', () => {
+            let capturedContext;
+
+            render(
+                <GameProvider>
+                    <TestComponent onRender={(ctx) => { capturedContext = ctx; }} />
+                </GameProvider>
+            );
+
+            expect(capturedContext.addFilesToFileSystem).toBeTypeOf('function');
+        });
+
         it('should export all required state setters for scenario fixtures', () => {
             let capturedContext;
 

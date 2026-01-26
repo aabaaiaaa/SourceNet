@@ -269,17 +269,17 @@ export const hasSaves = () => {
  * @param {string} name - The full name (e.g., "St. Mary's Regional Hospital")
  * @param {Object} options - Configuration options
  * @param {boolean} options.lowercase - If true, returns lowercase (for hostnames). Default false (PascalCase).
- * @param {number} options.minLength - Minimum character length before stopping. Default 4.
- * @returns {string} Sanitized prefix (e.g., "StMarys" or "stmarys")
+ * @param {number} options.minLength - Minimum character length before stopping. Default 10.
+ * @returns {string} Sanitized prefix (e.g., "StMarysRegional" or "stmarysregional")
  * 
  * @example
- * getSanitizedNamePrefix("St. Mary's Regional Hospital") // "StMarys"
- * getSanitizedNamePrefix("St. Mary's Regional Hospital", { lowercase: true }) // "stmarys"
- * getSanitizedNamePrefix("Bob's Auto Parts") // "Bobs"
- * getSanitizedNamePrefix("First Community Credit Union") // "First"
+ * getSanitizedNamePrefix("St. Mary's Regional Hospital") // "StMarysRegional"
+ * getSanitizedNamePrefix("St. Mary's Regional Hospital", { lowercase: true }) // "stmarysregional"
+ * getSanitizedNamePrefix("Bob's Auto Parts") // "BobsAutoParts"
+ * getSanitizedNamePrefix("First Community Credit Union") // "FirstCommunity"
  */
 export const getSanitizedNamePrefix = (name, options = {}) => {
-  const { lowercase = false, minLength = 4 } = options;
+  const { lowercase = false, minLength = 10 } = options;
 
   // Split into words and sanitize each word (remove non-alphanumeric)
   const words = name.split(' ').map(word => word.replace(/[^a-zA-Z0-9]/g, ''));

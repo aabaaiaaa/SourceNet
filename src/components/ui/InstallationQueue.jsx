@@ -6,28 +6,8 @@ import {
   calculateTransferSpeed,
 } from '../../systems/NetworkBandwidthSystem';
 import { calculateBandwidthShare } from '../../systems/InstallationSystem';
+import { formatTimeRemaining, formatSize, formatTransferSpeed } from '../../utils/formatUtils';
 import './InstallationQueue.css';
-
-/**
- * Format bytes/MB for display
- */
-const formatSize = (sizeInMB) => {
-  if (sizeInMB >= 1000) {
-    return `${(sizeInMB / 1000).toFixed(1)} GB`;
-  }
-  return `${sizeInMB} MB`;
-};
-
-/**
- * Format time remaining for display
- */
-const formatTimeRemaining = (seconds) => {
-  if (seconds <= 0 || !isFinite(seconds)) return '';
-  if (seconds < 60) return `${Math.ceil(seconds)}s`;
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.ceil(seconds % 60);
-  return `${mins}m ${secs}s`;
-};
 
 /**
  * Installation Queue Widget
@@ -87,7 +67,8 @@ const InstallationQueue = () => {
               {item.status === 'downloading' && item.sizeInMB && (
                 <span className="queue-info">
                   {formatSize(Math.floor(item.sizeInMB * (item.progress || 0) / 100))} / {formatSize(item.sizeInMB)}
-                  {timeRemaining > 0 && ` • ${formatTimeRemaining(timeRemaining)}`}
+                  {downloadSpeedMBps > 0 && ` • ${formatTransferSpeed(downloadSpeedMBps)}`}
+                  {timeRemaining > 0 && ` • ${formatTimeRemaining(timeRemaining)} left`}
                 </span>
               )}
             </div>

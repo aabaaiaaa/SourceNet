@@ -432,3 +432,74 @@
 .mission-arc-indicator .arc-text {
   font-weight: 500;
 }
+
+/* File Checklist for File Operation Objectives */
+.file-checklist {
+  margin-top: 10px;
+  margin-left: 25px;
+  padding: 8px 12px;
+  background: #f8f8f8;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.file-destination {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed #ccc;
+  color: #555;
+  font-weight: 500;
+}
+
+.file-destination .destination-icon {
+  font-size: 14px;
+}
+
+.file-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  color: #666;
+}
+
+.file-item.file-complete {
+  color: #4CAF50;
+}
+
+.file-item.file-complete .file-name {
+  text-decoration: line-through;
+}
+
+.file-item.file-wrong-location {
+  color: #FF9800;
+}
+
+.file-checkbox {
+  font-weight: bold;
+  width: 14px;
+  text-align: center;
+}
+
+.file-item.file-complete .file-checkbox {
+  color: #4CAF50;
+}
+
+.file-name {
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.file-warning {
+  margin-left: auto;
+  cursor: help;
+}

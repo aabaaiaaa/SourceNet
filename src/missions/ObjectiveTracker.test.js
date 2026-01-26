@@ -7,6 +7,7 @@ import {
   checkNarEntryAddedObjective,
   checkMissionObjectives,
   getFileOperationProgress,
+  getFileOperationDetails,
 } from './ObjectiveTracker';
 
 describe('ObjectiveTracker', () => {
@@ -423,6 +424,111 @@ describe('ObjectiveTracker', () => {
 
       const result = checkMissionObjectives(mission, gameState);
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('getFileOperationDetails', () => {
+    it('should return null if no targetFiles specified', () => {
+      const objective = { type: 'fileOperation', operation: 'repair' };
+      expect(getFileOperationDetails(objective, {})).toBe(null);
+    });
+
+    it('should return detailed file status for standard file operation', () => {
+      const objective = {
+        type: 'fileOperation',
+        operation: 'repair',
+        targetFiles: ['file1.txt', 'file2.txt', 'file3.txt']
+      };
+      const cumulativeOps = { repair: new Set(['file1.txt', 'file2.txt']) };
+
+      const details = getFileOperationDetails(objective, cumulativeOps);
+      expect(details).toEqual({
+        operation: 'repair',
+        targetFiles: ['file1.txt', 'file2.txt', 'file3.txt'],
+        completedFiles: ['file1.txt', 'file2.txt'],
+        pendingFiles: ['file3.txt'],
+        wrongLocationFiles: [],
+        destination: null,
+        totalRequired: 3,
+        totalCompleted: 2
+      });
+    });
+
+    it('should return detailed file status for paste with destination', () => {
+      const objective = {
+        type: 'fileOperation',
+        operation: 'paste',
+        targetFiles: ['file1.txt', 'file2.txt', 'file3.txt'],
+        destination: '192.168.50.20'
+      };
+      const cumulativeOps = {
+        paste: new Set(['file1.txt', 'file2.txt']),
+        pasteDestinations: new Map([
+          ['file1.txt', '192.168.50.20'],
+          ['file2.txt', '192.168.50.20']
+        ])
+      };
+
+      const details = getFileOperationDetails(objective, cumulativeOps);
+      expect(details).toEqual({
+        operation: 'paste',
+        targetFiles: ['file1.txt', 'file2.txt', 'file3.txt'],
+        completedFiles: ['file1.txt', 'file2.txt'],
+        pendingFiles: ['file3.txt'],
+        wrongLocationFiles: [],
+        destination: '192.168.50.20',
+        totalRequired: 3,
+        totalCompleted: 2
+      });
+    });
+
+    it('should identify files pasted to wrong location', () => {
+      const objective = {
+        type: 'fileOperation',
+        operation: 'paste',
+        targetFiles: ['file1.txt', 'file2.txt', 'file3.txt'],
+        destination: '192.168.50.20'
+      };
+      const cumulativeOps = {
+        paste: new Set(['file1.txt', 'file2.txt']),
+        pasteDestinations: new Map([
+          ['file1.txt', '192.168.50.20'],
+          ['file2.txt', '192.168.50.99']  // Wrong location
+        ])
+      };
+
+      const details = getFileOperationDetails(objective, cumulativeOps);
+      expect(details).toEqual({
+        operation: 'paste',
+        targetFiles: ['file1.txt', 'file2.txt', 'file3.txt'],
+        completedFiles: ['file1.txt'],
+        pendingFiles: ['file2.txt', 'file3.txt'],
+        wrongLocationFiles: ['file2.txt'],
+        destination: '192.168.50.20',
+        totalRequired: 3,
+        totalCompleted: 1
+      });
+    });
+
+    it('should handle empty cumulative operations', () => {
+      const objective = {
+        type: 'fileOperation',
+        operation: 'paste',
+        targetFiles: ['file1.txt', 'file2.txt'],
+        destination: '192.168.50.20'
+      };
+
+      const details = getFileOperationDetails(objective, {});
+      expect(details).toEqual({
+        operation: 'paste',
+        targetFiles: ['file1.txt', 'file2.txt'],
+        completedFiles: [],
+        pendingFiles: ['file1.txt', 'file2.txt'],
+        wrongLocationFiles: [],
+        destination: '192.168.50.20',
+        totalRequired: 2,
+        totalCompleted: 0
+      });
     });
   });
 });

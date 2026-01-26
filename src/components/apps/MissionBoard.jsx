@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useGame } from '../../contexts/useGame';
 import { canAcceptMission, calculateMissionPayout } from '../../systems/MissionSystem';
 import { getReputationTier, canAccessClientType } from '../../systems/ReputationSystem';
-import { getFileOperationProgress } from '../../missions/ObjectiveTracker';
+import { getFileOperationProgress, getFileOperationDetails } from '../../missions/ObjectiveTracker';
 import './MissionBoard.css';
 
 /**
@@ -308,6 +308,9 @@ const MissionBoard = () => {
               const progress = objective.type === 'fileOperation'
                 ? getFileOperationProgress(objective, missionFileOperations)
                 : null;
+              const fileDetails = objective.type === 'fileOperation' && objective.status !== 'complete'
+                ? getFileOperationDetails(objective, missionFileOperations)
+                : null;
 
               // Check if all prior objectives are complete (for visual styling)
               const allPriorComplete = activeMission.objectives
@@ -337,6 +340,29 @@ const MissionBoard = () => {
                   )}
                   {objective.status === 'failed' && (
                     <span className="objective-status-failed"> ✗</span>
+                  )}
+                  {fileDetails && fileDetails.targetFiles.length > 0 && (
+                    <div className="file-checklist">
+                      {fileDetails.destination && (
+                        <div className="file-destination">
+                          <span className="destination-icon">📍</span>
+                          <span className="destination-text">Destination: {fileDetails.destination}</span>
+                        </div>
+                      )}
+                      <ul className="file-list">
+                        {fileDetails.targetFiles.map((fileName) => {
+                          const isFileComplete = fileDetails.completedFiles.includes(fileName);
+                          const isWrongLocation = fileDetails.wrongLocationFiles.includes(fileName);
+                          return (
+                            <li key={fileName} className={`file-item ${isFileComplete ? 'file-complete' : ''} ${isWrongLocation ? 'file-wrong-location' : ''}`}>
+                              <span className="file-checkbox">{isFileComplete ? '✓' : '○'}</span>
+                              <span className="file-name">{fileName}</span>
+                              {isWrongLocation && <span className="file-warning" title="File pasted to wrong location">⚠️</span>}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
                   )}
                 </li>
               );

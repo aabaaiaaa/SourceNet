@@ -4,6 +4,7 @@ import { LOCAL_SSD_NETWORK_ID, LOCAL_SSD_BANDWIDTH, LOCAL_SSD_CAPACITY_GB } from
 import { calculateStorageUsed, calculateLocalFilesSize } from '../../systems/StorageSystem';
 import triggerEventBus from '../../core/triggerEventBus';
 import networkRegistry from '../../systems/NetworkRegistry';
+import { formatTimeRemaining, formatTransferSpeed } from '../../utils/formatUtils';
 import './FileManager.css';
 
 const FileManager = () => {
@@ -18,6 +19,7 @@ const FileManager = () => {
   const fileClipboard = game.fileClipboard || { files: [], sourceFileSystemId: '', sourceNetworkId: '' };
   const setFileClipboard = game.setFileClipboard || (() => { });
   const updateFileSystemFiles = game.updateFileSystemFiles || (() => { });
+  const addFilesToFileSystem = game.addFilesToFileSystem || (() => { });
   const localSSDFiles = game.localSSDFiles || [];
   const setLocalSSDFiles = game.setLocalSSDFiles || (() => { });
 
@@ -27,6 +29,7 @@ const FileManager = () => {
   const [operatingFiles, setOperatingFiles] = useState(new Set()); // Files currently being operated on
   const [fileProgress, setFileProgress] = useState({}); // Progress for each file operation
   const [fileOperations, setFileOperations] = useState({}); // Track operation type per file
+  const [fileOperationStats, setFileOperationStats] = useState({}); // Track transfer speed and time remaining per file
   const [activityLog, setActivityLog] = useState([]); // Ephemeral activity log (clears on unmount)
   const [isLogCollapsed, setIsLogCollapsed] = useState(false);
   const animationFrameRef = useRef(null);
@@ -34,6 +37,15 @@ const FileManager = () => {
   const logEndRef = useRef(null);
   const currentTimeRef = useRef(currentTime);
   const logIdCounterRef = useRef(0);
+
+  // Get network bandwidth from NetworkRegistry (or local SSD constant)
+  const getNetworkBandwidth = useCallback((networkId) => {
+    if (networkId === LOCAL_SSD_NETWORK_ID) {
+      return LOCAL_SSD_BANDWIDTH; // 4000 Mbps for local operations
+    }
+    const network = networkRegistry.getNetwork(networkId);
+    return network?.bandwidth || 50; // Default 50 Mbps
+  }, []);
 
   // Keep currentTimeRef up to date
   useEffect(() => {
@@ -110,13 +122,49 @@ const FileManager = () => {
   });
 
   // Subscribe to fileSystemChanged events to refresh files when registry changes externally
-  // (e.g., mission extensions adding new corrupted files)
+  // (e.g., mission extensions adding new corrupted files, or other FileManager instances pasting)
   useEffect(() => {
     const handleFileSystemChanged = ({ fileSystemId, files: updatedFiles }) => {
       // Only update if we're currently viewing this file system
       if (selectedFileSystemRef.current === fileSystemId) {
         console.log(`📁 FileManager: Refreshing files for ${fileSystemId} (${updatedFiles?.length} files)`);
-        setFiles(updatedFiles.map(f => ({ ...f, selected: false })));
+
+        // Preserve in-flight paste operations - don't lose files that are still being transferred
+        // Check if there are any active paste operations
+        const hasActivePasteOperations = Array.from(activeOperationsRef.current.values())
+          .some(op => op.operation === 'paste');
+
+        if (hasActivePasteOperations) {
+          // Merge: keep registry files + preserve any local files that are still being pasted
+          setFiles(prevFiles => {
+            const registryFileNames = new Set(updatedFiles.map(f => f.name));
+
+            // Keep files that are in the registry OR are currently being pasted
+            const pastedFileIndices = new Set();
+            activeOperationsRef.current.forEach((op, idx) => {
+              if (op.operation === 'paste') {
+                pastedFileIndices.add(idx);
+              }
+            });
+
+            // Get files being pasted that aren't in registry yet
+            const inFlightFiles = prevFiles.filter((f, idx) =>
+              pastedFileIndices.has(idx) && !registryFileNames.has(f.name)
+            );
+
+            // Combine registry files with in-flight paste files
+            const mergedFiles = [
+              ...updatedFiles.map(f => ({ ...f, selected: false })),
+              ...inFlightFiles
+            ];
+
+            console.log(`📁 FileManager: Merged ${updatedFiles.length} registry files + ${inFlightFiles.length} in-flight paste files`);
+            return mergedFiles;
+          });
+        } else {
+          // No active paste operations, safe to fully replace
+          setFiles(updatedFiles.map(f => ({ ...f, selected: false })));
+        }
       }
     };
 
@@ -165,6 +213,7 @@ const FileManager = () => {
     const animate = () => {
       const now = currentTime.getTime();
       const updates = {};
+      const statsUpdates = {};
       const completedOps = [];
 
       activeOperationsRef.current.forEach((opData, fileIndex) => {
@@ -172,12 +221,23 @@ const FileManager = () => {
         const progress = Math.min(100, (elapsedGameMs / opData.duration) * 100);
         updates[fileIndex] = progress;
 
+        // Calculate remaining time and transfer speed for display
+        const remainingMs = Math.max(0, opData.duration - elapsedGameMs);
+        const remainingSeconds = remainingMs / 1000;
+        const transferSpeedMBps = opData.transferSpeedMBps || 0;
+
+        statsUpdates[fileIndex] = {
+          remainingSeconds,
+          transferSpeedMBps,
+        };
+
         if (progress >= 100) {
           completedOps.push({ fileIndex, operation: opData.operation, operationId: opData.operationId, fileName: opData.fileName });
         }
       });
 
       setFileProgress(prev => ({ ...prev, ...updates }));
+      setFileOperationStats(prev => ({ ...prev, ...statsUpdates }));
 
       // Handle completed operations - sort deletes by index descending to avoid index shifting issues
       const sortedCompletedOps = completedOps.sort((a, b) => {
@@ -215,14 +275,26 @@ const FileManager = () => {
             const networkId = currentNetworkIdRef.current;
             const fsId = selectedFileSystemRef.current;
             if (networkId && fsId) {
-              // Strip selection state before persisting
-              const filesToPersist = newFiles.map(({ selected: _selected, ...rest }) => rest);
-              if (networkId === LOCAL_SSD_NETWORK_ID) {
-                // Update local SSD files directly
-                setLocalSSDFiles(filesToPersist);
+              if (operation === 'paste') {
+                // For paste operations, use atomic add to prevent race conditions
+                // when multiple FileManager instances paste to the same destination
+                const { selected: _selected, ...pastedFile } = newFiles[fileIndex];
+                if (networkId === LOCAL_SSD_NETWORK_ID) {
+                  // For local SSD, we still need to update the full array since there's no race condition
+                  const filesToPersist = newFiles.map(({ selected: _sel, ...rest }) => rest);
+                  setLocalSSDFiles(filesToPersist);
+                } else {
+                  // Use addFilesToFileSystem for atomic addition (handles duplicates internally)
+                  addFilesToFileSystem(networkId, fsId, [pastedFile]);
+                }
               } else {
-                // Update remote file system via NetworkRegistry
-                updateFileSystemFiles(networkId, fsId, filesToPersist);
+                // For repair/delete operations, update the full file array
+                const filesToPersist = newFiles.map(({ selected: _selected, ...rest }) => rest);
+                if (networkId === LOCAL_SSD_NETWORK_ID) {
+                  setLocalSSDFiles(filesToPersist);
+                } else {
+                  updateFileSystemFiles(networkId, fsId, filesToPersist);
+                }
               }
             }
           }
@@ -243,6 +315,12 @@ const FileManager = () => {
         });
 
         setFileOperations(prev => {
+          const next = { ...prev };
+          delete next[fileIndex];
+          return next;
+        });
+
+        setFileOperationStats(prev => {
           const next = { ...prev };
           delete next[fileIndex];
           return next;
@@ -297,6 +375,89 @@ const FileManager = () => {
     };
   }, [operatingFiles.size, currentTime, selectedFileSystem, completeBandwidthOperation, setLastFileOperation, addLogEntry]);
 
+  // Track previous activeConnections for bandwidth change detection
+  const prevConnectionsRef = useRef(activeConnections);
+
+  // Bandwidth change detection - proportionally adjust remaining duration when connections change
+  useEffect(() => {
+    // Skip if no active operations or no current time
+    if (activeOperationsRef.current.size === 0 || !currentTime) {
+      prevConnectionsRef.current = activeConnections;
+      return;
+    }
+
+    // Check if connections actually changed
+    const prevConnections = prevConnectionsRef.current;
+    const connectionsChanged =
+      prevConnections.length !== activeConnections.length ||
+      prevConnections.some((conn, i) =>
+        !activeConnections[i] || conn.networkId !== activeConnections[i].networkId
+      );
+
+    if (!connectionsChanged) {
+      return;
+    }
+
+    console.log('🔄 Network connections changed, recalculating operation durations...');
+
+    const now = currentTime.getTime();
+
+    // Recalculate duration for each active operation
+    activeOperationsRef.current.forEach((opData, fileIndex) => {
+      // Skip copy operations (they don't depend on network bandwidth)
+      if (opData.operation === 'copy') return;
+
+      // Calculate current progress
+      const elapsedGameMs = now - opData.startTime;
+      const progressPercent = Math.min(100, (elapsedGameMs / opData.duration) * 100);
+
+      // Skip if operation is nearly complete
+      if (progressPercent >= 95) return;
+
+      // Get new effective bandwidth
+      const oldBandwidth = opData.effectiveBandwidth;
+      let newBandwidth;
+
+      if (opData.operation === 'paste' && opData.crossNetwork) {
+        // For cross-network paste, recalculate effective bandwidth from source and dest
+        const sourceBandwidth = getNetworkBandwidth(opData.sourceNetworkId);
+        const destBandwidth = getNetworkBandwidth(currentNetworkId);
+        newBandwidth = Math.min(sourceBandwidth, destBandwidth);
+      } else {
+        // For local operations (delete, repair, same-network paste)
+        newBandwidth = getNetworkBandwidth(currentNetworkId);
+      }
+
+      // Skip if bandwidth hasn't changed significantly (within 5%)
+      if (Math.abs(newBandwidth - oldBandwidth) / oldBandwidth < 0.05) return;
+
+      // Calculate remaining work (in terms of file size proportion)
+      const remainingPercent = (100 - progressPercent) / 100;
+      const remainingFileSizeMB = opData.fileSizeInMB * remainingPercent;
+
+      // Calculate new remaining duration based on new bandwidth
+      const multipliers = { repair: 2, delete: 0.5, paste: 1.5 };
+      const multiplier = multipliers[opData.operation] || 1;
+      const newTransferSpeedMBps = newBandwidth / 8;
+      const newRemainingTimeSeconds = (remainingFileSizeMB / newTransferSpeedMBps) * multiplier;
+      const newRemainingTimeMs = Math.max(500, newRemainingTimeSeconds * 1000); // Minimum 500ms remaining
+
+      // Update operation data with new duration (elapsed + new remaining)
+      const newDuration = elapsedGameMs + newRemainingTimeMs;
+
+      console.log(`  📁 ${opData.fileName}: ${progressPercent.toFixed(0)}% complete, bandwidth ${oldBandwidth} -> ${newBandwidth} Mbps, remaining ${(newRemainingTimeMs / 1000).toFixed(1)}s`);
+
+      activeOperationsRef.current.set(fileIndex, {
+        ...opData,
+        duration: newDuration,
+        effectiveBandwidth: newBandwidth,
+        transferSpeedMBps: newTransferSpeedMBps,
+      });
+    });
+
+    prevConnectionsRef.current = activeConnections;
+  }, [activeConnections, currentTime, currentNetworkId]);
+
   // Parse file size string to MB (e.g., "2.5 KB" -> 0.0025, "150 MB" -> 150)
   const parseFileSizeToMB = (sizeStr) => {
     const match = sizeStr.match(/([0-9.]+)\s*(KB|MB|GB)/i);
@@ -333,15 +494,6 @@ const FileManager = () => {
     const baseTimeSeconds = sizeInMB / transferSpeedMBps;
     // Minimum 2 seconds (2000ms) so progress bar is always visible
     return Math.max(2000, baseTimeSeconds * 1000 * multiplier);
-  };
-
-  // Get network bandwidth from NetworkRegistry (or local SSD constant)
-  const getNetworkBandwidth = (networkId) => {
-    if (networkId === LOCAL_SSD_NETWORK_ID) {
-      return LOCAL_SSD_BANDWIDTH; // 4000 Mbps for local operations
-    }
-    const network = networkRegistry.getNetwork(networkId);
-    return network?.bandwidth || 50; // Default 50 Mbps
   };
 
   // Check if selected file system is still available (handles network disconnect)
@@ -434,6 +586,8 @@ const FileManager = () => {
       const file = files[index];
       const duration = calculateOperationDuration(file, 'copy', bandwidth);
       const sizeInMB = parseFileSizeToMB(file.size);
+      // Copy is fast local operation, calculate approximate transfer speed
+      const transferSpeedMBps = (sizeInMB / (duration / 1000)) || 0;
 
       // Register bandwidth operation
       const { operationId } = registerBandwidthOperation(
@@ -448,6 +602,9 @@ const FileManager = () => {
         operation: 'copy',
         operationId,
         fileName: file.name,
+        fileSizeInMB: sizeInMB,
+        effectiveBandwidth: bandwidth,
+        transferSpeedMBps,
       });
 
       setOperatingFiles(prev => new Set([...prev, index]));
@@ -520,6 +677,8 @@ const FileManager = () => {
       const absoluteIndex = startIndex + relativeIndex;
       const duration = calculateOperationDuration(file, 'paste', effectiveBandwidth);
       const sizeInMB = parseFileSizeToMB(file.size);
+      // Calculate transfer speed: bandwidth in Mbps -> MB/s = bandwidth / 8
+      const transferSpeedMBps = effectiveBandwidth / 8;
 
       // Register bandwidth operation
       const { operationId } = registerBandwidthOperation(
@@ -541,6 +700,9 @@ const FileManager = () => {
         crossNetwork: isCrossNetwork,
         sourceNetworkId: fileClipboard.sourceNetworkId,
         fileName: file.name,
+        fileSizeInMB: sizeInMB,
+        effectiveBandwidth,
+        transferSpeedMBps,
       });
 
       setOperatingFiles(prev => new Set([...prev, absoluteIndex]));
@@ -573,6 +735,8 @@ const FileManager = () => {
       const file = files[index];
       const duration = calculateOperationDuration(file, 'delete', bandwidth);
       const sizeInMB = parseFileSizeToMB(file.size);
+      // Calculate transfer speed: bandwidth in Mbps -> MB/s = bandwidth / 8
+      const transferSpeedMBps = bandwidth / 8;
 
       // Register bandwidth operation
       const { operationId } = registerBandwidthOperation(
@@ -587,6 +751,9 @@ const FileManager = () => {
         operation: 'delete',
         operationId,
         fileName: file.name,
+        fileSizeInMB: sizeInMB,
+        effectiveBandwidth: bandwidth,
+        transferSpeedMBps,
       });
 
       setOperatingFiles(prev => new Set([...prev, index]));
@@ -614,6 +781,8 @@ const FileManager = () => {
       const file = files[index];
       const duration = calculateOperationDuration(file, 'repair', bandwidth);
       const sizeInMB = parseFileSizeToMB(file.size);
+      // Calculate transfer speed: bandwidth in Mbps -> MB/s = bandwidth / 8
+      const transferSpeedMBps = bandwidth / 8;
 
       // Register bandwidth operation
       const { operationId } = registerBandwidthOperation(
@@ -628,6 +797,9 @@ const FileManager = () => {
         operation: 'repair',
         operationId,
         fileName: file.name,
+        fileSizeInMB: sizeInMB,
+        effectiveBandwidth: bandwidth,
+        transferSpeedMBps,
       });
 
       setOperatingFiles(prev => new Set([...prev, index]));
@@ -733,6 +905,7 @@ const FileManager = () => {
                   const isOperating = operatingFiles.has(idx);
                   const progress = fileProgress[idx] || 0;
                   const operation = fileOperations[idx];
+                  const stats = fileOperationStats[idx] || {};
                   const isCrossNetworkPaste = operation === 'paste-cross';
 
                   return (
@@ -759,7 +932,9 @@ const FileManager = () => {
                           </div>
                           <span className="file-progress-text">
                             {operation?.replace('-cross', '')} {Math.floor(progress)}%
-                            {isCrossNetworkPaste && ` from ${clipboardSourceNetwork}`}
+                            {stats.transferSpeedMBps > 0 && ` • ${formatTransferSpeed(stats.transferSpeedMBps)}`}
+                            {stats.remainingSeconds > 0 && ` • ${formatTimeRemaining(stats.remainingSeconds)} left`}
+                            {isCrossNetworkPaste && ` • from ${clipboardSourceNetwork}`}
                           </span>
                         </div>
                       )}
