@@ -50,7 +50,29 @@ function randomPick(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-/**\n * Generate a server hostname based on client and purpose
+/**
+ * Generate a network name based on client and optional suffix
+ * For special location types (offshore, vessel, remote), includes region for immersion
+ * @param {Object} client - Client object with location data
+ * @param {string} suffix - Optional suffix (e.g., 'Backup')
+ * @returns {string} Generated network name
+ */
+function generateNetworkName(client, suffix = 'Network') {
+    const prefix = getSanitizedNamePrefix(client.name);
+    const locationType = client.location?.type;
+    const region = client.location?.region;
+
+    // For special locations, include region in name for flavor
+    if (region && ['offshore', 'vessel', 'remote'].includes(locationType)) {
+        const sanitizedRegion = getSanitizedNamePrefix(region);
+        return `${prefix}-${sanitizedRegion}-${suffix}`;
+    }
+
+    return `${prefix}-${suffix}`;
+}
+
+/**
+ * Generate a server hostname based on client and purpose
  * @param {Object} client - Client object
  * @param {string} purpose - Server purpose (e.g., 'fileserver', 'backup', 'archive')
  * @param {number} index - Server index for uniqueness
@@ -289,7 +311,7 @@ export function generateNetworkInfrastructure(client, missionType, targetFileCou
 
     networks.push({
         networkId: primaryNetworkId,
-        networkName: `${getSanitizedNamePrefix(client.name)}-Network`,
+        networkName: generateNetworkName(client),
         address: primarySubnet,
         bandwidth: randomPick([25, 50, 75, 100]),
         revokeOnComplete: true,
@@ -328,7 +350,7 @@ export function generateNetworkInfrastructure(client, missionType, targetFileCou
 
         networks.push({
             networkId: secondaryNetworkId,
-            networkName: `${getSanitizedNamePrefix(client.name)}-Backup`,
+            networkName: generateNetworkName(client, 'Backup'),
             address: secondarySubnet,
             bandwidth: randomPick([25, 50, 75, 100]),
             revokeOnComplete: true,
@@ -395,8 +417,22 @@ export function calculatePayout(objectiveCount, timeLimitMinutes, client, totalD
         'cultural-local': 0.8, 'cultural-major': 1.2
     };
 
+    // Location-based multipliers - remote/offshore locations pay more due to difficulty/urgency
+    const locationMultipliers = {
+        'offshore': 1.25,    // Oil rigs, wind farms - remote and challenging
+        'vessel': 1.20,      // Ships - at sea, limited connectivity
+        'remote': 1.30,      // Antarctic stations, island outposts - extreme conditions
+        'datacenter': 1.10,  // Large scale, critical infrastructure
+        'facility': 1.0,     // Standard facility
+        'warehouse': 1.0,    // Standard warehouse
+        'office': 1.0        // Standard office
+    };
+
     const tierMultiplier = tierMultipliers[client.clientType] || 1.0;
-    let basePayout = basePerObjective * objectiveCount * tierMultiplier;
+    const locationType = client.location?.type || 'office';
+    const locationMultiplier = locationMultipliers[locationType] || 1.0;
+
+    let basePayout = basePerObjective * objectiveCount * tierMultiplier * locationMultiplier;
 
     // Data size bonus: +$50 per 100MB of data
     if (totalDataBytes > 0) {
@@ -723,6 +759,25 @@ function generateTransferObjectives(infra) {
 function generateBriefingMessage(client, missionType, networks, timeLimitMinutes, context = {}) {
     const { arcSequence, arcTotal, referralText, targetFiles = [], totalDataBytes = 0 } = context;
 
+    // Location-specific opening phrases
+    const locationOpenings = {
+        offshore: [
+            `Our offshore platform has encountered an issue that requires immediate remote assistance.`,
+            `Due to the remote nature of our offshore operations, we need specialized technical support.`,
+            `Conditions at our offshore facility make this particularly urgent.`
+        ],
+        vessel: [
+            `Our vessel's systems require urgent attention while we're at sea.`,
+            `With limited connectivity from our current position, we need efficient remote assistance.`,
+            `Our ship's IT infrastructure needs immediate attention.`
+        ],
+        remote: [
+            `Given our remote location, finding qualified local support isn't feasible.`,
+            `Our isolated facility relies heavily on remote technical assistance.`,
+            `The extreme conditions at our station make remote support essential.`
+        ]
+    };
+
     const briefingTemplates = {
         repair: [
             `We've experienced some data corruption on our file server. We need someone to repair the affected files as soon as possible.`,
@@ -753,7 +808,26 @@ function generateBriefingMessage(client, missionType, networks, timeLimitMinutes
 
     let body = 'Dear {username},\n\n';
     body += referralText ? `${referralText}\n\n` : '';
+
+    // Add location-specific opening for special locations
+    const locationType = client.location?.type;
+    if (locationType && locationOpenings[locationType]) {
+        body += randomPick(locationOpenings[locationType]) + ' ';
+    }
+
     body += randomPick(briefingTemplates[missionType] || briefingTemplates.repair);
+
+    // Add location context for immersion
+    if (client.location) {
+        const { region, city, country } = client.location;
+        if (locationType === 'offshore' || locationType === 'vessel') {
+            body += `\n\n📍 Location: ${region}`;
+        } else if (city && country && country !== 'USA') {
+            body += `\n\n📍 Location: ${city}, ${country}`;
+        } else if (region && ['remote'].includes(locationType)) {
+            body += `\n\n📍 Location: ${region}`;
+        }
+    }
 
     // Add target files list
     if (targetFiles.length > 0) {
@@ -1196,7 +1270,7 @@ export function generateRestoreFromBackupMission(client, options = {}) {
 
     const networks = [{
         networkId: primaryNetworkId,
-        networkName: `${getSanitizedNamePrefix(client.name)}-Network`,
+        networkName: generateNetworkName(client),
         address: primarySubnet,
         bandwidth: randomPick([25, 50, 75, 100]),
         revokeOnComplete: true,
@@ -1371,7 +1445,7 @@ export function generateRepairAndBackupMission(client, options = {}) {
 
     const networks = [{
         networkId: primaryNetworkId,
-        networkName: `${getSanitizedNamePrefix(client.name)}-Network`,
+        networkName: generateNetworkName(client),
         address: primarySubnet,
         bandwidth: randomPick([25, 50, 75, 100]),
         revokeOnComplete: true,

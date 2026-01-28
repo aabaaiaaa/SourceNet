@@ -32,5 +32,6 @@ The game is not at version 1.0 yet. Can you make a change that allows this to be
 Version set to 0.1.0-alpha. Pre-1.0 policy added to CLAUDE.md. All legacy code removed.
 
 
+(done - needs testing)
 The mission generation system seems to be working very well. I want to extend the scope of the client list by having a location property that can be associated with clients. For example, some clients might cover multiple regions or counties whereas some smaller clients might only operate locally. Another example could be Government departments, which might be broken down into particular areas. Some locations could be international or on remote islands, and some locations might be at sea for any oil rig/wind turbine farms or boat related clients like cruse ships or large container ships.
 There is already several dynamic layers to how clients are generated and it should be expected that over the cause of this development, the layers that are available to make clients and missions more unique will increase to make them feel fresh and to allow more client specific missions.

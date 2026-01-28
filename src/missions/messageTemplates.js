@@ -3,6 +3,23 @@
  *
  * Templates for manager messages during tutorial missions.
  * These are referenced by templateId in mission JSON files.
+ * 
+ * Available placeholders (passed via data object):
+ * - {username} - Player's username
+ * - {managerName} - Manager's name
+ * - {clientName} - Client organization name
+ * - {missionTitle} - Mission title
+ * - {payoutAmount} - Payment amount
+ * - {serverName} - Server hostname
+ * - {networkName} - Network name
+ * - {destinationServer} - Destination server for transfers
+ * - {targetFilesList} - List of target files
+ * - {clientCity} - Client location city (if available)
+ * - {clientRegion} - Client location region (e.g., "North Sea", "Pacific Northwest")
+ * - {clientCountry} - Client location country
+ * - {locationType} - Location type (office, offshore, vessel, remote, etc.)
+ * - {chequeAmount} - Payment cheque amount (for attachment processing)
+ * - {random} - Auto-generated random ID segment
  */
 
 /**

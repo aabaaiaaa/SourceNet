@@ -8,13 +8,18 @@ import clientsData from './clients.json';
 // Cache the clients array for quick access
 const clients = clientsData.clients;
 const industries = clientsData.industries;
+const locationTypes = clientsData.locationTypes;
+const regions = clientsData.regions;
 
 // Build lookup maps for O(1) access
 const clientsById = new Map(clients.map(c => [c.id, c]));
 const clientsByIndustry = new Map();
 const clientsByClientType = new Map();
+const clientsByRegion = new Map();
+const clientsByLocationType = new Map();
+const clientsByCountry = new Map();
 
-// Populate industry and clientType maps
+// Populate industry, clientType, and location maps
 clients.forEach(client => {
     // By industry
     if (!clientsByIndustry.has(client.industry)) {
@@ -27,6 +32,30 @@ clients.forEach(client => {
         clientsByClientType.set(client.clientType, []);
     }
     clientsByClientType.get(client.clientType).push(client);
+
+    // By location region
+    if (client.location?.region) {
+        if (!clientsByRegion.has(client.location.region)) {
+            clientsByRegion.set(client.location.region, []);
+        }
+        clientsByRegion.get(client.location.region).push(client);
+    }
+
+    // By location type
+    if (client.location?.type) {
+        if (!clientsByLocationType.has(client.location.type)) {
+            clientsByLocationType.set(client.location.type, []);
+        }
+        clientsByLocationType.get(client.location.type).push(client);
+    }
+
+    // By country
+    if (client.location?.country) {
+        if (!clientsByCountry.has(client.location.country)) {
+            clientsByCountry.set(client.location.country, []);
+        }
+        clientsByCountry.get(client.location.country).push(client);
+    }
 });
 
 /**
@@ -131,6 +160,74 @@ export function getAllClientTypes() {
 }
 
 /**
+ * Get all clients in a specific region
+ * @param {string} region - The region name (e.g., 'West Coast', 'North Sea')
+ * @returns {Array} Array of clients in that region
+ */
+export function getClientsByRegion(region) {
+    return clientsByRegion.get(region) || [];
+}
+
+/**
+ * Get all clients of a specific location type
+ * @param {string} locationType - The location type (e.g., 'office', 'offshore', 'vessel')
+ * @returns {Array} Array of clients of that location type
+ */
+export function getClientsByLocationType(locationType) {
+    return clientsByLocationType.get(locationType) || [];
+}
+
+/**
+ * Get all clients in a specific country
+ * @param {string} country - The country name (e.g., 'USA', 'UK')
+ * @returns {Array} Array of clients in that country
+ */
+export function getClientsByCountry(country) {
+    return clientsByCountry.get(country) || [];
+}
+
+/**
+ * Get all unique regions that have clients
+ * @returns {Array} Array of region names
+ */
+export function getAllRegions() {
+    return Array.from(clientsByRegion.keys());
+}
+
+/**
+ * Get all unique location types that have clients
+ * @returns {Array} Array of location type strings
+ */
+export function getAllLocationTypes() {
+    return Array.from(clientsByLocationType.keys());
+}
+
+/**
+ * Get all unique countries that have clients
+ * @returns {Array} Array of country names
+ */
+export function getAllCountries() {
+    return Array.from(clientsByCountry.keys());
+}
+
+/**
+ * Get location type metadata
+ * @param {string} locationType - The location type
+ * @returns {Object|undefined} Location type metadata (displayName, description)
+ */
+export function getLocationTypeInfo(locationType) {
+    return locationTypes[locationType];
+}
+
+/**
+ * Get all defined regions (including those without clients yet)
+ * @returns {Array} Array of all region names
+ */
+export function getDefinedRegions() {
+    return [...regions];
+}
+
+/**
  * Get clients filtered by multiple criteria
  * @param {Object} filters - Filter criteria
  * @param {string} [filters.industry] - Filter by industry
@@ -138,6 +235,11 @@ export function getAllClientTypes() {
  * @param {number} [filters.maxReputation] - Filter by max reputation requirement
  * @param {number} [filters.minReputation] - Filter by min reputation requirement
  * @param {Array<string>} [filters.excludeIds] - Client IDs to exclude
+ * @param {string} [filters.region] - Filter by location region
+ * @param {string} [filters.locationType] - Filter by location type
+ * @param {string} [filters.country] - Filter by country
+ * @param {Array<string>} [filters.regions] - Filter by multiple regions (OR)
+ * @param {Array<string>} [filters.locationTypes] - Filter by multiple location types (OR)
  * @returns {Array} Filtered array of clients
  */
 export function getFilteredClients(filters = {}) {
@@ -162,6 +264,33 @@ export function getFilteredClients(filters = {}) {
     if (filters.excludeIds && filters.excludeIds.length > 0) {
         const excludeSet = new Set(filters.excludeIds);
         result = result.filter(c => !excludeSet.has(c.id));
+    }
+
+    // Single region filter
+    if (filters.region) {
+        result = result.filter(c => c.location?.region === filters.region);
+    }
+
+    // Multiple regions filter (OR)
+    if (filters.regions && filters.regions.length > 0) {
+        const regionSet = new Set(filters.regions);
+        result = result.filter(c => c.location?.region && regionSet.has(c.location.region));
+    }
+
+    // Single location type filter
+    if (filters.locationType) {
+        result = result.filter(c => c.location?.type === filters.locationType);
+    }
+
+    // Multiple location types filter (OR)
+    if (filters.locationTypes && filters.locationTypes.length > 0) {
+        const typeSet = new Set(filters.locationTypes);
+        result = result.filter(c => c.location?.type && typeSet.has(c.location.type));
+    }
+
+    // Country filter
+    if (filters.country) {
+        result = result.filter(c => c.location?.country === filters.country);
     }
 
     return result;
@@ -224,7 +353,10 @@ export function getRegistryStats() {
         totalClients: clients.length,
         byIndustry: {},
         byTier: {},
-        byMinReputation: {}
+        byMinReputation: {},
+        byRegion: {},
+        byLocationType: {},
+        byCountry: {}
     };
 
     clients.forEach(client => {
@@ -237,9 +369,66 @@ export function getRegistryStats() {
         // Count by min reputation
         const repKey = `rep-${client.minReputation}`;
         stats.byMinReputation[repKey] = (stats.byMinReputation[repKey] || 0) + 1;
+
+        // Count by region
+        if (client.location?.region) {
+            stats.byRegion[client.location.region] = (stats.byRegion[client.location.region] || 0) + 1;
+        }
+
+        // Count by location type
+        if (client.location?.type) {
+            stats.byLocationType[client.location.type] = (stats.byLocationType[client.location.type] || 0) + 1;
+        }
+
+        // Count by country
+        if (client.location?.country) {
+            stats.byCountry[client.location.country] = (stats.byCountry[client.location.country] || 0) + 1;
+        }
     });
 
     return stats;
+}
+
+/**
+ * Pick a random client from a specific region
+ * @param {string} region - The region to pick from
+ * @param {number} reputation - The player's current reputation tier
+ * @param {Array<string>} [excludeIds] - Client IDs to exclude
+ * @returns {Object|null} A random client or null if none available
+ */
+export function getRandomClientFromRegion(region, reputation, excludeIds = []) {
+    const accessible = getFilteredClients({
+        region,
+        maxReputation: reputation,
+        excludeIds
+    });
+
+    if (accessible.length === 0) {
+        return null;
+    }
+
+    return accessible[Math.floor(Math.random() * accessible.length)];
+}
+
+/**
+ * Pick a random client of a specific location type
+ * @param {string} locationType - The location type to pick from
+ * @param {number} reputation - The player's current reputation tier
+ * @param {Array<string>} [excludeIds] - Client IDs to exclude
+ * @returns {Object|null} A random client or null if none available
+ */
+export function getRandomClientByLocationType(locationType, reputation, excludeIds = []) {
+    const accessible = getFilteredClients({
+        locationType,
+        maxReputation: reputation,
+        excludeIds
+    });
+
+    if (accessible.length === 0) {
+        return null;
+    }
+
+    return accessible[Math.floor(Math.random() * accessible.length)];
 }
 
 export default {
@@ -254,9 +443,19 @@ export default {
     getIndustryInfo,
     getClientsGroupedByIndustry,
     getAllClientTypes,
+    getClientsByRegion,
+    getClientsByLocationType,
+    getClientsByCountry,
+    getAllRegions,
+    getAllLocationTypes,
+    getAllCountries,
+    getLocationTypeInfo,
+    getDefinedRegions,
     getFilteredClients,
     getRandomAccessibleClient,
     getRandomClientFromIndustry,
+    getRandomClientFromRegion,
+    getRandomClientByLocationType,
     getClientCount,
     getRegistryStats
 };

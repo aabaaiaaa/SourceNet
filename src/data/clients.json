@@ -7,7 +7,14 @@
             "tier": "local",
             "clientType": "bank-local",
             "minReputation": 2,
-            "description": "A small credit union serving the local community with basic banking services."
+            "description": "A small credit union serving the local community with basic banking services.",
+            "location": {
+                "type": "office",
+                "city": "Riverside",
+                "region": "West Coast",
+                "country": "USA",
+                "timezone": "PST"
+            }
         },
         {
             "id": "bank-town-savings",
@@ -16,7 +23,14 @@
             "tier": "local",
             "clientType": "bank-local",
             "minReputation": 2,
-            "description": "Family-owned savings institution that's been serving the town for three generations."
+            "description": "Family-owned savings institution that's been serving the town for three generations.",
+            "location": {
+                "type": "office",
+                "city": "Millbrook",
+                "region": "New England",
+                "country": "USA",
+                "timezone": "EST"
+            }
         },
         {
             "id": "bank-coastal-regional",
@@ -25,7 +39,14 @@
             "tier": "regional",
             "clientType": "bank-regional",
             "minReputation": 5,
-            "description": "Regional bank with branches across multiple counties, known for business lending."
+            "description": "Regional bank with branches across multiple counties, known for business lending.",
+            "location": {
+                "type": "office",
+                "city": "San Diego",
+                "region": "West Coast",
+                "country": "USA",
+                "timezone": "PST"
+            }
         },
         {
             "id": "bank-midwest-financial",
@@ -34,7 +55,14 @@
             "tier": "regional",
             "clientType": "bank-regional",
             "minReputation": 5,
-            "description": "Investment and commercial banking serving the heartland's growing businesses."
+            "description": "Investment and commercial banking serving the heartland's growing businesses.",
+            "location": {
+                "type": "office",
+                "city": "Chicago",
+                "region": "Midwest",
+                "country": "USA",
+                "timezone": "CST"
+            }
         },
         {
             "id": "bank-national-federal",
@@ -43,7 +71,14 @@
             "tier": "national",
             "clientType": "bank-national",
             "minReputation": 8,
-            "description": "One of the nation's largest financial institutions with international operations."
+            "description": "One of the nation's largest financial institutions with international operations.",
+            "location": {
+                "type": "office",
+                "city": "New York",
+                "region": "Northeast",
+                "country": "USA",
+                "timezone": "EST"
+            }
         },
         {
             "id": "bank-sovereign-trust",
@@ -52,7 +87,14 @@
             "tier": "national",
             "clientType": "bank-national",
             "minReputation": 8,
-            "description": "Elite private banking firm handling high-net-worth accounts and sovereign wealth."
+            "description": "Elite private banking firm handling high-net-worth accounts and sovereign wealth.",
+            "location": {
+                "type": "office",
+                "city": "Zurich",
+                "region": "Central Europe",
+                "country": "Switzerland",
+                "timezone": "CET"
+            }
         },
         {
             "id": "gov-riverside-library",
@@ -61,7 +103,14 @@
             "tier": "library",
             "clientType": "gov-library",
             "minReputation": 1,
-            "description": "Local library system maintaining digital archives and community resources."
+            "description": "Local library system maintaining digital archives and community resources.",
+            "location": {
+                "type": "facility",
+                "city": "Riverside",
+                "region": "West Coast",
+                "country": "USA",
+                "timezone": "PST"
+            }
         },
         {
             "id": "gov-central-library",
@@ -70,7 +119,14 @@
             "tier": "library",
             "clientType": "gov-library",
             "minReputation": 1,
-            "description": "Multi-branch library network serving the greater metropolitan area."
+            "description": "Multi-branch library network serving the greater metropolitan area.",
+            "location": {
+                "type": "facility",
+                "city": "Portland",
+                "region": "Pacific Northwest",
+                "country": "USA",
+                "timezone": "PST"
+            }
         },
         {
             "id": "gov-city-it",
@@ -79,7 +135,14 @@
             "tier": "municipal",
             "clientType": "gov-municipal",
             "minReputation": 4,
-            "description": "Municipal technology services managing city infrastructure and citizen portals."
+            "description": "Municipal technology services managing city infrastructure and citizen portals.",
+            "location": {
+                "type": "office",
+                "city": "Austin",
+                "region": "Southwest",
+                "country": "USA",
+                "timezone": "CST"
+            }
         },
         {
             "id": "gov-metro-transit",
@@ -88,7 +151,14 @@
             "tier": "municipal",
             "clientType": "gov-municipal",
             "minReputation": 4,
-            "description": "Public transportation agency managing bus, rail, and paratransit systems."
+            "description": "Public transportation agency managing bus, rail, and paratransit systems.",
+            "location": {
+                "type": "facility",
+                "city": "Seattle",
+                "region": "Pacific Northwest",
+                "country": "USA",
+                "timezone": "PST"
+            }
         },
         {
             "id": "gov-state-tax",
@@ -97,7 +167,14 @@
             "tier": "state",
             "clientType": "gov-state",
             "minReputation": 6,
-            "description": "State-level tax collection and revenue management agency."
+            "description": "State-level tax collection and revenue management agency.",
+            "location": {
+                "type": "office",
+                "city": "Sacramento",
+                "region": "West Coast",
+                "country": "USA",
+                "timezone": "PST"
+            }
         },
         {
             "id": "gov-state-dmv",
@@ -106,7 +183,14 @@
             "tier": "state",
             "clientType": "gov-state",
             "minReputation": 6,
-            "description": "Statewide vehicle registration and licensing administration."
+            "description": "Statewide vehicle registration and licensing administration.",
+            "location": {
+                "type": "office",
+                "city": "Albany",
+                "region": "Northeast",
+                "country": "USA",
+                "timezone": "EST"
+            }
         },
         {
             "id": "gov-dept-treasury",
@@ -115,7 +199,14 @@
             "tier": "federal",
             "clientType": "gov-federal",
             "minReputation": 8,
-            "description": "Federal agency managing government finances and monetary systems."
+            "description": "Federal agency managing government finances and monetary systems.",
+            "location": {
+                "type": "office",
+                "city": "Washington D.C.",
+                "region": "East Coast",
+                "country": "USA",
+                "timezone": "EST"
+            }
         },
         {
             "id": "gov-dept-defense",
@@ -124,7 +215,14 @@
             "tier": "federal",
             "clientType": "gov-federal",
             "minReputation": 9,
-            "description": "Military logistics division handling supply chain and inventory systems."
+            "description": "Military logistics division handling supply chain and inventory systems.",
+            "location": {
+                "type": "facility",
+                "city": "Arlington",
+                "region": "East Coast",
+                "country": "USA",
+                "timezone": "EST"
+            }
         },
         {
             "id": "health-maple-clinic",
@@ -133,7 +231,14 @@
             "tier": "clinic",
             "clientType": "health-clinic",
             "minReputation": 2,
-            "description": "Small family practice providing primary care to the local neighborhood."
+            "description": "Small family practice providing primary care to the local neighborhood.",
+            "location": {
+                "type": "facility",
+                "city": "Greenfield",
+                "region": "Midwest",
+                "country": "USA",
+                "timezone": "CST"
+            }
         },
         {
             "id": "health-valley-dental",
@@ -142,7 +247,14 @@
             "tier": "clinic",
             "clientType": "health-clinic",
             "minReputation": 2,
-            "description": "Multi-dentist practice serving families throughout the valley."
+            "description": "Multi-dentist practice serving families throughout the valley.",
+            "location": {
+                "type": "facility",
+                "city": "Phoenix",
+                "region": "Southwest",
+                "country": "USA",
+                "timezone": "MST"
+            }
         },
         {
             "id": "health-st-mary",
@@ -151,7 +263,14 @@
             "tier": "hospital",
             "clientType": "health-hospital",
             "minReputation": 5,
-            "description": "Regional hospital with emergency services and specialized care units."
+            "description": "Regional hospital with emergency services and specialized care units.",
+            "location": {
+                "type": "facility",
+                "city": "Denver",
+                "region": "Mountain West",
+                "country": "USA",
+                "timezone": "MST"
+            }
         },
         {
             "id": "health-general-medical",
@@ -160,7 +279,14 @@
             "tier": "hospital",
             "clientType": "health-hospital",
             "minReputation": 5,
-            "description": "Full-service hospital providing comprehensive inpatient and outpatient care."
+            "description": "Full-service hospital providing comprehensive inpatient and outpatient care.",
+            "location": {
+                "type": "facility",
+                "city": "Boston",
+                "region": "New England",
+                "country": "USA",
+                "timezone": "EST"
+            }
         },
         {
             "id": "health-nexus-pharma",
@@ -169,7 +295,14 @@
             "tier": "research",
             "clientType": "health-research",
             "minReputation": 8,
-            "description": "Leading pharmaceutical research firm developing breakthrough treatments."
+            "description": "Leading pharmaceutical research firm developing breakthrough treatments.",
+            "location": {
+                "type": "facility",
+                "city": "San Francisco",
+                "region": "West Coast",
+                "country": "USA",
+                "timezone": "PST"
+            }
         },
         {
             "id": "health-genome-labs",
@@ -178,7 +311,14 @@
             "tier": "research",
             "clientType": "health-research",
             "minReputation": 8,
-            "description": "Cutting-edge genomics research facility pioneering personalized medicine."
+            "description": "Cutting-edge genomics research facility pioneering personalized medicine.",
+            "location": {
+                "type": "facility",
+                "city": "Cambridge",
+                "region": "New England",
+                "country": "UK",
+                "timezone": "GMT"
+            }
         },
         {
             "id": "corp-bobs-auto",
@@ -187,7 +327,14 @@
             "tier": "small",
             "clientType": "corp-small",
             "minReputation": 2,
-            "description": "Local auto parts retailer with loyal customer base and inventory challenges."
+            "description": "Local auto parts retailer with loyal customer base and inventory challenges.",
+            "location": {
+                "type": "warehouse",
+                "city": "Detroit",
+                "region": "Midwest",
+                "country": "USA",
+                "timezone": "EST"
+            }
         },
         {
             "id": "corp-sunshine-bakery",
@@ -196,7 +343,14 @@
             "tier": "small",
             "clientType": "corp-small",
             "minReputation": 2,
-            "description": "Growing bakery chain with a dozen locations across the region."
+            "description": "Growing bakery chain with a dozen locations across the region.",
+            "location": {
+                "type": "office",
+                "city": "Miami",
+                "region": "Southeast",
+                "country": "USA",
+                "timezone": "EST"
+            }
         },
         {
             "id": "corp-regional-manufacturing",
@@ -205,7 +359,14 @@
             "tier": "medium",
             "clientType": "corp-medium",
             "minReputation": 5,
-            "description": "Mid-size manufacturer producing industrial components for various sectors."
+            "description": "Mid-size manufacturer producing industrial components for various sectors.",
+            "location": {
+                "type": "facility",
+                "city": "Pittsburgh",
+                "region": "Northeast",
+                "country": "USA",
+                "timezone": "EST"
+            }
         },
         {
             "id": "corp-pacific-retail",
@@ -214,7 +375,14 @@
             "tier": "medium",
             "clientType": "corp-medium",
             "minReputation": 5,
-            "description": "Regional retail conglomerate operating department stores and specialty shops."
+            "description": "Regional retail conglomerate operating department stores and specialty shops.",
+            "location": {
+                "type": "office",
+                "city": "Los Angeles",
+                "region": "West Coast",
+                "country": "USA",
+                "timezone": "PST"
+            }
         },
         {
             "id": "corp-titan-industries",
@@ -223,7 +391,14 @@
             "tier": "enterprise",
             "clientType": "corp-enterprise",
             "minReputation": 8,
-            "description": "Fortune 500 conglomerate with diversified holdings across multiple sectors."
+            "description": "Fortune 500 conglomerate with diversified holdings across multiple sectors.",
+            "location": {
+                "type": "office",
+                "city": "London",
+                "region": "Northern Europe",
+                "country": "UK",
+                "timezone": "GMT"
+            }
         },
         {
             "id": "corp-apex-dynamics",
@@ -232,7 +407,14 @@
             "tier": "enterprise",
             "clientType": "corp-enterprise",
             "minReputation": 8,
-            "description": "Global technology leader in aerospace, defense, and advanced systems."
+            "description": "Global technology leader in aerospace, defense, and advanced systems.",
+            "location": {
+                "type": "facility",
+                "city": "Tokyo",
+                "region": "East Asia",
+                "country": "Japan",
+                "timezone": "JST"
+            }
         },
         {
             "id": "util-greenville-water",
@@ -241,7 +423,14 @@
             "tier": "local",
             "clientType": "util-local",
             "minReputation": 3,
-            "description": "Municipal water treatment and distribution serving the Greenville area."
+            "description": "Municipal water treatment and distribution serving the Greenville area.",
+            "location": {
+                "type": "facility",
+                "city": "Greenville",
+                "region": "Southeast",
+                "country": "USA",
+                "timezone": "EST"
+            }
         },
         {
             "id": "util-county-electric",
@@ -250,7 +439,14 @@
             "tier": "local",
             "clientType": "util-local",
             "minReputation": 3,
-            "description": "Rural electric cooperative providing power to underserved communities."
+            "description": "Rural electric cooperative providing power to underserved communities.",
+            "location": {
+                "type": "facility",
+                "city": "Fairbanks",
+                "region": "Alaska",
+                "country": "USA",
+                "timezone": "AKST"
+            }
         },
         {
             "id": "util-pacific-power",
@@ -259,7 +455,14 @@
             "tier": "regional",
             "clientType": "util-regional",
             "minReputation": 6,
-            "description": "Regional power transmission operator managing critical grid infrastructure."
+            "description": "Regional power transmission operator managing critical grid infrastructure.",
+            "location": {
+                "type": "facility",
+                "city": "Portland",
+                "region": "Pacific Northwest",
+                "country": "USA",
+                "timezone": "PST"
+            }
         },
         {
             "id": "util-northern-gas",
@@ -268,7 +471,44 @@
             "tier": "regional",
             "clientType": "util-regional",
             "minReputation": 6,
-            "description": "Interstate natural gas pipeline company serving industrial and residential customers."
+            "description": "Interstate natural gas pipeline company serving industrial and residential customers.",
+            "location": {
+                "type": "facility",
+                "city": "Calgary",
+                "region": "Western Canada",
+                "country": "Canada",
+                "timezone": "MST"
+            }
+        },
+        {
+            "id": "util-northsea-wind",
+            "name": "North Sea Wind Consortium",
+            "industry": "utilities",
+            "tier": "regional",
+            "clientType": "util-regional",
+            "minReputation": 7,
+            "description": "Offshore wind farm operator managing turbine arrays across the North Sea.",
+            "location": {
+                "type": "offshore",
+                "region": "North Sea",
+                "country": "UK",
+                "timezone": "GMT"
+            }
+        },
+        {
+            "id": "util-gulf-energy",
+            "name": "Gulf Energy Platforms",
+            "industry": "utilities",
+            "tier": "regional",
+            "clientType": "util-regional",
+            "minReputation": 7,
+            "description": "Offshore oil and gas platform operator in the Gulf of Mexico.",
+            "location": {
+                "type": "offshore",
+                "region": "Gulf of Mexico",
+                "country": "USA",
+                "timezone": "CST"
+            }
         },
         {
             "id": "ship-quickship",
@@ -277,7 +517,14 @@
             "tier": "courier",
             "clientType": "ship-courier",
             "minReputation": 2,
-            "description": "Local same-day delivery service specializing in urgent document courier."
+            "description": "Local same-day delivery service specializing in urgent document courier.",
+            "location": {
+                "type": "warehouse",
+                "city": "Atlanta",
+                "region": "Southeast",
+                "country": "USA",
+                "timezone": "EST"
+            }
         },
         {
             "id": "ship-metro-delivery",
@@ -286,7 +533,14 @@
             "tier": "courier",
             "clientType": "ship-courier",
             "minReputation": 2,
-            "description": "Urban package delivery company serving the metropolitan business district."
+            "description": "Urban package delivery company serving the metropolitan business district.",
+            "location": {
+                "type": "warehouse",
+                "city": "Philadelphia",
+                "region": "Northeast",
+                "country": "USA",
+                "timezone": "EST"
+            }
         },
         {
             "id": "ship-continental-freight",
@@ -295,7 +549,14 @@
             "tier": "logistics",
             "clientType": "ship-logistics",
             "minReputation": 5,
-            "description": "Long-haul trucking company with cross-country freight operations."
+            "description": "Long-haul trucking company with cross-country freight operations.",
+            "location": {
+                "type": "warehouse",
+                "city": "Dallas",
+                "region": "Southwest",
+                "country": "USA",
+                "timezone": "CST"
+            }
         },
         {
             "id": "ship-harbor-logistics",
@@ -304,7 +565,14 @@
             "tier": "logistics",
             "clientType": "ship-logistics",
             "minReputation": 5,
-            "description": "Integrated logistics provider managing warehousing and distribution networks."
+            "description": "Integrated logistics provider managing warehousing and distribution networks.",
+            "location": {
+                "type": "warehouse",
+                "city": "Rotterdam",
+                "region": "Northern Europe",
+                "country": "Netherlands",
+                "timezone": "CET"
+            }
         },
         {
             "id": "ship-oceanway-global",
@@ -313,7 +581,13 @@
             "tier": "global",
             "clientType": "ship-global",
             "minReputation": 8,
-            "description": "International shipping conglomerate operating container fleets worldwide."
+            "description": "International shipping conglomerate operating container fleets worldwide.",
+            "location": {
+                "type": "vessel",
+                "region": "Pacific Ocean",
+                "country": "International",
+                "timezone": "UTC"
+            }
         },
         {
             "id": "ship-skybridge-air",
@@ -322,7 +596,44 @@
             "tier": "global",
             "clientType": "ship-global",
             "minReputation": 8,
-            "description": "Global air freight carrier specializing in time-critical international shipments."
+            "description": "Global air freight carrier specializing in time-critical international shipments.",
+            "location": {
+                "type": "facility",
+                "city": "Singapore",
+                "region": "Southeast Asia",
+                "country": "Singapore",
+                "timezone": "SGT"
+            }
+        },
+        {
+            "id": "ship-meridian-cruises",
+            "name": "Meridian Cruise Lines",
+            "industry": "shipping",
+            "tier": "global",
+            "clientType": "ship-global",
+            "minReputation": 7,
+            "description": "Luxury cruise operator running vessels across Caribbean and Mediterranean routes.",
+            "location": {
+                "type": "vessel",
+                "region": "Caribbean Sea",
+                "country": "International",
+                "timezone": "EST"
+            }
+        },
+        {
+            "id": "ship-arctic-research",
+            "name": "Arctic Research Vessel Polaris",
+            "industry": "shipping",
+            "tier": "logistics",
+            "clientType": "ship-logistics",
+            "minReputation": 6,
+            "description": "Scientific research vessel conducting climate studies in polar waters.",
+            "location": {
+                "type": "vessel",
+                "region": "Arctic Ocean",
+                "country": "Norway",
+                "timezone": "CET"
+            }
         },
         {
             "id": "emerg-volunteer-fire",
@@ -331,7 +642,14 @@
             "tier": "volunteer",
             "clientType": "emerg-volunteer",
             "minReputation": 3,
-            "description": "Community volunteer fire station serving rural areas with limited funding."
+            "description": "Community volunteer fire station serving rural areas with limited funding.",
+            "location": {
+                "type": "facility",
+                "city": "Pine Ridge",
+                "region": "Mountain West",
+                "country": "USA",
+                "timezone": "MST"
+            }
         },
         {
             "id": "emerg-rescue-squad",
@@ -340,7 +658,14 @@
             "tier": "volunteer",
             "clientType": "emerg-volunteer",
             "minReputation": 3,
-            "description": "Volunteer emergency medical responders covering the county's remote areas."
+            "description": "Volunteer emergency medical responders covering the county's remote areas.",
+            "location": {
+                "type": "facility",
+                "city": "Cedar Falls",
+                "region": "Midwest",
+                "country": "USA",
+                "timezone": "CST"
+            }
         },
         {
             "id": "emerg-metro-police",
@@ -349,7 +674,14 @@
             "tier": "municipal",
             "clientType": "emerg-municipal",
             "minReputation": 6,
-            "description": "City police force managing law enforcement across the metropolitan area."
+            "description": "City police force managing law enforcement across the metropolitan area.",
+            "location": {
+                "type": "facility",
+                "city": "Houston",
+                "region": "Southwest",
+                "country": "USA",
+                "timezone": "CST"
+            }
         },
         {
             "id": "emerg-fire-rescue",
@@ -358,7 +690,14 @@
             "tier": "municipal",
             "clientType": "emerg-municipal",
             "minReputation": 6,
-            "description": "Professional firefighting and emergency response for the city and suburbs."
+            "description": "Professional firefighting and emergency response for the city and suburbs.",
+            "location": {
+                "type": "facility",
+                "city": "San Antonio",
+                "region": "Southwest",
+                "country": "USA",
+                "timezone": "CST"
+            }
         },
         {
             "id": "emerg-federal-bureau",
@@ -367,7 +706,14 @@
             "tier": "federal",
             "clientType": "emerg-federal",
             "minReputation": 9,
-            "description": "Federal law enforcement agency handling high-priority national security cases."
+            "description": "Federal law enforcement agency handling high-priority national security cases.",
+            "location": {
+                "type": "facility",
+                "city": "Washington D.C.",
+                "region": "East Coast",
+                "country": "USA",
+                "timezone": "EST"
+            }
         },
         {
             "id": "emerg-marshal-service",
@@ -376,7 +722,14 @@
             "tier": "federal",
             "clientType": "emerg-federal",
             "minReputation": 9,
-            "description": "Federal agency managing fugitive operations and witness protection."
+            "description": "Federal agency managing fugitive operations and witness protection.",
+            "location": {
+                "type": "facility",
+                "city": "Arlington",
+                "region": "East Coast",
+                "country": "USA",
+                "timezone": "EST"
+            }
         },
         {
             "id": "nonprofit-community-center",
@@ -385,7 +738,14 @@
             "tier": "community",
             "clientType": "nonprofit-community",
             "minReputation": 1,
-            "description": "Local community center providing youth programs and senior services."
+            "description": "Local community center providing youth programs and senior services.",
+            "location": {
+                "type": "facility",
+                "city": "Riverside",
+                "region": "West Coast",
+                "country": "USA",
+                "timezone": "PST"
+            }
         },
         {
             "id": "nonprofit-food-bank",
@@ -394,7 +754,14 @@
             "tier": "community",
             "clientType": "nonprofit-community",
             "minReputation": 1,
-            "description": "Food distribution charity serving families in need across the region."
+            "description": "Food distribution charity serving families in need across the region.",
+            "location": {
+                "type": "warehouse",
+                "city": "Minneapolis",
+                "region": "Midwest",
+                "country": "USA",
+                "timezone": "CST"
+            }
         },
         {
             "id": "nonprofit-heritage-foundation",
@@ -403,7 +770,14 @@
             "tier": "foundation",
             "clientType": "nonprofit-foundation",
             "minReputation": 5,
-            "description": "Major charitable foundation funding education and community development."
+            "description": "Major charitable foundation funding education and community development.",
+            "location": {
+                "type": "office",
+                "city": "Washington D.C.",
+                "region": "East Coast",
+                "country": "USA",
+                "timezone": "EST"
+            }
         },
         {
             "id": "nonprofit-global-relief",
@@ -412,7 +786,30 @@
             "tier": "foundation",
             "clientType": "nonprofit-foundation",
             "minReputation": 5,
-            "description": "International humanitarian organization coordinating disaster response worldwide."
+            "description": "International humanitarian organization coordinating disaster response worldwide.",
+            "location": {
+                "type": "office",
+                "city": "Geneva",
+                "region": "Central Europe",
+                "country": "Switzerland",
+                "timezone": "CET"
+            }
+        },
+        {
+            "id": "nonprofit-island-conservation",
+            "name": "Pacific Islands Conservation Trust",
+            "industry": "nonprofit",
+            "tier": "foundation",
+            "clientType": "nonprofit-foundation",
+            "minReputation": 4,
+            "description": "Environmental organization protecting marine ecosystems and island habitats.",
+            "location": {
+                "type": "remote",
+                "city": "Honolulu",
+                "region": "Pacific Islands",
+                "country": "USA",
+                "timezone": "HST"
+            }
         },
         {
             "id": "cultural-town-museum",
@@ -421,7 +818,14 @@
             "tier": "local",
             "clientType": "cultural-local",
             "minReputation": 1,
-            "description": "Small museum preserving local history and regional artifacts."
+            "description": "Small museum preserving local history and regional artifacts.",
+            "location": {
+                "type": "facility",
+                "city": "Salem",
+                "region": "New England",
+                "country": "USA",
+                "timezone": "EST"
+            }
         },
         {
             "id": "cultural-arts-center",
@@ -430,7 +834,14 @@
             "tier": "local",
             "clientType": "cultural-local",
             "minReputation": 1,
-            "description": "Local arts organization hosting exhibitions and community programs."
+            "description": "Local arts organization hosting exhibitions and community programs.",
+            "location": {
+                "type": "facility",
+                "city": "Santa Fe",
+                "region": "Southwest",
+                "country": "USA",
+                "timezone": "MST"
+            }
         },
         {
             "id": "cultural-national-gallery",
@@ -439,7 +850,14 @@
             "tier": "major",
             "clientType": "cultural-major",
             "minReputation": 6,
-            "description": "Premier national museum housing priceless art collections and archives."
+            "description": "Premier national museum housing priceless art collections and archives.",
+            "location": {
+                "type": "facility",
+                "city": "Washington D.C.",
+                "region": "East Coast",
+                "country": "USA",
+                "timezone": "EST"
+            }
         },
         {
             "id": "cultural-heritage-archives",
@@ -448,7 +866,45 @@
             "tier": "major",
             "clientType": "cultural-major",
             "minReputation": 6,
-            "description": "Federal institution preserving historical documents and national records."
+            "description": "Federal institution preserving historical documents and national records.",
+            "location": {
+                "type": "facility",
+                "city": "Edinburgh",
+                "region": "Northern Europe",
+                "country": "UK",
+                "timezone": "GMT"
+            }
+        },
+        {
+            "id": "research-antarctic-station",
+            "name": "McMurdo Research Station",
+            "industry": "government",
+            "tier": "federal",
+            "clientType": "gov-federal",
+            "minReputation": 7,
+            "description": "Antarctic research base conducting climate and geological studies in extreme conditions.",
+            "location": {
+                "type": "remote",
+                "region": "Antarctica",
+                "country": "USA",
+                "timezone": "NZST"
+            }
+        },
+        {
+            "id": "corp-ascension-relay",
+            "name": "Ascension Communications Relay",
+            "industry": "corporate",
+            "tier": "medium",
+            "clientType": "corp-medium",
+            "minReputation": 6,
+            "description": "Remote satellite communications station providing critical Atlantic data relay services.",
+            "location": {
+                "type": "remote",
+                "city": "Georgetown",
+                "region": "South Atlantic",
+                "country": "UK",
+                "timezone": "GMT"
+            }
         }
     ],
     "industries": {
@@ -531,5 +987,60 @@
             ],
             "description": "Museums, galleries, and heritage preservation organizations"
         }
-    }
+    },
+    "locationTypes": {
+        "office": {
+            "displayName": "Office",
+            "description": "Standard business office or headquarters"
+        },
+        "facility": {
+            "displayName": "Facility",
+            "description": "Specialized building like hospitals, research centers, fire stations"
+        },
+        "warehouse": {
+            "displayName": "Warehouse",
+            "description": "Storage and distribution center"
+        },
+        "datacenter": {
+            "displayName": "Data Center",
+            "description": "Server farm or cloud infrastructure facility"
+        },
+        "offshore": {
+            "displayName": "Offshore Platform",
+            "description": "Oil rig, wind farm, or other sea-based platform"
+        },
+        "vessel": {
+            "displayName": "Vessel",
+            "description": "Ship, cruise liner, research vessel, or container ship"
+        },
+        "remote": {
+            "displayName": "Remote Station",
+            "description": "Isolated location like island stations, mountain observatories, polar bases"
+        }
+    },
+    "regions": [
+        "West Coast",
+        "East Coast",
+        "Midwest",
+        "Southwest",
+        "Southeast",
+        "Northeast",
+        "New England",
+        "Mountain West",
+        "Pacific Northwest",
+        "Alaska",
+        "Pacific Islands",
+        "Northern Europe",
+        "Central Europe",
+        "East Asia",
+        "Southeast Asia",
+        "Western Canada",
+        "North Sea",
+        "Gulf of Mexico",
+        "Caribbean Sea",
+        "Pacific Ocean",
+        "Arctic Ocean",
+        "South Atlantic",
+        "Antarctica"
+    ]
 }

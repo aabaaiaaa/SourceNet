@@ -4,14 +4,21 @@
  * Each storyline defines a sequence of connected missions with:
  * - Narrative continuity between missions
  * - Client industry filters for appropriate client selection
+ * - Client region filters for location-specific storylines
+ * - Client location type filters (office, offshore, vessel, remote)
  * - Optional time pressure for specific missions
  * - Referral text for multi-client arcs
  * 
  * To add a new storyline:
  * 1. Add a new object to the arcStorylines array
- * 2. Define the mission sequence with missionType and clientIndustryFilter
+ * 2. Define the mission sequence with missionType and filters
  * 3. Add narrative templates and referral text for story flow
  * 4. Optionally specify hasTimed for time-pressured missions
+ * 
+ * Filter options per mission step:
+ * - clientIndustryFilter: Array of industry strings, or null for same client
+ * - clientRegionFilter: Array of region strings (e.g., ['North Sea', 'Gulf of Mexico'])
+ * - clientLocationTypeFilter: Array of location types (e.g., ['offshore', 'vessel'])
  */
 
 export const arcStorylines = [
@@ -285,6 +292,141 @@ export const arcStorylines = [
                 hasTimed: false
             }
         ]
+    },
+
+    // 11. Offshore Energy Crisis - Oil rig / wind farm emergency
+    {
+        id: 'offshore-energy-crisis',
+        name: 'Offshore Energy Crisis',
+        description: 'Emergency data recovery across offshore energy platforms.',
+        length: 3,
+        missionSequence: [
+            {
+                missionType: 'repair',
+                clientIndustryFilter: ['utilities'],
+                clientLocationTypeFilter: ['offshore'],
+                narrativeTemplate: 'Emergency repair of SCADA control files on offshore platform.',
+                hasTimed: true
+            },
+            {
+                missionType: 'backup',
+                clientIndustryFilter: ['utilities'],
+                clientLocationTypeFilter: ['offshore'],
+                narrativeTemplate: 'Backup critical telemetry data before storm window.',
+                referralText: 'Our neighboring platform in the same field needs the same treatment urgently.',
+                hasTimed: true
+            },
+            {
+                missionType: 'transfer',
+                clientIndustryFilter: ['utilities', 'corporate'],
+                narrativeTemplate: 'Transfer offshore data to mainland operations center.',
+                referralText: 'We manage the onshore relay for these platforms. Need data consolidated.',
+                hasTimed: false
+            }
+        ]
+    },
+
+    // 12. Maritime Supply Chain - Ship to port logistics
+    {
+        id: 'maritime-supply-chain',
+        name: 'Maritime Supply Chain',
+        description: 'Coordinate data across vessels and port facilities.',
+        length: 2,
+        missionSequence: [
+            {
+                missionType: 'backup',
+                clientIndustryFilter: ['shipping'],
+                clientLocationTypeFilter: ['vessel'],
+                narrativeTemplate: 'Backup critical shipping manifests before satellite window closes.',
+                hasTimed: true
+            },
+            {
+                missionType: 'transfer',
+                clientIndustryFilter: ['shipping'],
+                narrativeTemplate: 'Transfer manifest data to port logistics center.',
+                referralText: 'We received your vessel data. Need it transferred to our port operations.',
+                hasTimed: false
+            }
+        ]
+    },
+
+    // 13. Polar Research Station - Remote Antarctic/Arctic operations
+    {
+        id: 'polar-research-station',
+        name: 'Polar Research Station',
+        description: 'Support data operations at remote polar research stations.',
+        length: 3,
+        missionSequence: [
+            {
+                missionType: 'repair',
+                clientIndustryFilter: ['government'],
+                clientLocationTypeFilter: ['remote'],
+                narrativeTemplate: 'Repair corrupted climate research data before resupply window.',
+                hasTimed: true
+            },
+            {
+                missionType: 'backup',
+                clientIndustryFilter: null, // Same client
+                narrativeTemplate: 'Create backup of all research data for safe transport.',
+                referralText: 'Repairs successful. Now we need everything backed up before the blackout period.',
+                hasTimed: true
+            },
+            {
+                missionType: 'transfer',
+                clientIndustryFilter: ['nonprofit', 'cultural'],
+                narrativeTemplate: 'Transfer research data to university archives.',
+                referralText: 'The research station sent us your contact. We archive their field data.',
+                hasTimed: false
+            }
+        ]
+    },
+
+    // 14. International Banking - Cross-border financial operations
+    {
+        id: 'international-banking',
+        name: 'International Banking Operations',
+        description: 'Coordinate data across international financial institutions.',
+        length: 2,
+        missionSequence: [
+            {
+                missionType: 'backup',
+                clientIndustryFilter: ['banking'],
+                clientRegionFilter: ['Central Europe', 'Northern Europe'],
+                narrativeTemplate: 'Secure backup of international transaction records.',
+                hasTimed: false
+            },
+            {
+                missionType: 'transfer',
+                clientIndustryFilter: ['banking'],
+                narrativeTemplate: 'Transfer reconciliation data to correspondent bank.',
+                referralText: 'Our European partner recommended your services for secure transfers.',
+                hasTimed: true
+            }
+        ]
+    },
+
+    // 15. Pacific Islands Conservation - Remote environmental monitoring
+    {
+        id: 'pacific-conservation',
+        name: 'Pacific Islands Conservation',
+        description: 'Support remote environmental monitoring stations across the Pacific.',
+        length: 2,
+        missionSequence: [
+            {
+                missionType: 'repair',
+                clientIndustryFilter: ['nonprofit'],
+                clientRegionFilter: ['Pacific Islands'],
+                narrativeTemplate: 'Repair corrupted marine ecosystem monitoring data.',
+                hasTimed: false
+            },
+            {
+                missionType: 'transfer',
+                clientIndustryFilter: ['nonprofit', 'government'],
+                narrativeTemplate: 'Transfer conservation data to research consortium.',
+                referralText: 'The island station shared your contact. We need their data integrated.',
+                hasTimed: false
+            }
+        ]
     }
 ];
 
@@ -317,9 +459,52 @@ export function getStorylinesForIndustry(industry) {
     );
 }
 
+/**
+ * Get all storylines that match a given region
+ * @param {string} region - Region to filter by
+ * @returns {Array} Matching storylines
+ */
+export function getStorylinesForRegion(region) {
+    return arcStorylines.filter(storyline => {
+        const firstMission = storyline.missionSequence[0];
+        // Include storylines without region filter, or those matching the region
+        return !firstMission.clientRegionFilter ||
+            firstMission.clientRegionFilter.includes(region);
+    });
+}
+
+/**
+ * Get all storylines that match a given location type
+ * @param {string} locationType - Location type to filter by (e.g., 'offshore', 'vessel')
+ * @returns {Array} Matching storylines
+ */
+export function getStorylinesForLocationType(locationType) {
+    return arcStorylines.filter(storyline => {
+        const firstMission = storyline.missionSequence[0];
+        // Include storylines without location type filter, or those matching the type
+        return !firstMission.clientLocationTypeFilter ||
+            firstMission.clientLocationTypeFilter.includes(locationType);
+    });
+}
+
+/**
+ * Get storylines that specifically target location-based clients
+ * (have clientRegionFilter or clientLocationTypeFilter defined)
+ * @returns {Array} Location-specific storylines
+ */
+export function getLocationSpecificStorylines() {
+    return arcStorylines.filter(storyline => {
+        const firstMission = storyline.missionSequence[0];
+        return firstMission.clientRegionFilter || firstMission.clientLocationTypeFilter;
+    });
+}
+
 export default {
     arcStorylines,
     getRandomStoryline,
     getStorylineById,
-    getStorylinesForIndustry
+    getStorylinesForIndustry,
+    getStorylinesForRegion,
+    getStorylinesForLocationType,
+    getLocationSpecificStorylines
 };

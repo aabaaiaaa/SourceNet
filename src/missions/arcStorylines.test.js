@@ -5,6 +5,9 @@ import {
     getRandomStoryline,
     getStorylineById,
     getStorylinesForIndustry,
+    getStorylinesForRegion,
+    getStorylinesForLocationType,
+    getLocationSpecificStorylines,
 } from './arcStorylines';
 
 // ============================================================================
@@ -332,6 +335,152 @@ describe('arcStorylines', () => {
                 expect(storyline.name.length).toBeGreaterThan(5);
                 expect(storyline.description.length).toBeGreaterThan(20);
             });
+        });
+    });
+
+    // ========================================================================
+    // Location-based filtering
+    // ========================================================================
+
+    describe('getStorylinesForRegion', () => {
+        it('should return storylines matching region in first mission', () => {
+            const storylines = getStorylinesForRegion('Central Europe');
+
+            expect(storylines.length).toBeGreaterThan(0);
+            storylines.forEach(s => {
+                const firstMission = s.missionSequence[0];
+                // Should either have no filter or include the region
+                if (firstMission.clientRegionFilter) {
+                    expect(firstMission.clientRegionFilter).toContain('Central Europe');
+                }
+            });
+        });
+
+        it('should include storylines without region filter', () => {
+            const storylines = getStorylinesForRegion('West Coast');
+            const noFilterStorylines = storylines.filter(s =>
+                !s.missionSequence[0].clientRegionFilter
+            );
+
+            // Most storylines don't have region filters
+            expect(noFilterStorylines.length).toBeGreaterThan(0);
+        });
+
+        it('should return storylines for North Sea region', () => {
+            // There's an offshore-energy-crisis storyline that could match
+            const storylines = getStorylinesForRegion('North Sea');
+            expect(storylines.length).toBeGreaterThan(0);
+        });
+    });
+
+    describe('getStorylinesForLocationType', () => {
+        it('should return storylines for offshore location type', () => {
+            const storylines = getStorylinesForLocationType('offshore');
+
+            expect(storylines.length).toBeGreaterThan(0);
+            storylines.forEach(s => {
+                const firstMission = s.missionSequence[0];
+                // Should either have no filter or include offshore
+                if (firstMission.clientLocationTypeFilter) {
+                    expect(firstMission.clientLocationTypeFilter).toContain('offshore');
+                }
+            });
+        });
+
+        it('should return storylines for vessel location type', () => {
+            const storylines = getStorylinesForLocationType('vessel');
+
+            expect(storylines.length).toBeGreaterThan(0);
+        });
+
+        it('should return storylines for remote location type', () => {
+            const storylines = getStorylinesForLocationType('remote');
+
+            expect(storylines.length).toBeGreaterThan(0);
+        });
+
+        it('should include storylines without location type filter', () => {
+            const storylines = getStorylinesForLocationType('office');
+            const noFilterStorylines = storylines.filter(s =>
+                !s.missionSequence[0].clientLocationTypeFilter
+            );
+
+            expect(noFilterStorylines.length).toBeGreaterThan(0);
+        });
+    });
+
+    describe('getLocationSpecificStorylines', () => {
+        it('should return only storylines with location filters', () => {
+            const storylines = getLocationSpecificStorylines();
+
+            expect(storylines.length).toBeGreaterThan(0);
+            storylines.forEach(s => {
+                const firstMission = s.missionSequence[0];
+                const hasLocationFilter = firstMission.clientRegionFilter ||
+                    firstMission.clientLocationTypeFilter;
+                expect(hasLocationFilter).toBeTruthy();
+            });
+        });
+
+        it('should include offshore-energy-crisis storyline', () => {
+            const storylines = getLocationSpecificStorylines();
+            const offshoreStoryline = storylines.find(s => s.id === 'offshore-energy-crisis');
+
+            expect(offshoreStoryline).toBeDefined();
+        });
+
+        it('should include maritime-supply-chain storyline', () => {
+            const storylines = getLocationSpecificStorylines();
+            const maritimeStoryline = storylines.find(s => s.id === 'maritime-supply-chain');
+
+            expect(maritimeStoryline).toBeDefined();
+        });
+
+        it('should include polar-research-station storyline', () => {
+            const storylines = getLocationSpecificStorylines();
+            const polarStoryline = storylines.find(s => s.id === 'polar-research-station');
+
+            expect(polarStoryline).toBeDefined();
+        });
+    });
+
+    describe('location-specific storylines', () => {
+        it('offshore-energy-crisis should target offshore utilities', () => {
+            const storyline = getStorylineById('offshore-energy-crisis');
+
+            expect(storyline).toBeDefined();
+            expect(storyline.missionSequence[0].clientLocationTypeFilter).toContain('offshore');
+            expect(storyline.missionSequence[0].clientIndustryFilter).toContain('utilities');
+        });
+
+        it('maritime-supply-chain should target vessel shipping', () => {
+            const storyline = getStorylineById('maritime-supply-chain');
+
+            expect(storyline).toBeDefined();
+            expect(storyline.missionSequence[0].clientLocationTypeFilter).toContain('vessel');
+            expect(storyline.missionSequence[0].clientIndustryFilter).toContain('shipping');
+        });
+
+        it('polar-research-station should target remote government', () => {
+            const storyline = getStorylineById('polar-research-station');
+
+            expect(storyline).toBeDefined();
+            expect(storyline.missionSequence[0].clientLocationTypeFilter).toContain('remote');
+            expect(storyline.missionSequence[0].clientIndustryFilter).toContain('government');
+        });
+
+        it('international-banking should target Central Europe region', () => {
+            const storyline = getStorylineById('international-banking');
+
+            expect(storyline).toBeDefined();
+            expect(storyline.missionSequence[0].clientRegionFilter).toContain('Central Europe');
+        });
+
+        it('pacific-conservation should target Pacific Islands region', () => {
+            const storyline = getStorylineById('pacific-conservation');
+
+            expect(storyline).toBeDefined();
+            expect(storyline.missionSequence[0].clientRegionFilter).toContain('Pacific Islands');
         });
     });
 });
