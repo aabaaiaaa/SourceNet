@@ -743,8 +743,15 @@ describe('MissionPoolManager', () => {
             const mission = generatePoolMission(1, mockCurrentTime, new Set(), false);
 
             expect(mission).toBeDefined();
-            expect(mission.missionId).toBeDefined();
-            expect(mission.clientId).toBeDefined();
+            // generatePoolMission may return a single mission or an arc object
+            if (mission.arcId || mission.missions) {
+                // Arc: validate first mission in arc
+                expect(mission.missions && mission.missions[0].missionId).toBeDefined();
+                expect(mission.missions && mission.missions[0].clientId).toBeDefined();
+            } else {
+                expect(mission.missionId).toBeDefined();
+                expect(mission.clientId).toBeDefined();
+            }
         });
 
         it('should exclude specified client IDs', () => {
@@ -759,8 +766,13 @@ describe('MissionPoolManager', () => {
             // If there are other clients available, the new mission should use a different client
             // (unless no other clients are available)
             if (secondMission) {
-                // Either it uses a different client OR all clients are excluded
-                expect(secondMission.clientId).toBeDefined();
+                // Either it uses a different client, or it returned an arc object
+                if (secondMission.arcId || secondMission.missions) {
+                    // Arc: check first mission's clientId
+                    expect(secondMission.missions && secondMission.missions[0].clientId).toBeDefined();
+                } else {
+                    expect(secondMission.clientId).toBeDefined();
+                }
             }
         });
 

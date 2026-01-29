@@ -60,3 +60,8 @@ I will want tests for the hardware purchasing and reboot mechanism (reboots are 
 I will want tests for the 2 new apps - they should be unit and integration tests because there are no missions being generated yet that these can be tested with and integration tests can manually set state to show the log viewer and data restoration tool working.
 The actual story mission I will leave for now and add in after this work is complete.
 Make a plan please.
+
+
+Log Viewer and Data Recovery Tool apps are pretty broken - I'd almost say they need recreating.
+The Log Viewer does not take into account that the player needs to be connected to a network before it should show any networks in it's drop down and the same is true with the device drop down. Also, the log type is only an option for device level logs but still shows for network.
+I think these just need recreating once Claude is available again...

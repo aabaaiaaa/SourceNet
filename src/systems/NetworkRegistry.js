@@ -263,10 +263,16 @@ class NetworkRegistry {
             device.logs = [];
         }
 
-        // Create log entry with timestamp and unique ID
+        // Require explicit log type (no backward compatibility)
+        if (!logEntry.type) {
+            throw new Error('NetworkRegistry.addDeviceLog requires logEntry.type to be set (file|remote|process)');
+        }
+
+        // Create log entry with timestamp, unique ID and type
         const entry = {
             id: `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             timestamp: logEntry.timestamp || new Date().toISOString(),
+            type: logEntry.type,
             action: logEntry.action,
             fileName: logEntry.fileName,
             filePath: logEntry.filePath,
@@ -293,6 +299,69 @@ class NetworkRegistry {
     getDeviceLogs(ip) {
         const device = this.devices.get(ip);
         return device?.logs ? [...device.logs] : [];
+    }
+
+    /**
+     * Add a log entry to a network (e.g., connection events)
+     * @param {string} networkId - Network identifier
+     * @param {Object} logEntry - Log entry data (requires `type`)
+     * @returns {boolean} True if logged, false if network not found
+     */
+    addNetworkLog(networkId, logEntry) {
+        const network = this.networks.get(networkId);
+        if (!network) {
+            console.warn(`NetworkRegistry: Cannot add log - network ${networkId} not found`);
+            return false;
+        }
+
+        if (!network.logs) {
+            network.logs = [];
+        }
+
+        if (!logEntry.type) {
+            throw new Error('NetworkRegistry.addNetworkLog requires logEntry.type to be set (file|remote|process)');
+        }
+
+        const entry = {
+            id: `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            timestamp: logEntry.timestamp || new Date().toISOString(),
+            type: logEntry.type,
+            action: logEntry.action,
+            note: logEntry.note,
+            sourceIp: logEntry.sourceIp,
+            destIp: logEntry.destIp,
+        };
+
+        network.logs.push(entry);
+
+        // Keep only last 200 logs at network level
+        if (network.logs.length > 200) {
+            network.logs = network.logs.slice(-200);
+        }
+
+        return true;
+    }
+
+    /**
+     * Get logs for a network
+     * @param {string} networkId
+     * @returns {Array} Array of log entries (empty if network not found)
+     */
+    getNetworkLogs(networkId) {
+        const network = this.networks.get(networkId);
+        return network?.logs ? [...network.logs] : [];
+    }
+
+    /**
+     * Clear logs for a network
+     * @param {string} networkId
+     * @returns {boolean} True if cleared, false if network not found
+     */
+    clearNetworkLogs(networkId) {
+        const network = this.networks.get(networkId);
+        if (!network) return false;
+        network.logs = [];
+        return true;
     }
 
     /**

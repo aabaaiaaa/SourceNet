@@ -21,6 +21,7 @@ describe('LogViewer - NetworkRegistry Log Operations', () => {
         });
 
         networkRegistry.addDeviceLog('192.168.1.10', {
+            type: 'file',
             action: 'copy',
             fileName: 'test.txt',
             timestamp: new Date().toISOString(),
@@ -39,9 +40,9 @@ describe('LogViewer - NetworkRegistry Log Operations', () => {
             logs: [],
         });
 
-        networkRegistry.addDeviceLog('192.168.1.10', { action: 'copy', fileName: 'file1.txt' });
-        networkRegistry.addDeviceLog('192.168.1.10', { action: 'paste', fileName: 'file1.txt' });
-        networkRegistry.addDeviceLog('192.168.1.10', { action: 'delete', fileName: 'file2.txt' });
+        networkRegistry.addDeviceLog('192.168.1.10', { type: 'file', action: 'copy', fileName: 'file1.txt' });
+        networkRegistry.addDeviceLog('192.168.1.10', { type: 'file', action: 'paste', fileName: 'file1.txt' });
+        networkRegistry.addDeviceLog('192.168.1.10', { type: 'file', action: 'delete', fileName: 'file2.txt' });
 
         const device = networkRegistry.getDevice('192.168.1.10');
         expect(device.logs).toHaveLength(3);
@@ -54,10 +55,10 @@ describe('LogViewer - NetworkRegistry Log Operations', () => {
             hostname: 'test-server-filter',
         });
 
-        networkRegistry.addDeviceLog('192.168.1.20', { action: 'copy', fileName: 'copied.txt' });
-        networkRegistry.addDeviceLog('192.168.1.20', { action: 'paste', fileName: 'pasted.txt' });
-        networkRegistry.addDeviceLog('192.168.1.20', { action: 'delete', fileName: 'deleted.txt' });
-        networkRegistry.addDeviceLog('192.168.1.20', { action: 'copy', fileName: 'copied2.txt' });
+        networkRegistry.addDeviceLog('192.168.1.20', { type: 'file', action: 'copy', fileName: 'copied.txt' });
+        networkRegistry.addDeviceLog('192.168.1.20', { type: 'file', action: 'paste', fileName: 'pasted.txt' });
+        networkRegistry.addDeviceLog('192.168.1.20', { type: 'file', action: 'delete', fileName: 'deleted.txt' });
+        networkRegistry.addDeviceLog('192.168.1.20', { type: 'file', action: 'copy', fileName: 'copied2.txt' });
 
         const device = networkRegistry.getDevice('192.168.1.20');
         const logs = device.logs || [];
@@ -77,9 +78,9 @@ describe('LogViewer - NetworkRegistry Log Operations', () => {
             logs: [],
         });
 
-        networkRegistry.addDeviceLog('192.168.1.10', { action: 'copy', fileName: 'first.txt', timestamp: '2024-01-01T10:00:00Z' });
-        networkRegistry.addDeviceLog('192.168.1.10', { action: 'copy', fileName: 'second.txt', timestamp: '2024-01-01T11:00:00Z' });
-        networkRegistry.addDeviceLog('192.168.1.10', { action: 'copy', fileName: 'third.txt', timestamp: '2024-01-01T12:00:00Z' });
+        networkRegistry.addDeviceLog('192.168.1.10', { type: 'file', action: 'copy', fileName: 'first.txt', timestamp: '2024-01-01T10:00:00Z' });
+        networkRegistry.addDeviceLog('192.168.1.10', { type: 'file', action: 'copy', fileName: 'second.txt', timestamp: '2024-01-01T11:00:00Z' });
+        networkRegistry.addDeviceLog('192.168.1.10', { type: 'file', action: 'copy', fileName: 'third.txt', timestamp: '2024-01-01T12:00:00Z' });
 
         const device = networkRegistry.getDevice('192.168.1.10');
         expect(device.logs[0].fileName).toBe('first.txt');

@@ -195,6 +195,7 @@ const DataRecoveryTool = () => {
                             // Log the recovery
                             selectedFiles.forEach(fileName => {
                                 networkRegistry.addDeviceLog(selectedDevice, {
+                                    type: 'file',
                                     action: 'recover',
                                     fileName,
                                     timestamp: currentTime?.toISOString(),
@@ -210,6 +211,7 @@ const DataRecoveryTool = () => {
                             // Log the secure deletion
                             selectedFiles.forEach(fileName => {
                                 networkRegistry.addDeviceLog(selectedDevice, {
+                                    type: 'file',
                                     action: 'secure-delete',
                                     fileName,
                                     timestamp: currentTime?.toISOString(),

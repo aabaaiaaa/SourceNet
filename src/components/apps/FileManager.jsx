@@ -64,6 +64,8 @@ const FileManager = () => {
     // Also log to NetworkRegistry for persistent device logs (if not local SSD)
     if (entry.deviceIp && entry.deviceIp !== 'local') {
       networkRegistry.addDeviceLog(entry.deviceIp, {
+        // type is required: file operations
+        type: 'file',
         action: entry.action?.toLowerCase() || 'unknown',
         fileName: entry.fileName,
         filePath: entry.filePath,

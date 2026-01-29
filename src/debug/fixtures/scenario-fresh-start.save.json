@@ -1,7 +1,7 @@
 {
   "username": "scenario_user",
-  "playerMailId": "SNET-IH1-HC2-54H",
-  "currentTime": "2020-03-25T09:01:40.000Z",
+  "playerMailId": "SNET-QFY-EBS-I4N",
+  "currentTime": "2020-03-25T09:01:56.000Z",
   "hardware": {
     "cpu": {
       "id": "cpu-1ghz-single",
@@ -101,11 +101,11 @@
     {
       "id": "msg-welcome-manager",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-PUB-OHQ",
+      "fromId": "SNET-MGR-UNI-2HJ",
       "fromName": "SourceNet Manager Avery",
       "subject": "Hi from your manager - Avery",
       "body": "Hey scenario_user!\n\nWelcome to the team! I'm Avery, and I'll be your manager here at SourceNet. I was present during your interview process and I have to say, you really impressed us with your skills and dedication.\n\nTo help you get started, I've attached a welcome bonus cheque for 1,000 credits. Just click on the attachment to deposit it into your bank account.\n\nTake some time to get comfortable with your setup. I'll be reaching out again soon with your first assignment.\n\nLooking forward to working with you!\n\n- Avery",
-      "timestamp": "2020-03-25T09:00:21.000Z",
+      "timestamp": "2020-03-25T09:00:27.000Z",
       "read": true,
       "archived": false,
       "attachments": [
@@ -119,11 +119,11 @@
     {
       "id": "msg-mission-board-license",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-X88-GVB",
+      "fromId": "SNET-MGR-JD7-O4R",
       "fromName": "SourceNet Manager Avery",
       "subject": "Get Ready for Your First Mission",
       "body": "Hey scenario_user!\n\nNow that you're all set up, it's time to get you started with actual work.\n\nI've attached a license for the SourceNet Mission Board application. This is where you'll find all available missions from our clients.\n\nTo get started:\n\n1. Click the attachment above to add the Mission Board license to your account\n2. Open the OSNet Portal from your app launcher\n3. Go to Software section - you'll see \"SourceNet Mission Board\" marked as \"Licensed\"\n4. Download and install it\n5. Once installed, open the Mission Board from your app launcher\n\nI've posted your first assignment there. It's a straightforward file repair job for one of our clients - perfect for learning the ropes.\n\nOnce you install the Mission Board, I'll send you the software licenses you'll need to complete the mission.\n\n- Avery",
-      "timestamp": "2020-03-25T09:01:03.000Z",
+      "timestamp": "2020-03-25T09:01:10.000Z",
       "read": true,
       "archived": false,
       "attachments": [
@@ -158,8 +158,8 @@
   "downloadQueue": [],
   "transactions": [
     {
-      "id": "txn-cheque-1769688483536",
-      "date": "2020-03-25T09:01:01.000Z",
+      "id": "txn-cheque-1769703848141",
+      "date": "2020-03-25T09:01:14.000Z",
       "type": "income",
       "amount": 1000,
       "description": "Cheque Deposit",
@@ -204,6 +204,6 @@
     "devices": [],
     "fileSystems": []
   },
-  "savedAt": "2026-01-29T12:08:04.331Z",
+  "savedAt": "2026-01-29T16:24:09.043Z",
   "saveName": "ScenarioFreshStart"
 }

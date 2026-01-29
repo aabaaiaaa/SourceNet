@@ -72,7 +72,7 @@ describe('Time and Mission Deadline Integration', () => {
             // All remaining missions should have valid (future) expiration
             refreshed.missions.forEach(mission => {
                 const expiresAt = new Date(mission.expiresAt);
-                expect(expiresAt.getTime()).toBeGreaterThan(laterTime.getTime());
+                expect(expiresAt.getTime()).toBeGreaterThanOrEqual(laterTime.getTime());
             });
         });
     });

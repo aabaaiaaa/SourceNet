@@ -24,7 +24,33 @@ const VPNClient = () => {
 
     // Listen for access changes and registry reloads
     triggerEventBus.on('networkAccessGranted', refreshNetworks);
-    triggerEventBus.on('networkAccessRevoked', refreshNetworks);
+    triggerEventBus.on('networkAccessRevoked', ({ networkId, reason }) => {
+      // Refresh known networks
+      refreshNetworks();
+
+      // If we are connected to the revoked network, disconnect and log
+      setActiveConnections((prev) => {
+        const removed = prev.filter(conn => conn.networkId === networkId);
+        const remaining = prev.filter(conn => conn.networkId !== networkId);
+
+        if (removed.length > 0) {
+          removed.forEach((conn) => {
+            try {
+              networkRegistry.addNetworkLog(conn.networkId, {
+                type: 'remote',
+                action: 'disconnect',
+                note: `Disconnected (access revoked)${reason ? `: ${reason}` : ''}`,
+                timestamp: new Date().toISOString(),
+              });
+            } catch (e) {
+              console.warn('VPNClient: failed to write network log on revoke', e);
+            }
+          });
+        }
+
+        return remaining;
+      });
+    });
     triggerEventBus.on('networkRegistryLoaded', refreshNetworks);
 
     return () => {
@@ -77,7 +103,23 @@ const VPNClient = () => {
           connectedAt: currentTime.toISOString(),
         };
 
-        setActiveConnections([...activeConnections, newConnection]);
+        setActiveConnections((prev) => {
+          const updated = [...(prev || []), newConnection];
+
+          // Log network-level connection
+          try {
+            networkRegistry.addNetworkLog(newConnection.networkId, {
+              type: 'remote',
+              action: 'connect',
+              note: `Connected via VPN`,
+              timestamp: currentTime.toISOString(),
+            });
+          } catch (e) {
+            console.warn('VPNClient: failed to write network connect log', e);
+          }
+
+          return updated;
+        });
 
         // Emit network connected event
         triggerEventBus.emit('networkConnected', {
@@ -133,7 +175,23 @@ const VPNClient = () => {
   };
 
   const handleDisconnect = (networkId) => {
-    setActiveConnections(activeConnections.filter((conn) => conn.networkId !== networkId));
+    setActiveConnections((prev) => {
+      const remaining = (prev || []).filter((conn) => conn.networkId !== networkId);
+
+      // Write network-level disconnect log
+      try {
+        networkRegistry.addNetworkLog(networkId, {
+          type: 'remote',
+          action: 'disconnect',
+          note: 'Player disconnected via VPN',
+          timestamp: currentTime ? currentTime.toISOString() : new Date().toISOString(),
+        });
+      } catch (e) {
+        console.warn('VPNClient: failed to write network disconnect log', e);
+      }
+
+      return remaining;
+    });
   };
 
   return (
