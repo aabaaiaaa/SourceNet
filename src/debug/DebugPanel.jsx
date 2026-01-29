@@ -17,6 +17,7 @@ import { getDebugScenarios, loadScenario } from './scenarios';
 import { getAllClients, getClientsGroupedByIndustry, getIndustryInfo } from '../data/clientRegistry';
 import { canAccessClientType } from '../systems/ReputationSystem';
 import networkRegistry from '../systems/NetworkRegistry';
+import triggerEventBus from '../core/triggerEventBus';
 import './DebugPanel.css';
 
 const DebugPanel = ({ onClose }) => {
@@ -52,11 +53,23 @@ const DebugPanel = ({ onClose }) => {
     const newCredits = parseInt(creditsInput, 10);
     if (isNaN(newCredits)) return;
 
+    const oldBalance = gameContext.bankAccounts[0]?.balance || 0;
     const newAccounts = [...gameContext.bankAccounts];
     if (newAccounts[0]) {
       newAccounts[0].balance = newCredits;
     }
     gameContext.setBankAccounts(newAccounts);
+
+    // Emit creditsChanged event for debug operations too
+    queueMicrotask(() => {
+      triggerEventBus.emit('creditsChanged', {
+        newBalance: newCredits,
+        change: newCredits - oldBalance,
+        reason: 'debug-set',
+        accountId: newAccounts[0]?.id,
+      });
+    });
+
     setCreditsInput('');
   };
 
@@ -162,6 +175,21 @@ const DebugPanel = ({ onClose }) => {
 
   const handleCancelTermination = () => {
     gameContext.setReputation(5);
+  };
+
+  // Unlock hardware and advanced tools features
+  const handleUnlockHardwareFeatures = () => {
+    if (gameContext.setUnlockedFeatures) {
+      gameContext.setUnlockedFeatures(prev => {
+        const newFeatures = new Set(prev);
+        newFeatures.add('network-adapters');
+        newFeatures.add('advanced-tools');
+        return Array.from(newFeatures);
+      });
+      showStatus('✅ Unlocked: network-adapters, advanced-tools');
+    } else {
+      showStatus('❌ setUnlockedFeatures not available', true);
+    }
   };
 
   const renderScenariosTab = () => {
@@ -275,6 +303,23 @@ const DebugPanel = ({ onClose }) => {
                 ⚠️ Termination countdown active: {gameContext.reputationCountdown.remaining}s remaining
               </div>
             )}
+          </div>
+
+          <div className="control-group">
+            <h4>🔓 Feature Unlocks</h4>
+            <div className="quick-actions">
+              <button onClick={handleUnlockHardwareFeatures} data-testid="debug-unlock-features">
+                Unlock Hardware &amp; Advanced Tools
+              </button>
+            </div>
+            <div className="state-item">
+              <span className="state-label">Unlocked Features:</span>
+              <span className="state-value">
+                {gameContext.unlockedFeatures?.length > 0
+                  ? gameContext.unlockedFeatures.join(', ')
+                  : 'None'}
+              </span>
+            </div>
           </div>
         </div>
 

@@ -313,7 +313,7 @@ export function generateNetworkInfrastructure(client, missionType, targetFileCou
         networkId: primaryNetworkId,
         networkName: generateNetworkName(client),
         address: primarySubnet,
-        bandwidth: randomPick([25, 50, 75, 100]),
+        bandwidth: randomPick([500, 750, 1000, 1500, 2000]),
         revokeOnComplete: true,
         revokeReason: 'Mission access expired',
         fileSystems: primaryFileSystems
@@ -352,7 +352,7 @@ export function generateNetworkInfrastructure(client, missionType, targetFileCou
             networkId: secondaryNetworkId,
             networkName: generateNetworkName(client, 'Backup'),
             address: secondarySubnet,
-            bandwidth: randomPick([25, 50, 75, 100]),
+            bandwidth: randomPick([500, 750, 1000, 1500, 2000]),
             revokeOnComplete: true,
             revokeReason: 'Mission access expired',
             fileSystems: [{
@@ -1272,7 +1272,7 @@ export function generateRestoreFromBackupMission(client, options = {}) {
         networkId: primaryNetworkId,
         networkName: generateNetworkName(client),
         address: primarySubnet,
-        bandwidth: randomPick([25, 50, 75, 100]),
+        bandwidth: randomPick([500, 750, 1000, 1500, 2000]),
         revokeOnComplete: true,
         revokeReason: 'Mission access expired',
         fileSystems: [
@@ -1447,7 +1447,7 @@ export function generateRepairAndBackupMission(client, options = {}) {
         networkId: primaryNetworkId,
         networkName: generateNetworkName(client),
         address: primarySubnet,
-        bandwidth: randomPick([25, 50, 75, 100]),
+        bandwidth: randomPick([500, 750, 1000, 1500, 2000]),
         revokeOnComplete: true,
         revokeReason: 'Mission access expired',
         fileSystems: [

@@ -123,7 +123,8 @@
 .item-name {
   font-weight: bold;
   font-size: 14px;
-  color: #222222 !important;  /* Force dark item names to be visible */
+  color: #222222 !important;
+  /* Force dark item names to be visible */
 }
 
 .item-price {
@@ -134,7 +135,8 @@
 
 .item-specs {
   font-size: 12px;
-  color: #444444 !important;  /* Force dark specs text */
+  color: #444444 !important;
+  /* Force dark specs text */
   margin-bottom: 8px;
 }
 
@@ -222,7 +224,8 @@
   margin-top: 20px;
 }
 
-.confirm-btn, .cancel-btn {
+.confirm-btn,
+.cancel-btn {
   flex: 1;
   padding: 10px;
   border: none;
@@ -248,4 +251,48 @@
 
 .cancel-btn:hover {
   background: #e0e0e0;
+}
+
+/* Locked items */
+.portal-item.locked {
+  opacity: 0.7;
+  background-color: #f9f9f9;
+  border-color: #ccc;
+}
+
+.portal-item.locked:hover {
+  box-shadow: none;
+}
+
+.lock-icon {
+  margin-right: 4px;
+}
+
+.locked-badge {
+  background-color: #e74c3c;
+  color: white;
+  cursor: help;
+}
+
+/* Pending reboot items */
+.portal-item.pending-reboot {
+  background-color: #fff3e0;
+  border-color: #ff9800;
+}
+
+.pending-badge {
+  background-color: #ff9800;
+  color: white;
+  cursor: help;
+}
+
+/* Hardware notice in modal */
+.hardware-notice {
+  background-color: #fff3e0;
+  border: 1px solid #ff9800;
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: #e65100;
+  font-weight: bold;
+  margin-top: 10px;
 }

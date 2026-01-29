@@ -137,6 +137,8 @@ const TopBar = () => {
     'network-scanner': { id: 'networkScanner', name: 'Network Scanner' },
     'network-address-register': { id: 'networkAddressRegister', name: 'Network Address Register' },
     'file-manager': { id: 'fileManager', name: 'File Manager' },
+    'log-viewer': { id: 'logViewer', name: 'Log Viewer' },
+    'data-recovery-tool': { id: 'dataRecoveryTool', name: 'Data Recovery Tool' },
   };
 
   const apps = (software || [])

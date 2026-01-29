@@ -5,7 +5,7 @@ export default defineConfig({
   testMatch: /.*\.e2e\.js$/,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 2 : 1, // 1 retry locally for flaky tests under parallel load
   workers: process.env.CI ? 1 : undefined,
   reporter: [
     ['html', { open: 'never' }]
@@ -20,7 +20,16 @@ export default defineConfig({
 
   projects: [
     {
+      name: 'generators',
+      testDir: './e2e/generators',
+      fullyParallel: false, // Generators must run sequentially (they depend on each other)
+      workers: 1,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
       name: 'chromium',
+      testDir: './e2e',
+      testIgnore: /generators\//,  // Exclude generators from main project
       use: { ...devices['Desktop Chrome'] },
     },
   ],

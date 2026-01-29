@@ -3,7 +3,7 @@ import { useGame } from '../../contexts/useGame';
 import './BootSequence.css';
 
 const BootSequence = () => {
-  const { setGamePhase, hardware, username, isRebooting, setIsRebooting, setIsPaused } = useGame();
+  const { setGamePhase, hardware, username, isRebooting, setIsRebooting, setIsPaused, lastAppliedHardware, setLastAppliedHardware } = useGame();
   const [bootLines, setBootLines] = useState([]);
   const [bootComplete, setBootComplete] = useState(false);
   const [showLogo, setShowLogo] = useState(false);
@@ -21,7 +21,43 @@ const BootSequence = () => {
       setIsRebooting(false);
     }
 
-    console.log('[BootSequence] isRebooting:', isRebooting, 'username:', username, 'isFirstBoot:', isFirstBoot);
+    // Check if new hardware was just applied
+    const hasNewHardware = lastAppliedHardware && Object.keys(lastAppliedHardware).length > 0;
+
+    // Clear the last applied hardware after we've consumed it
+    if (hasNewHardware) {
+      // Delay clearing so we can show the message
+      setTimeout(() => setLastAppliedHardware({}), 100);
+    }
+
+    console.log('[BootSequence] isRebooting:', isRebooting, 'username:', username, 'isFirstBoot:', isFirstBoot, 'hasNewHardware:', hasNewHardware);
+
+    // Build new hardware detection lines
+    const newHardwareLines = [];
+    if (hasNewHardware) {
+      newHardwareLines.push('');
+      newHardwareLines.push('╔══════════════════════════════════════════╗');
+      newHardwareLines.push('║      ★★★ NEW HARDWARE DETECTED ★★★      ║');
+      newHardwareLines.push('╚══════════════════════════════════════════╝');
+      newHardwareLines.push('');
+
+      // List each new component by category
+      for (const [category, item] of Object.entries(lastAppliedHardware)) {
+        const categoryLabels = {
+          processors: 'CPU',
+          memory: 'Memory',
+          storage: 'Storage',
+          motherboards: 'Motherboard',
+          powerSupplies: 'Power Supply',
+          network: 'Network Adapter'
+        };
+        const label = categoryLabels[category] || category;
+        newHardwareLines.push(`  Installing: ${label} - ${item.name}`);
+      }
+      newHardwareLines.push('');
+      newHardwareLines.push('Hardware installation complete!');
+      newHardwareLines.push('');
+    }
 
     const baseLines = [
       'OSNet BIOS v1.0',
@@ -38,6 +74,7 @@ const BootSequence = () => {
       `Power Supply: ${hardware.powerSupply.wattage}W`,
       `Network: ${hardware.network.name}`,
       '',
+      ...newHardwareLines,
       'Performing checksum validation...',
       'Checksum: OK',
       '',
@@ -120,7 +157,7 @@ const BootSequence = () => {
     }, lineDelay);
 
     return () => clearInterval(interval);
-  }, [hardware, username, isRebooting, setIsRebooting]);
+  }, [hardware, username, isRebooting, setIsRebooting, lastAppliedHardware, setLastAppliedHardware]);
 
   useEffect(() => {
     if (bootComplete) {

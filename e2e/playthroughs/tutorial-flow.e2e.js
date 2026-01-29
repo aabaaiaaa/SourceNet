@@ -502,7 +502,11 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         // Wait for forced disconnection overlay - it will appear after sabotage completes
         const forcedDisconnectOverlay = page.locator('.forced-disconnect-overlay');
         await expect(forcedDisconnectOverlay).toBeVisible({ timeout: 30000 });
-        await page.locator('.acknowledge-btn').click();
+
+        // Wait for acknowledge button to be visible and clickable
+        const ackBtn = page.locator('.acknowledge-btn');
+        await expect(ackBtn).toBeVisible({ timeout: 5000 });
+        await ackBtn.click();
         await expect(forcedDisconnectOverlay).not.toBeVisible({ timeout: 2000 });
 
         // Now safe to set back to 1x and continue test

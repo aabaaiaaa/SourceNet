@@ -204,6 +204,24 @@ export const SOFTWARE_CATALOG = [
     sizeInMB: 35, // ~5.5 seconds at 50 Mbps
     available: true,
   },
+  {
+    id: 'log-viewer',
+    name: 'Log Viewer',
+    description: 'View file operation logs for discovered devices',
+    price: 400,
+    sizeInMB: 20,
+    available: true,
+    requiresUnlock: 'advanced-tools', // Locked until hardware unlock message read
+  },
+  {
+    id: 'data-recovery-tool',
+    name: 'Data Recovery Tool',
+    description: 'Recover deleted files and perform secure deletion',
+    price: 600,
+    sizeInMB: 50,
+    available: true,
+    requiresUnlock: 'advanced-tools', // Locked until hardware unlock message read
+  },
 ];
 
 // Initial messages
@@ -261,6 +279,8 @@ export const WINDOW_SIZES = {
   networkScanner: { width: 650, height: 500 },
   networkAddressRegister: { width: 600, height: 450 },
   fileManager: { width: 700, height: 550 },
+  logViewer: { width: 650, height: 500 },
+  dataRecoveryTool: { width: 600, height: 500 },
 };
 
 // Boot sequence timing

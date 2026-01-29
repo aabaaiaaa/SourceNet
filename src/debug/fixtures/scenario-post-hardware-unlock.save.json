@@ -1,0 +1,3596 @@
+{
+  "username": "scenario_user",
+  "playerMailId": "SNET-IH1-HC2-54H",
+  "currentTime": "2020-03-25T09:11:38.000Z",
+  "hardware": {
+    "cpu": {
+      "id": "cpu-1ghz-single",
+      "name": "1GHz Single Core",
+      "specs": "1GHz, 1 core",
+      "price": 200,
+      "power": 65
+    },
+    "memory": [
+      {
+        "id": "ram-2gb",
+        "name": "2GB RAM",
+        "capacity": "2GB",
+        "price": 150,
+        "power": 3
+      }
+    ],
+    "storage": [
+      {
+        "id": "ssd-90gb",
+        "name": "90GB SSD",
+        "capacity": "90GB",
+        "price": 100,
+        "power": 2
+      }
+    ],
+    "motherboard": {
+      "id": "board-basic",
+      "name": "Basic Board",
+      "cpuSlots": 1,
+      "memorySlots": 2,
+      "storageSlots": 2,
+      "networkSlots": 1,
+      "price": 150,
+      "power": 5
+    },
+    "powerSupply": {
+      "id": "psu-300w",
+      "name": "300W PSU",
+      "wattage": 300,
+      "price": 80
+    },
+    "network": {
+      "id": "net-250mb",
+      "name": "250Mb Network Card",
+      "speed": 250,
+      "price": 100,
+      "power": 5
+    }
+  },
+  "software": [
+    {
+      "id": "osnet",
+      "name": "OSNet",
+      "type": "os",
+      "canRemove": false
+    },
+    {
+      "id": "portal",
+      "name": "OSNet Software/Hardware Portal",
+      "type": "system",
+      "canRemove": false
+    },
+    {
+      "id": "mail",
+      "name": "SNet Mail",
+      "type": "system",
+      "canRemove": false
+    },
+    {
+      "id": "banking",
+      "name": "SNet Banking App",
+      "type": "system",
+      "canRemove": false
+    },
+    "mission-board",
+    "network-address-register",
+    "vpn-client",
+    "network-scanner",
+    "file-manager",
+    "log-viewer",
+    "data-recovery-tool"
+  ],
+  "bankAccounts": [
+    {
+      "id": "account-first-bank",
+      "bankName": "First Bank Ltd",
+      "balance": 3800
+    }
+  ],
+  "messages": [
+    {
+      "id": "msg-welcome-hr",
+      "from": "SourceNet Human Resources",
+      "fromId": "SNET-HQ0-000-001",
+      "fromName": "SourceNet Human Resources",
+      "subject": "Welcome to SourceNet!",
+      "body": "Welcome to SourceNet!\n\nWe are dedicated to securing the global internet space from dark actors and criminals, making it a safe place for all users. You are now part of this important mission.\n\nYour assigned manager will be contacting you shortly with further instructions.\n\nYou have been provided with basic software to get started. To view available software and hardware upgrades, access the OSNet Software/Hardware Portal from your app launcher.\n\nWelcome to the family.\n\n- SourceNet Human Resources",
+      "timestamp": "2020-03-25T09:00:01.000Z",
+      "read": true,
+      "archived": true,
+      "attachments": []
+    },
+    {
+      "id": "msg-welcome-manager",
+      "from": "SourceNet Manager",
+      "fromId": "SNET-MGR-PUB-OHQ",
+      "fromName": "SourceNet Manager Avery",
+      "subject": "Hi from your manager - Avery",
+      "body": "Hey scenario_user!\n\nWelcome to the team! I'm Avery, and I'll be your manager here at SourceNet. I was present during your interview process and I have to say, you really impressed us with your skills and dedication.\n\nTo help you get started, I've attached a welcome bonus cheque for 1,000 credits. Just click on the attachment to deposit it into your bank account.\n\nTake some time to get comfortable with your setup. I'll be reaching out again soon with your first assignment.\n\nLooking forward to working with you!\n\n- Avery",
+      "timestamp": "2020-03-25T09:00:21.000Z",
+      "read": true,
+      "archived": true,
+      "attachments": [
+        {
+          "type": "cheque",
+          "amount": 1000,
+          "deposited": true
+        }
+      ]
+    },
+    {
+      "id": "msg-mission-board-license",
+      "from": "SourceNet Manager",
+      "fromId": "SNET-MGR-X88-GVB",
+      "fromName": "SourceNet Manager Avery",
+      "subject": "Get Ready for Your First Mission",
+      "body": "Hey scenario_user!\n\nNow that you're all set up, it's time to get you started with actual work.\n\nI've attached a license for the SourceNet Mission Board application. This is where you'll find all available missions from our clients.\n\nTo get started:\n\n1. Click the attachment above to add the Mission Board license to your account\n2. Open the OSNet Portal from your app launcher\n3. Go to Software section - you'll see \"SourceNet Mission Board\" marked as \"Licensed\"\n4. Download and install it\n5. Once installed, open the Mission Board from your app launcher\n\nI've posted your first assignment there. It's a straightforward file repair job for one of our clients - perfect for learning the ropes.\n\nOnce you install the Mission Board, I'll send you the software licenses you'll need to complete the mission.\n\n- Avery",
+      "timestamp": "2020-03-25T09:01:03.000Z",
+      "read": true,
+      "archived": true,
+      "attachments": [
+        {
+          "type": "softwareLicense",
+          "softwareId": "mission-board",
+          "softwareName": "SourceNet Mission Board",
+          "price": 250,
+          "size": 200,
+          "activated": true
+        }
+      ]
+    },
+    {
+      "id": "msg-tutorial-software-licenses",
+      "from": "SourceNet Manager",
+      "fromId": "SNET-MGR-V83-G2M",
+      "fromName": "SourceNet Manager Avery",
+      "subject": "Mission Software",
+      "body": "Great! Now that you have the Mission Board installed, let me get you set up with the tools you'll need for your first mission.\n\nI've attached free licenses for the essential software (total value: $1,350):\n\n- SourceNet VPN Client ($500): Secure access to client networks\n- Network Address Register ($200): Manages your network connections\n- Network Scanner ($300): Finds machines and file systems on networks\n- File Manager ($350): Access and repair files on remote systems\n\nInstallation steps:\n\n1. Click all the attachments above to add them to your account\n2. Open the Portal and install all four software applications\n3. Once installed, open the Mission Board and accept the \"Log File Repair\" mission\n\nWhen you accept the mission, you'll receive the network credentials for ClientA-Corporate as an attachment. Use the Network Address Register to add them to your NAR.\n\nThe mission objectives are straightforward:\n- Connect to ClientA-Corporate network via VPN\n- Scan the network to find their file server\n- Use File Manager to detect and repair corrupted log files\n\nYour Mission Board will track each objective as you complete them.\n\nGood luck!\n\n- Avery",
+      "timestamp": "2020-03-25T09:01:47.000Z",
+      "read": true,
+      "archived": true,
+      "attachments": [
+        {
+          "type": "softwareLicense",
+          "softwareId": "vpn-client",
+          "softwareName": "SourceNet VPN Client",
+          "price": 500,
+          "size": 45,
+          "activated": true
+        },
+        {
+          "type": "softwareLicense",
+          "softwareId": "network-address-register",
+          "softwareName": "Network Address Register",
+          "price": 200,
+          "size": 15,
+          "activated": true
+        },
+        {
+          "type": "softwareLicense",
+          "softwareId": "network-scanner",
+          "softwareName": "Network Scanner",
+          "price": 300,
+          "size": 30,
+          "activated": true
+        },
+        {
+          "type": "softwareLicense",
+          "softwareId": "file-manager",
+          "softwareName": "File Manager",
+          "price": 350,
+          "size": 40,
+          "activated": true
+        }
+      ]
+    },
+    {
+      "id": "msg-briefing-tutorial-part-1-1769688491795",
+      "from": "SourceNet Manager",
+      "fromId": "SNET-MGR-4ID-A8Q",
+      "fromName": "SourceNet Manager Avery",
+      "subject": "ClientA Network Credentials",
+      "body": "Perfect! Now that you've accepted the mission, here are the network credentials for ClientA-Corporate.\n\nClick the attachment above to add it to your Network Address Register. Then you can use your VPN Client to connect to their network.\n\nRemember the mission objectives:\n1. Connect to ClientA-Corporate network\n2. Scan the network to find file servers\n3. Use File Manager to repair corrupted log files\n\nYou've got this!\n\n- Avery",
+      "timestamp": "2020-03-25T09:04:13.000Z",
+      "read": true,
+      "archived": true,
+      "attachments": [
+        {
+          "type": "networkAddress",
+          "networkId": "clienta-corporate",
+          "networkName": "ClientA-Corporate",
+          "address": "192.168.50.0/24",
+          "deviceIps": [
+            "192.168.50.10"
+          ],
+          "activated": true
+        }
+      ]
+    },
+    {
+      "id": "bank-firstOverdraft-1769688511555",
+      "from": "First Bank Ltd",
+      "fromId": "SNET-FBL-000-001",
+      "to": "scenario_user",
+      "toId": "SNET-IH1-HC2-54H",
+      "subject": "Overdraft Notice - Interest Charges Apply",
+      "body": "Dear scenario_user,\n\nYour account with First Bank Ltd is currently overdrawn.\n\nCurrent Balance: -9,000 credits\nOverdraft Interest Rate: 1% per minute (in-game time)\n\nInterest will be charged every minute until your balance returns to positive.\n\nBANKRUPTCY WARNING:\nIf your account remains overdrawn by MORE than 10,000 credits for 5 consecutive\nminutes, your account will be referred to financial authorities for asset seizure.\n\nWe recommend depositing funds immediately to avoid further charges.\n\nSincerely,\nFirst Bank Ltd",
+      "timestamp": "2020-03-25T09:05:18.000Z",
+      "read": true,
+      "archived": true
+    },
+    {
+      "id": "msg-manager-angry",
+      "from": "SourceNet Manager",
+      "fromId": "SNET-MGR-C8T-754",
+      "fromName": "SourceNet Manager Avery",
+      "subject": "What happened?!",
+      "body": "scenario_user,\n\nWhat just happened?! I was monitoring your mission and I saw you DELETE all the log files instead of repairing them!\n\nThe client's network administrator had to forcibly disconnect you to prevent further damage and has REVOKED your network access credentials. Those files were CRITICAL for their audit compliance!\n\nThis is a critical lesson: network administrators can revoke your access at any time if they believe you're a security threat. Your NAR entry for ClientA-Corporate is now deauthorized and unusable. You'll need new credentials to reconnect.\n\nThe client is demanding 10,000 credits in compensation for the data loss and emergency recovery. SourceNet policy requires YOU to cover mission failures, so that amount has been deducted from your account.\n\nYour reputation has taken a serious hit. You went from Superb to Accident Prone. I know you impressed us in the interview, but this is completely unacceptable.\n\nYou need to be EXTREMELY careful. DO NOT become bankrupt. If you're overdrawn by more than 10,000 credits for 5 minutes, the financial authorities will seize your assets and SourceNet will not protect you.\n\nI'm giving you another chance, but you need to prove you can handle this work.\n\n- Avery",
+      "timestamp": "2020-03-25T09:05:27.000Z",
+      "read": true,
+      "archived": true,
+      "attachments": []
+    },
+    {
+      "id": "bank-approachingBankruptcy-1769688511556",
+      "from": "First Bank Ltd",
+      "fromId": "SNET-FBL-000-001",
+      "to": "scenario_user",
+      "toId": "SNET-IH1-HC2-54H",
+      "subject": "Warning: Approaching Bankruptcy Threshold",
+      "body": "Dear scenario_user,\n\nWARNING: Your account balance is approaching the bankruptcy threshold.\n\nCurrent Balance: -9,000 credits\nBankruptcy Threshold: -10,000 credits\n\nYou are 1,000 credits away from the bankruptcy threshold.\n\nIf your balance drops below -10,000 credits for 5 consecutive minutes, your\naccount will be referred to financial authorities for asset seizure.\n\nPlease take immediate action to improve your account balance.\n\nSincerely,\nFirst Bank Ltd",
+      "timestamp": "2020-03-25T09:05:24.000Z",
+      "read": true,
+      "archived": true
+    },
+    {
+      "id": "msg-1769688512462-s98akejs1",
+      "from": "SourceNet Manager",
+      "fromId": "SNET-MGR-3H6",
+      "fromName": "SourceNet Manager Avery",
+      "subject": "Let's try something simpler",
+      "body": "scenario_user,\n\nOkay, I know that was rough. Let me give you a simpler task to help you recover.\n\nThe same client (TechCorp) kept backups of those log files you... deleted. They need you to RESTORE the backups by copying them back to the original location.\n\nThis should be straightforward - just copy files from one location to another. No repairing, no deleting, just copying. You can handle that, right?\n\nHere's what you need to do:\n\n1. Open the Mission Board and accept \"Log File Restoration\"\n2. Reconnect to ClientA-Corporate network (they've re-authorized you)\n3. Use Network Scanner to find BOTH file systems:\n   - fileserver-01 (original location - currently empty)\n   - backup-server (backup location - has the files you need to copy)\n4. Open TWO File Manager windows - one for each file system\n5. Copy all log files FROM backup-server TO fileserver-01\n\nThis mission pays 1,000 credits. It won't get you out of debt, but it's a start.\n\nYou need to work until you're back in the black (not overdrawn anymore). There are several missions available after this one - all basic file work. Boring stuff, but you're not in a position to be picky right now given your situation.\n\nOnce you're out of debt, I'll reach out again with better work.\n\nDon't mess this one up.\n\n- Avery",
+      "timestamp": "2020-03-25T09:05:43.000Z",
+      "read": true,
+      "archived": true,
+      "attachments": [],
+      "toId": "SNET-IH1-HC2-54H",
+      "to": "scenario_user"
+    },
+    {
+      "id": "msg-briefing-tutorial-part-2-1769688514928",
+      "from": "SourceNet Manager",
+      "fromId": "SNET-MGR-BBB-WFW",
+      "fromName": "SourceNet Manager Avery",
+      "subject": "Updated Network Access - Backup Server",
+      "body": "Good, you accepted the restoration mission.\n\nI've negotiated with the client and secured NEW network credentials for you. After that disaster, they completely revoked your previous access, so this is a fresh NAR entry with different network permissions.\n\nThey've restructured their network access - you'll now connect to a different subnet with access to their backup-server. Click the attachment to add the new credentials to your Network Address Register.\n\nOnce you've added the credentials, use Network Scanner to find BOTH file systems: fileserver-01 (now empty after the sabotage) and backup-server (which has the backup copies).\n\nThen:\n1. Open TWO File Manager windows - one for each file system\n2. Copy all 8 log files from backup-server TO fileserver-01\n\nSimple copy job. Don't mess this up.\n\n- Avery",
+      "timestamp": "2020-03-25T09:08:18.000Z",
+      "read": true,
+      "archived": true,
+      "attachments": [
+        {
+          "type": "networkAddress",
+          "networkId": "clienta-corporate",
+          "networkName": "ClientA-Corporate",
+          "address": "192.168.50.0/24",
+          "deviceIps": [
+            "192.168.50.10",
+            "192.168.50.20"
+          ],
+          "activated": true
+        }
+      ]
+    },
+    {
+      "id": "msg-1769688522178-8qt5hg6fq",
+      "from": "Client A - TechCorp Industries",
+      "fromId": "CLIENT-33P",
+      "fromName": "Client A - TechCorp Industries",
+      "subject": "Payment for Log File Restoration",
+      "body": "Dear scenario_user,\n\nThank you for completing the work on \"Log File Restoration\".\n\nPlease find attached a digital cheque for 850 credits as agreed.\n\nSincerely,\nClient A - TechCorp Industries",
+      "timestamp": "2020-03-25T09:08:55.000Z",
+      "read": true,
+      "archived": true,
+      "attachments": [
+        {
+          "type": "cheque",
+          "amount": 850,
+          "description": "Payment for Log File Restoration"
+        }
+      ]
+    },
+    {
+      "id": "msg-manager-better",
+      "from": "SourceNet Manager",
+      "fromId": "SNET-MGR-GEO-OYM",
+      "fromName": "SourceNet Manager Avery",
+      "subject": "Better",
+      "body": "scenario_user,\n\nOkay, that's more like it. Simple task, executed correctly.\n\nYou're still deep in debt (-8,000 credits), but at least you're moving in the right direction.\n\nDue to the recent global security exploit, there's a LOT of work available right now - mostly boring backup and file repair jobs. Not exciting work, but you need to take what you can get until you're back in the black.\n\nCheck the Mission Board - there are several missions available. Work through them until your account is positive again. Once you're out of debt, I'll reach out with better opportunities.\n\nYour reputation is still \"Accident Prone\" after that first mission disaster. You'll need to successfully complete missions to rebuild it.\n\nKeep working.\n\n- Avery",
+      "timestamp": "2020-03-25T09:09:08.000Z",
+      "read": true,
+      "archived": false,
+      "attachments": []
+    },
+    {
+      "id": "msg-manager-nar-info",
+      "from": "SourceNet Manager",
+      "fromId": "SNET-MGR-QFI-PNE",
+      "fromName": "SourceNet Manager Avery",
+      "subject": "About Network Access",
+      "body": "scenario_user,\n\nOne more thing - you may have noticed your network access to ClientA-Corporate was revoked after the mission completed.\n\nThis is standard procedure. Network credentials provided for missions are temporary - once a job is done (successfully or not), the client's access credentials are automatically invalidated. You'll see revoked entries in your Network Address Register (NAR) for record-keeping.\n\nDon't worry about losing access. Each new mission comes with fresh credentials. This keeps things clean and secure for both you and the clients.\n\nJust something to be aware of.\n\n- Avery",
+      "timestamp": "2020-03-25T09:09:10.000Z",
+      "read": true,
+      "archived": true,
+      "attachments": []
+    },
+    {
+      "id": "msg-1769688552335-m9q3igzie",
+      "from": "SourceNet Manager",
+      "fromId": "SNET-MGR-XOM",
+      "fromName": "SourceNet Manager Avery",
+      "subject": "New Opportunities - Hardware & Tools",
+      "body": "scenario_user,\n\nWell done. You've worked hard and gotten yourself out of debt. I knew there was a reason we hired you.\n\nNow that you've proven you can handle the basics, it's time to talk about upgrading your equipment. The work you've been doing is fine, but with better hardware, you could be taking on more lucrative contracts.\n\nFirst, let me explain how hardware works. Unlike software (which you just download and install), hardware requires a system REBOOT to take effect. When you purchase hardware from the Portal, it won't be active until you reboot your terminal via the Power menu. The boot sequence will detect and initialize the new hardware.\n\nI'd recommend starting with a better NETWORK ADAPTER. Your current adapter is the bottleneck - it's limiting how fast you can transfer files. Networks you connect to have plenty of bandwidth, but your terminal can only receive data as fast as your adapter allows. A faster adapter means quicker file operations, which means more missions completed in less time.\n\nCheck the Hardware section in the Portal. Network Adapters are now available for purchase.\n\nI'm also working on getting you access to some specialized tools. There's a job coming up that requires specific software:\n\n- LOG VIEWER: A tool for retrieving and analyzing device logs. Some missions require examining connection logs, file operation history, or process logs from network devices.\n\n- DATA RECOVERY TOOL: For scanning file systems to find deleted files and restore them. Also has a secure delete function for when files need to be permanently destroyed.\n\nThese tools will be available in the Portal's Software section. You'll need them for the work I'm lining up.\n\nGet your hardware upgraded and the new tools installed. I'll send details on the new mission once you're ready.\n\n- Avery",
+      "timestamp": "2020-03-25T09:11:17.000Z",
+      "read": true,
+      "archived": false,
+      "attachments": []
+    }
+  ],
+  "managerName": "Avery",
+  "windows": [],
+  "reputation": 3,
+  "reputationCountdown": null,
+  "activeMission": null,
+  "completedMissions": [
+    {
+      "id": "tutorial-part-1",
+      "missionId": "tutorial-part-1",
+      "title": "Log File Repair",
+      "client": "Client A - TechCorp Industries",
+      "difficulty": "Beginner",
+      "status": "failed",
+      "completionTime": "2020-03-25T09:05:18.000Z",
+      "payout": -10000,
+      "reputationChange": -6,
+      "failureReason": "Files deleted instead of repaired"
+    },
+    {
+      "id": "tutorial-part-2",
+      "missionId": "tutorial-part-2",
+      "title": "Log File Restoration",
+      "client": "Client A - TechCorp Industries",
+      "difficulty": "Beginner",
+      "status": "success",
+      "completionTime": "2020-03-25T09:08:55.000Z",
+      "payout": 850,
+      "reputationChange": 0,
+      "failureReason": null
+    }
+  ],
+  "availableMissions": [],
+  "missionCooldowns": {
+    "easy": null,
+    "medium": null,
+    "hard": null
+  },
+  "activeConnections": [],
+  "lastScanResults": {
+    "network": "clienta-corporate",
+    "machines": [
+      {
+        "ip": "192.168.50.10",
+        "hostname": "fileserver-01",
+        "id": "fs-clienta-01",
+        "type": "fileserver",
+        "fileSystems": [
+          "/fileserver-01/"
+        ],
+        "required": true
+      },
+      {
+        "ip": "192.168.50.20",
+        "hostname": "backup-server",
+        "id": "fs-clienta-backup",
+        "type": "fileserver",
+        "fileSystems": [
+          "/backup-server/"
+        ],
+        "required": true
+      },
+      {
+        "ip": "192.168.50.63",
+        "hostname": "ws-447",
+        "id": "workstation-1",
+        "type": "workstation",
+        "fileSystems": [],
+        "required": false
+      },
+      {
+        "ip": "192.168.50.182",
+        "hostname": "ws-777",
+        "id": "workstation-2",
+        "type": "workstation",
+        "fileSystems": [],
+        "required": false
+      }
+    ]
+  },
+  "discoveredDevices": {
+    "clienta-corporate": [
+      "192.168.50.10",
+      "192.168.50.53",
+      "192.168.50.172",
+      "192.168.50.20",
+      "192.168.50.63",
+      "192.168.50.182"
+    ]
+  },
+  "fileManagerConnections": [
+    {
+      "fileSystemId": "fs-clienta-01",
+      "ip": "192.168.50.10",
+      "path": "/"
+    },
+    {
+      "fileSystemId": "fs-clienta-01",
+      "ip": "192.168.50.10",
+      "path": "/"
+    },
+    {
+      "fileSystemId": "fs-clienta-backup",
+      "ip": "192.168.50.20",
+      "path": "/"
+    },
+    {
+      "fileSystemId": "fs-clienta-01",
+      "ip": "192.168.50.10",
+      "path": "/"
+    }
+  ],
+  "lastFileOperation": {
+    "operation": "paste",
+    "filesAffected": 8,
+    "fileNames": [
+      "log_2024_01.txt",
+      "log_2024_02.txt",
+      "log_2024_03.txt",
+      "log_2024_04.txt",
+      "log_2024_05.txt",
+      "log_2024_06.txt",
+      "log_2024_07.txt",
+      "log_2024_08.txt"
+    ],
+    "fileSystem": "fs-clienta-01",
+    "fileSystemIp": "192.168.50.10"
+  },
+  "downloadQueue": [
+    {
+      "id": "download-1585127495000-wutal288a",
+      "softwareId": "log-viewer",
+      "softwareName": "Log Viewer",
+      "sizeInMB": 20,
+      "progress": 100,
+      "status": "complete",
+      "startTime": 1585127495000,
+      "installStartTime": 1585127497000,
+      "completedTime": 1585127498000
+    },
+    {
+      "id": "download-1585127495000-g4kn8tfjj",
+      "softwareId": "data-recovery-tool",
+      "softwareName": "Data Recovery Tool",
+      "sizeInMB": 50,
+      "progress": 100,
+      "status": "complete",
+      "startTime": 1585127495000,
+      "installStartTime": 1585127497000,
+      "completedTime": 1585127498000
+    }
+  ],
+  "transactions": [
+    {
+      "id": "txn-cheque-1769688483536",
+      "date": "2020-03-25T09:01:01.000Z",
+      "type": "income",
+      "amount": 1000,
+      "description": "Cheque Deposit",
+      "balanceAfter": 1000
+    },
+    {
+      "id": "txn-interest-1769688512860",
+      "date": "2020-03-25T09:06:18.000Z",
+      "type": "expense",
+      "amount": -90,
+      "description": "Overdraft Interest",
+      "balanceAfter": -9090
+    },
+    {
+      "id": "txn-interest-1769688513533",
+      "date": "2020-03-25T09:07:18.000Z",
+      "type": "expense",
+      "amount": -91,
+      "description": "Overdraft Interest",
+      "balanceAfter": -9181
+    },
+    {
+      "id": "txn-interest-1769688514216",
+      "date": "2020-03-25T09:08:18.000Z",
+      "type": "expense",
+      "amount": -92,
+      "description": "Overdraft Interest",
+      "balanceAfter": -9273
+    },
+    {
+      "id": "txn-interest-1769688522458",
+      "date": "2020-03-25T09:09:18.000Z",
+      "type": "expense",
+      "amount": -93,
+      "description": "Overdraft Interest",
+      "balanceAfter": -9366
+    },
+    {
+      "id": "txn-interest-1769688523121",
+      "date": "2020-03-25T09:10:18.000Z",
+      "type": "expense",
+      "amount": -94,
+      "description": "Overdraft Interest",
+      "balanceAfter": -9460
+    },
+    {
+      "id": "txn-interest-1769688550470",
+      "date": "2020-03-25T09:11:16.000Z",
+      "type": "expense",
+      "amount": -95,
+      "description": "Overdraft Interest",
+      "balanceAfter": -9555
+    },
+    {
+      "id": "txn-purchase-1769688554627",
+      "date": "2020-03-25T09:11:33.000Z",
+      "type": "expense",
+      "amount": -200,
+      "description": "Hardware Purchase: 500Mb Network Card",
+      "balanceAfter": 4800
+    },
+    {
+      "id": "txn-purchase-1769688556559",
+      "date": "2020-03-25T09:11:35.000Z",
+      "type": "expense",
+      "amount": -400,
+      "description": "Software Purchase: Log Viewer",
+      "balanceAfter": 4400
+    },
+    {
+      "id": "txn-purchase-1769688557066",
+      "date": "2020-03-25T09:11:35.000Z",
+      "type": "expense",
+      "amount": -600,
+      "description": "Software Purchase: Data Recovery Tool",
+      "balanceAfter": 3800
+    }
+  ],
+  "licensedSoftware": [
+    "mission-board",
+    "vpn-client",
+    "network-address-register",
+    "network-scanner",
+    "file-manager"
+  ],
+  "bankruptcyCountdown": null,
+  "lastInterestTime": null,
+  "processedEvents": [
+    "Welcome to SourceNet!",
+    "Hi from your manager - {managerName}",
+    "Get Ready for Your First Mission",
+    "Mission Software"
+  ],
+  "pendingStoryEvents": [
+    {
+      "id": "storyEvent-1",
+      "type": "storyEvent",
+      "payload": {
+        "storyEventId": "mission-board-intro",
+        "eventId": "tutorial-software-licenses",
+        "message": {
+          "from": "SourceNet Manager",
+          "fromId": "SNET-MGR-{random}",
+          "fromName": "SourceNet Manager {managerName}",
+          "subject": "Mission Software",
+          "body": "Great! Now that you have the Mission Board installed, let me get you set up with the tools you'll need for your first mission.\n\nI've attached free licenses for the essential software (total value: $1,350):\n\n- SourceNet VPN Client ($500): Secure access to client networks\n- Network Address Register ($200): Manages your network connections\n- Network Scanner ($300): Finds machines and file systems on networks\n- File Manager ($350): Access and repair files on remote systems\n\nInstallation steps:\n\n1. Click all the attachments above to add them to your account\n2. Open the Portal and install all four software applications\n3. Once installed, open the Mission Board and accept the \"Log File Repair\" mission\n\nWhen you accept the mission, you'll receive the network credentials for ClientA-Corporate as an attachment. Use the Network Address Register to add them to your NAR.\n\nThe mission objectives are straightforward:\n- Connect to ClientA-Corporate network via VPN\n- Scan the network to find their file server\n- Use File Manager to detect and repair corrupted log files\n\nYour Mission Board will track each objective as you complete them.\n\nGood luck!\n\n- {managerName}",
+          "attachments": [
+            {
+              "type": "softwareLicense",
+              "softwareId": "vpn-client",
+              "softwareName": "SourceNet VPN Client",
+              "price": 500,
+              "size": 45
+            },
+            {
+              "type": "softwareLicense",
+              "softwareId": "network-address-register",
+              "softwareName": "Network Address Register",
+              "price": 200,
+              "size": 15
+            },
+            {
+              "type": "softwareLicense",
+              "softwareId": "network-scanner",
+              "softwareName": "Network Scanner",
+              "price": 300,
+              "size": 30
+            },
+            {
+              "type": "softwareLicense",
+              "softwareId": "file-manager",
+              "softwareName": "File Manager",
+              "price": 350,
+              "size": 40
+            }
+          ]
+        }
+      },
+      "remainingDelayMs": 852
+    },
+    {
+      "id": "storyEvent-2",
+      "type": "storyEvent",
+      "payload": {
+        "storyEventId": "mission-board-intro",
+        "eventId": "tutorial-software-licenses",
+        "message": {
+          "from": "SourceNet Manager",
+          "fromId": "SNET-MGR-{random}",
+          "fromName": "SourceNet Manager {managerName}",
+          "subject": "Mission Software",
+          "body": "Great! Now that you have the Mission Board installed, let me get you set up with the tools you'll need for your first mission.\n\nI've attached free licenses for the essential software (total value: $1,350):\n\n- SourceNet VPN Client ($500): Secure access to client networks\n- Network Address Register ($200): Manages your network connections\n- Network Scanner ($300): Finds machines and file systems on networks\n- File Manager ($350): Access and repair files on remote systems\n\nInstallation steps:\n\n1. Click all the attachments above to add them to your account\n2. Open the Portal and install all four software applications\n3. Once installed, open the Mission Board and accept the \"Log File Repair\" mission\n\nWhen you accept the mission, you'll receive the network credentials for ClientA-Corporate as an attachment. Use the Network Address Register to add them to your NAR.\n\nThe mission objectives are straightforward:\n- Connect to ClientA-Corporate network via VPN\n- Scan the network to find their file server\n- Use File Manager to detect and repair corrupted log files\n\nYour Mission Board will track each objective as you complete them.\n\nGood luck!\n\n- {managerName}",
+          "attachments": [
+            {
+              "type": "softwareLicense",
+              "softwareId": "vpn-client",
+              "softwareName": "SourceNet VPN Client",
+              "price": 500,
+              "size": 45
+            },
+            {
+              "type": "softwareLicense",
+              "softwareId": "network-address-register",
+              "softwareName": "Network Address Register",
+              "price": 200,
+              "size": 15
+            },
+            {
+              "type": "softwareLicense",
+              "softwareId": "network-scanner",
+              "softwareName": "Network Scanner",
+              "price": 300,
+              "size": 30
+            },
+            {
+              "type": "softwareLicense",
+              "softwareId": "file-manager",
+              "softwareName": "File Manager",
+              "price": 350,
+              "size": 40
+            }
+          ]
+        }
+      },
+      "remainingDelayMs": 854
+    }
+  ],
+  "bankingMessagesSent": {
+    "firstOverdraft": false,
+    "approachingBankruptcy": false,
+    "bankruptcyCountdownStart": false,
+    "bankruptcyCancelled": false
+  },
+  "reputationMessagesSent": {
+    "performancePlanWarning": false,
+    "finalTerminationWarning": false,
+    "performanceImproved": false
+  },
+  "proceduralMissionsEnabled": true,
+  "missionPool": [
+    {
+      "missionId": "repair-emerg-volunteer-fire-1769688550861-1",
+      "title": "Pacific Islands Conservation (1/2): File Repair for Volunteer Fire Department #7",
+      "client": "Volunteer Fire Department #7",
+      "clientId": "emerg-volunteer-fire",
+      "clientType": "emerg-volunteer",
+      "industry": "emergency",
+      "difficulty": "Easy",
+      "missionType": "repair",
+      "basePayout": 969,
+      "category": "procedural-arc",
+      "networks": [
+        {
+          "networkId": "emerg-volunteer-fire-network-1769688550860",
+          "networkName": "VolunteerFire-Network",
+          "address": "10.1.135.0/24",
+          "bandwidth": 2000,
+          "revokeOnComplete": true,
+          "revokeReason": "Mission access expired",
+          "fileSystems": [
+            {
+              "id": "fs-emerg-volunteer-fire-1769688550861-01",
+              "ip": "10.1.135.10",
+              "name": "volunteerfire-fileserver-01",
+              "files": [
+                {
+                  "name": "dispatch_logs_2023_Q4.db",
+                  "size": "34.6 MB",
+                  "sizeBytes": 36242486,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "incident_reports_2024_Q1.dat",
+                  "size": "37.2 MB",
+                  "sizeBytes": 38983786,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "personnel_2023_12.enc",
+                  "size": "66.2 MB",
+                  "sizeBytes": 69439732,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "system_status_2023_12.log",
+                  "size": "43.6 KB",
+                  "sizeBytes": 44603,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "incident_reports_2024_01.dat",
+                  "size": "14.2 MB",
+                  "sizeBytes": 14849070,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "dispatch_logs_2024_02.db",
+                  "size": "409.1 MB",
+                  "sizeBytes": 428992922,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            }
+          ]
+        }
+      ],
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Connect to VolunteerFire-Network network",
+          "type": "networkConnection",
+          "target": "emerg-volunteer-fire-network-1769688550860"
+        },
+        {
+          "id": "obj-2",
+          "description": "Scan network to find file servers",
+          "type": "networkScan",
+          "target": "emerg-volunteer-fire-network-1769688550860",
+          "expectedResult": "volunteerfire-fileserver-01"
+        },
+        {
+          "id": "obj-3",
+          "description": "Connect to volunteerfire-fileserver-01 file system",
+          "type": "fileSystemConnection",
+          "target": "10.1.135.10"
+        },
+        {
+          "id": "obj-4",
+          "description": "Repair 4 corrupted files on volunteerfire-fileserver-01",
+          "type": "fileOperation",
+          "operation": "repair",
+          "target": "specific-files",
+          "targetFiles": [
+            "dispatch_logs_2023_Q4.db",
+            "incident_reports_2024_Q1.dat",
+            "personnel_2023_12.enc",
+            "system_status_2023_12.log"
+          ],
+          "count": 4
+        },
+        {
+          "id": "obj-verify",
+          "description": "Verify mission completion",
+          "type": "verification",
+          "autoComplete": false
+        }
+      ],
+      "targetFiles": [
+        "dispatch_logs_2023_Q4.db",
+        "incident_reports_2024_Q1.dat",
+        "personnel_2023_12.enc",
+        "system_status_2023_12.log"
+      ],
+      "totalDataBytes": 144710607,
+      "requirements": {
+        "software": [
+          "vpn-client",
+          "network-address-register",
+          "network-scanner",
+          "file-manager"
+        ],
+        "minReputation": 3
+      },
+      "consequences": {
+        "success": {
+          "credits": 969,
+          "reputation": 1,
+          "messages": [
+            {
+              "id": "msg-success-1769688550861",
+              "from": "Volunteer Fire Department #7",
+              "fromId": "emerg-volunteer-fire",
+              "fromName": "Volunteer Fire Department #7",
+              "subject": "Mission Complete - Payment Enclosed",
+              "body": "Dear {username},\n\nThank you for your efficient work. We're pleased with the results and have processed your payment.\n\nSincerely,\n{clientName}",
+              "attachments": [
+                {
+                  "type": "cheque",
+                  "amount": 969,
+                  "description": "Payment for completed mission"
+                }
+              ],
+              "delay": 3000
+            }
+          ]
+        },
+        "failure": {
+          "credits": -242,
+          "reputation": -1,
+          "messages": [
+            {
+              "id": "msg-failure-incomplete-1769688550861",
+              "from": "Volunteer Fire Department #7",
+              "fromId": "emerg-volunteer-fire",
+              "fromName": "Volunteer Fire Department #7",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            }
+          ],
+          "messageVariants": {
+            "deadline": {
+              "id": "msg-failure-deadline-1769688550861",
+              "from": "Volunteer Fire Department #7",
+              "fromId": "emerg-volunteer-fire",
+              "fromName": "Volunteer Fire Department #7",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nTime ran out before the work was completed. We expected better from someone with your reputation.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            },
+            "incomplete": {
+              "id": "msg-failure-incomplete-1769688550861",
+              "from": "Volunteer Fire Department #7",
+              "fromId": "emerg-volunteer-fire",
+              "fromName": "Volunteer Fire Department #7",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            },
+            "filesDeleted": {
+              "id": "msg-failure-filesDeleted-1769688550861",
+              "from": "Volunteer Fire Department #7",
+              "fromId": "emerg-volunteer-fire",
+              "fromName": "Volunteer Fire Department #7",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nCritical files required for this task have been deleted. We cannot proceed and must terminate this engagement immediately.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            }
+          }
+        }
+      },
+      "timeLimitMinutes": null,
+      "briefingMessage": {
+        "id": "msg-briefing-repair-emerg-volunteer-fire-1769688550861-pjcg7bgbj",
+        "from": "Volunteer Fire Department #7",
+        "fromId": "emerg-volunteer-fire",
+        "fromName": "Volunteer Fire Department #7",
+        "subject": "Mission Briefing: Repair Request",
+        "body": "Dear {username},\n\nWe've experienced some data corruption on our file server. We need someone to repair the affected files as soon as possible.\n\n📁 Files to repair:\n• dispatch_logs_2023_Q4.db\n• incident_reports_2024_Q1.dat\n• personnel_2023_12.enc\n• system_status_2023_12.log\n\nTotal data: 138 MB\n\nAttached are the network credentials you'll need to access our systems.\n\n[Mission 1 of 2]\n\nSincerely,\n{clientName}",
+        "attachments": [
+          {
+            "type": "networkAddress",
+            "networkId": "emerg-volunteer-fire-network-1769688550860",
+            "networkName": "VolunteerFire-Network",
+            "address": "10.1.135.0/24",
+            "deviceIps": [
+              "10.1.135.10"
+            ]
+          }
+        ],
+        "read": false,
+        "timestamp": "2026-01-29T12:09:10.861Z"
+      },
+      "isProcedurallyGenerated": true,
+      "generatedAt": "2026-01-29T12:09:10.861Z",
+      "arcId": "arc-1769688550859-fldjo5uaj",
+      "arcSequence": 1,
+      "arcTotal": 2,
+      "requiresCompletedMission": null,
+      "arcName": "Pacific Islands Conservation",
+      "expiresAt": "2020-03-25T09:59:16.000Z"
+    },
+    {
+      "missionId": "transfer-gov-riverside-library-1769688550862-3",
+      "title": "Data Transfer for Riverside Public Library",
+      "client": "Riverside Public Library",
+      "clientId": "gov-riverside-library",
+      "clientType": "gov-library",
+      "industry": "government",
+      "difficulty": "Hard",
+      "missionType": "transfer",
+      "basePayout": 2393,
+      "category": "procedural",
+      "networks": [
+        {
+          "networkId": "gov-riverside-library-network-1769688550862",
+          "networkName": "RiversidePublic-Network",
+          "address": "10.15.129.0/24",
+          "bandwidth": 750,
+          "revokeOnComplete": true,
+          "revokeReason": "Mission access expired",
+          "fileSystems": [
+            {
+              "id": "fs-gov-riverside-library-1769688550862-01",
+              "ip": "10.15.129.10",
+              "name": "riversidepublic-fileserver01-01",
+              "files": [
+                {
+                  "name": "manifest_2024_03.log",
+                  "size": "74.8 KB",
+                  "sizeBytes": 76574,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "manifest_2024_Q2.log",
+                  "size": "333.5 KB",
+                  "sizeBytes": 341461,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "backup_2024_Q2.db",
+                  "size": "199.3 MB",
+                  "sizeBytes": 208987552,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "readme_2024_04.txt",
+                  "size": "353.1 KB",
+                  "sizeBytes": 361575,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "backup_2023_Q4.db",
+                  "size": "421.0 MB",
+                  "sizeBytes": 441458930,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            },
+            {
+              "id": "fs-gov-riverside-library-1769688550862-02",
+              "ip": "10.15.129.11",
+              "name": "riversidepublic-fileserver02-01",
+              "files": [
+                {
+                  "name": "archive_records_2024_Q2.tar",
+                  "size": "124.6 MB",
+                  "sizeBytes": 130601810,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "backup_2024_03.db",
+                  "size": "474.5 MB",
+                  "sizeBytes": 497527396,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "backup_2024_Q1.db",
+                  "size": "467.6 MB",
+                  "sizeBytes": 490294802,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "readme_2023_Q4.txt",
+                  "size": "68.9 KB",
+                  "sizeBytes": 70559,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "archive_records_2023_Q4.tar",
+                  "size": "309.8 MB",
+                  "sizeBytes": 324819923,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            }
+          ]
+        },
+        {
+          "networkId": "gov-riverside-library-dest-1769688550862",
+          "networkName": "RiversidePublic-Backup",
+          "address": "10.148.39.0/24",
+          "bandwidth": 2000,
+          "revokeOnComplete": true,
+          "revokeReason": "Mission access expired",
+          "fileSystems": [
+            {
+              "id": "fs-gov-riverside-library-1769688550862-dest",
+              "ip": "10.148.39.10",
+              "name": "riversidepublic-backup-01",
+              "files": [],
+              "accessible": true
+            }
+          ]
+        }
+      ],
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Connect to RiversidePublic-Network network",
+          "type": "networkConnection",
+          "target": "gov-riverside-library-network-1769688550862"
+        },
+        {
+          "id": "obj-2",
+          "description": "Scan RiversidePublic-Network to find file servers",
+          "type": "networkScan",
+          "target": "gov-riverside-library-network-1769688550862",
+          "expectedResult": "riversidepublic-fileserver01-01"
+        },
+        {
+          "id": "obj-3",
+          "description": "Connect to riversidepublic-fileserver01-01 file system",
+          "type": "fileSystemConnection",
+          "target": "10.15.129.10"
+        },
+        {
+          "id": "obj-4",
+          "description": "Copy 3 files from riversidepublic-fileserver01-01",
+          "type": "fileOperation",
+          "operation": "copy",
+          "target": "specific-files",
+          "targetFiles": [
+            "manifest_2024_03.log",
+            "manifest_2024_Q2.log",
+            "backup_2024_Q2.db"
+          ],
+          "count": 3
+        },
+        {
+          "id": "obj-5",
+          "description": "Connect to riversidepublic-fileserver02-01 file system",
+          "type": "fileSystemConnection",
+          "target": "10.15.129.11"
+        },
+        {
+          "id": "obj-6",
+          "description": "Copy 3 files from riversidepublic-fileserver02-01",
+          "type": "fileOperation",
+          "operation": "copy",
+          "target": "specific-files",
+          "targetFiles": [
+            "archive_records_2024_Q2.tar",
+            "backup_2024_03.db",
+            "backup_2024_Q1.db"
+          ],
+          "count": 3
+        },
+        {
+          "id": "obj-7",
+          "description": "Connect to RiversidePublic-Backup network",
+          "type": "networkConnection",
+          "target": "gov-riverside-library-dest-1769688550862"
+        },
+        {
+          "id": "obj-8",
+          "description": "Scan RiversidePublic-Backup to find riversidepublic-backup-01",
+          "type": "networkScan",
+          "target": "gov-riverside-library-dest-1769688550862",
+          "expectedResult": "riversidepublic-backup-01"
+        },
+        {
+          "id": "obj-9",
+          "description": "Connect to riversidepublic-backup-01 file system",
+          "type": "fileSystemConnection",
+          "target": "10.148.39.10"
+        },
+        {
+          "id": "obj-10",
+          "description": "Paste 6 files to destination",
+          "type": "fileOperation",
+          "operation": "paste",
+          "target": "specific-files",
+          "targetFiles": [
+            "manifest_2024_03.log",
+            "manifest_2024_Q2.log",
+            "backup_2024_Q2.db",
+            "archive_records_2024_Q2.tar",
+            "backup_2024_03.db",
+            "backup_2024_Q1.db"
+          ],
+          "count": 6
+        },
+        {
+          "id": "obj-verify",
+          "description": "Verify mission completion",
+          "type": "verification",
+          "autoComplete": false
+        }
+      ],
+      "targetFiles": [
+        "manifest_2024_03.log",
+        "manifest_2024_Q2.log",
+        "backup_2024_Q2.db",
+        "archive_records_2024_Q2.tar",
+        "backup_2024_03.db",
+        "backup_2024_Q1.db"
+      ],
+      "totalDataBytes": 1327829595,
+      "requirements": {
+        "software": [
+          "vpn-client",
+          "network-address-register",
+          "network-scanner",
+          "file-manager"
+        ],
+        "minReputation": 1
+      },
+      "consequences": {
+        "success": {
+          "credits": 2393,
+          "reputation": 1,
+          "messages": [
+            {
+              "id": "msg-success-1769688550862",
+              "from": "Riverside Public Library",
+              "fromId": "gov-riverside-library",
+              "fromName": "Riverside Public Library",
+              "subject": "Mission Complete - Payment Enclosed",
+              "body": "Dear {username},\n\nGreat job on completing the mission. Your professionalism is appreciated. Payment attached.\n\nSincerely,\n{clientName}",
+              "attachments": [
+                {
+                  "type": "cheque",
+                  "amount": 2393,
+                  "description": "Payment for completed mission"
+                }
+              ],
+              "delay": 3000
+            }
+          ]
+        },
+        "failure": {
+          "credits": -598,
+          "reputation": -1,
+          "messages": [
+            {
+              "id": "msg-failure-incomplete-1769688550862",
+              "from": "Riverside Public Library",
+              "fromId": "gov-riverside-library",
+              "fromName": "Riverside Public Library",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nThe mission was not completed as requested. This has caused significant inconvenience to our operations.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            }
+          ],
+          "messageVariants": {
+            "deadline": {
+              "id": "msg-failure-deadline-1769688550862",
+              "from": "Riverside Public Library",
+              "fromId": "gov-riverside-library",
+              "fromName": "Riverside Public Library",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nThe deadline has passed and we can no longer use your services for this task. This is very disappointing.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            },
+            "incomplete": {
+              "id": "msg-failure-incomplete-1769688550862",
+              "from": "Riverside Public Library",
+              "fromId": "gov-riverside-library",
+              "fromName": "Riverside Public Library",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nThe mission was not completed as requested. This has caused significant inconvenience to our operations.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            },
+            "filesDeleted": {
+              "id": "msg-failure-filesDeleted-1769688550862",
+              "from": "Riverside Public Library",
+              "fromId": "gov-riverside-library",
+              "fromName": "Riverside Public Library",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nThe files we needed you to work with no longer exist. Your access has been revoked effective immediately.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            }
+          }
+        }
+      },
+      "timeLimitMinutes": null,
+      "briefingMessage": {
+        "id": "msg-briefing-transfer-gov-riverside-library-1769688550862-6al63bf41",
+        "from": "Riverside Public Library",
+        "fromId": "gov-riverside-library",
+        "fromName": "Riverside Public Library",
+        "subject": "Mission Briefing: Transfer Request",
+        "body": "Dear {username},\n\nWe're migrating data to a new backup server and need files transferred securely between systems.\n\n📁 Files to transfer:\n• manifest_2024_03.log\n• manifest_2024_Q2.log\n• backup_2024_Q2.db\n• archive_records_2024_Q2.tar\n• backup_2024_03.db\n• backup_2024_Q1.db\n\nTotal data: 1.2 GB\n\nAttached are the network credentials you'll need to access our systems.\n\nSincerely,\n{clientName}",
+        "attachments": [
+          {
+            "type": "networkAddress",
+            "networkId": "gov-riverside-library-network-1769688550862",
+            "networkName": "RiversidePublic-Network",
+            "address": "10.15.129.0/24",
+            "deviceIps": [
+              "10.15.129.10",
+              "10.15.129.11"
+            ]
+          },
+          {
+            "type": "networkAddress",
+            "networkId": "gov-riverside-library-dest-1769688550862",
+            "networkName": "RiversidePublic-Backup",
+            "address": "10.148.39.0/24",
+            "deviceIps": [
+              "10.148.39.10"
+            ]
+          }
+        ],
+        "read": false,
+        "timestamp": "2026-01-29T12:09:10.862Z"
+      },
+      "isProcedurallyGenerated": true,
+      "generatedAt": "2026-01-29T12:09:10.862Z",
+      "arcId": null,
+      "arcSequence": null,
+      "arcTotal": null,
+      "requiresCompletedMission": null,
+      "expiresAt": "2020-03-25T09:26:16.000Z"
+    },
+    {
+      "missionId": "repair-nonprofit-community-center-1769688550862-4",
+      "title": "Ransomware Aftermath (1/3): File Repair for Riverside Community Center",
+      "client": "Riverside Community Center",
+      "clientId": "nonprofit-community-center",
+      "clientType": "nonprofit-community",
+      "industry": "nonprofit",
+      "difficulty": "Medium",
+      "missionType": "repair",
+      "basePayout": 2157,
+      "category": "procedural-arc",
+      "networks": [
+        {
+          "networkId": "nonprofit-community-center-network-1769688550862",
+          "networkName": "RiversideCommunity-Network",
+          "address": "10.44.30.0/24",
+          "bandwidth": 2000,
+          "revokeOnComplete": true,
+          "revokeReason": "Mission access expired",
+          "fileSystems": [
+            {
+              "id": "fs-nonprofit-community-center-1769688550862-01",
+              "ip": "10.44.30.10",
+              "name": "riversidecommunity-fileserver01-01",
+              "files": [
+                {
+                  "name": "programs_2024_05.enc",
+                  "size": "24.3 MB",
+                  "sizeBytes": 25517122,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "donor_database_2024_Q1.db",
+                  "size": "178.5 MB",
+                  "sizeBytes": 187139154,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "volunteer_2024_03.dat",
+                  "size": "29.0 MB",
+                  "sizeBytes": 30375869,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "newsletter_draft_2024_02.pdf",
+                  "size": "9.8 MB",
+                  "sizeBytes": 10289335,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "config_2024_03.cfg",
+                  "size": "31.3 KB",
+                  "sizeBytes": 32062,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "volunteer_2024_Q1.dat",
+                  "size": "40.8 MB",
+                  "sizeBytes": 42767841,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            },
+            {
+              "id": "fs-nonprofit-community-center-1769688550862-02",
+              "ip": "10.44.30.11",
+              "name": "riversidecommunity-fileserver02-01",
+              "files": [
+                {
+                  "name": "programs_2024_04.enc",
+                  "size": "89.3 MB",
+                  "sizeBytes": 93647454,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "donor_database_2024_Q2.db",
+                  "size": "148.1 MB",
+                  "sizeBytes": 155271765,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "donor_database_2023_12.db",
+                  "size": "286.6 MB",
+                  "sizeBytes": 300560010,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "programs_2024_02.enc",
+                  "size": "52.6 MB",
+                  "sizeBytes": 55147556,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "donor_database_2024_04.db",
+                  "size": "196.6 MB",
+                  "sizeBytes": 206190779,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "config_2023_12.cfg",
+                  "size": "37.0 KB",
+                  "sizeBytes": 37846,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            }
+          ]
+        }
+      ],
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Connect to RiversideCommunity-Network network",
+          "type": "networkConnection",
+          "target": "nonprofit-community-center-network-1769688550862"
+        },
+        {
+          "id": "obj-2",
+          "description": "Scan network to find file servers",
+          "type": "networkScan",
+          "target": "nonprofit-community-center-network-1769688550862",
+          "expectedResult": "riversidecommunity-fileserver01-01"
+        },
+        {
+          "id": "obj-3",
+          "description": "Connect to riversidecommunity-fileserver01-01 file system",
+          "type": "fileSystemConnection",
+          "target": "10.44.30.10"
+        },
+        {
+          "id": "obj-4",
+          "description": "Repair 4 corrupted files on riversidecommunity-fileserver01-01",
+          "type": "fileOperation",
+          "operation": "repair",
+          "target": "specific-files",
+          "targetFiles": [
+            "programs_2024_05.enc",
+            "donor_database_2024_Q1.db",
+            "volunteer_2024_03.dat",
+            "newsletter_draft_2024_02.pdf"
+          ],
+          "count": 4
+        },
+        {
+          "id": "obj-5",
+          "description": "Connect to riversidecommunity-fileserver02-01 file system",
+          "type": "fileSystemConnection",
+          "target": "10.44.30.11"
+        },
+        {
+          "id": "obj-6",
+          "description": "Repair 3 corrupted files on riversidecommunity-fileserver02-01",
+          "type": "fileOperation",
+          "operation": "repair",
+          "target": "specific-files",
+          "targetFiles": [
+            "programs_2024_04.enc",
+            "donor_database_2024_Q2.db",
+            "donor_database_2023_12.db"
+          ],
+          "count": 3
+        },
+        {
+          "id": "obj-verify",
+          "description": "Verify mission completion",
+          "type": "verification",
+          "autoComplete": false
+        }
+      ],
+      "targetFiles": [
+        "programs_2024_05.enc",
+        "donor_database_2024_Q1.db",
+        "volunteer_2024_03.dat",
+        "newsletter_draft_2024_02.pdf",
+        "programs_2024_04.enc",
+        "donor_database_2024_Q2.db",
+        "donor_database_2023_12.db"
+      ],
+      "totalDataBytes": 802800709,
+      "requirements": {
+        "software": [
+          "vpn-client",
+          "network-address-register",
+          "network-scanner",
+          "file-manager"
+        ],
+        "minReputation": 1
+      },
+      "consequences": {
+        "success": {
+          "credits": 2157,
+          "reputation": 1,
+          "messages": [
+            {
+              "id": "msg-success-1769688550862",
+              "from": "Riverside Community Center",
+              "fromId": "nonprofit-community-center",
+              "fromName": "Riverside Community Center",
+              "subject": "Mission Complete - Payment Enclosed",
+              "body": "Dear {username},\n\nGreat job on completing the mission. Your professionalism is appreciated. Payment attached.\n\nSincerely,\n{clientName}",
+              "attachments": [
+                {
+                  "type": "cheque",
+                  "amount": 2157,
+                  "description": "Payment for completed mission"
+                }
+              ],
+              "delay": 3000
+            }
+          ]
+        },
+        "failure": {
+          "credits": -539,
+          "reputation": -1,
+          "messages": [
+            {
+              "id": "msg-failure-incomplete-1769688550863",
+              "from": "Riverside Community Center",
+              "fromId": "nonprofit-community-center",
+              "fromName": "Riverside Community Center",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            }
+          ],
+          "messageVariants": {
+            "deadline": {
+              "id": "msg-failure-deadline-1769688550863",
+              "from": "Riverside Community Center",
+              "fromId": "nonprofit-community-center",
+              "fromName": "Riverside Community Center",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nTime ran out before the work was completed. We expected better from someone with your reputation.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            },
+            "incomplete": {
+              "id": "msg-failure-incomplete-1769688550863",
+              "from": "Riverside Community Center",
+              "fromId": "nonprofit-community-center",
+              "fromName": "Riverside Community Center",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            },
+            "filesDeleted": {
+              "id": "msg-failure-filesDeleted-1769688550863",
+              "from": "Riverside Community Center",
+              "fromId": "nonprofit-community-center",
+              "fromName": "Riverside Community Center",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nThe files we needed you to work with no longer exist. Your access has been revoked effective immediately.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            }
+          }
+        }
+      },
+      "timeLimitMinutes": 8,
+      "briefingMessage": {
+        "id": "msg-briefing-repair-nonprofit-community-center-1769688550863-4upfkg9nz",
+        "from": "Riverside Community Center",
+        "fromId": "nonprofit-community-center",
+        "fromName": "Riverside Community Center",
+        "subject": "Mission Briefing: Repair Request",
+        "body": "Dear {username},\n\nSeveral critical files have become corrupted due to a system error. Your expertise in file repair would be greatly appreciated.\n\n📁 Files to repair:\n• programs_2024_05.enc\n• donor_database_2024_Q1.db\n• volunteer_2024_03.dat\n• newsletter_draft_2024_02.pdf\n• programs_2024_04.enc\n• donor_database_2024_Q2.db\n• donor_database_2023_12.db\n\nTotal data: 766 MB\n\n⚠️ TIME SENSITIVE: This task must be completed within 8 minutes of acceptance.\n\nAttached are the network credentials you'll need to access our systems.\n\n[Mission 1 of 3]\n\nSincerely,\n{clientName}",
+        "attachments": [
+          {
+            "type": "networkAddress",
+            "networkId": "nonprofit-community-center-network-1769688550862",
+            "networkName": "RiversideCommunity-Network",
+            "address": "10.44.30.0/24",
+            "deviceIps": [
+              "10.44.30.10",
+              "10.44.30.11"
+            ]
+          }
+        ],
+        "read": false,
+        "timestamp": "2026-01-29T12:09:10.863Z"
+      },
+      "isProcedurallyGenerated": true,
+      "generatedAt": "2026-01-29T12:09:10.863Z",
+      "arcId": "arc-1769688550862-tq56m1owq",
+      "arcSequence": 1,
+      "arcTotal": 3,
+      "requiresCompletedMission": null,
+      "arcName": "Ransomware Aftermath",
+      "expiresAt": "2020-03-25T10:06:16.000Z"
+    },
+    {
+      "missionId": "backup-nonprofit-global-relief-1769688550863-7",
+      "title": "Whistleblower Protection (1/2): Data Backup for Global Relief Initiative",
+      "client": "Global Relief Initiative",
+      "clientId": "nonprofit-global-relief",
+      "clientType": "nonprofit-foundation",
+      "industry": "nonprofit",
+      "difficulty": "Medium",
+      "missionType": "backup",
+      "basePayout": 3133,
+      "category": "procedural-arc",
+      "networks": [
+        {
+          "networkId": "nonprofit-global-relief-network-1769688550863",
+          "networkName": "GlobalRelief-Network",
+          "address": "10.178.92.0/24",
+          "bandwidth": 1000,
+          "revokeOnComplete": true,
+          "revokeReason": "Mission access expired",
+          "fileSystems": [
+            {
+              "id": "fs-nonprofit-global-relief-1769688550863-01",
+              "ip": "10.178.92.10",
+              "name": "globalrelief-fileserver-01",
+              "files": [
+                {
+                  "name": "fundraising_2024_01.db",
+                  "size": "912.7 MB",
+                  "sizeBytes": 957049133,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "events_2024_Q2.enc",
+                  "size": "33.1 MB",
+                  "sizeBytes": 34737616,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "fundraising_2023_Q4.db",
+                  "size": "631.1 MB",
+                  "sizeBytes": 661755535,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "annual_summary_2024_01.xlsx",
+                  "size": "9.0 MB",
+                  "sizeBytes": 9449459,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "email_templates_2023_Q4.zip",
+                  "size": "480.1 MB",
+                  "sizeBytes": 503413319,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "events_2024_04.enc",
+                  "size": "10.7 MB",
+                  "sizeBytes": 11205527,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "annual_summary_2024_Q1.xlsx",
+                  "size": "1.8 MB",
+                  "sizeBytes": 1901615,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "grants_2023_12.dat",
+                  "size": "25.1 MB",
+                  "sizeBytes": 26355946,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            }
+          ]
+        },
+        {
+          "networkId": "nonprofit-global-relief-dest-1769688550863",
+          "networkName": "GlobalRelief-Backup",
+          "address": "10.57.147.0/24",
+          "bandwidth": 1000,
+          "revokeOnComplete": true,
+          "revokeReason": "Mission access expired",
+          "fileSystems": [
+            {
+              "id": "fs-nonprofit-global-relief-1769688550863-dest",
+              "ip": "10.57.147.10",
+              "name": "globalrelief-backup-01",
+              "files": [],
+              "accessible": true
+            }
+          ]
+        }
+      ],
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Connect to GlobalRelief-Network network",
+          "type": "networkConnection",
+          "target": "nonprofit-global-relief-network-1769688550863"
+        },
+        {
+          "id": "obj-2",
+          "description": "Scan network to find file servers",
+          "type": "networkScan",
+          "target": "nonprofit-global-relief-network-1769688550863",
+          "expectedResult": "globalrelief-fileserver-01"
+        },
+        {
+          "id": "obj-3",
+          "description": "Connect to globalrelief-fileserver-01 (source)",
+          "type": "fileSystemConnection",
+          "target": "10.178.92.10"
+        },
+        {
+          "id": "obj-4",
+          "description": "Copy 5 files from globalrelief-fileserver-01",
+          "type": "fileOperation",
+          "operation": "copy",
+          "target": "specific-files",
+          "targetFiles": [
+            "fundraising_2024_01.db",
+            "events_2024_Q2.enc",
+            "fundraising_2023_Q4.db",
+            "annual_summary_2024_01.xlsx",
+            "email_templates_2023_Q4.zip"
+          ],
+          "count": 5
+        },
+        {
+          "id": "obj-5",
+          "description": "Connect to GlobalRelief-Backup network",
+          "type": "networkConnection",
+          "target": "nonprofit-global-relief-dest-1769688550863"
+        },
+        {
+          "id": "obj-6",
+          "description": "Scan backup network to find globalrelief-backup-01",
+          "type": "networkScan",
+          "target": "nonprofit-global-relief-dest-1769688550863",
+          "expectedResult": "globalrelief-backup-01"
+        },
+        {
+          "id": "obj-7",
+          "description": "Connect to globalrelief-backup-01 (backup)",
+          "type": "fileSystemConnection",
+          "target": "10.57.147.10"
+        },
+        {
+          "id": "obj-8",
+          "description": "Paste 5 files to backup server",
+          "type": "fileOperation",
+          "operation": "paste",
+          "target": "specific-files",
+          "targetFiles": [
+            "fundraising_2024_01.db",
+            "events_2024_Q2.enc",
+            "fundraising_2023_Q4.db",
+            "annual_summary_2024_01.xlsx",
+            "email_templates_2023_Q4.zip"
+          ],
+          "count": 5,
+          "destination": "10.57.147.10"
+        },
+        {
+          "id": "obj-verify",
+          "description": "Verify mission completion",
+          "type": "verification",
+          "autoComplete": false
+        }
+      ],
+      "targetFiles": [
+        "fundraising_2024_01.db",
+        "events_2024_Q2.enc",
+        "fundraising_2023_Q4.db",
+        "annual_summary_2024_01.xlsx",
+        "email_templates_2023_Q4.zip"
+      ],
+      "totalDataBytes": 2166405062,
+      "requirements": {
+        "software": [
+          "vpn-client",
+          "network-address-register",
+          "network-scanner",
+          "file-manager"
+        ],
+        "minReputation": 5
+      },
+      "consequences": {
+        "success": {
+          "credits": 3133,
+          "reputation": 1,
+          "messages": [
+            {
+              "id": "msg-success-1769688550863",
+              "from": "Global Relief Initiative",
+              "fromId": "nonprofit-global-relief",
+              "fromName": "Global Relief Initiative",
+              "subject": "Mission Complete - Payment Enclosed",
+              "body": "Dear {username},\n\nThank you for your efficient work. We're pleased with the results and have processed your payment.\n\nSincerely,\n{clientName}",
+              "attachments": [
+                {
+                  "type": "cheque",
+                  "amount": 3133,
+                  "description": "Payment for completed mission"
+                }
+              ],
+              "delay": 3000
+            }
+          ]
+        },
+        "failure": {
+          "credits": -783,
+          "reputation": -1,
+          "messages": [
+            {
+              "id": "msg-failure-incomplete-1769688550864",
+              "from": "Global Relief Initiative",
+              "fromId": "nonprofit-global-relief",
+              "fromName": "Global Relief Initiative",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nThe mission was not completed as requested. This has caused significant inconvenience to our operations.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            }
+          ],
+          "messageVariants": {
+            "deadline": {
+              "id": "msg-failure-deadline-1769688550863",
+              "from": "Global Relief Initiative",
+              "fromId": "nonprofit-global-relief",
+              "fromName": "Global Relief Initiative",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nThe deadline has passed and we can no longer use your services for this task. This is very disappointing.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            },
+            "incomplete": {
+              "id": "msg-failure-incomplete-1769688550864",
+              "from": "Global Relief Initiative",
+              "fromId": "nonprofit-global-relief",
+              "fromName": "Global Relief Initiative",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nThe mission was not completed as requested. This has caused significant inconvenience to our operations.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            },
+            "filesDeleted": {
+              "id": "msg-failure-filesDeleted-1769688550864",
+              "from": "Global Relief Initiative",
+              "fromId": "nonprofit-global-relief",
+              "fromName": "Global Relief Initiative",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nThe files we needed you to work with no longer exist. Your access has been revoked effective immediately.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            }
+          }
+        }
+      },
+      "timeLimitMinutes": 10,
+      "briefingMessage": {
+        "id": "msg-briefing-backup-nonprofit-global-relief-1769688550864-xedppa4pu",
+        "from": "Global Relief Initiative",
+        "fromId": "nonprofit-global-relief",
+        "fromName": "Global Relief Initiative",
+        "subject": "Mission Briefing: Backup Request",
+        "body": "Dear {username},\n\nOur compliance team has requested an emergency backup of sensitive records. Time is of the essence.\n\n📍 Location: Geneva, Switzerland\n\n📁 Files to back up:\n• fundraising_2024_01.db\n• events_2024_Q2.enc\n• fundraising_2023_Q4.db\n• annual_summary_2024_01.xlsx\n• email_templates_2023_Q4.zip\n\nTotal data: 2.0 GB\n\n⚠️ TIME SENSITIVE: This task must be completed within 10 minutes of acceptance.\n\nAttached are the network credentials you'll need to access our systems.\n\n[Mission 1 of 2]\n\nSincerely,\n{clientName}",
+        "attachments": [
+          {
+            "type": "networkAddress",
+            "networkId": "nonprofit-global-relief-network-1769688550863",
+            "networkName": "GlobalRelief-Network",
+            "address": "10.178.92.0/24",
+            "deviceIps": [
+              "10.178.92.10"
+            ]
+          },
+          {
+            "type": "networkAddress",
+            "networkId": "nonprofit-global-relief-dest-1769688550863",
+            "networkName": "GlobalRelief-Backup",
+            "address": "10.57.147.0/24",
+            "deviceIps": [
+              "10.57.147.10"
+            ]
+          }
+        ],
+        "read": false,
+        "timestamp": "2026-01-29T12:09:10.864Z"
+      },
+      "isProcedurallyGenerated": true,
+      "generatedAt": "2026-01-29T12:09:10.864Z",
+      "arcId": "arc-1769688550863-2g45javlr",
+      "arcSequence": 1,
+      "arcTotal": 2,
+      "requiresCompletedMission": null,
+      "arcName": "Whistleblower Protection",
+      "expiresAt": "2020-03-25T09:49:16.000Z"
+    }
+  ],
+  "pendingChainMissions": {
+    "arc-1769688550859-fldjo5uaj": [
+      {
+        "missionId": "transfer-nonprofit-food-bank-1769688550862-2",
+        "title": "Pacific Islands Conservation (2/2): Data Transfer for Regional Food Bank Network",
+        "client": "Regional Food Bank Network",
+        "clientId": "nonprofit-food-bank",
+        "clientType": "nonprofit-community",
+        "industry": "nonprofit",
+        "difficulty": "Hard",
+        "missionType": "transfer",
+        "basePayout": 2948,
+        "category": "procedural-arc",
+        "networks": [
+          {
+            "networkId": "nonprofit-food-bank-network-1769688550861",
+            "networkName": "RegionalFood-Network",
+            "address": "10.56.78.0/24",
+            "bandwidth": 1000,
+            "revokeOnComplete": true,
+            "revokeReason": "Mission access expired",
+            "fileSystems": [
+              {
+                "id": "fs-nonprofit-food-bank-1769688550861-01",
+                "ip": "10.56.78.10",
+                "name": "regionalfood-fileserver01-01",
+                "files": [
+                  {
+                    "name": "financial_2024_03.zip",
+                    "size": "223.9 MB",
+                    "sizeBytes": 234798333,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "financial_2024_Q2.zip",
+                    "size": "150.5 MB",
+                    "sizeBytes": 157758901,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "media_assets_2024_Q1.tar",
+                    "size": "382.0 MB",
+                    "sizeBytes": 400520750,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "membership_2024_04.db",
+                    "size": "315.6 MB",
+                    "sizeBytes": 330893126,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "readme_2024_04.txt",
+                    "size": "91.7 KB",
+                    "sizeBytes": 93900,
+                    "corrupted": false,
+                    "targetFile": false
+                  }
+                ],
+                "accessible": true
+              },
+              {
+                "id": "fs-nonprofit-food-bank-1769688550861-02",
+                "ip": "10.56.78.11",
+                "name": "regionalfood-fileserver02-01",
+                "files": [
+                  {
+                    "name": "media_assets_2024_01.tar",
+                    "size": "229.0 MB",
+                    "sizeBytes": 240165040,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "annual_report_2024_04.tar",
+                    "size": "199.8 MB",
+                    "sizeBytes": 209492329,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "readme_2024_05.txt",
+                    "size": "339.1 KB",
+                    "sizeBytes": 347263,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "media_assets_2023_12.tar",
+                    "size": "124.2 MB",
+                    "sizeBytes": 130218864,
+                    "corrupted": false,
+                    "targetFile": false
+                  }
+                ],
+                "accessible": true
+              },
+              {
+                "id": "fs-nonprofit-food-bank-1769688550862-03",
+                "ip": "10.56.78.12",
+                "name": "regionalfood-fileserver03-01",
+                "files": [
+                  {
+                    "name": "financial_2024_04.zip",
+                    "size": "243.2 MB",
+                    "sizeBytes": 255046018,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "financial_2024_Q1.zip",
+                    "size": "118.1 MB",
+                    "sizeBytes": 123795932,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "annual_report_2024_01.tar",
+                    "size": "476.7 MB",
+                    "sizeBytes": 499856777,
+                    "corrupted": false,
+                    "targetFile": false
+                  }
+                ],
+                "accessible": true
+              }
+            ]
+          },
+          {
+            "networkId": "nonprofit-food-bank-dest-1769688550862",
+            "networkName": "RegionalFood-Backup",
+            "address": "10.115.97.0/24",
+            "bandwidth": 1500,
+            "revokeOnComplete": true,
+            "revokeReason": "Mission access expired",
+            "fileSystems": [
+              {
+                "id": "fs-nonprofit-food-bank-1769688550862-dest",
+                "ip": "10.115.97.10",
+                "name": "regionalfood-backup-01",
+                "files": [],
+                "accessible": true
+              }
+            ]
+          }
+        ],
+        "objectives": [
+          {
+            "id": "obj-1",
+            "description": "Connect to RegionalFood-Network network",
+            "type": "networkConnection",
+            "target": "nonprofit-food-bank-network-1769688550861"
+          },
+          {
+            "id": "obj-2",
+            "description": "Scan RegionalFood-Network to find file servers",
+            "type": "networkScan",
+            "target": "nonprofit-food-bank-network-1769688550861",
+            "expectedResult": "regionalfood-fileserver01-01"
+          },
+          {
+            "id": "obj-3",
+            "description": "Connect to regionalfood-fileserver01-01 file system",
+            "type": "fileSystemConnection",
+            "target": "10.56.78.10"
+          },
+          {
+            "id": "obj-4",
+            "description": "Copy 1 files from regionalfood-fileserver01-01",
+            "type": "fileOperation",
+            "operation": "copy",
+            "target": "specific-files",
+            "targetFiles": [
+              "financial_2024_03.zip"
+            ],
+            "count": 1
+          },
+          {
+            "id": "obj-5",
+            "description": "Connect to regionalfood-fileserver02-01 file system",
+            "type": "fileSystemConnection",
+            "target": "10.56.78.11"
+          },
+          {
+            "id": "obj-6",
+            "description": "Copy 1 files from regionalfood-fileserver02-01",
+            "type": "fileOperation",
+            "operation": "copy",
+            "target": "specific-files",
+            "targetFiles": [
+              "media_assets_2024_01.tar"
+            ],
+            "count": 1
+          },
+          {
+            "id": "obj-7",
+            "description": "Connect to regionalfood-fileserver03-01 file system",
+            "type": "fileSystemConnection",
+            "target": "10.56.78.12"
+          },
+          {
+            "id": "obj-8",
+            "description": "Copy 1 files from regionalfood-fileserver03-01",
+            "type": "fileOperation",
+            "operation": "copy",
+            "target": "specific-files",
+            "targetFiles": [
+              "financial_2024_04.zip"
+            ],
+            "count": 1
+          },
+          {
+            "id": "obj-9",
+            "description": "Connect to RegionalFood-Backup network",
+            "type": "networkConnection",
+            "target": "nonprofit-food-bank-dest-1769688550862"
+          },
+          {
+            "id": "obj-10",
+            "description": "Scan RegionalFood-Backup to find regionalfood-backup-01",
+            "type": "networkScan",
+            "target": "nonprofit-food-bank-dest-1769688550862",
+            "expectedResult": "regionalfood-backup-01"
+          },
+          {
+            "id": "obj-11",
+            "description": "Connect to regionalfood-backup-01 file system",
+            "type": "fileSystemConnection",
+            "target": "10.115.97.10"
+          },
+          {
+            "id": "obj-12",
+            "description": "Paste 3 files to destination",
+            "type": "fileOperation",
+            "operation": "paste",
+            "target": "specific-files",
+            "targetFiles": [
+              "financial_2024_03.zip",
+              "media_assets_2024_01.tar",
+              "financial_2024_04.zip"
+            ],
+            "count": 3
+          },
+          {
+            "id": "obj-verify",
+            "description": "Verify mission completion",
+            "type": "verification",
+            "autoComplete": false
+          }
+        ],
+        "targetFiles": [
+          "financial_2024_03.zip",
+          "media_assets_2024_01.tar",
+          "financial_2024_04.zip"
+        ],
+        "totalDataBytes": 730009391,
+        "requirements": {
+          "software": [
+            "vpn-client",
+            "network-address-register",
+            "network-scanner",
+            "file-manager"
+          ],
+          "minReputation": 1
+        },
+        "consequences": {
+          "success": {
+            "credits": 2948,
+            "reputation": 1,
+            "messages": [
+              {
+                "id": "msg-success-1769688550862",
+                "from": "Regional Food Bank Network",
+                "fromId": "nonprofit-food-bank",
+                "fromName": "Regional Food Bank Network",
+                "subject": "Mission Complete - Payment Enclosed",
+                "body": "Dear {username},\n\nThank you for your efficient work. We're pleased with the results and have processed your payment.\n\nSincerely,\n{clientName}",
+                "attachments": [
+                  {
+                    "type": "cheque",
+                    "amount": 2948,
+                    "description": "Payment for completed mission"
+                  }
+                ],
+                "delay": 3000
+              }
+            ]
+          },
+          "failure": {
+            "credits": -737,
+            "reputation": -1,
+            "messages": [
+              {
+                "id": "msg-failure-incomplete-1769688550862",
+                "from": "Regional Food Bank Network",
+                "fromId": "nonprofit-food-bank",
+                "fromName": "Regional Food Bank Network",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nThe mission was not completed as requested. This has caused significant inconvenience to our operations.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              }
+            ],
+            "messageVariants": {
+              "deadline": {
+                "id": "msg-failure-deadline-1769688550862",
+                "from": "Regional Food Bank Network",
+                "fromId": "nonprofit-food-bank",
+                "fromName": "Regional Food Bank Network",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nTime ran out before the work was completed. We expected better from someone with your reputation.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              },
+              "incomplete": {
+                "id": "msg-failure-incomplete-1769688550862",
+                "from": "Regional Food Bank Network",
+                "fromId": "nonprofit-food-bank",
+                "fromName": "Regional Food Bank Network",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nThe mission was not completed as requested. This has caused significant inconvenience to our operations.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              },
+              "filesDeleted": {
+                "id": "msg-failure-filesDeleted-1769688550862",
+                "from": "Regional Food Bank Network",
+                "fromId": "nonprofit-food-bank",
+                "fromName": "Regional Food Bank Network",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nThe files we needed you to work with no longer exist. Your access has been revoked effective immediately.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              }
+            }
+          }
+        },
+        "timeLimitMinutes": null,
+        "briefingMessage": {
+          "id": "msg-briefing-transfer-nonprofit-food-bank-1769688550862-z8wpq3zso",
+          "from": "Regional Food Bank Network",
+          "fromId": "nonprofit-food-bank",
+          "fromName": "Regional Food Bank Network",
+          "subject": "Mission Briefing: Transfer Request",
+          "body": "Dear {username},\n\nThe island station shared your contact. We need their data integrated.\n\nWe're migrating data to a new backup server and need files transferred securely between systems.\n\n📁 Files to transfer:\n• financial_2024_03.zip\n• media_assets_2024_01.tar\n• financial_2024_04.zip\n\nTotal data: 696 MB\n\nAttached are the network credentials you'll need to access our systems.\n\n[Mission 2 of 2]\n\nSincerely,\n{clientName}",
+          "attachments": [
+            {
+              "type": "networkAddress",
+              "networkId": "nonprofit-food-bank-network-1769688550861",
+              "networkName": "RegionalFood-Network",
+              "address": "10.56.78.0/24",
+              "deviceIps": [
+                "10.56.78.10",
+                "10.56.78.11",
+                "10.56.78.12"
+              ]
+            },
+            {
+              "type": "networkAddress",
+              "networkId": "nonprofit-food-bank-dest-1769688550862",
+              "networkName": "RegionalFood-Backup",
+              "address": "10.115.97.0/24",
+              "deviceIps": [
+                "10.115.97.10"
+              ]
+            }
+          ],
+          "read": false,
+          "timestamp": "2026-01-29T12:09:10.862Z"
+        },
+        "isProcedurallyGenerated": true,
+        "generatedAt": "2026-01-29T12:09:10.862Z",
+        "arcId": "arc-1769688550859-fldjo5uaj",
+        "arcSequence": 2,
+        "arcTotal": 2,
+        "requiresCompletedMission": "repair-emerg-volunteer-fire-1769688550861-1",
+        "arcName": "Pacific Islands Conservation"
+      }
+    ],
+    "arc-1769688550862-tq56m1owq": [
+      {
+        "missionId": "backup-nonprofit-community-center-1769688550863-5",
+        "title": "Ransomware Aftermath (2/3): Data Backup for Riverside Community Center",
+        "client": "Riverside Community Center",
+        "clientId": "nonprofit-community-center",
+        "clientType": "nonprofit-community",
+        "industry": "nonprofit",
+        "difficulty": "Easy",
+        "missionType": "backup",
+        "basePayout": 2241,
+        "category": "procedural-arc",
+        "networks": [
+          {
+            "networkId": "nonprofit-community-center-network-1769688550863",
+            "networkName": "RiversideCommunity-Network",
+            "address": "10.129.127.0/24",
+            "bandwidth": 750,
+            "revokeOnComplete": true,
+            "revokeReason": "Mission access expired",
+            "fileSystems": [
+              {
+                "id": "fs-nonprofit-community-center-1769688550863-01",
+                "ip": "10.129.127.10",
+                "name": "riversidecommunity-fileserver01-01",
+                "files": [
+                  {
+                    "name": "grants_2023_11.dat",
+                    "size": "40.1 MB",
+                    "sizeBytes": 42074138,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "annual_summary_2024_Q2.xlsx",
+                    "size": "2.5 MB",
+                    "sizeBytes": 2595310,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "email_templates_2024_Q1.zip",
+                    "size": "261.9 MB",
+                    "sizeBytes": 274633431,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "events_2024_05.enc",
+                    "size": "90.9 MB",
+                    "sizeBytes": 95317114,
+                    "corrupted": false,
+                    "targetFile": false
+                  }
+                ],
+                "accessible": true
+              },
+              {
+                "id": "fs-nonprofit-community-center-1769688550863-02",
+                "ip": "10.129.127.11",
+                "name": "riversidecommunity-fileserver02-01",
+                "files": [
+                  {
+                    "name": "events_2024_03.enc",
+                    "size": "40.6 MB",
+                    "sizeBytes": 42591726,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "grants_2024_03.dat",
+                    "size": "2.9 MB",
+                    "sizeBytes": 3025024,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "fundraising_2024_Q2.db",
+                    "size": "1.3 GB",
+                    "sizeBytes": 1391743592,
+                    "corrupted": false,
+                    "targetFile": false
+                  }
+                ],
+                "accessible": true
+              }
+            ]
+          },
+          {
+            "networkId": "nonprofit-community-center-dest-1769688550863",
+            "networkName": "RiversideCommunity-Backup",
+            "address": "10.25.9.0/24",
+            "bandwidth": 500,
+            "revokeOnComplete": true,
+            "revokeReason": "Mission access expired",
+            "fileSystems": [
+              {
+                "id": "fs-nonprofit-community-center-1769688550863-dest",
+                "ip": "10.25.9.10",
+                "name": "riversidecommunity-backup-01",
+                "files": [],
+                "accessible": true
+              }
+            ]
+          }
+        ],
+        "objectives": [
+          {
+            "id": "obj-1",
+            "description": "Connect to RiversideCommunity-Network network",
+            "type": "networkConnection",
+            "target": "nonprofit-community-center-network-1769688550863"
+          },
+          {
+            "id": "obj-2",
+            "description": "Scan network to find file servers",
+            "type": "networkScan",
+            "target": "nonprofit-community-center-network-1769688550863",
+            "expectedResult": "riversidecommunity-fileserver01-01"
+          },
+          {
+            "id": "obj-3",
+            "description": "Connect to riversidecommunity-fileserver01-01 (source)",
+            "type": "fileSystemConnection",
+            "target": "10.129.127.10"
+          },
+          {
+            "id": "obj-4",
+            "description": "Copy 2 files from riversidecommunity-fileserver01-01",
+            "type": "fileOperation",
+            "operation": "copy",
+            "target": "specific-files",
+            "targetFiles": [
+              "grants_2023_11.dat",
+              "annual_summary_2024_Q2.xlsx"
+            ],
+            "count": 2
+          },
+          {
+            "id": "obj-5",
+            "description": "Connect to riversidecommunity-fileserver02-01 (source)",
+            "type": "fileSystemConnection",
+            "target": "10.129.127.11"
+          },
+          {
+            "id": "obj-6",
+            "description": "Copy 1 files from riversidecommunity-fileserver02-01",
+            "type": "fileOperation",
+            "operation": "copy",
+            "target": "specific-files",
+            "targetFiles": [
+              "events_2024_03.enc"
+            ],
+            "count": 1
+          },
+          {
+            "id": "obj-7",
+            "description": "Connect to RiversideCommunity-Backup network",
+            "type": "networkConnection",
+            "target": "nonprofit-community-center-dest-1769688550863"
+          },
+          {
+            "id": "obj-8",
+            "description": "Scan backup network to find riversidecommunity-backup-01",
+            "type": "networkScan",
+            "target": "nonprofit-community-center-dest-1769688550863",
+            "expectedResult": "riversidecommunity-backup-01"
+          },
+          {
+            "id": "obj-9",
+            "description": "Connect to riversidecommunity-backup-01 (backup)",
+            "type": "fileSystemConnection",
+            "target": "10.25.9.10"
+          },
+          {
+            "id": "obj-10",
+            "description": "Paste 3 files to backup server",
+            "type": "fileOperation",
+            "operation": "paste",
+            "target": "specific-files",
+            "targetFiles": [
+              "grants_2023_11.dat",
+              "annual_summary_2024_Q2.xlsx",
+              "events_2024_03.enc"
+            ],
+            "count": 3,
+            "destination": "10.25.9.10"
+          },
+          {
+            "id": "obj-verify",
+            "description": "Verify mission completion",
+            "type": "verification",
+            "autoComplete": false
+          }
+        ],
+        "targetFiles": [
+          "grants_2023_11.dat",
+          "annual_summary_2024_Q2.xlsx",
+          "events_2024_03.enc"
+        ],
+        "totalDataBytes": 87261174,
+        "requirements": {
+          "software": [
+            "vpn-client",
+            "network-address-register",
+            "network-scanner",
+            "file-manager"
+          ],
+          "minReputation": 1
+        },
+        "consequences": {
+          "success": {
+            "credits": 2241,
+            "reputation": 1,
+            "messages": [
+              {
+                "id": "msg-success-1769688550863",
+                "from": "Riverside Community Center",
+                "fromId": "nonprofit-community-center",
+                "fromName": "Riverside Community Center",
+                "subject": "Mission Complete - Payment Enclosed",
+                "body": "Dear {username},\n\nExcellent work! The task has been completed to our satisfaction. Payment has been authorized.\n\nSincerely,\n{clientName}",
+                "attachments": [
+                  {
+                    "type": "cheque",
+                    "amount": 2241,
+                    "description": "Payment for completed mission"
+                  }
+                ],
+                "delay": 3000
+              }
+            ]
+          },
+          "failure": {
+            "credits": -560,
+            "reputation": -1,
+            "messages": [
+              {
+                "id": "msg-failure-incomplete-1769688550863",
+                "from": "Riverside Community Center",
+                "fromId": "nonprofit-community-center",
+                "fromName": "Riverside Community Center",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              }
+            ],
+            "messageVariants": {
+              "deadline": {
+                "id": "msg-failure-deadline-1769688550863",
+                "from": "Riverside Community Center",
+                "fromId": "nonprofit-community-center",
+                "fromName": "Riverside Community Center",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nThe deadline has passed and we can no longer use your services for this task. This is very disappointing.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              },
+              "incomplete": {
+                "id": "msg-failure-incomplete-1769688550863",
+                "from": "Riverside Community Center",
+                "fromId": "nonprofit-community-center",
+                "fromName": "Riverside Community Center",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              },
+              "filesDeleted": {
+                "id": "msg-failure-filesDeleted-1769688550863",
+                "from": "Riverside Community Center",
+                "fromId": "nonprofit-community-center",
+                "fromName": "Riverside Community Center",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nWe've detected that essential mission files have been removed from our systems. This mission cannot be completed.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              }
+            }
+          }
+        },
+        "timeLimitMinutes": null,
+        "briefingMessage": {
+          "id": "msg-briefing-backup-nonprofit-community-center-1769688550863-w3t1vff3r",
+          "from": "Riverside Community Center",
+          "fromId": "nonprofit-community-center",
+          "fromName": "Riverside Community Center",
+          "subject": "Mission Briefing: Backup Request",
+          "body": "Dear {username},\n\nThe initial recovery was successful. We need secure backups before proceeding.\n\nOur compliance team has requested an emergency backup of sensitive records. Time is of the essence.\n\n📁 Files to back up:\n• grants_2023_11.dat\n• annual_summary_2024_Q2.xlsx\n• events_2024_03.enc\n\nTotal data: 83 MB\n\nAttached are the network credentials you'll need to access our systems.\n\n[Mission 2 of 3]\n\nSincerely,\n{clientName}",
+          "attachments": [
+            {
+              "type": "networkAddress",
+              "networkId": "nonprofit-community-center-network-1769688550863",
+              "networkName": "RiversideCommunity-Network",
+              "address": "10.129.127.0/24",
+              "deviceIps": [
+                "10.129.127.10",
+                "10.129.127.11"
+              ]
+            },
+            {
+              "type": "networkAddress",
+              "networkId": "nonprofit-community-center-dest-1769688550863",
+              "networkName": "RiversideCommunity-Backup",
+              "address": "10.25.9.0/24",
+              "deviceIps": [
+                "10.25.9.10"
+              ]
+            }
+          ],
+          "read": false,
+          "timestamp": "2026-01-29T12:09:10.863Z"
+        },
+        "isProcedurallyGenerated": true,
+        "generatedAt": "2026-01-29T12:09:10.863Z",
+        "arcId": "arc-1769688550862-tq56m1owq",
+        "arcSequence": 2,
+        "arcTotal": 3,
+        "requiresCompletedMission": "repair-nonprofit-community-center-1769688550862-4",
+        "arcName": "Ransomware Aftermath"
+      },
+      {
+        "missionId": "transfer-corp-bobs-auto-1769688550863-6",
+        "title": "Ransomware Aftermath (3/3): Data Transfer for Bob's Auto Parts & Service",
+        "client": "Bob's Auto Parts & Service",
+        "clientId": "corp-bobs-auto",
+        "clientType": "corp-small",
+        "industry": "corporate",
+        "difficulty": "Hard",
+        "missionType": "transfer",
+        "basePayout": 2684,
+        "category": "procedural-arc",
+        "networks": [
+          {
+            "networkId": "corp-bobs-auto-network-1769688550863",
+            "networkName": "BobsAutoParts-Network",
+            "address": "10.70.195.0/24",
+            "bandwidth": 2000,
+            "revokeOnComplete": true,
+            "revokeReason": "Mission access expired",
+            "fileSystems": [
+              {
+                "id": "fs-corp-bobs-auto-1769688550863-01",
+                "ip": "10.70.195.10",
+                "name": "bobsautoparts-fileserver01-01",
+                "files": [
+                  {
+                    "name": "financial_records_2024_01.enc",
+                    "size": "97.7 MB",
+                    "sizeBytes": 102459583,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "contracts_2024_04.zip",
+                    "size": "438.8 MB",
+                    "sizeBytes": 460086354,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "contracts_2024_01.zip",
+                    "size": "96.7 MB",
+                    "sizeBytes": 101441474,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "index_2024_02.db",
+                    "size": "377.3 MB",
+                    "sizeBytes": 395671768,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "quarterly_backup_2023_11.tar",
+                    "size": "19.5 MB",
+                    "sizeBytes": 20478914,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "quarterly_backup_2024_04.tar",
+                    "size": "282.4 MB",
+                    "sizeBytes": 296083378,
+                    "corrupted": false,
+                    "targetFile": false
+                  }
+                ],
+                "accessible": true
+              },
+              {
+                "id": "fs-corp-bobs-auto-1769688550863-02",
+                "ip": "10.70.195.11",
+                "name": "bobsautoparts-fileserver02-01",
+                "files": [
+                  {
+                    "name": "manifest_2024_03.txt",
+                    "size": "79.5 KB",
+                    "sizeBytes": 81420,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "contracts_2024_01.zip",
+                    "size": "305.6 MB",
+                    "sizeBytes": 320487132,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "index_2023_12.db",
+                    "size": "30.6 MB",
+                    "sizeBytes": 32044430,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "manifest_2023_11.txt",
+                    "size": "377.1 KB",
+                    "sizeBytes": 386153,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "manifest_2023_Q4.txt",
+                    "size": "471.2 KB",
+                    "sizeBytes": 482552,
+                    "corrupted": false,
+                    "targetFile": false
+                  }
+                ],
+                "accessible": true
+              }
+            ]
+          },
+          {
+            "networkId": "corp-bobs-auto-dest-1769688550863",
+            "networkName": "BobsAutoParts-Backup",
+            "address": "10.54.185.0/24",
+            "bandwidth": 500,
+            "revokeOnComplete": true,
+            "revokeReason": "Mission access expired",
+            "fileSystems": [
+              {
+                "id": "fs-corp-bobs-auto-1769688550863-dest",
+                "ip": "10.54.185.10",
+                "name": "bobsautoparts-backup-01",
+                "files": [],
+                "accessible": true
+              }
+            ]
+          }
+        ],
+        "objectives": [
+          {
+            "id": "obj-1",
+            "description": "Connect to BobsAutoParts-Network network",
+            "type": "networkConnection",
+            "target": "corp-bobs-auto-network-1769688550863"
+          },
+          {
+            "id": "obj-2",
+            "description": "Scan BobsAutoParts-Network to find file servers",
+            "type": "networkScan",
+            "target": "corp-bobs-auto-network-1769688550863",
+            "expectedResult": "bobsautoparts-fileserver01-01"
+          },
+          {
+            "id": "obj-3",
+            "description": "Connect to bobsautoparts-fileserver01-01 file system",
+            "type": "fileSystemConnection",
+            "target": "10.70.195.10"
+          },
+          {
+            "id": "obj-4",
+            "description": "Copy 3 files from bobsautoparts-fileserver01-01",
+            "type": "fileOperation",
+            "operation": "copy",
+            "target": "specific-files",
+            "targetFiles": [
+              "financial_records_2024_01.enc",
+              "contracts_2024_04.zip",
+              "contracts_2024_01.zip"
+            ],
+            "count": 3
+          },
+          {
+            "id": "obj-5",
+            "description": "Connect to bobsautoparts-fileserver02-01 file system",
+            "type": "fileSystemConnection",
+            "target": "10.70.195.11"
+          },
+          {
+            "id": "obj-6",
+            "description": "Copy 3 files from bobsautoparts-fileserver02-01",
+            "type": "fileOperation",
+            "operation": "copy",
+            "target": "specific-files",
+            "targetFiles": [
+              "manifest_2024_03.txt",
+              "contracts_2024_01.zip",
+              "index_2023_12.db"
+            ],
+            "count": 3
+          },
+          {
+            "id": "obj-7",
+            "description": "Connect to BobsAutoParts-Backup network",
+            "type": "networkConnection",
+            "target": "corp-bobs-auto-dest-1769688550863"
+          },
+          {
+            "id": "obj-8",
+            "description": "Scan BobsAutoParts-Backup to find bobsautoparts-backup-01",
+            "type": "networkScan",
+            "target": "corp-bobs-auto-dest-1769688550863",
+            "expectedResult": "bobsautoparts-backup-01"
+          },
+          {
+            "id": "obj-9",
+            "description": "Connect to bobsautoparts-backup-01 file system",
+            "type": "fileSystemConnection",
+            "target": "10.54.185.10"
+          },
+          {
+            "id": "obj-10",
+            "description": "Paste 6 files to destination",
+            "type": "fileOperation",
+            "operation": "paste",
+            "target": "specific-files",
+            "targetFiles": [
+              "financial_records_2024_01.enc",
+              "contracts_2024_04.zip",
+              "contracts_2024_01.zip",
+              "manifest_2024_03.txt",
+              "contracts_2024_01.zip",
+              "index_2023_12.db"
+            ],
+            "count": 6
+          },
+          {
+            "id": "obj-verify",
+            "description": "Verify mission completion",
+            "type": "verification",
+            "autoComplete": false
+          }
+        ],
+        "targetFiles": [
+          "financial_records_2024_01.enc",
+          "contracts_2024_04.zip",
+          "contracts_2024_01.zip",
+          "manifest_2024_03.txt",
+          "contracts_2024_01.zip",
+          "index_2023_12.db"
+        ],
+        "totalDataBytes": 1016600393,
+        "requirements": {
+          "software": [
+            "vpn-client",
+            "network-address-register",
+            "network-scanner",
+            "file-manager"
+          ],
+          "minReputation": 2
+        },
+        "consequences": {
+          "success": {
+            "credits": 2684,
+            "reputation": 1,
+            "messages": [
+              {
+                "id": "msg-success-1769688550863",
+                "from": "Bob's Auto Parts & Service",
+                "fromId": "corp-bobs-auto",
+                "fromName": "Bob's Auto Parts & Service",
+                "subject": "Mission Complete - Payment Enclosed",
+                "body": "Dear {username},\n\nThank you for your efficient work. We're pleased with the results and have processed your payment.\n\nSincerely,\n{clientName}",
+                "attachments": [
+                  {
+                    "type": "cheque",
+                    "amount": 2684,
+                    "description": "Payment for completed mission"
+                  }
+                ],
+                "delay": 3000
+              }
+            ]
+          },
+          "failure": {
+            "credits": -671,
+            "reputation": -1,
+            "messages": [
+              {
+                "id": "msg-failure-incomplete-1769688550863",
+                "from": "Bob's Auto Parts & Service",
+                "fromId": "corp-bobs-auto",
+                "fromName": "Bob's Auto Parts & Service",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nThe mission was not completed as requested. This has caused significant inconvenience to our operations.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              }
+            ],
+            "messageVariants": {
+              "deadline": {
+                "id": "msg-failure-deadline-1769688550863",
+                "from": "Bob's Auto Parts & Service",
+                "fromId": "corp-bobs-auto",
+                "fromName": "Bob's Auto Parts & Service",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nUnfortunately, you failed to complete the task within the required timeframe. We've had to find alternative solutions.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              },
+              "incomplete": {
+                "id": "msg-failure-incomplete-1769688550863",
+                "from": "Bob's Auto Parts & Service",
+                "fromId": "corp-bobs-auto",
+                "fromName": "Bob's Auto Parts & Service",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nThe mission was not completed as requested. This has caused significant inconvenience to our operations.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              },
+              "filesDeleted": {
+                "id": "msg-failure-filesDeleted-1769688550863",
+                "from": "Bob's Auto Parts & Service",
+                "fromId": "corp-bobs-auto",
+                "fromName": "Bob's Auto Parts & Service",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nThe files we needed you to work with no longer exist. Your access has been revoked effective immediately.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              }
+            }
+          }
+        },
+        "timeLimitMinutes": null,
+        "briefingMessage": {
+          "id": "msg-briefing-transfer-corp-bobs-auto-1769688550863-l99ffp8eg",
+          "from": "Bob's Auto Parts & Service",
+          "fromId": "corp-bobs-auto",
+          "fromName": "Bob's Auto Parts & Service",
+          "subject": "Mission Briefing: Transfer Request",
+          "body": "Dear {username},\n\nWe were affected by the same attack. Can you help secure our shared data?\n\nWe're migrating data to a new backup server and need files transferred securely between systems.\n\n📁 Files to transfer:\n• financial_records_2024_01.enc\n• contracts_2024_04.zip\n• contracts_2024_01.zip\n• manifest_2024_03.txt\n• contracts_2024_01.zip\n• index_2023_12.db\n\nTotal data: 970 MB\n\nAttached are the network credentials you'll need to access our systems.\n\n[Mission 3 of 3]\n\nSincerely,\n{clientName}",
+          "attachments": [
+            {
+              "type": "networkAddress",
+              "networkId": "corp-bobs-auto-network-1769688550863",
+              "networkName": "BobsAutoParts-Network",
+              "address": "10.70.195.0/24",
+              "deviceIps": [
+                "10.70.195.10",
+                "10.70.195.11"
+              ]
+            },
+            {
+              "type": "networkAddress",
+              "networkId": "corp-bobs-auto-dest-1769688550863",
+              "networkName": "BobsAutoParts-Backup",
+              "address": "10.54.185.0/24",
+              "deviceIps": [
+                "10.54.185.10"
+              ]
+            }
+          ],
+          "read": false,
+          "timestamp": "2026-01-29T12:09:10.863Z"
+        },
+        "isProcedurallyGenerated": true,
+        "generatedAt": "2026-01-29T12:09:10.863Z",
+        "arcId": "arc-1769688550862-tq56m1owq",
+        "arcSequence": 3,
+        "arcTotal": 3,
+        "requiresCompletedMission": "backup-nonprofit-community-center-1769688550863-5",
+        "arcName": "Ransomware Aftermath"
+      }
+    ],
+    "arc-1769688550863-2g45javlr": [
+      {
+        "missionId": "transfer-nonprofit-food-bank-1769688550864-8",
+        "title": "Whistleblower Protection (2/2): Data Transfer for Regional Food Bank Network",
+        "client": "Regional Food Bank Network",
+        "clientId": "nonprofit-food-bank",
+        "clientType": "nonprofit-community",
+        "industry": "nonprofit",
+        "difficulty": "Hard",
+        "missionType": "transfer",
+        "basePayout": 2752,
+        "category": "procedural-arc",
+        "networks": [
+          {
+            "networkId": "nonprofit-food-bank-network-1769688550864",
+            "networkName": "RegionalFood-Network",
+            "address": "10.148.87.0/24",
+            "bandwidth": 500,
+            "revokeOnComplete": true,
+            "revokeReason": "Mission access expired",
+            "fileSystems": [
+              {
+                "id": "fs-nonprofit-food-bank-1769688550864-01",
+                "ip": "10.148.87.10",
+                "name": "regionalfood-fileserver01-01",
+                "files": [
+                  {
+                    "name": "membership_2024_Q1.db",
+                    "size": "115.8 MB",
+                    "sizeBytes": 121467563,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "financial_2024_04.zip",
+                    "size": "35.6 MB",
+                    "sizeBytes": 37285318,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "media_assets_2024_02.tar",
+                    "size": "451.1 MB",
+                    "sizeBytes": 473023059,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "membership_2024_05.db",
+                    "size": "167.9 MB",
+                    "sizeBytes": 176022656,
+                    "corrupted": false,
+                    "targetFile": false
+                  }
+                ],
+                "accessible": true
+              },
+              {
+                "id": "fs-nonprofit-food-bank-1769688550864-02",
+                "ip": "10.148.87.11",
+                "name": "regionalfood-fileserver02-01",
+                "files": [
+                  {
+                    "name": "membership_2024_01.db",
+                    "size": "352.9 MB",
+                    "sizeBytes": 370052368,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "media_assets_2024_Q2.tar",
+                    "size": "239.7 MB",
+                    "sizeBytes": 251335989,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "membership_2024_03.db",
+                    "size": "23.5 MB",
+                    "sizeBytes": 24644665,
+                    "corrupted": false,
+                    "targetFile": false
+                  }
+                ],
+                "accessible": true
+              }
+            ]
+          },
+          {
+            "networkId": "nonprofit-food-bank-dest-1769688550864",
+            "networkName": "RegionalFood-Backup",
+            "address": "10.157.224.0/24",
+            "bandwidth": 750,
+            "revokeOnComplete": true,
+            "revokeReason": "Mission access expired",
+            "fileSystems": [
+              {
+                "id": "fs-nonprofit-food-bank-1769688550864-dest",
+                "ip": "10.157.224.10",
+                "name": "regionalfood-backup-01",
+                "files": [],
+                "accessible": true
+              }
+            ]
+          }
+        ],
+        "objectives": [
+          {
+            "id": "obj-1",
+            "description": "Connect to RegionalFood-Network network",
+            "type": "networkConnection",
+            "target": "nonprofit-food-bank-network-1769688550864"
+          },
+          {
+            "id": "obj-2",
+            "description": "Scan RegionalFood-Network to find file servers",
+            "type": "networkScan",
+            "target": "nonprofit-food-bank-network-1769688550864",
+            "expectedResult": "regionalfood-fileserver01-01"
+          },
+          {
+            "id": "obj-3",
+            "description": "Connect to regionalfood-fileserver01-01 file system",
+            "type": "fileSystemConnection",
+            "target": "10.148.87.10"
+          },
+          {
+            "id": "obj-4",
+            "description": "Copy 2 files from regionalfood-fileserver01-01",
+            "type": "fileOperation",
+            "operation": "copy",
+            "target": "specific-files",
+            "targetFiles": [
+              "membership_2024_Q1.db",
+              "financial_2024_04.zip"
+            ],
+            "count": 2
+          },
+          {
+            "id": "obj-5",
+            "description": "Connect to regionalfood-fileserver02-01 file system",
+            "type": "fileSystemConnection",
+            "target": "10.148.87.11"
+          },
+          {
+            "id": "obj-6",
+            "description": "Copy 1 files from regionalfood-fileserver02-01",
+            "type": "fileOperation",
+            "operation": "copy",
+            "target": "specific-files",
+            "targetFiles": [
+              "membership_2024_01.db"
+            ],
+            "count": 1
+          },
+          {
+            "id": "obj-7",
+            "description": "Connect to RegionalFood-Backup network",
+            "type": "networkConnection",
+            "target": "nonprofit-food-bank-dest-1769688550864"
+          },
+          {
+            "id": "obj-8",
+            "description": "Scan RegionalFood-Backup to find regionalfood-backup-01",
+            "type": "networkScan",
+            "target": "nonprofit-food-bank-dest-1769688550864",
+            "expectedResult": "regionalfood-backup-01"
+          },
+          {
+            "id": "obj-9",
+            "description": "Connect to regionalfood-backup-01 file system",
+            "type": "fileSystemConnection",
+            "target": "10.157.224.10"
+          },
+          {
+            "id": "obj-10",
+            "description": "Paste 3 files to destination",
+            "type": "fileOperation",
+            "operation": "paste",
+            "target": "specific-files",
+            "targetFiles": [
+              "membership_2024_Q1.db",
+              "financial_2024_04.zip",
+              "membership_2024_01.db"
+            ],
+            "count": 3
+          },
+          {
+            "id": "obj-verify",
+            "description": "Verify mission completion",
+            "type": "verification",
+            "autoComplete": false
+          }
+        ],
+        "targetFiles": [
+          "membership_2024_Q1.db",
+          "financial_2024_04.zip",
+          "membership_2024_01.db"
+        ],
+        "totalDataBytes": 528805249,
+        "requirements": {
+          "software": [
+            "vpn-client",
+            "network-address-register",
+            "network-scanner",
+            "file-manager"
+          ],
+          "minReputation": 1
+        },
+        "consequences": {
+          "success": {
+            "credits": 2752,
+            "reputation": 1,
+            "messages": [
+              {
+                "id": "msg-success-1769688550864",
+                "from": "Regional Food Bank Network",
+                "fromId": "nonprofit-food-bank",
+                "fromName": "Regional Food Bank Network",
+                "subject": "Mission Complete - Payment Enclosed",
+                "body": "Dear {username},\n\nGreat job on completing the mission. Your professionalism is appreciated. Payment attached.\n\nSincerely,\n{clientName}",
+                "attachments": [
+                  {
+                    "type": "cheque",
+                    "amount": 2752,
+                    "description": "Payment for completed mission"
+                  }
+                ],
+                "delay": 3000
+              }
+            ]
+          },
+          "failure": {
+            "credits": -688,
+            "reputation": -1,
+            "messages": [
+              {
+                "id": "msg-failure-incomplete-1769688550864",
+                "from": "Regional Food Bank Network",
+                "fromId": "nonprofit-food-bank",
+                "fromName": "Regional Food Bank Network",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nThe mission was not completed as requested. This has caused significant inconvenience to our operations.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              }
+            ],
+            "messageVariants": {
+              "deadline": {
+                "id": "msg-failure-deadline-1769688550864",
+                "from": "Regional Food Bank Network",
+                "fromId": "nonprofit-food-bank",
+                "fromName": "Regional Food Bank Network",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nTime ran out before the work was completed. We expected better from someone with your reputation.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              },
+              "incomplete": {
+                "id": "msg-failure-incomplete-1769688550864",
+                "from": "Regional Food Bank Network",
+                "fromId": "nonprofit-food-bank",
+                "fromName": "Regional Food Bank Network",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nThe mission was not completed as requested. This has caused significant inconvenience to our operations.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              },
+              "filesDeleted": {
+                "id": "msg-failure-filesDeleted-1769688550864",
+                "from": "Regional Food Bank Network",
+                "fromId": "nonprofit-food-bank",
+                "fromName": "Regional Food Bank Network",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nThe files we needed you to work with no longer exist. Your access has been revoked effective immediately.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              }
+            }
+          }
+        },
+        "timeLimitMinutes": 10,
+        "briefingMessage": {
+          "id": "msg-briefing-transfer-nonprofit-food-bank-1769688550864-t7ykxfdxo",
+          "from": "Regional Food Bank Network",
+          "fromId": "nonprofit-food-bank",
+          "fromName": "Regional Food Bank Network",
+          "subject": "Mission Briefing: Transfer Request",
+          "body": "Dear {username},\n\nA concerned party has arranged for you to help us secure important documents.\n\nOur infrastructure upgrade requires moving critical files from the old server to the new one.\n\n📁 Files to transfer:\n• membership_2024_Q1.db\n• financial_2024_04.zip\n• membership_2024_01.db\n\nTotal data: 504 MB\n\n⚠️ TIME SENSITIVE: This task must be completed within 10 minutes of acceptance.\n\nAttached are the network credentials you'll need to access our systems.\n\n[Mission 2 of 2]\n\nSincerely,\n{clientName}",
+          "attachments": [
+            {
+              "type": "networkAddress",
+              "networkId": "nonprofit-food-bank-network-1769688550864",
+              "networkName": "RegionalFood-Network",
+              "address": "10.148.87.0/24",
+              "deviceIps": [
+                "10.148.87.10",
+                "10.148.87.11"
+              ]
+            },
+            {
+              "type": "networkAddress",
+              "networkId": "nonprofit-food-bank-dest-1769688550864",
+              "networkName": "RegionalFood-Backup",
+              "address": "10.157.224.0/24",
+              "deviceIps": [
+                "10.157.224.10"
+              ]
+            }
+          ],
+          "read": false,
+          "timestamp": "2026-01-29T12:09:10.864Z"
+        },
+        "isProcedurallyGenerated": true,
+        "generatedAt": "2026-01-29T12:09:10.864Z",
+        "arcId": "arc-1769688550863-2g45javlr",
+        "arcSequence": 2,
+        "arcTotal": 2,
+        "requiresCompletedMission": "backup-nonprofit-global-relief-1769688550863-7",
+        "arcName": "Whistleblower Protection"
+      }
+    ]
+  },
+  "activeClientIds": [
+    "emerg-volunteer-fire",
+    "gov-riverside-library",
+    "nonprofit-community-center",
+    "nonprofit-global-relief"
+  ],
+  "clientStandings": {},
+  "extensionOffers": {},
+  "localSSDFiles": [],
+  "betterMessageRead": true,
+  "hardwareUnlockMessageSent": true,
+  "unlockedFeatures": [
+    "network-adapters",
+    "advanced-tools"
+  ],
+  "pendingHardwareUpgrades": {
+    "network": {
+      "id": "net-500mb",
+      "name": "500Mb Network Card",
+      "speed": 500,
+      "price": 200,
+      "power": 6
+    }
+  },
+  "networkRegistry": {
+    "networks": [
+      {
+        "networkId": "clienta-corporate",
+        "networkName": "ClientA-Corporate",
+        "address": "192.168.50.0/24",
+        "bandwidth": 50,
+        "accessible": false,
+        "discovered": true,
+        "accessGrantedDate": "2026-01-29T12:08:36.092Z",
+        "revokedReason": "Mission access expired"
+      }
+    ],
+    "devices": [
+      {
+        "ip": "192.168.50.10",
+        "hostname": "fileserver-01",
+        "networkId": "clienta-corporate",
+        "fileSystemId": "fs-clienta-01",
+        "accessible": false,
+        "logs": [
+          {
+            "id": "log-1769688509336-y0b60q0v0",
+            "timestamp": "2020-03-25T09:04:57.000Z",
+            "action": "repair",
+            "fileName": "log_2024_01.txt"
+          },
+          {
+            "id": "log-1769688509337-nh2qpzwyj",
+            "timestamp": "2020-03-25T09:04:57.000Z",
+            "action": "repair",
+            "fileName": "log_2024_02.txt"
+          },
+          {
+            "id": "log-1769688509337-ixbvhdyrd",
+            "timestamp": "2020-03-25T09:04:57.000Z",
+            "action": "repair",
+            "fileName": "log_2024_03.txt"
+          },
+          {
+            "id": "log-1769688509337-vtnxehdd3",
+            "timestamp": "2020-03-25T09:04:57.000Z",
+            "action": "repair",
+            "fileName": "log_2024_04.txt"
+          },
+          {
+            "id": "log-1769688509337-i529zayac",
+            "timestamp": "2020-03-25T09:04:57.000Z",
+            "action": "repair",
+            "fileName": "log_2024_05.txt"
+          },
+          {
+            "id": "log-1769688509337-prdkjer0v",
+            "timestamp": "2020-03-25T09:04:57.000Z",
+            "action": "repair",
+            "fileName": "log_2024_06.txt"
+          },
+          {
+            "id": "log-1769688509337-9akf4xul3",
+            "timestamp": "2020-03-25T09:04:57.000Z",
+            "action": "repair",
+            "fileName": "log_2024_07.txt"
+          },
+          {
+            "id": "log-1769688509338-nvbtz6r0p",
+            "timestamp": "2020-03-25T09:04:57.000Z",
+            "action": "repair",
+            "fileName": "log_2024_08.txt"
+          },
+          {
+            "id": "log-1769688521940-7kk4wuuth",
+            "timestamp": "2020-03-25T09:08:47.000Z",
+            "action": "paste",
+            "fileName": "log_2024_01.txt"
+          },
+          {
+            "id": "log-1769688521940-no2y3wnfd",
+            "timestamp": "2020-03-25T09:08:47.000Z",
+            "action": "paste",
+            "fileName": "log_2024_02.txt"
+          },
+          {
+            "id": "log-1769688521940-6rykxtzxr",
+            "timestamp": "2020-03-25T09:08:47.000Z",
+            "action": "paste",
+            "fileName": "log_2024_03.txt"
+          },
+          {
+            "id": "log-1769688521940-dwetntuvs",
+            "timestamp": "2020-03-25T09:08:47.000Z",
+            "action": "paste",
+            "fileName": "log_2024_04.txt"
+          },
+          {
+            "id": "log-1769688521940-nnaiycm3y",
+            "timestamp": "2020-03-25T09:08:47.000Z",
+            "action": "paste",
+            "fileName": "log_2024_05.txt"
+          },
+          {
+            "id": "log-1769688521940-i5zntdeno",
+            "timestamp": "2020-03-25T09:08:47.000Z",
+            "action": "paste",
+            "fileName": "log_2024_06.txt"
+          },
+          {
+            "id": "log-1769688521940-z3r0tmv7v",
+            "timestamp": "2020-03-25T09:08:47.000Z",
+            "action": "paste",
+            "fileName": "log_2024_07.txt"
+          },
+          {
+            "id": "log-1769688521940-lqvb4axw8",
+            "timestamp": "2020-03-25T09:08:47.000Z",
+            "action": "paste",
+            "fileName": "log_2024_08.txt"
+          }
+        ]
+      },
+      {
+        "ip": "192.168.50.20",
+        "hostname": "backup-server",
+        "networkId": "clienta-corporate",
+        "fileSystemId": "fs-clienta-backup",
+        "accessible": false,
+        "logs": [
+          {
+            "id": "log-1769688521918-rivjntzgv",
+            "timestamp": "2020-03-25T09:08:46.000Z",
+            "action": "copy",
+            "fileName": "log_2024_01.txt"
+          },
+          {
+            "id": "log-1769688521918-xgwifr7yq",
+            "timestamp": "2020-03-25T09:08:46.000Z",
+            "action": "copy",
+            "fileName": "log_2024_02.txt"
+          },
+          {
+            "id": "log-1769688521918-lsbi06sjy",
+            "timestamp": "2020-03-25T09:08:46.000Z",
+            "action": "copy",
+            "fileName": "log_2024_03.txt"
+          },
+          {
+            "id": "log-1769688521918-63vta979r",
+            "timestamp": "2020-03-25T09:08:46.000Z",
+            "action": "copy",
+            "fileName": "log_2024_04.txt"
+          },
+          {
+            "id": "log-1769688521919-s0wetx2k8",
+            "timestamp": "2020-03-25T09:08:46.000Z",
+            "action": "copy",
+            "fileName": "log_2024_05.txt"
+          },
+          {
+            "id": "log-1769688521919-lpsoo0g9a",
+            "timestamp": "2020-03-25T09:08:46.000Z",
+            "action": "copy",
+            "fileName": "log_2024_06.txt"
+          },
+          {
+            "id": "log-1769688521919-tz0829plf",
+            "timestamp": "2020-03-25T09:08:46.000Z",
+            "action": "copy",
+            "fileName": "log_2024_07.txt"
+          },
+          {
+            "id": "log-1769688521919-efs8g467l",
+            "timestamp": "2020-03-25T09:08:46.000Z",
+            "action": "copy",
+            "fileName": "log_2024_08.txt"
+          }
+        ]
+      }
+    ],
+    "fileSystems": [
+      {
+        "id": "fs-clienta-01",
+        "files": [
+          {
+            "name": "log_2023_11.txt",
+            "size": "2.4 KB",
+            "corrupted": false
+          },
+          {
+            "name": "log_2023_12.txt",
+            "size": "2.6 KB",
+            "corrupted": false
+          },
+          {
+            "name": "system.log",
+            "size": "1.2 KB",
+            "corrupted": false
+          },
+          {
+            "name": "log_2024_01.txt",
+            "size": "2.5 KB",
+            "corrupted": false
+          },
+          {
+            "name": "log_2024_02.txt",
+            "size": "3.1 KB",
+            "corrupted": false
+          },
+          {
+            "name": "log_2024_03.txt",
+            "size": "2.8 KB",
+            "corrupted": false
+          },
+          {
+            "name": "log_2024_04.txt",
+            "size": "3.2 KB",
+            "corrupted": false
+          },
+          {
+            "name": "log_2024_05.txt",
+            "size": "2.9 KB",
+            "corrupted": false
+          },
+          {
+            "name": "log_2024_06.txt",
+            "size": "3.0 KB",
+            "corrupted": false
+          },
+          {
+            "name": "log_2024_07.txt",
+            "size": "2.7 KB",
+            "corrupted": false
+          },
+          {
+            "name": "log_2024_08.txt",
+            "size": "3.3 KB",
+            "corrupted": false
+          }
+        ]
+      },
+      {
+        "id": "fs-clienta-backup",
+        "files": [
+          {
+            "name": "log_2024_01.txt",
+            "size": "2.5 KB",
+            "corrupted": false
+          },
+          {
+            "name": "log_2024_02.txt",
+            "size": "3.1 KB",
+            "corrupted": false
+          },
+          {
+            "name": "log_2024_03.txt",
+            "size": "2.8 KB",
+            "corrupted": false
+          },
+          {
+            "name": "log_2024_04.txt",
+            "size": "3.2 KB",
+            "corrupted": false
+          },
+          {
+            "name": "log_2024_05.txt",
+            "size": "2.9 KB",
+            "corrupted": false
+          },
+          {
+            "name": "log_2024_06.txt",
+            "size": "3.0 KB",
+            "corrupted": false
+          },
+          {
+            "name": "log_2024_07.txt",
+            "size": "2.7 KB",
+            "corrupted": false
+          },
+          {
+            "name": "log_2024_08.txt",
+            "size": "3.3 KB",
+            "corrupted": false
+          }
+        ]
+      }
+    ]
+  },
+  "savedAt": "2026-01-29T12:09:23.700Z",
+  "saveName": "25/03/2020 09:11:38"
+}

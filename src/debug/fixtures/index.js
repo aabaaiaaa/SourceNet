@@ -12,12 +12,16 @@
 import scenarioFreshStart from './scenario-fresh-start.save.json';
 import scenarioPostTutorialPart2 from './scenario-post-tutorial-part-2.save.json';
 import scenarioTutorialPart1PriorToSabotage from './scenario-tutorial-part-1-prior-to-sabotage.save.json';
+import scenarioPreHardwareUnlock from './scenario-pre-hardware-unlock.save.json';
+import scenarioPostHardwareUnlock from './scenario-post-hardware-unlock.save.json';
 
 // Export all available scenarios
 export const SCENARIO_FIXTURES = {
     'fresh-start': scenarioFreshStart,
     'post-tutorial-part-2': scenarioPostTutorialPart2,
     'tutorial-part-1-prior-to-sabotage': scenarioTutorialPart1PriorToSabotage,
+    'pre-hardware-unlock': scenarioPreHardwareUnlock,
+    'post-hardware-unlock': scenarioPostHardwareUnlock,
 };
 
 /**

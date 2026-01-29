@@ -427,6 +427,39 @@ Given the expanded scope, we've significantly increased your payment.
 Sincerely,
 {clientName}`,
   },
+
+  // ===== HARDWARE UNLOCK MESSAGE =====
+  // Sent when player has read the "better" message AND has >= 1000 credits
+  // Reading this message unlocks network-adapters and advanced-tools features
+  'hardware-unlock': {
+    from: 'SourceNet Manager',
+    fromId: 'SNET-MGR-{random}',
+    fromName: 'SourceNet Manager {managerName}',
+    subject: 'New Opportunities - Hardware & Tools',
+    body: `{username},
+
+Well done. You've worked hard and gotten yourself out of debt. I knew there was a reason we hired you.
+
+Now that you've proven you can handle the basics, it's time to talk about upgrading your equipment. The work you've been doing is fine, but with better hardware, you could be taking on more lucrative contracts.
+
+First, let me explain how hardware works. Unlike software (which you just download and install), hardware requires a system REBOOT to take effect. When you purchase hardware from the Portal, it won't be active until you reboot your terminal via the Power menu. The boot sequence will detect and initialize the new hardware.
+
+I'd recommend starting with a better NETWORK ADAPTER. Your current adapter is the bottleneck - it's limiting how fast you can transfer files. Networks you connect to have plenty of bandwidth, but your terminal can only receive data as fast as your adapter allows. A faster adapter means quicker file operations, which means more missions completed in less time.
+
+Check the Hardware section in the Portal. Network Adapters are now available for purchase.
+
+I'm also working on getting you access to some specialized tools. There's a job coming up that requires specific software:
+
+- LOG VIEWER: A tool for retrieving and analyzing device logs. Some missions require examining connection logs, file operation history, or process logs from network devices.
+
+- DATA RECOVERY TOOL: For scanning file systems to find deleted files and restore them. Also has a secure delete function for when files need to be permanently destroyed.
+
+These tools will be available in the Portal's Software section. You'll need them for the work I'm lining up.
+
+Get your hardware upgraded and the new tools installed. I'll send details on the new mission once you're ready.
+
+- {managerName}`,
+  },
 };
 
 export default { createMessageFromTemplate, MESSAGE_TEMPLATES };

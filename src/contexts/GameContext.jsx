@@ -38,6 +38,7 @@ import { initializePool, refreshPool, shouldRefreshPool, handleArcProgression, h
 import { shouldTriggerExtension, generateExtension, getObjectiveProgress } from '../missions/MissionExtensionGenerator';
 import { checkObjectiveImpossible } from '../missions/ObjectiveTracker';
 import networkRegistry from '../systems/NetworkRegistry';
+import { applyPendingHardware } from '../systems/HardwareInstallationSystem';
 
 export const GameContext = createContext();
 
@@ -162,6 +163,41 @@ export const GameProvider = ({ children }) => {
   const [clientStandings, setClientStandings] = useState({}); // { clientId: { successCount, failCount, lastMissionDate } }
   const [extensionOffers, setExtensionOffers] = useState({}); // { missionId: extensionOffer }
 
+  // ===== HARDWARE & SOFTWARE UNLOCK SYSTEM =====
+  const [betterMessageRead, setBetterMessageRead] = useState(false); // Track if tutorial "better" message was read
+  const [hardwareUnlockMessageSent, setHardwareUnlockMessageSent] = useState(false); // Track if hardware unlock message was sent
+  const [unlockedFeatures, setUnlockedFeatures] = useState([]); // Array of unlocked feature IDs (e.g., 'network-adapters', 'advanced-tools')
+  const [pendingHardwareUpgrades, setPendingHardwareUpgrades] = useState({}); // Hardware queued for install on reboot
+  const [lastAppliedHardware, setLastAppliedHardware] = useState([]); // Hardware applied in last reboot (for boot message)
+
+  // ===== BANKING HELPERS =====
+  // Helper function to update bank balance and emit creditsChanged event
+  // This ensures consistent event emission across all balance-changing operations
+  const updateBankBalance = useCallback((accountId, amount, reason) => {
+    setBankAccounts(prev => {
+      const newAccounts = prev.map(acc =>
+        acc.id === accountId
+          ? { ...acc, balance: acc.balance + amount }
+          : acc
+      );
+
+      // Calculate new total after update
+      const newTotal = newAccounts.reduce((sum, acc) => sum + acc.balance, 0);
+
+      // Emit creditsChanged event after state update via microtask
+      queueMicrotask(() => {
+        triggerEventBus.emit('creditsChanged', {
+          newBalance: newTotal,
+          change: amount,
+          reason: reason,
+          accountId: accountId,
+        });
+      });
+
+      return newAccounts;
+    });
+  }, []);
+
   // Clear file clipboard
   const clearFileClipboard = useCallback(() => {
     setFileClipboard({ files: [], sourceFileSystemId: '', sourceNetworkId: '' });
@@ -275,6 +311,9 @@ export const GameProvider = ({ children }) => {
 
         // Enable procedural missions
         setProceduralMissionsEnabled(true);
+
+        // Mark "better" message as read for hardware unlock trigger
+        setBetterMessageRead(true);
 
         // Initialize the mission pool
         const poolState = initializePool(reputation, currentTime);
@@ -885,6 +924,66 @@ export const GameProvider = ({ children }) => {
     }
   }, [currentTime, messages, playNotificationChime]);
 
+  // Hardware unlock trigger: when "New Opportunities" message is read
+  // Unlocks network-adapters and advanced-tools features
+  useEffect(() => {
+    const handleMessageRead = (data) => {
+      // Check if this is the hardware unlock message being read
+      // The message has subject 'New Opportunities - Hardware & Tools'
+      const message = messages.find(m => m.id === data.messageId);
+      if (message && message.subject && message.subject.includes('New Opportunities')) {
+        console.log('🔓 "New Opportunities" message read! Unlocking hardware features...');
+
+        // Unlock features
+        setUnlockedFeatures(prev => {
+          const newFeatures = new Set(prev);
+          newFeatures.add('network-adapters');
+          newFeatures.add('advanced-tools');
+          return Array.from(newFeatures);
+        });
+      }
+    };
+
+    const unsubscribe = triggerEventBus.on('messageRead', handleMessageRead);
+    return () => unsubscribe();
+  }, [messages]);
+
+  // Hardware unlock message trigger: when "better" message is read AND credits >= 1000
+  // Sends the "New Opportunities" message (but doesn't unlock features - that happens when message is read)
+  useEffect(() => {
+    // Skip if conditions not met or message already sent
+    if (!betterMessageRead || hardwareUnlockMessageSent) return;
+
+    const handleCreditsChanged = (data) => {
+      const { newBalance } = data;
+
+      // Trigger when player reaches 1000+ credits
+      if (newBalance >= 1000) {
+        console.log('� Hardware unlock MESSAGE trigger met (credits:', newBalance, ') - sending "New Opportunities" message...');
+
+        // Mark as sent to prevent duplicate
+        setHardwareUnlockMessageSent(true);
+
+        // Schedule the hardware unlock message with a small delay
+        // NOTE: Features are unlocked when the player READS this message, not when it's sent
+        scheduleGameTimeCallback(() => {
+          const message = createMessageFromTemplate('hardware-unlock', {
+            username,
+            managerName,
+          });
+
+          if (message) {
+            console.log('📧 Sending "New Opportunities" hardware unlock message');
+            addMessage(message);
+          }
+        }, 3000, timeSpeed);
+      }
+    };
+
+    const unsubscribe = triggerEventBus.on('creditsChanged', handleCreditsChanged);
+    return () => unsubscribe();
+  }, [betterMessageRead, hardwareUnlockMessageSent, username, managerName, timeSpeed, addMessage]);
+
   // Add discovered devices from network scan
   const addDiscoveredDevices = useCallback((networkId, ips) => {
     setDiscoveredDevices((prev) => {
@@ -1019,16 +1118,11 @@ export const GameProvider = ({ children }) => {
       )
     );
 
-    // Add funds to account
-    const newBalance = bankAccounts.find(acc => acc.id === accountId).balance + chequeAttachment.amount;
+    // Add funds to account using helper (emits creditsChanged event)
+    const currentBalance = bankAccounts.find(acc => acc.id === accountId).balance;
+    const newBalance = currentBalance + chequeAttachment.amount;
 
-    setBankAccounts((prev) =>
-      prev.map((acc) =>
-        acc.id === accountId
-          ? { ...acc, balance: acc.balance + chequeAttachment.amount }
-          : acc
-      )
-    );
+    updateBankBalance(accountId, chequeAttachment.amount, 'cheque-deposit');
 
     // Add transaction record
     setTransactions((prev) => [
@@ -1046,7 +1140,7 @@ export const GameProvider = ({ children }) => {
     // Clear pending deposit and play notification chime
     setPendingChequeDeposit(null);
     playNotificationChime();
-  }, [messages]);
+  }, [messages, bankAccounts, updateBankBalance, currentTime, playNotificationChime]);
 
   // Cancel cheque deposit
   const cancelChequeDeposit = useCallback(() => {
@@ -1175,13 +1269,13 @@ export const GameProvider = ({ children }) => {
     if (minutesPassed >= 1) {
       const interest = Math.floor(totalCredits * 0.01);
 
-      // Update balance
-      const newAccounts = [...bankAccounts];
-      if (newAccounts[0]) {
-        newAccounts[0].balance += interest;
-        setBankAccounts(newAccounts);
+      // Update balance using helper (emits creditsChanged event)
+      const primaryAccountId = bankAccounts[0]?.id;
+      if (primaryAccountId) {
+        updateBankBalance(primaryAccountId, interest, 'interest');
 
         // Add transaction
+        const newBalance = bankAccounts[0].balance + interest;
         setTransactions((prev) => [
           ...prev,
           {
@@ -1190,14 +1284,14 @@ export const GameProvider = ({ children }) => {
             type: 'expense',
             amount: interest,
             description: 'Overdraft Interest',
-            balanceAfter: newAccounts[0].balance,
+            balanceAfter: newBalance,
           },
         ]);
       }
 
       lastInterestRef.current = currentTime;
     }
-  }, [currentTime, isPaused, gamePhase, username, getTotalCredits, bankAccounts]);
+  }, [currentTime, isPaused, gamePhase, username, getTotalCredits, bankAccounts, updateBankBalance]);
 
   // Bankruptcy countdown
   const prevBankruptcyRef = useRef(null);
@@ -1473,15 +1567,11 @@ export const GameProvider = ({ children }) => {
         }
       }, 3000, timeSpeed);
     } else if (payout < 0) {
-      // Failure penalty: Apply immediately
-      setBankAccounts(prev => {
-        return prev.map((account, index) => {
-          if (index === 0) {
-            return { ...account, balance: account.balance + payout };
-          }
-          return account;
-        });
-      });
+      // Failure penalty: Apply immediately using helper (emits creditsChanged event)
+      const primaryAccountId = bankAccounts[0]?.id;
+      if (primaryAccountId) {
+        updateBankBalance(primaryAccountId, payout, 'mission-penalty');
+      }
     }
 
     // Update reputation
@@ -1634,16 +1724,12 @@ export const GameProvider = ({ children }) => {
     });
     console.log(`❌ Emitted missionComplete event for ${activeMission.missionId}`);
 
-    // Update credits (apply penalty - use functional update with deep copy)
-    setBankAccounts(prev => {
-      return prev.map((account, index) => {
-        if (index === 0) {
-          console.log(`BALANCE_LOG useEffect failed status: ${account.balance} + ${penaltyCredits} = ${account.balance + penaltyCredits}`);
-          return { ...account, balance: account.balance + penaltyCredits };
-        }
-        return account;
-      });
-    });
+    // Update credits (apply penalty using helper - emits creditsChanged event)
+    const primaryAccountId = bankAccounts[0]?.id;
+    if (primaryAccountId) {
+      console.log(`BALANCE_LOG useEffect failed status: applying penalty ${penaltyCredits}`);
+      updateBankBalance(primaryAccountId, penaltyCredits, 'mission-penalty');
+    }
 
     // Update reputation
     setReputation(prev => Math.max(1, Math.min(11, prev + reputationChange)));
@@ -2298,6 +2384,11 @@ export const GameProvider = ({ children }) => {
       extensionOffers,
       // Local SSD files
       localSSDFiles,
+      // Hardware unlock system
+      betterMessageRead,
+      hardwareUnlockMessageSent,
+      unlockedFeatures,
+      pendingHardwareUpgrades,
       // Global Network System
       networkRegistry: networkRegistry.getSnapshot(),
     };
@@ -2307,10 +2398,22 @@ export const GameProvider = ({ children }) => {
     reputation, reputationCountdown, activeMission, completedMissions, availableMissions, missionCooldowns,
     activeConnections, lastScanResults, discoveredDevices, fileManagerConnections, lastFileOperation,
     downloadQueue, transactions, licensedSoftware, bankruptcyCountdown, lastInterestTime, bankingMessagesSent, reputationMessagesSent,
-    proceduralMissionsEnabled, missionPool, pendingChainMissions, activeClientIds, clientStandings, extensionOffers, localSSDFiles]);
+    proceduralMissionsEnabled, missionPool, pendingChainMissions, activeClientIds, clientStandings, extensionOffers, localSSDFiles,
+    betterMessageRead, hardwareUnlockMessageSent, unlockedFeatures, pendingHardwareUpgrades]);
 
-  // Reboot system
+  // Reboot system - also applies any pending hardware upgrades
   const rebootSystem = useCallback(() => {
+    // Apply pending hardware upgrades if any
+    if (Object.keys(pendingHardwareUpgrades).length > 0) {
+      const { newHardware, appliedUpgrades } = applyPendingHardware(hardware, pendingHardwareUpgrades);
+      setHardware(newHardware);
+      setLastAppliedHardware(appliedUpgrades);
+      setPendingHardwareUpgrades({});
+      console.log('🔧 Applied pending hardware upgrades:', appliedUpgrades.map(u => u.item?.name || u.items?.map(i => i.name).join(', ')));
+    } else {
+      setLastAppliedHardware([]);
+    }
+
     // Close all windows but keep all other state
     setWindows([]);
     // Mark that this is a reboot (for short boot animation)
@@ -2320,7 +2423,7 @@ export const GameProvider = ({ children }) => {
     setIsPaused(true);
     // Go to reboot animation phase
     setGamePhase('rebooting');
-  }, []);
+  }, [hardware, pendingHardwareUpgrades]);
 
   // Reset game state for new game
   const resetGame = useCallback(() => {
@@ -2380,6 +2483,12 @@ export const GameProvider = ({ children }) => {
     setActiveClientIds([]);
     setClientStandings({});
     setExtensionOffers({});
+    // Reset hardware unlock system
+    setBetterMessageRead(false);
+    setHardwareUnlockMessageSent(false);
+    setUnlockedFeatures([]);
+    setPendingHardwareUpgrades({});
+    setLastAppliedHardware([]);
     // Reset global network registry
     networkRegistry.clear();
 
@@ -2477,6 +2586,13 @@ export const GameProvider = ({ children }) => {
     // Restore local SSD files
     setLocalSSDFiles(gameState.localSSDFiles ?? []);
 
+    // Restore hardware unlock system
+    setBetterMessageRead(gameState.betterMessageRead ?? false);
+    setHardwareUnlockMessageSent(gameState.hardwareUnlockMessageSent ?? false);
+    setUnlockedFeatures(gameState.unlockedFeatures ?? []);
+    setPendingHardwareUpgrades(gameState.pendingHardwareUpgrades ?? {});
+    setLastAppliedHardware([]); // Don't restore - only set during reboot
+
     // Restore global network registry
     if (gameState.networkRegistry) {
       networkRegistry.loadSnapshot(gameState.networkRegistry);
@@ -2564,6 +2680,7 @@ export const GameProvider = ({ children }) => {
     setSoftware,
     bankAccounts,
     setBankAccounts,
+    updateBankBalance,
     messages,
     setMessages,
     managerName,
@@ -2644,6 +2761,17 @@ export const GameProvider = ({ children }) => {
     setClientStandings,
     extensionOffers,
     setExtensionOffers,
+
+    // Hardware Unlock System
+    betterMessageRead,
+    setBetterMessageRead,
+    hardwareUnlockMessageSent,
+    setHardwareUnlockMessageSent,
+    unlockedFeatures,
+    setUnlockedFeatures,
+    pendingHardwareUpgrades,
+    setPendingHardwareUpgrades,
+    lastAppliedHardware,
 
     // Actions
     initializePlayer,

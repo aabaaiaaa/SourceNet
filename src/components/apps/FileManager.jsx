@@ -51,7 +51,7 @@ const FileManager = () => {
     currentTimeRef.current = currentTime;
   }, [currentTime]);
 
-  // Add entry to activity log
+  // Add entry to activity log (and optionally to persistent device log)
   const addLogEntry = useCallback((entry) => {
     logIdCounterRef.current += 1;
     const logEntry = {
@@ -60,6 +60,19 @@ const FileManager = () => {
       ...entry,
     };
     setActivityLog(prev => [...prev, logEntry]);
+
+    // Also log to NetworkRegistry for persistent device logs (if not local SSD)
+    if (entry.deviceIp && entry.deviceIp !== 'local') {
+      networkRegistry.addDeviceLog(entry.deviceIp, {
+        action: entry.action?.toLowerCase() || 'unknown',
+        fileName: entry.fileName,
+        filePath: entry.filePath,
+        sizeBytes: entry.sizeBytes,
+        sourceIp: entry.sourceIp,
+        destIp: entry.destIp,
+        timestamp: currentTimeRef.current ? new Date(currentTimeRef.current).toISOString() : new Date().toISOString(),
+      });
+    }
   }, []);
 
   // Get available file systems from connected networks
@@ -323,10 +336,13 @@ const FileManager = () => {
         const currentFs = availableFileSystemsRef.current.find(fs => fs.id === selectedFileSystemRef.current);
         addLogEntry({
           fileName: fileName,
+          action: operation.replace('-cross', ''),
           operation: operation.replace('-cross', ''),
           source: 'USER',
           isSabotage: false,
           location: currentFs ? `${currentFs.ip} (${currentFs.name})` : selectedFileSystemRef.current,
+          deviceIp: currentFs?.ip,
+          sizeBytes: completedOps.find(op => op.fileName === fileName)?.sizeBytes,
         });
       });
 

@@ -235,6 +235,81 @@ class NetworkRegistry {
     }
 
     // =========================================================================
+    // DEVICE LOGGING METHODS
+    // =========================================================================
+
+    /**
+     * Add a log entry to a device
+     * @param {string} ip - Device IP address
+     * @param {Object} logEntry - Log entry data
+     * @param {string} logEntry.action - Action type ('copy', 'paste', 'delete', 'download', 'upload')
+     * @param {string} logEntry.fileName - Name of the file
+     * @param {string} [logEntry.filePath] - Full path of the file
+     * @param {number} [logEntry.sizeBytes] - File size in bytes
+     * @param {string} [logEntry.sourceIp] - Source IP for transfers
+     * @param {string} [logEntry.destIp] - Destination IP for transfers
+     * @param {Date|string} [logEntry.timestamp] - Timestamp (defaults to now)
+     * @returns {boolean} True if logged, false if device not found
+     */
+    addDeviceLog(ip, logEntry) {
+        const device = this.devices.get(ip);
+        if (!device) {
+            console.warn(`NetworkRegistry: Cannot add log - device ${ip} not found`);
+            return false;
+        }
+
+        // Initialize logs array if needed
+        if (!device.logs) {
+            device.logs = [];
+        }
+
+        // Create log entry with timestamp and unique ID
+        const entry = {
+            id: `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            timestamp: logEntry.timestamp || new Date().toISOString(),
+            action: logEntry.action,
+            fileName: logEntry.fileName,
+            filePath: logEntry.filePath,
+            sizeBytes: logEntry.sizeBytes,
+            sourceIp: logEntry.sourceIp,
+            destIp: logEntry.destIp,
+        };
+
+        device.logs.push(entry);
+
+        // Keep only last 100 logs per device
+        if (device.logs.length > 100) {
+            device.logs = device.logs.slice(-100);
+        }
+
+        return true;
+    }
+
+    /**
+     * Get logs for a device
+     * @param {string} ip - Device IP address
+     * @returns {Array} Array of log entries (empty if device not found)
+     */
+    getDeviceLogs(ip) {
+        const device = this.devices.get(ip);
+        return device?.logs ? [...device.logs] : [];
+    }
+
+    /**
+     * Clear logs for a device
+     * @param {string} ip - Device IP address
+     * @returns {boolean} True if cleared, false if device not found
+     */
+    clearDeviceLogs(ip) {
+        const device = this.devices.get(ip);
+        if (!device) {
+            return false;
+        }
+        device.logs = [];
+        return true;
+    }
+
+    // =========================================================================
     // COLLISION DETECTION METHODS
     // =========================================================================
 
