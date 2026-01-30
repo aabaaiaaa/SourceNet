@@ -111,55 +111,75 @@
   font-style: italic;
 }
 
-.log-display {
+/* Log Table - matches FileManager activity log styling */
+.log-table {
   flex: 1;
   border: 2px solid var(--osnet-border);
-  padding: 10px;
   overflow-y: auto;
-  background: #f9f9f9;
-  font-size: 12px;
+  background: #FAFAFA;
+  font-size: 11px;
 }
 
-.log-entry {
-  padding: 6px 0;
-  border-bottom: 1px solid #eee;
+.log-table-row {
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
-  align-items: baseline;
+  padding: 4px 8px;
+  border-bottom: 1px solid #EEE;
+  align-items: center;
 }
 
-.log-entry:last-child {
+.log-table-row:last-child {
   border-bottom: none;
 }
 
-.log-timestamp {
+.log-col-timestamp {
+  color: #888;
+  font-size: 10px;
+  min-width: 130px;
+  flex-shrink: 0;
+}
+
+.log-col-action {
+  font-weight: bold;
+  min-width: 60px;
+  text-transform: uppercase;
+  color: #333;
+}
+
+.log-col-user {
+  color: #2196F3;
+  font-weight: bold;
+  min-width: 80px;
+}
+
+.log-col-note {
+  flex: 1;
   color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.log-user {
-  color: #2196F3;
-  font-weight: bold;
+.log-col-filename {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.log-action {
-  color: #4CAF50;
-  font-weight: bold;
-}
-
-.log-note {
-  color: #333;
-}
-
-.log-file {
-  color: #333;
+.log-col-size {
+  color: #888;
+  font-size: 10px;
+  flex-shrink: 0;
+  min-width: 60px;
+  text-align: right;
 }
 
 .log-empty {
   text-align: center;
-  padding: 20px;
+  padding: 15px;
   color: #999;
+  font-size: 11px;
   font-style: italic;
 }
 

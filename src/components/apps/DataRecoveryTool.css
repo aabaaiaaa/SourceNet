@@ -1,0 +1,345 @@
+.data-recovery-tool {
+  font-family: 'Courier New', Courier, monospace;
+  color: #222;
+  padding: 15px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.data-recovery-header {
+  border-bottom: 2px solid var(--osnet-border);
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.data-recovery-header h2 {
+  margin: 0 0 5px 0;
+}
+
+.data-recovery-subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: #666;
+}
+
+.data-recovery-disconnection-message {
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  color: #856404;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.data-recovery-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.data-recovery-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+}
+
+.data-recovery-controls select {
+  padding: 8px;
+  font-family: inherit;
+}
+
+.data-recovery-btn {
+  padding: 10px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: bold;
+}
+
+.data-recovery-btn:hover:not(:disabled) {
+  background: #45a049;
+}
+
+.data-recovery-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.data-recovery-btn.danger {
+  background: #dc3545;
+}
+
+.data-recovery-btn.danger:hover:not(:disabled) {
+  background: #c82333;
+}
+
+.data-recovery-btn.restore {
+  background: #007bff;
+}
+
+.data-recovery-btn.restore:hover:not(:disabled) {
+  background: #0069d9;
+}
+
+/* Scan section */
+.scan-section {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.scan-progress-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scan-progress-bar {
+  height: 20px;
+  background: #e0e0e0;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.scan-progress-fill {
+  height: 100%;
+  background: #4CAF50;
+  transition: width 0.1s linear;
+}
+
+.scan-progress-text {
+  font-size: 11px;
+  color: #666;
+  text-align: center;
+}
+
+/* Action toolbar */
+.data-recovery-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.data-recovery-toolbar button {
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 12px;
+  border: 1px solid #ccc;
+  background: #f0f0f0;
+  cursor: pointer;
+}
+
+.data-recovery-toolbar button:hover:not(:disabled) {
+  background: #e0e0e0;
+}
+
+.data-recovery-toolbar button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.data-recovery-toolbar button.restore {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.data-recovery-toolbar button.restore:hover:not(:disabled) {
+  background: #0069d9;
+}
+
+.data-recovery-toolbar button.secure-delete {
+  background: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+.data-recovery-toolbar button.secure-delete:hover:not(:disabled) {
+  background: #c82333;
+}
+
+/* File list */
+.data-recovery-file-list {
+  flex: 1;
+  border: 2px solid var(--osnet-border);
+  overflow-y: auto;
+  background: #FAFAFA;
+}
+
+.data-recovery-file-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid #EEE;
+  cursor: pointer;
+  gap: 10px;
+}
+
+.data-recovery-file-item:last-child {
+  border-bottom: none;
+}
+
+.data-recovery-file-item:hover {
+  background: #f0f0f0;
+}
+
+.data-recovery-file-item.selected {
+  background: #d0e8ff;
+}
+
+.data-recovery-file-item.operating {
+  cursor: default;
+  background: #f8f9fa;
+}
+
+/* Deleted file styling */
+.data-recovery-file-item.deleted {
+  background: #fff3e0;
+}
+
+.data-recovery-file-item.deleted:hover {
+  background: #ffe0b2;
+}
+
+.data-recovery-file-item.deleted.selected {
+  background: #ffcc80;
+}
+
+.data-recovery-file-item.deleted .file-name {
+  color: #e65100;
+  text-decoration: line-through;
+}
+
+.data-recovery-file-item .status-icon {
+  font-size: 14px;
+  min-width: 20px;
+}
+
+.data-recovery-file-item .file-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.data-recovery-file-item .file-size {
+  color: #888;
+  font-size: 12px;
+  min-width: 70px;
+  text-align: right;
+}
+
+.data-recovery-file-item .file-status {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  min-width: 60px;
+  text-align: center;
+}
+
+.data-recovery-file-item .file-status.normal {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.data-recovery-file-item .file-status.deleted {
+  background: #ffebee;
+  color: #c62828;
+}
+
+/* Operation progress */
+.file-operation-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  margin-left: 10px;
+}
+
+.file-operation-bar {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.file-operation-fill {
+  height: 100%;
+  background: #4CAF50;
+  transition: width 0.1s linear;
+}
+
+.file-operation-fill.restore {
+  background: #007bff;
+}
+
+.file-operation-fill.secure-delete {
+  background: #dc3545;
+}
+
+.file-operation-text {
+  font-size: 10px;
+  color: #666;
+}
+
+/* No networks message */
+.data-recovery-no-networks {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  color: #6c757d;
+  padding: 15px;
+  text-align: center;
+  font-size: 13px;
+  border-radius: 4px;
+}
+
+/* Empty state */
+.data-recovery-empty {
+  text-align: center;
+  padding: 30px;
+  color: #999;
+  font-style: italic;
+}
+
+/* Scan required message */
+.scan-required-message {
+  background-color: #e3f2fd;
+  border: 1px solid #90caf9;
+  color: #1565c0;
+  padding: 15px;
+  text-align: center;
+  font-size: 13px;
+  border-radius: 4px;
+  margin-top: 15px;
+}
+
+/* File count summary */
+.file-count-summary {
+  font-size: 12px;
+  color: #666;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 5px;
+}
+
+.file-count-summary span {
+  margin-right: 15px;
+}
+
+.file-count-summary .deleted-count {
+  color: #e65100;
+}
+
+.file-count-summary .normal-count {
+  color: #2e7d32;
+}

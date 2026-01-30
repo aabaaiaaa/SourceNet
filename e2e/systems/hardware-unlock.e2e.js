@@ -372,6 +372,124 @@ test.describe('Log Viewer Software Unlock', () => {
     });
 });
 
+test.describe('Data Recovery Tool Software Unlock', () => {
+    test('should show Data Recovery Tool as locked before reading hardware unlock message', async ({ page }) => {
+        // Load post-tutorial scenario
+        await loadScenario(page, 'post-tutorial-part-2');
+
+        // Open Portal and go to Software tab
+        await page.hover('text=☰');
+        await page.click('.app-launcher-menu >> text=OSNet Portal');
+        await expect(page.locator('.portal')).toBeVisible();
+
+        // Should be on Software tab by default
+        await page.waitForTimeout(300);
+
+        // Look for Data Recovery Tool in the software list
+        const dataRecoveryItem = page.locator('.portal-item:has-text("Data Recovery Tool")');
+        await expect(dataRecoveryItem).toBeVisible({ timeout: 5000 });
+
+        // Check for locked indicator on Data Recovery Tool
+        const lockedIcon = dataRecoveryItem.locator('text=/locked/i');
+        await expect(lockedIcon).toBeVisible();
+
+        console.log('✅ Data Recovery Tool is locked before reading hardware unlock message');
+    });
+
+    test('should show Data Recovery Tool as available after reading hardware unlock message', async ({ page }) => {
+        // Load post-tutorial scenario
+        await loadScenario(page, 'post-tutorial-part-2');
+
+        // Trigger unlock: read "better", set credits, read hardware message
+        await openMail(page);
+        await page.locator('.message-item:has-text("Better")').click();
+        await page.waitForTimeout(300);
+        await closeMail(page);
+
+        await setCreditsViaDebug(page, 2000);
+        await setSpeed(page, 100);
+        await page.waitForTimeout(500);
+        await setSpeed(page, 1);
+
+        // Read the hardware unlock message
+        await openMail(page);
+        const hardwareMessage = page.locator('.message-item:has-text("Hardware"), .message-item:has-text("Opportunities")');
+        await expect(hardwareMessage).toBeVisible({ timeout: 5000 });
+        await hardwareMessage.click();
+        await page.waitForTimeout(300);
+        await closeMail(page);
+
+        // Open Portal Software tab
+        await page.hover('text=☰');
+        await page.click('.app-launcher-menu >> text=OSNet Portal');
+        await expect(page.locator('.portal')).toBeVisible();
+        await page.waitForTimeout(300);
+
+        // Look for Data Recovery Tool in the software list
+        const dataRecoveryItem = page.locator('.portal-item:has-text("Data Recovery Tool")');
+        await expect(dataRecoveryItem).toBeVisible({ timeout: 5000 });
+
+        // Should NOT have locked indicator anymore, and should have purchase button
+        const purchaseBtn = dataRecoveryItem.locator('button:has-text("Purchase")');
+        await expect(purchaseBtn).toBeVisible({ timeout: 5000 });
+
+        console.log('✅ Data Recovery Tool is available after reading hardware unlock message');
+    });
+
+    test('should be able to purchase and install Data Recovery Tool after unlock', async ({ page }) => {
+        // Load post-tutorial scenario
+        await loadScenario(page, 'post-tutorial-part-2');
+
+        // Trigger unlock
+        await openMail(page);
+        await page.locator('.message-item:has-text("Better")').click();
+        await page.waitForTimeout(300);
+        await closeMail(page);
+
+        await setCreditsViaDebug(page, 2000);
+        await setSpeed(page, 100);
+        await page.waitForTimeout(500);
+        await setSpeed(page, 1);
+
+        await openMail(page);
+        const hardwareMessage = page.locator('.message-item:has-text("Hardware"), .message-item:has-text("Opportunities")');
+        await expect(hardwareMessage).toBeVisible({ timeout: 5000 });
+        await hardwareMessage.click();
+        await page.waitForTimeout(300);
+        await closeMail(page);
+
+        // Open Portal
+        await page.hover('text=☰');
+        await page.click('.app-launcher-menu >> text=OSNet Portal');
+        await expect(page.locator('.portal')).toBeVisible();
+        await page.waitForTimeout(300);
+
+        // Purchase Data Recovery Tool
+        const dataRecoveryItem = page.locator('.portal-item:has-text("Data Recovery Tool")');
+        await dataRecoveryItem.locator('button:has-text("Purchase")').click();
+
+        // Confirm purchase
+        const confirmBtn = page.locator('.modal-content .confirm-btn');
+        await expect(confirmBtn).toBeVisible({ timeout: 3000 });
+        await confirmBtn.click();
+
+        // Wait for download to complete (speed up time)
+        await setSpeed(page, 100);
+        await page.waitForTimeout(1000);
+        await setSpeed(page, 1);
+
+        // Close Portal
+        await closePortal(page);
+
+        // Check if Data Recovery Tool is in app launcher
+        await page.hover('text=☰');
+        const dataRecoveryApp = page.locator('.app-launcher-menu >> text=Data Recovery Tool');
+        await expect(dataRecoveryApp).toBeVisible({ timeout: 5000 });
+
+        console.log('✅ Data Recovery Tool can be purchased and appears in app launcher');
+    });
+});
+
 test.describe('Hardware Purchase and Reboot Flow', () => {
     test('should queue hardware for installation when purchased', async ({ page }) => {
         // Load post-tutorial and trigger full unlock

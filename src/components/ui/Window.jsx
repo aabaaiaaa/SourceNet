@@ -10,6 +10,7 @@ import NetworkScanner from '../apps/NetworkScanner';
 import NetworkAddressRegister from '../apps/NetworkAddressRegister';
 import FileManager from '../apps/FileManager';
 import LogViewer from '../apps/LogViewer';
+import DataRecoveryTool from '../apps/DataRecoveryTool';
 import './Window.css';
 
 const Window = ({ window }) => {
@@ -99,6 +100,8 @@ const Window = ({ window }) => {
         return <FileManager />;
       case 'logViewer':
         return <LogViewer />;
+      case 'dataRecoveryTool':
+        return <DataRecoveryTool />;
       default:
         return <div>App not found: {window.appId}</div>;
     }
@@ -124,6 +127,8 @@ const Window = ({ window }) => {
         return 'File Manager';
       case 'logViewer':
         return 'Log Viewer';
+      case 'dataRecoveryTool':
+        return 'Data Recovery Tool';
       default:
         return 'Unknown App';
     }

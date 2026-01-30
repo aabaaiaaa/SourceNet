@@ -152,7 +152,9 @@ const FileManager = () => {
         if (hasActivePasteOperations) {
           // Merge: keep registry files + preserve any local files that are still being pasted
           setFiles(prevFiles => {
-            const registryFileNames = new Set(updatedFiles.map(f => f.name));
+            // Filter out deleted files from registry
+            const normalFiles = updatedFiles.filter(f => !f.status || f.status === 'normal');
+            const registryFileNames = new Set(normalFiles.map(f => f.name));
 
             // Keep files that are in the registry OR are currently being pasted
             const pastedFileIndices = new Set();
@@ -169,16 +171,19 @@ const FileManager = () => {
 
             // Combine registry files with in-flight paste files
             const mergedFiles = [
-              ...updatedFiles.map(f => ({ ...f, selected: false })),
+              ...normalFiles.map(f => ({ ...f, selected: false })),
               ...inFlightFiles
             ];
 
-            console.log(`📁 FileManager: Merged ${updatedFiles.length} registry files + ${inFlightFiles.length} in-flight paste files`);
+            console.log(`📁 FileManager: Merged ${normalFiles.length} registry files + ${inFlightFiles.length} in-flight paste files`);
             return mergedFiles;
           });
         } else {
           // No active paste operations, safe to fully replace
-          setFiles(updatedFiles.map(f => ({ ...f, selected: false })));
+          // Filter out deleted files - only show normal files
+          setFiles(updatedFiles
+            .filter(f => !f.status || f.status === 'normal')
+            .map(f => ({ ...f, selected: false })));
         }
       }
     };
@@ -538,7 +543,10 @@ const FileManager = () => {
     if (!fileSystem) return;
 
     // Load files from the file system with selection state
-    setFiles(fileSystem.files.map(f => ({ ...f, selected: false })));
+    // Filter out deleted files - only show normal files (or files without status field for backwards compatibility)
+    setFiles(fileSystem.files
+      .filter(f => !f.status || f.status === 'normal')
+      .map(f => ({ ...f, selected: false })));
     setSelectedFileSystem(fileSystemId);
     setCurrentNetworkId(fileSystem.networkId);
 

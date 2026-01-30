@@ -163,6 +163,28 @@ test.describe('Scenario Generator', () => {
         await setSpeed(1);
         console.log('✅ Log Viewer purchased and installed');
 
+        // ========================================
+        // STEP 5b: Purchase Data Recovery Tool Software
+        // ========================================
+        console.log('Purchasing Data Recovery Tool software...');
+
+        // Find and purchase Data Recovery Tool
+        const dataRecoveryItem = page.locator('.portal-item:has-text("Data Recovery Tool")');
+        await expect(dataRecoveryItem).toBeVisible({ timeout: 5000 });
+        await dataRecoveryItem.locator('button:has-text("Purchase")').click();
+
+        // Confirm purchase in modal
+        const confirmBtnDRT = page.locator('.modal-content .confirm-btn');
+        await expect(confirmBtnDRT).toBeVisible({ timeout: 2000 });
+        await confirmBtnDRT.click();
+        await page.waitForTimeout(300);
+
+        // Wait for download to complete (speed up time)
+        await setSpeed(100);
+        await page.waitForTimeout(500);
+        await setSpeed(1);
+        console.log('✅ Data Recovery Tool purchased and installed');
+
         // Close Portal
         await page.locator('.window:has(.portal) .close-btn, .window:has-text("OSNet Portal") .window-controls button:has-text("×")').first().click();
         await page.waitForTimeout(200);

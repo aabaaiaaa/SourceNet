@@ -213,6 +213,15 @@ export const SOFTWARE_CATALOG = [
     available: true,
     requiresUnlock: 'investigation-tooling',
   },
+  {
+    id: 'data-recovery-tool',
+    name: 'Data Recovery Tool',
+    description: 'Scan for deleted files, restore them, or securely delete data',
+    price: 400,
+    sizeInMB: 30, // ~5 seconds at 50 Mbps
+    available: true,
+    requiresUnlock: 'investigation-tooling',
+  },
 ];
 
 // Initial messages
@@ -271,6 +280,7 @@ export const WINDOW_SIZES = {
   networkAddressRegister: { width: 600, height: 450 },
   fileManager: { width: 700, height: 550 },
   logViewer: { width: 650, height: 500 },
+  dataRecoveryTool: { width: 700, height: 550 },
 };
 
 // Boot sequence timing

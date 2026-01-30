@@ -446,9 +446,15 @@ First, let me explain how hardware works. Unlike software (which you just downlo
 
 I'd recommend starting with a better NETWORK ADAPTER. Your current adapter is the bottleneck - it's limiting how fast you can transfer files. Networks you connect to have plenty of bandwidth, but your terminal can only receive data as fast as your adapter allows. A faster adapter means quicker file operations, which means more missions completed in less time.
 
-I'm also releasing access to the LOG VIEWER tool. Every network keeps records of who connects and what file operations they perform - including yours. The Log Viewer lets you pull these records from any network you're connected to. It's useful for investigating suspicious activity, understanding what other users have been doing on a system, or just reviewing your own work. Keep in mind that YOUR activity is being logged too - network administrators can see what you've been up to just as easily as you can see what others have done.
+I'm also releasing access to the LOG VIEWER and DATA RECOVERY TOOL.
 
-Check the Portal - Network Adapters (hardware) and Log Viewer (software) are now available for purchase.
+The Log Viewer lets you pull network records from any network you're connected to. It's useful for investigating suspicious activity, understanding what other users have been doing on a system, or reviewing your own work.
+
+The Data Recovery Tool lets you scan file systems for deleted files and restore them. You can also securely delete files - useful when you need to ensure sensitive data is truly gone and cannot be recovered by anyone.
+
+Keep in mind that YOUR activity is being logged too - network administrators can see what you've been up to just as easily as you can see what others have done.
+
+Check the Portal - Network Adapters (hardware), Log Viewer and Data Recovery Tool (software) are now available for purchase.
 
 Get your hardware upgraded and the new tools installed. I'll send details on the new mission once you're ready.
 

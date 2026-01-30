@@ -8,7 +8,7 @@ import './LogViewer.css';
 const LOG_FETCH_DELAY_MS = 3000; // 3 seconds in game time
 
 const LogViewer = () => {
-  const { activeConnections, timeSpeed } = useGame();
+  const { activeConnections, timeSpeed, discoveredDevices } = useGame();
 
   // Tab state
   const [activeTab, setActiveTab] = useState('network'); // 'network' | 'device'
@@ -28,21 +28,31 @@ const LogViewer = () => {
   // Shared state
   const [disconnectionMessage, setDisconnectionMessage] = useState(null);
 
-  // Build list of all devices from all connected networks
+  // Build list of discovered devices from connected networks
   const allDevices = useMemo(() => {
     if (!activeConnections || activeConnections.length === 0) return [];
 
     return activeConnections.flatMap(conn => {
-      const devices = networkRegistry.getNetworkDevices(conn.networkId);
-      return devices.map(device => ({
-        ip: device.ip,
-        hostname: device.hostname,
-        networkId: conn.networkId,
-        networkName: conn.networkName,
-        displayLabel: `${device.hostname} (${conn.networkName})`,
-      }));
+      const network = networkRegistry.getNetwork(conn.networkId);
+      if (!network || !network.accessible) return [];
+
+      // Get discovered IPs for this network
+      const discoveredData = discoveredDevices?.[conn.networkId];
+      const discovered = discoveredData instanceof Set ? discoveredData : new Set(discoveredData || []);
+
+      // Only include devices that have been discovered via Network Scanner
+      const accessibleDevices = networkRegistry.getAccessibleDevices(conn.networkId);
+      return accessibleDevices
+        .filter(device => discovered.has(device.ip))
+        .map(device => ({
+          ip: device.ip,
+          hostname: device.hostname,
+          networkId: conn.networkId,
+          networkName: conn.networkName,
+          displayLabel: `${device.hostname} (${conn.networkName})`,
+        }));
     });
-  }, [activeConnections]);
+  }, [activeConnections, discoveredDevices]);
 
   // Clean up timers on unmount
   useEffect(() => {
@@ -236,16 +246,16 @@ const LogViewer = () => {
               )}
 
               {networkLogs !== null && !networkLoading && (
-                <div className="log-display">
+                <div className="log-table">
                   {networkLogs.length === 0 ? (
                     <div className="log-empty">No logs found for this network.</div>
                   ) : (
                     networkLogs.map((log) => (
-                      <div key={log.id} className="log-entry">
-                        <span className="log-timestamp">[{formatTimestamp(log.timestamp)}]</span>
-                        {log.user && <span className="log-user">{log.user}</span>}
-                        <span className="log-action">{log.action?.toUpperCase()}</span>
-                        {log.note && <span className="log-note">- {log.note}</span>}
+                      <div key={log.id} className="log-table-row">
+                        <span className="log-col-timestamp">{formatTimestamp(log.timestamp)}</span>
+                        <span className="log-col-action">{log.action?.toUpperCase()}</span>
+                        <span className="log-col-user">{log.user || '-'}</span>
+                        <span className="log-col-note">{log.note || ''}</span>
                       </div>
                     ))
                   )}
@@ -302,21 +312,17 @@ const LogViewer = () => {
               )}
 
               {deviceLogs !== null && !deviceLoading && (
-                <div className="log-display">
+                <div className="log-table">
                   {deviceLogs.length === 0 ? (
                     <div className="log-empty">No logs found for this device.</div>
                   ) : (
                     deviceLogs.map((log) => (
-                      <div key={log.id} className="log-entry">
-                        <span className="log-timestamp">[{formatTimestamp(log.timestamp)}]</span>
-                        {log.user && <span className="log-user">{log.user}</span>}
-                        <span className="log-action">{log.action?.toUpperCase()}</span>
-                        {log.fileName && (
-                          <span className="log-file">
-                            - {log.fileName}
-                            {log.sizeBytes && ` (${formatSize(log.sizeBytes)})`}
-                          </span>
-                        )}
+                      <div key={log.id} className="log-table-row">
+                        <span className="log-col-timestamp">{formatTimestamp(log.timestamp)}</span>
+                        <span className="log-col-action">{log.action?.toUpperCase()}</span>
+                        <span className="log-col-user">{log.user || '-'}</span>
+                        <span className="log-col-filename">{log.fileName || ''}</span>
+                        {log.sizeBytes && <span className="log-col-size">{formatSize(log.sizeBytes)}</span>}
                       </div>
                     ))
                   )}

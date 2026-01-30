@@ -513,6 +513,91 @@ class NetworkRegistry {
     }
 
     /**
+     * Mark files as deleted (soft delete - can be restored)
+     * @param {string} fileSystemId - File system identifier
+     * @param {Array<string>} fileNames - Names of files to mark as deleted
+     * @returns {boolean} True if modified, false if file system not found
+     */
+    markFilesDeleted(fileSystemId, fileNames) {
+        const fs = this.fileSystems.get(fileSystemId);
+        if (!fs) {
+            console.warn(`NetworkRegistry: File system not found: ${fileSystemId}`);
+            return false;
+        }
+
+        const fileNameSet = new Set(fileNames);
+        const updatedFiles = fs.files.map(file => {
+            if (fileNameSet.has(file.name)) {
+                return { ...file, status: 'deleted' };
+            }
+            return file;
+        });
+
+        this.fileSystems.set(fileSystemId, {
+            ...fs,
+            files: updatedFiles,
+        });
+
+        emit('fileSystemChanged', { fileSystemId, files: updatedFiles });
+        return true;
+    }
+
+    /**
+     * Securely delete files (permanent removal - cannot be restored)
+     * @param {string} fileSystemId - File system identifier
+     * @param {Array<string>} fileNames - Names of files to permanently remove
+     * @returns {boolean} True if modified, false if file system not found
+     */
+    secureDeleteFiles(fileSystemId, fileNames) {
+        const fs = this.fileSystems.get(fileSystemId);
+        if (!fs) {
+            console.warn(`NetworkRegistry: File system not found: ${fileSystemId}`);
+            return false;
+        }
+
+        const fileNameSet = new Set(fileNames);
+        const updatedFiles = fs.files.filter(file => !fileNameSet.has(file.name));
+
+        this.fileSystems.set(fileSystemId, {
+            ...fs,
+            files: updatedFiles,
+        });
+
+        emit('fileSystemChanged', { fileSystemId, files: updatedFiles });
+        return true;
+    }
+
+    /**
+     * Restore deleted files back to normal status
+     * @param {string} fileSystemId - File system identifier
+     * @param {Array<string>} fileNames - Names of files to restore
+     * @returns {boolean} True if modified, false if file system not found
+     */
+    restoreFiles(fileSystemId, fileNames) {
+        const fs = this.fileSystems.get(fileSystemId);
+        if (!fs) {
+            console.warn(`NetworkRegistry: File system not found: ${fileSystemId}`);
+            return false;
+        }
+
+        const fileNameSet = new Set(fileNames);
+        const updatedFiles = fs.files.map(file => {
+            if (fileNameSet.has(file.name) && file.status === 'deleted') {
+                return { ...file, status: 'normal' };
+            }
+            return file;
+        });
+
+        this.fileSystems.set(fileSystemId, {
+            ...fs,
+            files: updatedFiles,
+        });
+
+        emit('fileSystemChanged', { fileSystemId, files: updatedFiles });
+        return true;
+    }
+
+    /**
      * Set network accessibility
      * @param {string} networkId - Network identifier
      * @param {boolean} accessible - Whether network is accessible

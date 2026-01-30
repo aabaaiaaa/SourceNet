@@ -233,6 +233,25 @@ describe('Hardware Unlock Story Trigger Integration', () => {
             expect(unlockedFeatures).toHaveLength(2);
         });
 
+        it('should unlock investigation-tooling which enables both Log Viewer and Data Recovery Tool', () => {
+            // The investigation-tooling unlock enables both Log Viewer and Data Recovery Tool
+            // Both have requiresUnlock: 'investigation-tooling' in SOFTWARE_CATALOG
+            const SOFTWARE_CATALOG = [
+                { id: 'log-viewer', requiresUnlock: 'investigation-tooling' },
+                { id: 'data-recovery-tool', requiresUnlock: 'investigation-tooling' },
+            ];
+
+            let unlockedFeatures = ['investigation-tooling'];
+
+            // Check that both tools are unlocked by investigation-tooling
+            const unlockedSoftware = SOFTWARE_CATALOG.filter(sw =>
+                !sw.requiresUnlock || unlockedFeatures.includes(sw.requiresUnlock)
+            );
+
+            expect(unlockedSoftware.map(s => s.id)).toContain('log-viewer');
+            expect(unlockedSoftware.map(s => s.id)).toContain('data-recovery-tool');
+        });
+
         it('should NOT unlock features for other messages', () => {
             let unlockedFeatures = [];
             const messages = [
