@@ -430,7 +430,7 @@ Sincerely,
 
   // ===== HARDWARE UNLOCK MESSAGE =====
   // Sent when player has read the "better" message AND has >= 1000 credits
-  // Reading this message unlocks network-adapters and advanced-tools features
+  // Reading this message unlocks network-adapters (hardware) and investigation-tooling (software) features
   'hardware-unlock': {
     from: 'SourceNet Manager',
     fromId: 'SNET-MGR-{random}',
@@ -446,15 +446,9 @@ First, let me explain how hardware works. Unlike software (which you just downlo
 
 I'd recommend starting with a better NETWORK ADAPTER. Your current adapter is the bottleneck - it's limiting how fast you can transfer files. Networks you connect to have plenty of bandwidth, but your terminal can only receive data as fast as your adapter allows. A faster adapter means quicker file operations, which means more missions completed in less time.
 
-Check the Hardware section in the Portal. Network Adapters are now available for purchase.
+I'm also releasing access to the LOG VIEWER tool. Every network keeps records of who connects and what file operations they perform - including yours. The Log Viewer lets you pull these records from any network you're connected to. It's useful for investigating suspicious activity, understanding what other users have been doing on a system, or just reviewing your own work. Keep in mind that YOUR activity is being logged too - network administrators can see what you've been up to just as easily as you can see what others have done.
 
-I'm also working on getting you access to some specialized tools. There's a job coming up that requires specific software:
-
-- LOG VIEWER: A tool for retrieving and analyzing device logs. Some missions require examining connection logs, file operation history, or process logs from network devices.
-
-- DATA RECOVERY TOOL: For scanning file systems to find deleted files and restore them. Also has a secure delete function for when files need to be permanently destroyed.
-
-These tools will be available in the Portal's Software section. You'll need them for the work I'm lining up.
+Check the Portal - Network Adapters (hardware) and Log Viewer (software) are now available for purchase.
 
 Get your hardware upgraded and the new tools installed. I'll send details on the new mission once you're ready.
 

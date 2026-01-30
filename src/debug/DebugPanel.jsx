@@ -183,10 +183,9 @@ const DebugPanel = ({ onClose }) => {
       gameContext.setUnlockedFeatures(prev => {
         const newFeatures = new Set(prev);
         newFeatures.add('network-adapters');
-        newFeatures.add('advanced-tools');
         return Array.from(newFeatures);
       });
-      showStatus('✅ Unlocked: network-adapters, advanced-tools');
+      showStatus('✅ Unlocked: network-adapters');
     } else {
       showStatus('❌ setUnlockedFeatures not available', true);
     }

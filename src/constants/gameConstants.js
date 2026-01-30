@@ -207,20 +207,11 @@ export const SOFTWARE_CATALOG = [
   {
     id: 'log-viewer',
     name: 'Log Viewer',
-    description: 'View file operation logs for discovered devices',
-    price: 400,
-    sizeInMB: 20,
+    description: 'View network connection and device operation logs',
+    price: 350,
+    sizeInMB: 25, // ~4 seconds at 50 Mbps
     available: true,
-    requiresUnlock: 'advanced-tools', // Locked until hardware unlock message read
-  },
-  {
-    id: 'data-recovery-tool',
-    name: 'Data Recovery Tool',
-    description: 'Recover deleted files and perform secure deletion',
-    price: 600,
-    sizeInMB: 50,
-    available: true,
-    requiresUnlock: 'advanced-tools', // Locked until hardware unlock message read
+    requiresUnlock: 'investigation-tooling',
   },
 ];
 
@@ -280,7 +271,6 @@ export const WINDOW_SIZES = {
   networkAddressRegister: { width: 600, height: 450 },
   fileManager: { width: 700, height: 550 },
   logViewer: { width: 650, height: 500 },
-  dataRecoveryTool: { width: 600, height: 500 },
 };
 
 // Boot sequence timing

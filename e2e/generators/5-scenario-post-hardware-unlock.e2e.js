@@ -4,19 +4,17 @@ import * as fs from 'fs';
 
 /**
  * SCENARIO GENERATOR: post-hardware-unlock
- * 
+ *
  * This test generates a scenario fixture for the state after hardware unlock
  * with the new tools purchased and network adapter installed:
  * - Tutorial Part 1 & 2 completed
  * - "Better" message read
- * - Hardware unlock message received and read
+ * - Hardware unlock message received and read (unlocks network-adapters AND investigation-tooling)
  * - Credits >= 3000 (enough to buy everything)
  * - Network adapter purchased and installed (via reboot)
- * - Log Viewer app purchased and installed
- * - Data Recovery Tool app purchased and installed
- * 
- * Use Case: Testing features that require the new hardware/software
- * to already be available (e.g., using Log Viewer, Data Recovery Tool)
+ * - Log Viewer purchased and installed
+ *
+ * Use Case: Testing features that require the new hardware and investigation tools
  */
 
 test.setTimeout(300000);
@@ -139,12 +137,38 @@ test.describe('Scenario Generator', () => {
         await page.waitForTimeout(300);
         console.log('✅ Network adapter purchased');
 
+        // ========================================
+        // STEP 5: Purchase Log Viewer Software
+        // ========================================
+        console.log('Purchasing Log Viewer software...');
+
+        // Switch to Software section
+        await page.click('.section-btn:has-text("Software")');
+        await page.waitForTimeout(300);
+
+        // Find and purchase Log Viewer
+        const logViewerItem = page.locator('.portal-item:has-text("Log Viewer")');
+        await expect(logViewerItem).toBeVisible({ timeout: 5000 });
+        await logViewerItem.locator('button:has-text("Purchase")').click();
+
+        // Confirm purchase in modal
+        const confirmBtnLV = page.locator('.modal-content .confirm-btn');
+        await expect(confirmBtnLV).toBeVisible({ timeout: 2000 });
+        await confirmBtnLV.click();
+        await page.waitForTimeout(300);
+
+        // Wait for download to complete (speed up time)
+        await setSpeed(100);
+        await page.waitForTimeout(500);
+        await setSpeed(1);
+        console.log('✅ Log Viewer purchased and installed');
+
         // Close Portal
         await page.locator('.window:has(.portal) .close-btn, .window:has-text("OSNet Portal") .window-controls button:has-text("×")').first().click();
         await page.waitForTimeout(200);
 
         // ========================================
-        // STEP 5: Reboot to install hardware
+        // STEP 6: Reboot to install hardware
         // ========================================
         console.log('Rebooting to install hardware...');
         await page.click('.topbar-button:has-text("⏻")');
@@ -162,69 +186,7 @@ test.describe('Scenario Generator', () => {
         await page.waitForFunction(() => window.gameContext?.setSpecificTimeSpeed, { timeout: 10000 });
 
         // ========================================
-        // STEP 6: Purchase Log Viewer
-        // ========================================
-        console.log('Purchasing Log Viewer...');
-        await page.click('text=☰');
-        await page.click('.app-launcher-menu >> text=OSNet Portal');
-        await expect(page.locator('.portal')).toBeVisible();
-
-        // Go to Software section
-        await page.click('.section-btn:has-text("Software")');
-        await page.waitForTimeout(300);
-
-        // Find and purchase Log Viewer
-        const logViewer = page.locator('.portal-item:has-text("Log Viewer"):not(.installed)').first();
-        await expect(logViewer).toBeVisible({ timeout: 5000 });
-        await logViewer.locator('button:has-text("Purchase")').click();
-
-        // Confirm in modal
-        const confirmBtnLV = page.locator('.modal-content .confirm-btn');
-        await expect(confirmBtnLV).toBeVisible({ timeout: 2000 });
-        await confirmBtnLV.click();
-        await page.waitForTimeout(300);
-        console.log('✅ Log Viewer purchased');
-
-        // ========================================
-        // STEP 7: Purchase Data Recovery Tool
-        // ========================================
-        console.log('Purchasing Data Recovery Tool...');
-
-        // Find and purchase Data Recovery Tool
-        const dataRecovery = page.locator('.portal-item:has-text("Data Recovery"):not(.installed)').first();
-        await expect(dataRecovery).toBeVisible({ timeout: 5000 });
-        await dataRecovery.locator('button:has-text("Purchase")').click();
-
-        // Confirm in modal
-        const confirmBtnDRT = page.locator('.modal-content .confirm-btn');
-        await expect(confirmBtnDRT).toBeVisible({ timeout: 2000 });
-        await confirmBtnDRT.click();
-        await page.waitForTimeout(300);
-        console.log('✅ Data Recovery Tool purchased');
-
-        // Close Portal
-        await page.locator('.window:has(.portal) .close-btn, .window:has-text("OSNet Portal") .window-controls button:has-text("×")').first().click();
-        await page.waitForTimeout(200);
-
-        // ========================================
-        // STEP 8: Verify apps are available
-        // ========================================
-        console.log('Verifying apps are available in launcher...');
-        await page.click('text=☰');
-
-        const logViewerInMenu = page.locator('.app-launcher-menu >> text=Log Viewer');
-        const dataRecoveryInMenu = page.locator('.app-launcher-menu >> text=Data Recovery');
-
-        await expect(logViewerInMenu).toBeVisible({ timeout: 3000 });
-        await expect(dataRecoveryInMenu).toBeVisible({ timeout: 3000 });
-        console.log('✅ Both apps available in launcher');
-
-        // Close menu
-        await page.keyboard.press('Escape');
-        await page.waitForTimeout(200);
-
-        // ========================================
-        // STEP 9: Save the game state
+        // STEP 7: Save the game state
         // ========================================
         console.log('Saving game state...');
 
@@ -245,7 +207,7 @@ test.describe('Scenario Generator', () => {
         console.log('✅ Game saved');
 
         // ========================================
-        // STEP 10: Extract and write fixture
+        // STEP 8: Extract and write fixture
         // ========================================
         const saveData = await page.evaluate(() => {
             const saves = JSON.parse(localStorage.getItem('sourcenet_saves') || '{}');

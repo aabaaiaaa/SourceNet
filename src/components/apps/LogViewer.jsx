@@ -1,263 +1,333 @@
-import { useState, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useGame } from '../../contexts/useGame';
+import triggerEventBus from '../../core/triggerEventBus';
 import networkRegistry from '../../systems/NetworkRegistry';
+import { scheduleGameTimeCallback, clearGameTimeCallback } from '../../core/gameTimeScheduler';
 import './LogViewer.css';
 
-/**
- * LogViewer - View operation logs for discovered devices
- * 
- * Displays file operation logs (copy, paste, delete) stored per-device
- * in NetworkRegistry. Helps players track their activities and detect
- * potential traces of their work.
- */
+const LOG_FETCH_DELAY_MS = 3000; // 3 seconds in game time
+
 const LogViewer = () => {
-    const game = useGame();
-    const { lastScanResults, discoveredDevices } = game;
-    const [selectedDevice, setSelectedDevice] = useState('');
-    const [logs, setLogs] = useState([]);
-    const [logType, setLogType] = useState('all'); // 'all', 'file', 'remote', 'process'
-    const [scope, setScope] = useState('device'); // 'device' | 'network'
-    const [selectedNetwork, setSelectedNetwork] = useState('');
+  const { activeConnections, timeSpeed } = useGame();
 
-    // Get all discovered devices from scan results and stored discovered devices
-    const getDiscoveredDevices = () => {
-        const devices = [];
-        const seen = new Set();
+  // Tab state
+  const [activeTab, setActiveTab] = useState('network'); // 'network' | 'device'
 
-        // Add devices from last scan results
-        if (lastScanResults?.machines) {
-            lastScanResults.machines.forEach(machine => {
-                if (!seen.has(machine.ip)) {
-                    seen.add(machine.ip);
-                    devices.push({
-                        ip: machine.ip,
-                        hostname: machine.name || machine.hostname,
-                        networkId: lastScanResults.network,
-                    });
-                }
-            });
+  // Network logs state
+  const [selectedNetworkId, setSelectedNetworkId] = useState('');
+  const [networkLogs, setNetworkLogs] = useState(null);
+  const [networkLoading, setNetworkLoading] = useState(false);
+  const networkLoadingTimerRef = useRef(null);
+
+  // Device logs state
+  const [selectedDevice, setSelectedDevice] = useState(null); // { ip, hostname, networkId, networkName }
+  const [deviceLogs, setDeviceLogs] = useState(null);
+  const [deviceLoading, setDeviceLoading] = useState(false);
+  const deviceLoadingTimerRef = useRef(null);
+
+  // Shared state
+  const [disconnectionMessage, setDisconnectionMessage] = useState(null);
+
+  // Build list of all devices from all connected networks
+  const allDevices = useMemo(() => {
+    if (!activeConnections || activeConnections.length === 0) return [];
+
+    return activeConnections.flatMap(conn => {
+      const devices = networkRegistry.getNetworkDevices(conn.networkId);
+      return devices.map(device => ({
+        ip: device.ip,
+        hostname: device.hostname,
+        networkId: conn.networkId,
+        networkName: conn.networkName,
+        displayLabel: `${device.hostname} (${conn.networkName})`,
+      }));
+    });
+  }, [activeConnections]);
+
+  // Clean up timers on unmount
+  useEffect(() => {
+    return () => {
+      if (networkLoadingTimerRef.current) {
+        clearGameTimeCallback(networkLoadingTimerRef.current);
+      }
+      if (deviceLoadingTimerRef.current) {
+        clearGameTimeCallback(deviceLoadingTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Handle network disconnection
+  useEffect(() => {
+    const handleDisconnect = ({ networkId, networkName }) => {
+      // Clear network tab selection if this network was selected
+      if (selectedNetworkId === networkId) {
+        if (networkLoadingTimerRef.current) {
+          clearGameTimeCallback(networkLoadingTimerRef.current);
+          networkLoadingTimerRef.current = null;
         }
+        setSelectedNetworkId('');
+        setNetworkLogs(null);
+        setNetworkLoading(false);
+        setDisconnectionMessage(`Disconnected from ${networkName}`);
+      }
 
-        // Add devices from stored discovered devices
-        if (discoveredDevices) {
-            Object.values(discoveredDevices).flat().forEach(device => {
-                if (!seen.has(device.ip)) {
-                    seen.add(device.ip);
-                    devices.push({
-                        ip: device.ip,
-                        hostname: device.hostname || device.name,
-                        networkId: device.networkId,
-                    });
-                }
-            });
+      // Clear device tab selection if device was on this network
+      if (selectedDevice?.networkId === networkId) {
+        if (deviceLoadingTimerRef.current) {
+          clearGameTimeCallback(deviceLoadingTimerRef.current);
+          deviceLoadingTimerRef.current = null;
         }
-
-        return devices;
+        setSelectedDevice(null);
+        setDeviceLogs(null);
+        setDeviceLoading(false);
+        setDisconnectionMessage(`Disconnected from ${networkName}`);
+      }
     };
 
-    const availableDevices = getDiscoveredDevices();
+    triggerEventBus.on('networkDisconnected', handleDisconnect);
+    return () => triggerEventBus.off('networkDisconnected', handleDisconnect);
+  }, [selectedNetworkId, selectedDevice]);
 
-    const getDiscoveredNetworks = () => {
-        const networks = new Set();
-        if (lastScanResults?.network) networks.add(lastScanResults.network);
-        if (discoveredDevices) {
-            Object.keys(discoveredDevices).forEach(nid => networks.add(nid));
-        }
-        return Array.from(networks);
-    };
+  // Auto-clear disconnection message after 3 seconds
+  useEffect(() => {
+    if (disconnectionMessage) {
+      const timer = setTimeout(() => setDisconnectionMessage(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [disconnectionMessage]);
 
-    const availableNetworks = getDiscoveredNetworks();
+  // Fetch network logs
+  const handleFetchNetworkLogs = () => {
+    if (!selectedNetworkId || networkLoading) return;
 
-    // Load logs for selected device
-    useEffect(() => {
-        // Clear logs when scope changes
-        setLogs([]);
+    setNetworkLoading(true);
+    setNetworkLogs(null);
 
-        if (scope === 'device') {
-            if (!selectedDevice) return;
-            const device = networkRegistry.getDevice(selectedDevice);
-            if (device) setLogs(device.logs || []);
-            else setLogs([]);
-        } else {
-            if (!selectedNetwork) return;
-            const networkLogs = networkRegistry.getNetworkLogs(selectedNetwork);
-            setLogs(networkLogs || []);
-        }
-    }, [selectedDevice, selectedNetwork, scope]);
+    networkLoadingTimerRef.current = scheduleGameTimeCallback(() => {
+      const logs = networkRegistry.getNetworkLogs(selectedNetworkId);
+      setNetworkLogs(logs);
+      setNetworkLoading(false);
+      networkLoadingTimerRef.current = null;
+    }, LOG_FETCH_DELAY_MS, timeSpeed);
+  };
 
-    // (auto-refresh removed)
+  // Fetch device logs
+  const handleFetchDeviceLogs = () => {
+    if (!selectedDevice || deviceLoading) return;
 
-    // Filter logs by explicit log.type
-    const filteredLogs = logType === 'all'
-        ? logs
-        : logs.filter(log => log.type === logType);
+    setDeviceLoading(true);
+    setDeviceLogs(null);
 
-    // Format timestamp for display
-    const formatTimestamp = (timestamp) => {
-        if (!timestamp) return 'Unknown';
-        const date = new Date(timestamp);
-        return date.toLocaleString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-        });
-    };
+    deviceLoadingTimerRef.current = scheduleGameTimeCallback(() => {
+      const logs = networkRegistry.getDeviceLogs(selectedDevice.ip);
+      setDeviceLogs(logs);
+      setDeviceLoading(false);
+      deviceLoadingTimerRef.current = null;
+    }, LOG_FETCH_DELAY_MS, timeSpeed);
+  };
 
-    return (
-        <div className="log-viewer">
-            <div className="log-viewer-header">
-                <h2>📋 Log Viewer</h2>
-                <p className="log-viewer-subtitle">View file operation logs for discovered devices</p>
-            </div>
+  // Handle device dropdown selection
+  const handleDeviceSelect = (e) => {
+    const ip = e.target.value;
+    if (!ip) {
+      setSelectedDevice(null);
+      setDeviceLogs(null);
+      return;
+    }
+    const device = allDevices.find(d => d.ip === ip);
+    setSelectedDevice(device || null);
+    setDeviceLogs(null);
+  };
 
-            <div className="log-viewer-controls">
-                <div className="device-selector">
-                    <label>Scope:</label>
-                    <select value={scope} onChange={(e) => { setScope(e.target.value); setSelectedDevice(''); setSelectedNetwork(''); }}>
-                        <option value="device">Device</option>
-                        <option value="network">Network</option>
-                    </select>
+  // Format log timestamp
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleString('en-GB', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+  };
 
-                    {scope === 'device' ? (
-                        <>
-                            <label>Device:</label>
-                            <select
-                                value={selectedDevice}
-                                onChange={(e) => setSelectedDevice(e.target.value)}
-                            >
-                                <option value="">-- Select a device --</option>
-                                {availableDevices.map(device => (
-                                    <option key={device.ip} value={device.ip}>
-                                        {device.hostname} ({device.ip})
-                                    </option>
-                                ))}
-                            </select>
-                        </>
-                    ) : (
-                        <>
-                            <label>Network:</label>
-                            <select
-                                value={selectedNetwork}
-                                onChange={(e) => setSelectedNetwork(e.target.value)}
-                            >
-                                <option value="">-- Select a network --</option>
-                                {availableNetworks.map(nid => (
-                                    <option key={nid} value={nid}>{nid}</option>
-                                ))}
-                            </select>
-                        </>
-                    )}
-                </div>
+  // Format file size
+  const formatSize = (bytes) => {
+    if (!bytes) return '';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
 
-                <div className="filter-controls">
-                    <label>Log Type:</label>
-                    <select
-                        value={logType}
-                        onChange={(e) => setLogType(e.target.value)}
-                    >
-                        <option value="all">All Types</option>
-                        <option value="file">File Operations</option>
-                        <option value="remote">Remote Connections</option>
-                        <option value="process">Processes</option>
-                    </select>
-                </div>
+  const hasConnectedNetworks = activeConnections && activeConnections.length > 0;
 
-                {/* auto-refresh removed */}
-            </div>
+  return (
+    <div className="log-viewer">
+      <div className="log-viewer-header">
+        <h2>Log Viewer</h2>
+        <p className="log-viewer-subtitle">View network and device activity logs</p>
+      </div>
 
-            <div className="log-viewer-content">
-                {scope === 'device' ? (
-                    !selectedDevice ? (
-                        <div className="log-viewer-empty">
-                            <p>Select a device to view its operation logs.</p>
-                            <p className="hint">Tip: Scan networks with Network Scanner to discover devices.</p>
-                        </div>
-                    ) : filteredLogs.length === 0 ? (
-                        <div className="log-viewer-empty">
-                            <p>No logs of the selected type found for this device.</p>
-                            <p className="hint">Device activity such as file operations, remote connections, and processes will appear here.</p>
-                        </div>
-                    ) : (
-                        <div className="log-entries">
-                            <div className="log-header-row">
-                                <span className="log-col-time">Time</span>
-                                <span className="log-col-action">Action</span>
-                                <span className="log-col-file">File</span>
-                                <span className="log-col-details">Details</span>
-                            </div>
-                            {filteredLogs.slice().reverse().map((log, index) => (
-                                <div
-                                    key={log.id || index}
-                                    className="log-entry"
-                                >
-                                    <span className="log-col-time">{formatTimestamp(log.timestamp)}</span>
-                                    <span className="log-col-action">
-                                        {log.action?.toUpperCase()}
-                                    </span>
-                                    <span className="log-col-file" title={log.filePath || log.fileName}>
-                                        {log.fileName || log.filePath || 'Unknown'}
-                                    </span>
-                                    <span className="log-col-details">
-                                        {log.sizeBytes ? `${(log.sizeBytes / 1024).toFixed(1)} KB` : ''}
-                                        {log.sourceIp && log.sourceIp !== selectedDevice ? ` from ${log.sourceIp}` : ''}
-                                        {log.destIp && log.destIp !== selectedDevice ? ` to ${log.destIp}` : ''}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    )
-                ) : (
-                    !selectedNetwork ? (
-                        <div className="log-viewer-empty">
-                            <p>Select a network to view its connection logs.</p>
-                            <p className="hint">Tip: Use Network Scanner to discover and connect to networks.</p>
-                        </div>
-                    ) : filteredLogs.length === 0 ? (
-                        <div className="log-viewer-empty">
-                            <p>No logs of the selected type found for this network.</p>
-                            <p className="hint">Network connection events will appear here.</p>
-                        </div>
-                    ) : (
-                        <div className="log-entries">
-                            <div className="log-header-row">
-                                <span className="log-col-time">Time</span>
-                                <span className="log-col-action">Action</span>
-                                <span className="log-col-file">Note</span>
-                                <span className="log-col-details">Details</span>
-                            </div>
-                            {filteredLogs.slice().reverse().map((log, index) => (
-                                <div
-                                    key={log.id || index}
-                                    className="log-entry"
-                                >
-                                    <span className="log-col-time">{formatTimestamp(log.timestamp)}</span>
-                                    <span className="log-col-action">
-                                        {log.action?.toUpperCase()}
-                                    </span>
-                                    <span className="log-col-file" title={log.note || ''}>
-                                        {log.note || ''}
-                                    </span>
-                                    <span className="log-col-details">
-                                        {log.sourceIp ? `from ${log.sourceIp}` : ''}
-                                        {log.destIp ? ` to ${log.destIp}` : ''}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    )
-                )}
-            </div>
-
-            <div className="log-viewer-footer">
-                <span className="log-count">
-                    {filteredLogs.length} log entries
-                </span>
-                {/* auto-refresh indicator removed */}
-            </div>
+      {disconnectionMessage && (
+        <div className="log-viewer-disconnection-message">
+          {disconnectionMessage}
         </div>
-    );
+      )}
+
+      <div className="log-viewer-tabs">
+        <button
+          className={`log-viewer-tab ${activeTab === 'network' ? 'active' : ''}`}
+          onClick={() => setActiveTab('network')}
+        >
+          Network Logs
+        </button>
+        <button
+          className={`log-viewer-tab ${activeTab === 'device' ? 'active' : ''}`}
+          onClick={() => setActiveTab('device')}
+        >
+          Device Logs
+        </button>
+      </div>
+
+      {/* Network Logs Tab */}
+      {activeTab === 'network' && (
+        <div className="log-viewer-tab-content">
+          {!hasConnectedNetworks ? (
+            <div className="log-viewer-no-networks">
+              No networks connected. Use the VPN Client to connect to a network first.
+            </div>
+          ) : (
+            <>
+              <div className="log-controls">
+                <label>
+                  Network:
+                  <select
+                    value={selectedNetworkId}
+                    onChange={(e) => {
+                      setSelectedNetworkId(e.target.value);
+                      setNetworkLogs(null);
+                      setDisconnectionMessage(null);
+                    }}
+                    disabled={networkLoading}
+                  >
+                    <option value="">Select network</option>
+                    {activeConnections.map((conn) => (
+                      <option key={conn.networkId} value={conn.networkId}>
+                        {conn.networkName || conn.networkId}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <button
+                  className="log-viewer-btn"
+                  onClick={handleFetchNetworkLogs}
+                  disabled={!selectedNetworkId || networkLoading}
+                >
+                  {networkLoading ? 'Fetching...' : 'View Logs'}
+                </button>
+              </div>
+
+              {networkLoading && (
+                <div className="log-viewer-loading">
+                  Fetching network logs...
+                </div>
+              )}
+
+              {networkLogs !== null && !networkLoading && (
+                <div className="log-display">
+                  {networkLogs.length === 0 ? (
+                    <div className="log-empty">No logs found for this network.</div>
+                  ) : (
+                    networkLogs.map((log) => (
+                      <div key={log.id} className="log-entry">
+                        <span className="log-timestamp">[{formatTimestamp(log.timestamp)}]</span>
+                        {log.user && <span className="log-user">{log.user}</span>}
+                        <span className="log-action">{log.action?.toUpperCase()}</span>
+                        {log.note && <span className="log-note">- {log.note}</span>}
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Device Logs Tab */}
+      {activeTab === 'device' && (
+        <div className="log-viewer-tab-content">
+          {!hasConnectedNetworks ? (
+            <div className="log-viewer-no-networks">
+              No networks connected. Use the VPN Client to connect to a network first.
+            </div>
+          ) : allDevices.length === 0 ? (
+            <div className="log-viewer-no-networks">
+              No devices found. Use the Network Scanner to discover devices first.
+            </div>
+          ) : (
+            <>
+              <div className="log-controls">
+                <label>
+                  Device:
+                  <select
+                    value={selectedDevice?.ip || ''}
+                    onChange={handleDeviceSelect}
+                    disabled={deviceLoading}
+                  >
+                    <option value="">Select device</option>
+                    {allDevices.map((device) => (
+                      <option key={device.ip} value={device.ip}>
+                        {device.displayLabel}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <button
+                  className="log-viewer-btn"
+                  onClick={handleFetchDeviceLogs}
+                  disabled={!selectedDevice || deviceLoading}
+                >
+                  {deviceLoading ? 'Fetching...' : 'View Logs'}
+                </button>
+              </div>
+
+              {deviceLoading && (
+                <div className="log-viewer-loading">
+                  Fetching device logs...
+                </div>
+              )}
+
+              {deviceLogs !== null && !deviceLoading && (
+                <div className="log-display">
+                  {deviceLogs.length === 0 ? (
+                    <div className="log-empty">No logs found for this device.</div>
+                  ) : (
+                    deviceLogs.map((log) => (
+                      <div key={log.id} className="log-entry">
+                        <span className="log-timestamp">[{formatTimestamp(log.timestamp)}]</span>
+                        {log.user && <span className="log-user">{log.user}</span>}
+                        <span className="log-action">{log.action?.toUpperCase()}</span>
+                        {log.fileName && (
+                          <span className="log-file">
+                            - {log.fileName}
+                            {log.sizeBytes && ` (${formatSize(log.sizeBytes)})`}
+                          </span>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default LogViewer;

@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
     isFeatureUnlocked,
     isHardwareCategoryUnlocked,
-    isSoftwareUnlocked,
     getUnlockHint,
     getHardwareCategoryUnlockId,
 } from './UnlockSystem';
@@ -10,16 +9,14 @@ import {
 describe('UnlockSystem', () => {
     describe('isFeatureUnlocked', () => {
         it('should return true when feature is in unlocked list', () => {
-            const unlockedFeatures = ['network-adapters', 'advanced-tools'];
+            const unlockedFeatures = ['network-adapters'];
 
             expect(isFeatureUnlocked(unlockedFeatures, 'network-adapters')).toBe(true);
-            expect(isFeatureUnlocked(unlockedFeatures, 'advanced-tools')).toBe(true);
         });
 
         it('should return false when feature is not in unlocked list', () => {
             const unlockedFeatures = ['network-adapters'];
 
-            expect(isFeatureUnlocked(unlockedFeatures, 'advanced-tools')).toBe(false);
             expect(isFeatureUnlocked(unlockedFeatures, 'cpu-upgrades')).toBe(false);
         });
 
@@ -42,7 +39,7 @@ describe('UnlockSystem', () => {
         });
 
         it('should return false for categories without unlock mapping', () => {
-            const unlockedFeatures = ['network-adapters', 'advanced-tools'];
+            const unlockedFeatures = ['network-adapters'];
 
             // These categories have unlock requirements but aren't unlocked yet
             expect(isHardwareCategoryUnlocked(unlockedFeatures, 'processors')).toBe(false);
@@ -59,57 +56,6 @@ describe('UnlockSystem', () => {
         });
     });
 
-    describe('isSoftwareUnlocked', () => {
-        it('should return true for software with no unlock requirement', () => {
-            const unlockedFeatures = [];
-            const softwareItem = { id: 'mission-board', name: 'Mission Board' };
-
-            expect(isSoftwareUnlocked(unlockedFeatures, softwareItem)).toBe(true);
-        });
-
-        it('should return true when software unlock requirement is met', () => {
-            const unlockedFeatures = ['advanced-tools'];
-            const softwareItem = {
-                id: 'log-viewer',
-                name: 'Log Viewer',
-                requiresUnlock: 'advanced-tools',
-            };
-
-            expect(isSoftwareUnlocked(unlockedFeatures, softwareItem)).toBe(true);
-        });
-
-        it('should return false when software unlock requirement is not met', () => {
-            const unlockedFeatures = [];
-            const softwareItem = {
-                id: 'log-viewer',
-                name: 'Log Viewer',
-                requiresUnlock: 'advanced-tools',
-            };
-
-            expect(isSoftwareUnlocked(unlockedFeatures, softwareItem)).toBe(false);
-        });
-
-        it('should support unlockRequirement property name', () => {
-            const unlockedFeatures = ['advanced-tools'];
-            const softwareItem = {
-                id: 'data-recovery',
-                unlockRequirement: 'advanced-tools',
-            };
-
-            expect(isSoftwareUnlocked(unlockedFeatures, softwareItem)).toBe(true);
-        });
-
-        it('should return true when either unlock property is satisfied', () => {
-            const unlockedFeatures = ['advanced-tools'];
-
-            // requiresUnlock property
-            expect(isSoftwareUnlocked(unlockedFeatures, { requiresUnlock: 'advanced-tools' })).toBe(true);
-
-            // unlockRequirement property
-            expect(isSoftwareUnlocked(unlockedFeatures, { unlockRequirement: 'advanced-tools' })).toBe(true);
-        });
-    });
-
     describe('getUnlockHint', () => {
         it('should return hint for network category', () => {
             const hint = getUnlockHint('network');
@@ -117,13 +63,6 @@ describe('UnlockSystem', () => {
             expect(hint).toBeTruthy();
             expect(typeof hint).toBe('string');
             expect(hint.length).toBeGreaterThan(0);
-        });
-
-        it('should return hint for advanced-tools', () => {
-            const hint = getUnlockHint('advanced-tools');
-
-            expect(hint).toBeTruthy();
-            expect(typeof hint).toBe('string');
         });
 
         it('should return default hint for unknown unlock IDs', () => {

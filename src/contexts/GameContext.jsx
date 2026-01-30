@@ -166,7 +166,7 @@ export const GameProvider = ({ children }) => {
   // ===== HARDWARE & SOFTWARE UNLOCK SYSTEM =====
   const [betterMessageRead, setBetterMessageRead] = useState(false); // Track if tutorial "better" message was read
   const [hardwareUnlockMessageSent, setHardwareUnlockMessageSent] = useState(false); // Track if hardware unlock message was sent
-  const [unlockedFeatures, setUnlockedFeatures] = useState([]); // Array of unlocked feature IDs (e.g., 'network-adapters', 'advanced-tools')
+  const [unlockedFeatures, setUnlockedFeatures] = useState([]); // Array of unlocked feature IDs (e.g., 'network-adapters')
   const [pendingHardwareUpgrades, setPendingHardwareUpgrades] = useState({}); // Hardware queued for install on reboot
   const [lastAppliedHardware, setLastAppliedHardware] = useState([]); // Hardware applied in last reboot (for boot message)
 
@@ -925,20 +925,20 @@ export const GameProvider = ({ children }) => {
   }, [currentTime, messages, playNotificationChime]);
 
   // Hardware unlock trigger: when "New Opportunities" message is read
-  // Unlocks network-adapters and advanced-tools features
+  // Unlocks network-adapters (hardware) and investigation-tooling (software) features
   useEffect(() => {
     const handleMessageRead = (data) => {
       // Check if this is the hardware unlock message being read
       // The message has subject 'New Opportunities - Hardware & Tools'
       const message = messages.find(m => m.id === data.messageId);
       if (message && message.subject && message.subject.includes('New Opportunities')) {
-        console.log('🔓 "New Opportunities" message read! Unlocking hardware features...');
+        console.log('🔓 "New Opportunities" message read! Unlocking hardware and investigation features...');
 
         // Unlock features
         setUnlockedFeatures(prev => {
           const newFeatures = new Set(prev);
           newFeatures.add('network-adapters');
-          newFeatures.add('advanced-tools');
+          newFeatures.add('investigation-tooling');
           return Array.from(newFeatures);
         });
       }

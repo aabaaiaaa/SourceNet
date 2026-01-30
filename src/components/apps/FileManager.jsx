@@ -9,7 +9,7 @@ import './FileManager.css';
 
 const FileManager = () => {
   const game = useGame();
-  const { currentTime, software } = game;
+  const { currentTime, software, username } = game;
   const setFileManagerConnections = game.setFileManagerConnections || (() => { });
   const setLastFileOperation = game.setLastFileOperation || (() => { });
   const registerBandwidthOperation = game.registerBandwidthOperation || (() => ({ operationId: null, estimatedTimeMs: 2000 }));
@@ -67,6 +67,7 @@ const FileManager = () => {
         // type is required: file operations
         type: 'file',
         action: entry.action?.toLowerCase() || 'unknown',
+        user: username,
         fileName: entry.fileName,
         filePath: entry.filePath,
         sizeBytes: entry.sizeBytes,

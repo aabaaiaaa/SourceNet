@@ -6,7 +6,6 @@ import { test, expect } from '@playwright/test';
  * Tests the complete hardware unlock flow:
  * 1. Credits trigger manager message when reaching 1000+
  * 2. Network adapter hardware availability before/after reading message
- * 3. Log Viewer and Data Recovery Tool availability before/after reading message
  * 4. Hardware purchase and reboot installation mechanism
  */
 
@@ -80,17 +79,6 @@ const openPortalHardware = async (page) => {
     await page.click('.app-launcher-menu >> text=OSNet Portal');
     await expect(page.locator('.portal')).toBeVisible();
     await page.click('button:has-text("Hardware")');
-    await page.waitForTimeout(300);
-};
-
-/**
- * Open Portal app and go to Software tab
- */
-const openPortalSoftware = async (page) => {
-    await page.hover('text=☰');
-    await page.click('.app-launcher-menu >> text=OSNet Portal');
-    await expect(page.locator('.portal')).toBeVisible();
-    await page.click('button:has-text("Software")');
     await page.waitForTimeout(300);
 };
 
@@ -266,50 +254,40 @@ test.describe('Hardware Unlock - Network Adapter Availability', () => {
     });
 });
 
-test.describe('Hardware Unlock - Log Viewer & Data Recovery Tool Availability', () => {
-    test('should NOT show Log Viewer and Data Recovery Tool before reading hardware unlock message', async ({ page }) => {
+test.describe('Log Viewer Software Unlock', () => {
+    test('should show Log Viewer as locked before reading hardware unlock message', async ({ page }) => {
         // Load post-tutorial scenario
         await loadScenario(page, 'post-tutorial-part-2');
 
-        // Set credits high (but don't trigger unlock since "better" not read)
-        await setCreditsViaDebug(page, 2000);
+        // Open Portal and go to Software tab
+        await page.hover('text=☰');
+        await page.click('.app-launcher-menu >> text=OSNet Portal');
+        await expect(page.locator('.portal')).toBeVisible();
 
-        // Open Portal Software tab
-        await openPortalSoftware(page);
+        // Should be on Software tab by default
+        await page.waitForTimeout(300);
 
-        // Log Viewer and Data Recovery Tool should NOT be visible or should be locked
-        const logViewer = page.locator('.portal-item:has-text("Log Viewer")');
-        const dataRecovery = page.locator('.portal-item:has-text("Data Recovery")');
+        // Look for Log Viewer in the software list
+        const logViewerItem = page.locator('.portal-item:has-text("Log Viewer")');
+        await expect(logViewerItem).toBeVisible({ timeout: 5000 });
 
-        // They should either not exist or show locked state
-        const logViewerVisible = await logViewer.count() > 0;
-        const dataRecoveryVisible = await dataRecovery.count() > 0;
+        // Check for locked indicator on Log Viewer
+        const lockedIcon = logViewerItem.locator('text=/locked/i');
+        await expect(lockedIcon).toBeVisible();
 
-        if (logViewerVisible) {
-            // If visible, should have locked indicator
-            const logViewerLocked = await logViewer.locator('text=/locked|unavailable/i').count() > 0;
-            expect(logViewerLocked).toBe(true);
-        }
-
-        if (dataRecoveryVisible) {
-            const dataRecoveryLocked = await dataRecovery.locator('text=/locked|unavailable/i').count() > 0;
-            expect(dataRecoveryLocked).toBe(true);
-        }
-
-        console.log('✅ Log Viewer and Data Recovery Tool not available before unlock');
+        console.log('✅ Log Viewer is locked before reading hardware unlock message');
     });
 
-    test('should show Log Viewer and Data Recovery Tool as purchasable after reading hardware unlock message', async ({ page }) => {
+    test('should show Log Viewer as available after reading hardware unlock message', async ({ page }) => {
         // Load post-tutorial scenario
         await loadScenario(page, 'post-tutorial-part-2');
 
-        // Read the "Better" message
+        // Trigger unlock: read "better", set credits, read hardware message
         await openMail(page);
         await page.locator('.message-item:has-text("Better")').click();
         await page.waitForTimeout(300);
         await closeMail(page);
 
-        // Set credits and wait for unlock message
         await setCreditsViaDebug(page, 2000);
         await setSpeed(page, 100);
         await page.waitForTimeout(500);
@@ -324,20 +302,73 @@ test.describe('Hardware Unlock - Log Viewer & Data Recovery Tool Availability', 
         await closeMail(page);
 
         // Open Portal Software tab
-        await openPortalSoftware(page);
+        await page.hover('text=☰');
+        await page.click('.app-launcher-menu >> text=OSNet Portal');
+        await expect(page.locator('.portal')).toBeVisible();
+        await page.waitForTimeout(300);
 
-        // Log Viewer and Data Recovery Tool should be purchasable
-        const logViewer = page.locator('.portal-item:has-text("Log Viewer")');
-        const dataRecovery = page.locator('.portal-item:has-text("Data Recovery")');
+        // Look for Log Viewer in the software list
+        const logViewerItem = page.locator('.portal-item:has-text("Log Viewer")');
+        await expect(logViewerItem).toBeVisible({ timeout: 5000 });
 
-        await expect(logViewer).toBeVisible({ timeout: 5000 });
-        await expect(dataRecovery).toBeVisible({ timeout: 5000 });
+        // Should NOT have locked indicator anymore, and should have purchase button
+        const purchaseBtn = logViewerItem.locator('button:has-text("Purchase")');
+        await expect(purchaseBtn).toBeVisible({ timeout: 5000 });
 
-        // Should have purchase buttons
-        await expect(logViewer.locator('button:has-text("Purchase")')).toBeVisible();
-        await expect(dataRecovery.locator('button:has-text("Purchase")')).toBeVisible();
+        console.log('✅ Log Viewer is available after reading hardware unlock message');
+    });
 
-        console.log('✅ Log Viewer and Data Recovery Tool are purchasable after unlock');
+    test('should be able to purchase and install Log Viewer after unlock', async ({ page }) => {
+        // Load post-tutorial scenario
+        await loadScenario(page, 'post-tutorial-part-2');
+
+        // Trigger unlock
+        await openMail(page);
+        await page.locator('.message-item:has-text("Better")').click();
+        await page.waitForTimeout(300);
+        await closeMail(page);
+
+        await setCreditsViaDebug(page, 2000);
+        await setSpeed(page, 100);
+        await page.waitForTimeout(500);
+        await setSpeed(page, 1);
+
+        await openMail(page);
+        const hardwareMessage = page.locator('.message-item:has-text("Hardware"), .message-item:has-text("Opportunities")');
+        await expect(hardwareMessage).toBeVisible({ timeout: 5000 });
+        await hardwareMessage.click();
+        await page.waitForTimeout(300);
+        await closeMail(page);
+
+        // Open Portal
+        await page.hover('text=☰');
+        await page.click('.app-launcher-menu >> text=OSNet Portal');
+        await expect(page.locator('.portal')).toBeVisible();
+        await page.waitForTimeout(300);
+
+        // Purchase Log Viewer
+        const logViewerItem = page.locator('.portal-item:has-text("Log Viewer")');
+        await logViewerItem.locator('button:has-text("Purchase")').click();
+
+        // Confirm purchase
+        const confirmBtn = page.locator('.modal-content .confirm-btn');
+        await expect(confirmBtn).toBeVisible({ timeout: 3000 });
+        await confirmBtn.click();
+
+        // Wait for download to complete (speed up time)
+        await setSpeed(page, 100);
+        await page.waitForTimeout(1000);
+        await setSpeed(page, 1);
+
+        // Close Portal
+        await closePortal(page);
+
+        // Check if Log Viewer is in app launcher
+        await page.hover('text=☰');
+        const logViewerApp = page.locator('.app-launcher-menu >> text=Log Viewer');
+        await expect(logViewerApp).toBeVisible({ timeout: 5000 });
+
+        console.log('✅ Log Viewer can be purchased and appears in app launcher');
     });
 });
 

@@ -5,7 +5,7 @@ import networkRegistry from '../../systems/NetworkRegistry';
 import './VPNClient.css';
 
 const VPNClient = () => {
-  const { activeConnections, setActiveConnections, currentTime, pendingVpnConnection, clearPendingVpnConnection } = useGame();
+  const { activeConnections, setActiveConnections, currentTime, pendingVpnConnection, clearPendingVpnConnection, username } = useGame();
   const [selectedNetwork, setSelectedNetwork] = useState('');
   const [connecting, setConnecting] = useState(false);
   const [connectionStartTime, setConnectionStartTime] = useState(null);
@@ -39,6 +39,7 @@ const VPNClient = () => {
               networkRegistry.addNetworkLog(conn.networkId, {
                 type: 'remote',
                 action: 'disconnect',
+                user: username,
                 note: `Disconnected (access revoked)${reason ? `: ${reason}` : ''}`,
                 timestamp: new Date().toISOString(),
               });
@@ -111,6 +112,7 @@ const VPNClient = () => {
             networkRegistry.addNetworkLog(newConnection.networkId, {
               type: 'remote',
               action: 'connect',
+              user: username,
               note: `Connected via VPN`,
               timestamp: currentTime.toISOString(),
             });
@@ -183,6 +185,7 @@ const VPNClient = () => {
         networkRegistry.addNetworkLog(networkId, {
           type: 'remote',
           action: 'disconnect',
+          user: username,
           note: 'Player disconnected via VPN',
           timestamp: currentTime ? currentTime.toISOString() : new Date().toISOString(),
         });

@@ -6,7 +6,6 @@
  * 
  * Unlock IDs:
  * - 'network-adapters': Network adapter hardware (unlocked with hardware-unlock message)
- * - 'advanced-tools': Log Viewer and Data Recovery Tool apps (unlocked with hardware-unlock message)
  * 
  * Future unlocks (planned):
  * - 'cpu-upgrades': CPU hardware
@@ -75,12 +74,12 @@ export const isSoftwareUnlocked = (unlockedFeatures, softwareItem) => {
 export const getUnlockHint = (unlockId) => {
     const hintMap = {
         'network-adapters': 'Complete more missions to unlock hardware upgrades',
-        'advanced-tools': 'Complete more missions to unlock advanced tools',
         'cpu-upgrades': 'Hardware upgrades not yet available',
         'memory-upgrades': 'Hardware upgrades not yet available',
         'storage-upgrades': 'Hardware upgrades not yet available',
         'motherboard-upgrades': 'Hardware upgrades not yet available',
         'power-upgrades': 'Hardware upgrades not yet available',
+        'investigation-tooling': 'Complete more missions to unlock investigation tools',
     };
 
     return hintMap[unlockId] || 'Not yet available';

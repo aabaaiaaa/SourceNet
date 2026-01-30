@@ -160,7 +160,7 @@ describe('Hardware Unlock Story Trigger Integration', () => {
             expect(unlockedFeatures).toHaveLength(0);
         });
 
-        it('should unlock network-adapters and advanced-tools when "New Opportunities" message is read', () => {
+        it('should unlock network-adapters when "New Opportunities" message is read', () => {
             let unlockedFeatures = [];
             const messages = [
                 { id: 'msg-12345-abc123', subject: 'New Opportunities - Hardware & Tools' }
@@ -169,7 +169,9 @@ describe('Hardware Unlock Story Trigger Integration', () => {
             const handleMessageRead = (data) => {
                 const message = messages.find(m => m.id === data.messageId);
                 if (message && message.subject && message.subject.includes('New Opportunities')) {
-                    unlockedFeatures = [...unlockedFeatures, 'network-adapters', 'advanced-tools'];
+                    const newFeatures = new Set(unlockedFeatures);
+                    newFeatures.add('network-adapters');
+                    unlockedFeatures = Array.from(newFeatures);
                 }
             };
 
@@ -179,7 +181,55 @@ describe('Hardware Unlock Story Trigger Integration', () => {
             triggerEventBus.emit('messageRead', { messageId: 'msg-12345-abc123' });
 
             expect(unlockedFeatures).toContain('network-adapters');
-            expect(unlockedFeatures).toContain('advanced-tools');
+        });
+
+        it('should unlock investigation-tooling when "New Opportunities" message is read', () => {
+            let unlockedFeatures = [];
+            const messages = [
+                { id: 'msg-12345-abc123', subject: 'New Opportunities - Hardware & Tools' }
+            ];
+
+            const handleMessageRead = (data) => {
+                const message = messages.find(m => m.id === data.messageId);
+                if (message && message.subject && message.subject.includes('New Opportunities')) {
+                    const newFeatures = new Set(unlockedFeatures);
+                    newFeatures.add('network-adapters');
+                    newFeatures.add('investigation-tooling');
+                    unlockedFeatures = Array.from(newFeatures);
+                }
+            };
+
+            triggerEventBus.on('messageRead', handleMessageRead);
+
+            // Read the "New Opportunities" message
+            triggerEventBus.emit('messageRead', { messageId: 'msg-12345-abc123' });
+
+            expect(unlockedFeatures).toContain('investigation-tooling');
+        });
+
+        it('should unlock both network-adapters and investigation-tooling together', () => {
+            let unlockedFeatures = [];
+            const messages = [
+                { id: 'msg-12345-abc123', subject: 'New Opportunities - Hardware & Tools' }
+            ];
+
+            const handleMessageRead = (data) => {
+                const message = messages.find(m => m.id === data.messageId);
+                if (message && message.subject && message.subject.includes('New Opportunities')) {
+                    const newFeatures = new Set(unlockedFeatures);
+                    newFeatures.add('network-adapters');
+                    newFeatures.add('investigation-tooling');
+                    unlockedFeatures = Array.from(newFeatures);
+                }
+            };
+
+            triggerEventBus.on('messageRead', handleMessageRead);
+
+            // Read the "New Opportunities" message
+            triggerEventBus.emit('messageRead', { messageId: 'msg-12345-abc123' });
+
+            expect(unlockedFeatures).toContain('network-adapters');
+            expect(unlockedFeatures).toContain('investigation-tooling');
             expect(unlockedFeatures).toHaveLength(2);
         });
 
@@ -192,7 +242,7 @@ describe('Hardware Unlock Story Trigger Integration', () => {
             const handleMessageRead = (data) => {
                 const message = messages.find(m => m.id === data.messageId);
                 if (message && message.subject && message.subject.includes('New Opportunities')) {
-                    unlockedFeatures = [...unlockedFeatures, 'network-adapters', 'advanced-tools'];
+                    unlockedFeatures = [...unlockedFeatures, 'network-adapters'];
                 }
             };
 
