@@ -36,8 +36,8 @@ export const getNetworkBandwidth = (activeConnections = []) => {
  * @returns {number} Network adapter speed in Mbps
  */
 export const getAdapterSpeed = (hardware) => {
-  if (hardware && hardware.networkAdapter) {
-    return hardware.networkAdapter.speed || 250;
+  if (hardware && hardware.network) {
+    return hardware.network.speed || 250;
   }
   return 250; // Default starting adapter
 };

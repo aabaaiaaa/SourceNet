@@ -415,6 +415,9 @@ const TopBar = () => {
                 <div className="notification-preview bandwidth-preview">
                   <div className="preview-header">Bandwidth</div>
                   <div className="preview-item">
+                    Adapter: {bandwidthInfo.adapterSpeed} Mbps
+                  </div>
+                  <div className="preview-item">
                     Max: {(bandwidthInfo.maxBandwidth / 8).toFixed(1)} MB/s
                   </div>
                   <div className="preview-item">

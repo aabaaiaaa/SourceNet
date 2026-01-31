@@ -19,7 +19,7 @@ describe('NetworkBandwidthSystem', () => {
   describe('getAdapterSpeed', () => {
     it('should return adapter speed from hardware', () => {
       const hardware = {
-        networkAdapter: { speed: 250 },
+        network: { speed: 250 },
       };
       expect(getAdapterSpeed(hardware)).toBe(250);
     });

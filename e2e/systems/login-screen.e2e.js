@@ -1,6 +1,51 @@
 import { test, expect } from '@playwright/test';
 import { STARTING_SOFTWARE } from '../../src/constants/gameConstants.js';
 
+test.describe('Login Screen - Load Latest without skipBoot', () => {
+  test('should load game using Load Latest button (without skipBoot)', async ({ page }) => {
+    // Create save in localStorage
+    await page.goto('/?skipBoot=true');
+    await page.evaluate((startingSoftware) => {
+      const saveData = {
+        username: 'test_user',
+        playerMailId: 'SNET-TST-USER-XXX',
+        currentTime: '2020-03-25T10:30:00.000Z',
+        hardware: {
+          cpu: { id: 'cpu-1ghz', name: '1GHz CPU' },
+          memory: [{ id: 'ram-2gb', name: '2GB RAM' }],
+          storage: [{ id: 'ssd-90gb', name: '90GB SSD' }],
+          motherboard: { id: 'board-basic', name: 'Basic Board' },
+          powerSupply: { id: 'psu-300w', wattage: 300 },
+          network: { id: 'net-250mb', speed: 250 },
+        },
+        software: startingSoftware,
+        bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance: 500 }],
+        messages: [],
+        managerName: 'TestManager',
+        windows: [],
+        savedAt: new Date().toISOString(),
+        saveName: 'test_user',
+      };
+      localStorage.setItem('sourcenet_saves', JSON.stringify({ test_user: [saveData] }));
+    }, STARTING_SOFTWARE);
+
+    // Navigate WITHOUT skipBoot to test real flow
+    await page.goto('/');
+
+    // Wait for login screen (initial boot detects saves)
+    await expect(page.locator('.game-login-screen')).toBeVisible({ timeout: 10000 });
+
+    // Click Load Latest
+    await page.locator('.save-item:has-text("test_user")').locator('button:has-text("Load Latest")').click();
+
+    // Should NOT stay on login screen - should proceed to boot sequence
+    await expect(page.locator('.game-login-screen')).not.toBeVisible({ timeout: 5000 });
+
+    // Eventually reach desktop after boot
+    await expect(page.locator('.desktop')).toBeVisible({ timeout: 30000 });
+  });
+});
+
 test.describe('E2E Test 2: Game Login Screen (Multiple Saves)', () => {
   test('should handle multiple saves and new game creation', async ({ page }) => {
     // Use skipBoot to speed up the test

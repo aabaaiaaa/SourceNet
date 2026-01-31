@@ -181,7 +181,7 @@ const Portal = () => {
                 <div className="item-specs">
                   {item.specs && <div>Specs: {item.specs}</div>}
                   {item.capacity && <div>Capacity: {item.capacity}</div>}
-                  {item.speed && <div>Speed: {item.speed}Mb/s</div>}
+                  {item.speed && <div>Speed: {item.speed} Mbps</div>}
                   {item.wattage && <div>Wattage: {item.wattage}W</div>}
                   {item.cpuSlots && (
                     <div>

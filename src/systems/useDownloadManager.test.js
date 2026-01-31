@@ -41,7 +41,7 @@ describe('useDownloadManager', () => {
     it('should update progress over time', () => {
       const setDownloadQueue = vi.fn();
       const onDownloadComplete = vi.fn();
-      const hardware = { networkAdapter: { speed: 250 } };
+      const hardware = { network: { speed: 250 } };
       const currentTime = new Date('2020-03-25T09:00:00');
 
       const downloadItem = createDownloadItem('test-software', 'Test Software', 25, currentTime);
@@ -70,7 +70,7 @@ describe('useDownloadManager', () => {
     it('should not update when disabled', () => {
       const setDownloadQueue = vi.fn();
       const onDownloadComplete = vi.fn();
-      const hardware = { networkAdapter: { speed: 250 } };
+      const hardware = { network: { speed: 250 } };
       const currentTime = new Date('2020-03-25T09:00:00');
 
       const downloadItem = createDownloadItem('test-software', 'Test Software', 25, currentTime);
@@ -98,7 +98,7 @@ describe('useDownloadManager', () => {
     it('should not update when queue is empty', () => {
       const setDownloadQueue = vi.fn();
       const onDownloadComplete = vi.fn();
-      const hardware = { networkAdapter: { speed: 250 } };
+      const hardware = { network: { speed: 250 } };
       const currentTime = new Date('2020-03-25T09:00:00');
 
       renderHook(() =>
@@ -127,7 +127,7 @@ describe('useDownloadManager', () => {
         return fn;
       });
       const onDownloadComplete = vi.fn();
-      const hardware = { networkAdapter: { speed: 250 } };
+      const hardware = { network: { speed: 250 } };
       const currentTime = new Date('2020-03-25T09:00:00');
 
       triggerEventBus.on('softwareInstalled', (data) => {
@@ -165,7 +165,7 @@ describe('useDownloadManager', () => {
 
     it('should call onDownloadComplete callback', () => {
       const onDownloadComplete = vi.fn();
-      const hardware = { networkAdapter: { speed: 250 } };
+      const hardware = { network: { speed: 250 } };
       const currentTime = new Date('2020-03-25T09:00:00');
 
       // Track state updates
@@ -215,7 +215,7 @@ describe('useDownloadManager', () => {
     it('should share bandwidth across multiple downloads', () => {
       const setDownloadQueue = vi.fn();
       const onDownloadComplete = vi.fn();
-      const hardware = { networkAdapter: { speed: 250 } };
+      const hardware = { network: { speed: 250 } };
       const currentTime = new Date('2020-03-25T09:00:00');
 
       // Create two downloads

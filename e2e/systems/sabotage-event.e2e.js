@@ -38,9 +38,10 @@ test.describe('E2E: Tutorial Sabotage Event', () => {
         // ========================================
         await page.click('text=☰');
         await page.click('.app-launcher-menu >> text=VPN Client');
-        await page.locator('.network-dropdown').selectOption('clienta-corporate');
-        await page.click('button:has-text("Connect")');
-        await expect(page.locator('button:has-text("Disconnect")')).toBeVisible({ timeout: 5000 });
+        const vpnClient = page.locator('.window:has(.vpn-client)');
+        await vpnClient.locator('.network-dropdown').selectOption('clienta-corporate');
+        await vpnClient.locator('button:has-text("Connect")').click();
+        await expect(vpnClient.locator('button:has-text("Disconnect")')).toBeVisible({ timeout: 5000 });
         console.log('✅ Connected to ClientA network');
 
         // ========================================

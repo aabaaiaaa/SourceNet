@@ -38,6 +38,7 @@ const appliedScenarios = new Set();
 const GameRoot = () => {
   const gameContext = useGame();
   const { gamePhase, setGamePhase } = gameContext;
+  const hasInitialized = useRef(false);
 
   // Expose game context globally for e2e testing
   useEffect(() => {
@@ -100,10 +101,13 @@ const GameRoot = () => {
     }
 
     // Only check for saves on initial mount (gamePhase starts as 'boot')
-    // Don't re-check if user explicitly chose "New Game"
-    const savesExist = hasSaves();
-    if (savesExist) {
-      setGamePhase('login');
+    // Don't re-check if user loaded a save (which sets phase to 'boot' then triggers this effect)
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      const savesExist = hasSaves();
+      if (savesExist) {
+        setGamePhase('login');
+      }
     }
 
   }, [gamePhase]); // Only run when gamePhase changes

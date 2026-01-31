@@ -105,6 +105,13 @@ const VPNClient = () => {
         };
 
         setActiveConnections((prev) => {
+          // Prevent duplicate connections (race condition guard)
+          const alreadyExists = (prev || []).some(conn => conn.networkId === newConnection.networkId);
+          if (alreadyExists) {
+            console.warn(`VPNClient: Already connected to ${newConnection.networkId}, skipping duplicate`);
+            return prev;
+          }
+
           const updated = [...(prev || []), newConnection];
 
           // Log network-level connection

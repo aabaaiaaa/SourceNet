@@ -54,7 +54,7 @@ describe('useBandwidthTracker', () => {
 
   describe('hook initialization', () => {
     it('should initialize with no active operations', () => {
-      const hardware = { networkAdapter: { speed: 250 } };
+      const hardware = { network: { speed: 250 } };
 
       const { result } = renderHook(() => useBandwidthTracker(hardware));
 
@@ -64,7 +64,7 @@ describe('useBandwidthTracker', () => {
     });
 
     it('should calculate max bandwidth from hardware', () => {
-      const hardware = { networkAdapter: { speed: 250 } };
+      const hardware = { network: { speed: 250 } };
 
       const { result } = renderHook(() => useBandwidthTracker(hardware));
 
@@ -74,7 +74,7 @@ describe('useBandwidthTracker', () => {
     });
 
     it('should have 0% bandwidth usage when no operations', () => {
-      const hardware = { networkAdapter: { speed: 250 } };
+      const hardware = { network: { speed: 250 } };
 
       const { result } = renderHook(() => useBandwidthTracker(hardware));
 
@@ -84,7 +84,7 @@ describe('useBandwidthTracker', () => {
 
   describe('registerOperation', () => {
     it('should register a new operation', () => {
-      const hardware = { networkAdapter: { speed: 250 } };
+      const hardware = { network: { speed: 250 } };
 
       const { result } = renderHook(() => useBandwidthTracker(hardware));
 
@@ -98,7 +98,7 @@ describe('useBandwidthTracker', () => {
     });
 
     it('should return operation info with estimated time', () => {
-      const hardware = { networkAdapter: { speed: 250 } };
+      const hardware = { network: { speed: 250 } };
 
       const { result } = renderHook(() => useBandwidthTracker(hardware));
 
@@ -114,7 +114,7 @@ describe('useBandwidthTracker', () => {
     });
 
     it('should update bandwidth usage when operation registered', () => {
-      const hardware = { networkAdapter: { speed: 250 } };
+      const hardware = { network: { speed: 250 } };
 
       const { result } = renderHook(() => useBandwidthTracker(hardware));
 
@@ -126,7 +126,7 @@ describe('useBandwidthTracker', () => {
     });
 
     it('should share bandwidth across multiple operations', () => {
-      const hardware = { networkAdapter: { speed: 250 } };
+      const hardware = { network: { speed: 250 } };
 
       const { result } = renderHook(() => useBandwidthTracker(hardware));
 
@@ -144,7 +144,7 @@ describe('useBandwidthTracker', () => {
 
   describe('completeOperation', () => {
     it('should mark operation as complete', () => {
-      const hardware = { networkAdapter: { speed: 250 } };
+      const hardware = { network: { speed: 250 } };
 
       const { result } = renderHook(() => useBandwidthTracker(hardware));
 
@@ -166,7 +166,7 @@ describe('useBandwidthTracker', () => {
     });
 
     it('should remove operation after delay', () => {
-      const hardware = { networkAdapter: { speed: 250 } };
+      const hardware = { network: { speed: 250 } };
 
       const { result } = renderHook(() => useBandwidthTracker(hardware));
 
@@ -190,7 +190,7 @@ describe('useBandwidthTracker', () => {
 
   describe('updateOperationProgress', () => {
     it('should update operation progress', () => {
-      const hardware = { networkAdapter: { speed: 250 } };
+      const hardware = { network: { speed: 250 } };
 
       const { result } = renderHook(() => useBandwidthTracker(hardware));
 
@@ -212,7 +212,7 @@ describe('useBandwidthTracker', () => {
 
   describe('cancelOperation', () => {
     it('should remove operation from list', () => {
-      const hardware = { networkAdapter: { speed: 250 } };
+      const hardware = { network: { speed: 250 } };
 
       const { result } = renderHook(() => useBandwidthTracker(hardware));
 
@@ -233,7 +233,7 @@ describe('useBandwidthTracker', () => {
 
   describe('getEstimatedTime', () => {
     it('should return estimated time for a hypothetical operation', () => {
-      const hardware = { networkAdapter: { speed: 250 } };
+      const hardware = { network: { speed: 250 } };
 
       const { result } = renderHook(() => useBandwidthTracker(hardware));
 
@@ -244,7 +244,7 @@ describe('useBandwidthTracker', () => {
 
     it('should account for existing operations', () => {
       // Use a slower adapter to make timing differences more apparent
-      const hardware = { networkAdapter: { speed: 16 } };
+      const hardware = { network: { speed: 16 } };
 
       const { result } = renderHook(() => useBandwidthTracker(hardware));
 
@@ -266,7 +266,7 @@ describe('useBandwidthTracker', () => {
 
   describe('bandwidth calculations', () => {
     it('should cap bandwidth usage at 100%', () => {
-      const hardware = { networkAdapter: { speed: 250 } };
+      const hardware = { network: { speed: 250 } };
 
       const { result } = renderHook(() => useBandwidthTracker(hardware));
 
@@ -284,7 +284,7 @@ describe('useBandwidthTracker', () => {
 
     it('should use minimum of adapter and connection speed', () => {
       // With slow adapter
-      const slowHardware = { networkAdapter: { speed: 50 } };
+      const slowHardware = { network: { speed: 50 } };
 
       const { result } = renderHook(() => useBandwidthTracker(slowHardware));
 

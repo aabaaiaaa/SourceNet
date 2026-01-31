@@ -208,5 +208,47 @@ describe('TopBar Component', () => {
       const bandwidthIcon = document.querySelector('.bandwidth-icon');
       expect(bandwidthIcon).toBeInTheDocument();
     });
+
+    it('should not show speed element when inactive', () => {
+      renderWithProvider(<TopBar />);
+
+      const speedElement = document.querySelector('.bandwidth-speed');
+      expect(speedElement).not.toBeInTheDocument();
+    });
+
+    it('should show preview with Adapter, Max, Current, Active Operations on hover', async () => {
+      renderWithProvider(<TopBar />);
+
+      const bandwidthIndicator = document.querySelector('.topbar-bandwidth');
+      fireEvent.mouseEnter(bandwidthIndicator);
+
+      await waitFor(() => {
+        // Preview header
+        expect(screen.getByText('Bandwidth')).toBeInTheDocument();
+        // All preview items
+        expect(screen.getByText(/Adapter:/)).toBeInTheDocument();
+        expect(screen.getByText(/Max:/)).toBeInTheDocument();
+        expect(screen.getByText(/Current:/)).toBeInTheDocument();
+        expect(screen.getByText(/Active Operations:/)).toBeInTheDocument();
+      });
+    });
+
+    it('should show adapter speed in Mbps format', async () => {
+      renderWithProvider(<TopBar />);
+
+      const bandwidthIndicator = document.querySelector('.topbar-bandwidth');
+      fireEvent.mouseEnter(bandwidthIndicator);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Adapter: 250 Mbps/)).toBeInTheDocument();
+      });
+    });
+
+    it('should not show usage bar when idle', () => {
+      renderWithProvider(<TopBar />);
+
+      const usageBar = document.querySelector('.bandwidth-usage-bar');
+      expect(usageBar).not.toBeInTheDocument();
+    });
   });
 });

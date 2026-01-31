@@ -745,6 +745,7 @@ export const GameProvider = ({ children }) => {
       : (adapterSpeed <= connectionSpeed ? 'adapter' : 'network');
 
     return {
+      adapterSpeed,
       maxBandwidth,
       activeOperations: activeCount,
       bandwidthPerOperation,
