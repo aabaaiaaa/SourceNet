@@ -5,6 +5,9 @@ import {
   checkFileSystemConnectionObjective,
   checkFileOperationObjective,
   checkNarEntryAddedObjective,
+  checkInvestigationObjective,
+  checkFileRecoveryObjective,
+  checkSecureDeleteObjective,
   checkMissionObjectives,
   getFileOperationProgress,
   getFileOperationDetails,
@@ -709,6 +712,173 @@ describe('ObjectiveTracker', () => {
       const result = checkObjectiveImpossible(objective, mockRegistry, missionNetworks);
       expect(result).not.toBe(null);
       expect(result.missingFiles).toEqual(['config.cfg']);
+    });
+  });
+
+  describe('checkInvestigationObjective', () => {
+    it('should return true when connected to correct file system', () => {
+      const objective = {
+        type: 'investigation',
+        correctFileSystemId: 'fs-target-vol1',
+      };
+      const connections = [
+        { fileSystemId: 'fs-target-vol1', ip: '10.1.1.10' },
+      ];
+
+      expect(checkInvestigationObjective(objective, connections)).toBe(true);
+    });
+
+    it('should return false when connected to wrong file system', () => {
+      const objective = {
+        type: 'investigation',
+        correctFileSystemId: 'fs-target-vol1',
+      };
+      const connections = [
+        { fileSystemId: 'fs-target-vol2', ip: '10.1.1.10' },
+      ];
+
+      expect(checkInvestigationObjective(objective, connections)).toBe(false);
+    });
+
+    it('should return false when not connected to any file system', () => {
+      const objective = {
+        type: 'investigation',
+        correctFileSystemId: 'fs-target-vol1',
+      };
+      const connections = [];
+
+      expect(checkInvestigationObjective(objective, connections)).toBe(false);
+    });
+
+    it('should return false when correctFileSystemId is missing', () => {
+      const objective = {
+        type: 'investigation',
+      };
+      const connections = [
+        { fileSystemId: 'fs-target-vol1', ip: '10.1.1.10' },
+      ];
+
+      expect(checkInvestigationObjective(objective, connections)).toBe(false);
+    });
+  });
+
+  describe('checkFileRecoveryObjective', () => {
+    it('should return true when all target files are recovered', () => {
+      const objective = {
+        type: 'fileRecovery',
+        targetFiles: ['file1.txt', 'file2.txt'],
+      };
+      const recoveryOperations = {
+        restored: new Set(['file1.txt', 'file2.txt', 'other.txt']),
+      };
+
+      expect(checkFileRecoveryObjective(objective, recoveryOperations)).toBe(true);
+    });
+
+    it('should return false when some target files not recovered', () => {
+      const objective = {
+        type: 'fileRecovery',
+        targetFiles: ['file1.txt', 'file2.txt', 'file3.txt'],
+      };
+      const recoveryOperations = {
+        restored: new Set(['file1.txt', 'file2.txt']),
+      };
+
+      expect(checkFileRecoveryObjective(objective, recoveryOperations)).toBe(false);
+    });
+
+    it('should return false when no files recovered', () => {
+      const objective = {
+        type: 'fileRecovery',
+        targetFiles: ['file1.txt', 'file2.txt'],
+      };
+      const recoveryOperations = {
+        restored: new Set(),
+      };
+
+      expect(checkFileRecoveryObjective(objective, recoveryOperations)).toBe(false);
+    });
+
+    it('should return false when targetFiles is empty', () => {
+      const objective = {
+        type: 'fileRecovery',
+        targetFiles: [],
+      };
+      const recoveryOperations = {
+        restored: new Set(['file1.txt']),
+      };
+
+      expect(checkFileRecoveryObjective(objective, recoveryOperations)).toBe(false);
+    });
+
+    it('should handle missing recoveryOperations', () => {
+      const objective = {
+        type: 'fileRecovery',
+        targetFiles: ['file1.txt'],
+      };
+
+      expect(checkFileRecoveryObjective(objective, {})).toBe(false);
+      expect(checkFileRecoveryObjective(objective, undefined)).toBe(false);
+    });
+  });
+
+  describe('checkSecureDeleteObjective', () => {
+    it('should return true when all target files are securely deleted', () => {
+      const objective = {
+        type: 'secureDelete',
+        targetFiles: ['malware.exe', 'trojan.dll'],
+      };
+      const recoveryOperations = {
+        secureDeleted: new Set(['malware.exe', 'trojan.dll', 'other.txt']),
+      };
+
+      expect(checkSecureDeleteObjective(objective, recoveryOperations)).toBe(true);
+    });
+
+    it('should return false when some target files not deleted', () => {
+      const objective = {
+        type: 'secureDelete',
+        targetFiles: ['malware.exe', 'trojan.dll', 'backdoor.bin'],
+      };
+      const recoveryOperations = {
+        secureDeleted: new Set(['malware.exe', 'trojan.dll']),
+      };
+
+      expect(checkSecureDeleteObjective(objective, recoveryOperations)).toBe(false);
+    });
+
+    it('should return false when no files deleted', () => {
+      const objective = {
+        type: 'secureDelete',
+        targetFiles: ['malware.exe'],
+      };
+      const recoveryOperations = {
+        secureDeleted: new Set(),
+      };
+
+      expect(checkSecureDeleteObjective(objective, recoveryOperations)).toBe(false);
+    });
+
+    it('should return false when targetFiles is empty', () => {
+      const objective = {
+        type: 'secureDelete',
+        targetFiles: [],
+      };
+      const recoveryOperations = {
+        secureDeleted: new Set(['malware.exe']),
+      };
+
+      expect(checkSecureDeleteObjective(objective, recoveryOperations)).toBe(false);
+    });
+
+    it('should handle missing recoveryOperations', () => {
+      const objective = {
+        type: 'secureDelete',
+        targetFiles: ['malware.exe'],
+      };
+
+      expect(checkSecureDeleteObjective(objective, {})).toBe(false);
+      expect(checkSecureDeleteObjective(objective, undefined)).toBe(false);
     });
   });
 });

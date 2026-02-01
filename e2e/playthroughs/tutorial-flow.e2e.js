@@ -956,7 +956,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await setSpeed(100);
         await page.waitForTimeout(200); // Verification delay (3s game time)
         await setSpeed(1);
-        await page.waitForTimeout(100);
+        await page.waitForTimeout(500);
 
         // Verify mission completed
         const missionStatus = await page.evaluate(() => {

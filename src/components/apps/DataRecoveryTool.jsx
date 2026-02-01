@@ -255,6 +255,12 @@ const DataRecoveryTool = () => {
             next.delete(fileName);
             return next;
           });
+          // Emit event for objective tracking
+          triggerEventBus.emit('fileRecoveryComplete', {
+            operation: 'restore',
+            fileName,
+            fileSystemId: selectedFileSystem,
+          });
         } else if (operation === 'secure-delete') {
           networkRegistry.secureDeleteFiles(selectedFileSystem, [fileName]);
           // Remove from scanned deleted files if it was there
@@ -262,6 +268,12 @@ const DataRecoveryTool = () => {
             const next = new Set(prev);
             next.delete(fileName);
             return next;
+          });
+          // Emit event for objective tracking
+          triggerEventBus.emit('secureDeleteComplete', {
+            operation: 'secure-delete',
+            fileName,
+            fileSystemId: selectedFileSystem,
           });
         }
 

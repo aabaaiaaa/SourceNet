@@ -31,11 +31,15 @@ import {
     generateTransferMission,
     generateRestoreFromBackupMission,
     generateRepairAndBackupMission,
+    generateInvestigationRepairMission,
+    generateInvestigationRecoveryMission,
+    generateSecureDeletionMission,
     generateMissionArc,
     generateNetworkInfrastructure,
     calculateTimeLimit,
     calculatePayout,
     resetMissionIdCounter,
+    getMissionTypesForPlayer,
 } from './MissionGenerator';
 
 import { getClientById } from '../data/clientRegistry';
@@ -642,6 +646,267 @@ describe('MissionGenerator', () => {
     });
 
     // ========================================================================
+    // generateInvestigationRepairMission
+    // ========================================================================
+
+    describe('generateInvestigationRepairMission', () => {
+        const mockClient = createMockClient();
+
+        it('should generate a valid investigation repair mission', () => {
+            const mission = generateInvestigationRepairMission(mockClient);
+
+            expect(mission.missionId).toMatch(/^investigation-repair-/);
+            expect(mission.missionType).toBe('investigation-repair');
+            expect(mission.difficulty).toBe('Hard');
+            expect(mission.isInvestigation).toBe(true);
+        });
+
+        it('should create multiple file systems (2-4 volumes)', () => {
+            const mission = generateInvestigationRepairMission(mockClient);
+
+            expect(mission.volumeCount).toBeGreaterThanOrEqual(2);
+            expect(mission.volumeCount).toBeLessThanOrEqual(4);
+            expect(mission.networks[0].fileSystems.length).toBe(mission.volumeCount);
+        });
+
+        it('should have exactly one target file system with corrupted files', () => {
+            const mission = generateInvestigationRepairMission(mockClient);
+
+            const targetFs = mission.networks[0].fileSystems.find(
+                fs => fs.id === mission.targetFileSystemId
+            );
+            expect(targetFs).toBeDefined();
+
+            const corruptedFiles = targetFs.files.filter(f => f.corrupted && f.targetFile);
+            expect(corruptedFiles.length).toBeGreaterThan(0);
+        });
+
+        it('should include investigation objective', () => {
+            const mission = generateInvestigationRepairMission(mockClient);
+
+            const investigationObj = mission.objectives.find(o => o.type === 'investigation');
+            expect(investigationObj).toBeDefined();
+            expect(investigationObj.correctFileSystemId).toBe(mission.targetFileSystemId);
+        });
+
+        it('should require log-viewer software', () => {
+            const mission = generateInvestigationRepairMission(mockClient);
+
+            expect(mission.requirements.software).toContain('log-viewer');
+        });
+
+        it('should generate activity logs for target file system', () => {
+            const mission = generateInvestigationRepairMission(mockClient);
+
+            const targetFs = mission.networks[0].fileSystems.find(
+                fs => fs.id === mission.targetFileSystemId
+            );
+            expect(targetFs.logs).toBeDefined();
+            expect(targetFs.logs.length).toBeGreaterThan(0);
+        });
+
+        it('should respect hasTimed option', () => {
+            const timedMission = generateInvestigationRepairMission(mockClient, { hasTimed: true });
+            const untimedMission = generateInvestigationRepairMission(mockClient, { hasTimed: false });
+
+            expect(timedMission.timeLimitMinutes).toBeGreaterThan(0);
+            expect(untimedMission.timeLimitMinutes).toBeNull();
+        });
+    });
+
+    // ========================================================================
+    // generateInvestigationRecoveryMission
+    // ========================================================================
+
+    describe('generateInvestigationRecoveryMission', () => {
+        const mockClient = createMockClient();
+
+        it('should generate a valid investigation recovery mission', () => {
+            const mission = generateInvestigationRecoveryMission(mockClient);
+
+            expect(mission.missionId).toMatch(/^investigation-recovery-/);
+            expect(mission.missionType).toBe('investigation-recovery');
+            expect(mission.difficulty).toBe('Hard');
+            expect(mission.isInvestigation).toBe(true);
+        });
+
+        it('should create multiple file systems (2-4 volumes)', () => {
+            const mission = generateInvestigationRecoveryMission(mockClient);
+
+            expect(mission.volumeCount).toBeGreaterThanOrEqual(2);
+            expect(mission.volumeCount).toBeLessThanOrEqual(4);
+        });
+
+        it('should have target file system with deleted files', () => {
+            const mission = generateInvestigationRecoveryMission(mockClient);
+
+            const targetFs = mission.networks[0].fileSystems.find(
+                fs => fs.id === mission.targetFileSystemId
+            );
+            expect(targetFs).toBeDefined();
+
+            const deletedFiles = targetFs.files.filter(f => f.status === 'deleted');
+            expect(deletedFiles.length).toBeGreaterThan(0);
+        });
+
+        it('should include fileRecovery objective', () => {
+            const mission = generateInvestigationRecoveryMission(mockClient);
+
+            const recoveryObj = mission.objectives.find(o => o.type === 'fileRecovery');
+            expect(recoveryObj).toBeDefined();
+            expect(recoveryObj.targetFiles).toBeDefined();
+            expect(recoveryObj.targetFiles.length).toBeGreaterThan(0);
+        });
+
+        it('should require data-recovery-tool software', () => {
+            const mission = generateInvestigationRecoveryMission(mockClient);
+
+            expect(mission.requirements.software).toContain('data-recovery-tool');
+            expect(mission.requirements.software).toContain('log-viewer');
+        });
+
+        it('should generate deletion activity logs', () => {
+            const mission = generateInvestigationRecoveryMission(mockClient);
+
+            const targetFs = mission.networks[0].fileSystems.find(
+                fs => fs.id === mission.targetFileSystemId
+            );
+            expect(targetFs.logs).toBeDefined();
+            expect(targetFs.logs.length).toBeGreaterThan(0);
+        });
+    });
+
+    // ========================================================================
+    // generateSecureDeletionMission
+    // ========================================================================
+
+    describe('generateSecureDeletionMission', () => {
+        const mockClient = createMockClient();
+
+        it('should generate a valid secure deletion mission', () => {
+            const mission = generateSecureDeletionMission(mockClient);
+
+            expect(mission.missionId).toMatch(/^secure-deletion-/);
+            expect(mission.missionType).toBe('secure-deletion');
+            expect(mission.difficulty).toBe('Medium');
+        });
+
+        it('should have one of three variants', () => {
+            const variants = new Set();
+            // Generate multiple to hit all variants
+            for (let i = 0; i < 20; i++) {
+                const mission = generateSecureDeletionMission(mockClient);
+                variants.add(mission.secureDeleteVariant);
+            }
+
+            // Should have at least 2 different variants in 20 generations
+            expect(variants.size).toBeGreaterThanOrEqual(1);
+            // All should be valid variants
+            variants.forEach(v => {
+                expect(['compliance', 'piracy', 'malware']).toContain(v);
+            });
+        });
+
+        it('should include secureDelete objective', () => {
+            const mission = generateSecureDeletionMission(mockClient);
+
+            const secureDeleteObj = mission.objectives.find(o => o.type === 'secureDelete');
+            expect(secureDeleteObj).toBeDefined();
+            expect(secureDeleteObj.targetFiles).toBeDefined();
+            expect(secureDeleteObj.targetFiles.length).toBeGreaterThanOrEqual(2);
+        });
+
+        it('should generate flagged files for deletion', () => {
+            const mission = generateSecureDeletionMission(mockClient);
+
+            const allFiles = mission.networks[0].fileSystems[0].files;
+            const flaggedFiles = allFiles.filter(f => f.flagged);
+            expect(flaggedFiles.length).toBeGreaterThanOrEqual(2);
+        });
+
+        it('should require data-recovery-tool for secure deletion', () => {
+            const mission = generateSecureDeletionMission(mockClient);
+
+            expect(mission.requirements.software).toContain('data-recovery-tool');
+            expect(mission.requirements.software).toContain('log-viewer');
+        });
+
+        it('should generate appropriate activity logs', () => {
+            const mission = generateSecureDeletionMission(mockClient);
+
+            const logs = mission.networks[0].fileSystems[0].logs;
+            expect(logs).toBeDefined();
+            expect(logs.length).toBeGreaterThan(0);
+        });
+
+        it('should respect hasTimed option', () => {
+            const timedMission = generateSecureDeletionMission(mockClient, { hasTimed: true });
+            const untimedMission = generateSecureDeletionMission(mockClient, { hasTimed: false });
+
+            expect(timedMission.timeLimitMinutes).toBeGreaterThan(0);
+            expect(untimedMission.timeLimitMinutes).toBeNull();
+        });
+    });
+
+    // ========================================================================
+    // getMissionTypesForPlayer
+    // ========================================================================
+
+    describe('getMissionTypesForPlayer', () => {
+        it('should return base mission types when no software unlocked', () => {
+            const types = getMissionTypesForPlayer([]);
+
+            expect(types).toContain('repair');
+            expect(types).toContain('backup');
+            expect(types).toContain('transfer');
+            expect(types).toContain('restore');
+            expect(types).toContain('repair-backup');
+            expect(types).not.toContain('investigation-repair');
+            expect(types).not.toContain('investigation-recovery');
+            expect(types).not.toContain('secure-deletion');
+        });
+
+        it('should unlock investigation missions when investigation-tooling is unlocked', () => {
+            const types = getMissionTypesForPlayer(['investigation-tooling']);
+
+            expect(types).toContain('investigation-repair');
+            expect(types).toContain('investigation-recovery');
+            expect(types).toContain('secure-deletion');
+        });
+
+        it('should unlock investigation missions when log-viewer AND data-recovery-tool are unlocked', () => {
+            const types = getMissionTypesForPlayer(['log-viewer', 'data-recovery-tool']);
+
+            expect(types).toContain('investigation-repair');
+            expect(types).toContain('investigation-recovery');
+            expect(types).toContain('secure-deletion');
+        });
+
+        it('should not unlock investigation missions with only log-viewer', () => {
+            const types = getMissionTypesForPlayer(['log-viewer']);
+
+            expect(types).not.toContain('investigation-repair');
+            expect(types).not.toContain('investigation-recovery');
+            expect(types).not.toContain('secure-deletion');
+        });
+
+        it('should not unlock investigation missions with only data-recovery-tool', () => {
+            const types = getMissionTypesForPlayer(['data-recovery-tool']);
+
+            expect(types).not.toContain('investigation-repair');
+            expect(types).not.toContain('investigation-recovery');
+            expect(types).not.toContain('secure-deletion');
+        });
+
+        it('should handle undefined input', () => {
+            const types = getMissionTypesForPlayer();
+
+            expect(types).toContain('repair');
+            expect(types).toContain('backup');
+        });
+    });
+
+    // ========================================================================
     // Mission structure validation
     // ========================================================================
 
@@ -655,6 +920,9 @@ describe('MissionGenerator', () => {
                 generateTransferMission(mockClient),
                 generateRestoreFromBackupMission(mockClient),
                 generateRepairAndBackupMission(mockClient),
+                generateInvestigationRepairMission(mockClient),
+                generateInvestigationRecoveryMission(mockClient),
+                generateSecureDeletionMission(mockClient),
             ];
 
             missions.forEach(mission => {

@@ -68,6 +68,46 @@ vi.mock('./MissionGenerator', () => ({
             arcTotal: storyline.length,
         })),
     })),
+    generateInvestigationRepairMission: vi.fn((client, _options) => ({
+        missionId: `investigation-repair-${client.id}-${Date.now()}`,
+        clientId: client.id,
+        clientType: client.clientType,
+        missionType: 'investigation-repair',
+        difficulty: 'Hard',
+        basePayout: 1500,
+        networks: [],
+        objectives: [],
+    })),
+    generateInvestigationRecoveryMission: vi.fn((client, _options) => ({
+        missionId: `investigation-recovery-${client.id}-${Date.now()}`,
+        clientId: client.id,
+        clientType: client.clientType,
+        missionType: 'investigation-recovery',
+        difficulty: 'Hard',
+        basePayout: 1500,
+        networks: [],
+        objectives: [],
+    })),
+    generateSecureDeletionMission: vi.fn((client, _options) => ({
+        missionId: `secure-deletion-${client.id}-${Date.now()}`,
+        clientId: client.id,
+        clientType: client.clientType,
+        missionType: 'secure-deletion',
+        difficulty: 'Medium',
+        basePayout: 1200,
+        networks: [],
+        objectives: [],
+    })),
+    getMissionTypesForPlayer: vi.fn((unlockedSoftware = []) => {
+        const types = ['repair', 'backup', 'transfer', 'restore', 'repair-backup'];
+        // Check for investigation tools
+        const hasInvestigationTools = unlockedSoftware.includes('investigation-tooling') ||
+            (unlockedSoftware.includes('log-viewer') && unlockedSoftware.includes('data-recovery-tool'));
+        if (hasInvestigationTools) {
+            types.push('investigation-repair', 'investigation-recovery', 'secure-deletion');
+        }
+        return types;
+    }),
 }));
 
 vi.mock('./arcStorylines', () => ({

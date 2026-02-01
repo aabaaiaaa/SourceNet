@@ -176,6 +176,87 @@ export function generateNarAttachments(networks) {
 }
 
 /**
+ * Generate progressive NAR attachments for enhanced missions
+ * First NAR grants access to primary file servers, additional NARs expand access
+ * @param {Object} primaryNetwork - Primary network object
+ * @param {Object} additionalAccess - Additional access definitions { expansions: [...] }
+ * @returns {Array} Array of attachment objects
+ */
+export function generateProgressiveNarAttachments(primaryNetwork, additionalAccess = {}) {
+    const attachments = [];
+
+    // First NAR: access to primary file servers
+    const primaryFileSystems = (primaryNetwork.fileSystems || [])
+        .filter(fs => fs.accessible);
+    const primaryDeviceIps = [...new Set(primaryFileSystems.map(fs => fs.ip).filter(Boolean))];
+
+    attachments.push({
+        type: 'networkAddress',
+        networkId: primaryNetwork.networkId,
+        networkName: primaryNetwork.networkName || `${primaryNetwork.networkName} (File Servers)`,
+        address: primaryNetwork.address,
+        deviceIps: primaryDeviceIps,
+        accessLevel: 'initial'
+    });
+
+    // Additional NARs: expand access to more devices/networks
+    const expansions = additionalAccess.expansions || [];
+    expansions.forEach((expansion, _i) => {
+        attachments.push({
+            type: 'networkAddress',
+            networkId: expansion.networkId,
+            networkName: expansion.displayName || expansion.networkName,
+            address: expansion.address,
+            deviceIps: expansion.deviceIps || [],
+            accessLevel: 'expanded'
+        });
+    });
+
+    return attachments;
+}
+
+/**
+ * Generate multiple NAR attachments for a network with different access levels
+ * Used for missions with progressive network access
+ * @param {Object} network - Network definition
+ * @param {number} narCount - Number of NAR entries to generate
+ * @returns {Array} Array of attachment objects with staggered device access
+ */
+export function generateStagedNarAttachments(network, narCount) {
+    if (!network || narCount < 1) {
+        return [];
+    }
+
+    const attachments = [];
+    const allDeviceIps = [...new Set((network.fileSystems || []).map(fs => fs.ip).filter(Boolean))];
+
+    // Divide devices among NAR entries
+    const devicesPerNar = Math.ceil(allDeviceIps.length / narCount);
+
+    for (let i = 0; i < narCount; i++) {
+        const startIdx = i * devicesPerNar;
+        const endIdx = Math.min(startIdx + devicesPerNar, allDeviceIps.length);
+        const deviceIps = allDeviceIps.slice(startIdx, endIdx);
+
+        if (deviceIps.length === 0) continue;
+
+        const stageName = i === 0 ? '' : ` (Level ${i + 1})`;
+
+        attachments.push({
+            type: 'networkAddress',
+            networkId: network.networkId,
+            networkName: `${network.networkName}${stageName}`,
+            address: network.address,
+            deviceIps,
+            accessLevel: i === 0 ? 'initial' : 'expanded',
+            stage: i + 1
+        });
+    }
+
+    return attachments;
+}
+
+/**
  * Reset reserved network details cache (useful for testing)
  */
 export function resetReservedNetworkDetails() {

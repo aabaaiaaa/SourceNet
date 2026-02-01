@@ -85,26 +85,46 @@ class NetworkRegistry {
      * @param {string} device.ip - Device IP address
      * @param {string} device.hostname - Device hostname
      * @param {string} device.networkId - Network this device belongs to
-     * @param {string} device.fileSystemId - Associated file system ID
+     * @param {string} [device.fileSystemId] - Associated file system ID (single, for backward compat)
+     * @param {Array<string>} [device.fileSystemIds] - Associated file system IDs (multiple volumes)
      * @param {boolean} [device.accessible=false] - Whether device is accessible (default false until NAR activated)
      * @returns {boolean} True if registered, false if invalid
      */
     registerDevice(device) {
-        const { ip, hostname, networkId, fileSystemId, accessible = false } = device;
+        const { ip, hostname, networkId, fileSystemId, fileSystemIds, accessible = false } = device;
 
         if (!ip) {
             console.warn('NetworkRegistry: Cannot register device without IP');
             return false;
         }
 
+        // Support both single fileSystemId and array fileSystemIds
+        // If both provided, fileSystemIds takes precedence
+        let fsIds = fileSystemIds;
+        if (!fsIds && fileSystemId) {
+            fsIds = [fileSystemId];
+        }
+
         // If device already exists, update it
         if (this.devices.has(ip)) {
             const existing = this.devices.get(ip);
+            // Merge file system IDs if both old and new have them
+            let mergedFsIds = fsIds;
+            if (existing.fileSystemIds && fsIds) {
+                const existingSet = new Set(existing.fileSystemIds);
+                fsIds.forEach(id => existingSet.add(id));
+                mergedFsIds = Array.from(existingSet);
+            } else if (existing.fileSystemIds && !fsIds) {
+                mergedFsIds = existing.fileSystemIds;
+            }
+
             this.devices.set(ip, {
                 ...existing,
                 hostname: hostname || existing.hostname,
                 networkId: networkId || existing.networkId,
-                fileSystemId: fileSystemId || existing.fileSystemId,
+                fileSystemIds: mergedFsIds,
+                // Keep single fileSystemId for backward compatibility (first in array)
+                fileSystemId: mergedFsIds?.[0] || existing.fileSystemId,
                 accessible: accessible ?? existing.accessible,
             });
             return true;
@@ -114,11 +134,29 @@ class NetworkRegistry {
             ip,
             hostname,
             networkId,
-            fileSystemId,
+            fileSystemIds: fsIds,
+            // Keep single fileSystemId for backward compatibility (first in array)
+            fileSystemId: fsIds?.[0] || fileSystemId,
             accessible,
         });
 
         return true;
+    }
+
+    /**
+     * Get all file systems for a device (supports multi-volume devices)
+     * @param {string} ip - Device IP address
+     * @returns {Array} Array of file system objects (empty if device not found)
+     */
+    getDeviceFileSystems(ip) {
+        const device = this.devices.get(ip);
+        if (!device) return [];
+
+        const fsIds = device.fileSystemIds || (device.fileSystemId ? [device.fileSystemId] : []);
+        return fsIds
+            .map(id => this.fileSystems.get(id))
+            .filter(Boolean)
+            .map(fs => ({ ...fs }));
     }
 
     /**

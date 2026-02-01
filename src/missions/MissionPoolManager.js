@@ -11,11 +11,18 @@
  */
 
 import { getAccessibleClients, getRandomAccessibleClient, getAllClients, getClientsByIndustry } from '../data/clientRegistry';
-import { generateMission, generateMissionArc } from './MissionGenerator';
+import {
+    generateMission,
+    generateMissionArc,
+    generateInvestigationRepairMission,
+    generateInvestigationRecoveryMission,
+    generateSecureDeletionMission,
+    getMissionTypesForPlayer
+} from './MissionGenerator';
 import { getRandomStoryline } from './arcStorylines';
 import { canAccessClientType } from '../systems/ReputationSystem';
 
-// Configuration for mission pool
+// Configuration for mission pool - base values for early game
 export const poolConfig = {
     min: 4,
     max: 6,
@@ -24,6 +31,66 @@ export const poolConfig = {
     expirationMinutes: { min: 15, max: 60 }, // Missions expire in 15-60 game minutes
     regenerationDelayMs: 60 * 1000, // 1 minute game time delay before regenerating expired mission
 };
+
+/**
+ * Pool configuration by player progression level
+ * As players unlock more tools, the pool expands
+ */
+export const poolConfigByProgression = {
+    early: {
+        min: 4, max: 6,
+        minAccessible: 2,
+        investigationChance: 0 // No investigation missions yet
+    },
+    midGame: {
+        min: 5, max: 8,
+        minAccessible: 3,
+        investigationChance: 0.25 // 25% chance for investigation missions
+    },
+    lateGame: {
+        min: 6, max: 10,
+        minAccessible: 4,
+        investigationChance: 0.35 // 35% chance for investigation missions
+    }
+};
+
+/**
+ * Determine player progression level based on unlocked software
+ * @param {Array} unlockedSoftware - Array of unlocked software/feature IDs
+ * @returns {string} Progression level: 'early', 'midGame', or 'lateGame'
+ */
+export function getProgressionLevel(unlockedSoftware = []) {
+    // Investigation tools unlock marks mid-game
+    const hasInvestigationTools = unlockedSoftware.includes('investigation-tooling') ||
+        (unlockedSoftware.includes('log-viewer') && unlockedSoftware.includes('data-recovery-tool'));
+
+    // Additional tool unlocks mark late game (future expansion)
+    // const hasAdvancedTools = unlockedSoftware.includes('decryption-tools');
+
+    if (hasInvestigationTools) {
+        return 'midGame';
+    }
+
+    return 'early';
+}
+
+/**
+ * Get pool configuration for current progression level
+ * @param {Array} unlockedSoftware - Array of unlocked software IDs
+ * @returns {Object} Pool configuration for current level
+ */
+export function getPoolConfigForProgression(unlockedSoftware = []) {
+    const level = getProgressionLevel(unlockedSoftware);
+    const config = poolConfigByProgression[level];
+
+    return {
+        ...poolConfig,
+        min: config.min,
+        max: config.max,
+        minAccessible: config.minAccessible,
+        investigationChance: config.investigationChance
+    };
+}
 
 /**
  * Calculate expiration time for a mission
@@ -105,9 +172,12 @@ export function initializePool(reputation, currentTime) {
  * @param {Date} currentTime - Current game time
  * @param {Set} excludeClientIds - Client IDs to exclude
  * @param {boolean} mustBeAccessible - Whether mission must be accessible at current rep
+ * @param {Object} options - Additional options { unlockedSoftware }
  * @returns {Object|null} Generated mission or arc
  */
-export function generatePoolMission(reputation, currentTime, excludeClientIds, mustBeAccessible) {
+export function generatePoolMission(reputation, currentTime, excludeClientIds, mustBeAccessible, options = {}) {
+    const { unlockedSoftware = [] } = options;
+
     // Get available clients
     let client;
 
@@ -150,6 +220,31 @@ export function generatePoolMission(reputation, currentTime, excludeClientIds, m
             const arcClients = getClientsForArc(storyline, client, excludeClientIds, reputation);
             if (arcClients && arcClients.length === storyline.length) {
                 return generateMissionArc(storyline, arcClients);
+            }
+        }
+    }
+
+    // Get available mission types based on unlocked software
+    const availableTypes = getMissionTypesForPlayer(unlockedSoftware);
+    const config = getPoolConfigForProgression(unlockedSoftware);
+
+    // Check if we should generate an investigation mission
+    if (config.investigationChance > 0 && Math.random() < config.investigationChance) {
+        const investigationTypes = availableTypes.filter(t =>
+            t.startsWith('investigation-') || t === 'secure-deletion'
+        );
+
+        if (investigationTypes.length > 0) {
+            const selectedType = investigationTypes[Math.floor(Math.random() * investigationTypes.length)];
+            const hasTimed = Math.random() < 0.5;
+
+            switch (selectedType) {
+                case 'investigation-repair':
+                    return generateInvestigationRepairMission(client, { hasTimed });
+                case 'investigation-recovery':
+                    return generateInvestigationRecoveryMission(client, { hasTimed });
+                case 'secure-deletion':
+                    return generateSecureDeletionMission(client, { hasTimed });
             }
         }
     }
@@ -519,5 +614,8 @@ export default {
     shouldRefreshPool,
     generatePoolMission,
     addExpirationToMission,
-    poolConfig
+    poolConfig,
+    poolConfigByProgression,
+    getProgressionLevel,
+    getPoolConfigForProgression
 };

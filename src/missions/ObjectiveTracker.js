@@ -73,6 +73,64 @@ export const checkNarEntryAddedObjective = (objective, narEntries) => {
 };
 
 /**
+ * Check if investigation objective is complete
+ * Investigation objectives track when player connects to the CORRECT file system
+ * (the one identified via Log Viewer that contains the target files)
+ * @param {object} objective - Objective definition with correctFileSystemId
+ * @param {array} fileManagerConnections - Active File Manager connections
+ * @returns {boolean} Objective complete
+ */
+export const checkInvestigationObjective = (objective, fileManagerConnections) => {
+  if (!objective.correctFileSystemId) return false;
+
+  return fileManagerConnections.some(
+    (conn) => conn.fileSystemId === objective.correctFileSystemId
+  );
+};
+
+/**
+ * Check if file recovery objective is complete
+ * Tracks when player uses Data Recovery Tool to restore specific files
+ * @param {object} objective - Objective definition with targetFiles
+ * @param {object} recoveryOperations - Cumulative recovery operations { restored: Set<filename> }
+ * @returns {boolean} Objective complete
+ */
+export const checkFileRecoveryObjective = (objective, recoveryOperations = {}) => {
+  const { targetFiles } = objective;
+
+  if (!targetFiles || targetFiles.length === 0) {
+    return false;
+  }
+
+  const restoredFiles = recoveryOperations.restored || new Set();
+  const completedCount = targetFiles.filter(file => restoredFiles.has(file)).length;
+
+  console.log(`🔍 checkFileRecoveryObjective: ${completedCount}/${targetFiles.length} target files recovered`);
+  return completedCount >= targetFiles.length;
+};
+
+/**
+ * Check if secure delete objective is complete
+ * Tracks when player uses Data Recovery Tool's secure deletion on specific files
+ * @param {object} objective - Objective definition with targetFiles
+ * @param {object} recoveryOperations - Cumulative recovery operations { secureDeleted: Set<filename> }
+ * @returns {boolean} Objective complete
+ */
+export const checkSecureDeleteObjective = (objective, recoveryOperations = {}) => {
+  const { targetFiles } = objective;
+
+  if (!targetFiles || targetFiles.length === 0) {
+    return false;
+  }
+
+  const deletedFiles = recoveryOperations.secureDeleted || new Set();
+  const completedCount = targetFiles.filter(file => deletedFiles.has(file)).length;
+
+  console.log(`🔍 checkSecureDeleteObjective: ${completedCount}/${targetFiles.length} target files securely deleted`);
+  return completedCount >= targetFiles.length;
+};
+
+/**
  * Check if file operation objective is complete
  * @param {object} objective - Objective definition with targetFiles array and optional destination
  * @param {object} operationData - File operation completion data (last operation)
@@ -316,6 +374,24 @@ const isObjectiveComplete = (objective, gameState) => {
         gameState.narEntries || []
       );
 
+    case 'investigation':
+      return checkInvestigationObjective(
+        objective,
+        gameState.fileManagerConnections || []
+      );
+
+    case 'fileRecovery':
+      return checkFileRecoveryObjective(
+        objective,
+        gameState.missionRecoveryOperations || {}
+      );
+
+    case 'secureDelete':
+      return checkSecureDeleteObjective(
+        objective,
+        gameState.missionRecoveryOperations || {}
+      );
+
     case 'verification':
       // Verification objectives never auto-complete
       return false;
@@ -374,6 +450,8 @@ export const initializeObjectiveTracking = (mission, onObjectiveComplete) => {
     'networkScanComplete',
     'fileSystemConnected',
     'fileOperationComplete',
+    'fileRecoveryComplete',   // Data Recovery Tool restore
+    'secureDeleteComplete',   // Data Recovery Tool secure delete
   ];
 
   events.forEach((eventType) => {

@@ -105,8 +105,30 @@ const FileManager = () => {
       accessibleDevices.forEach((device) => {
         // Only include devices whose IP has been discovered via Network Scanner
         if (discovered.has(device.ip)) {
-          // Get file system info from NetworkRegistry
-          if (device.fileSystemId) {
+          // Get all file systems for this device (supports multi-volume devices)
+          const deviceFileSystems = networkRegistry.getDeviceFileSystems(device.ip);
+
+          if (deviceFileSystems.length > 0) {
+            // Device has one or more file systems
+            deviceFileSystems.forEach((fs, volumeIndex) => {
+              // For multi-volume devices, include volume info in label
+              const volumeLabel = deviceFileSystems.length > 1
+                ? ` (${fs.volumeName || `Vol ${volumeIndex}`})`
+                : '';
+              availableFileSystems.push({
+                id: fs.id,
+                ip: device.ip,
+                name: device.hostname,
+                label: `${device.ip} - ${device.hostname}${volumeLabel}`,
+                files: fs.files || [],
+                networkId: connection.networkId,
+                volumeName: fs.volumeName,
+                volumeIndex,
+                isMultiVolume: deviceFileSystems.length > 1,
+              });
+            });
+          } else if (device.fileSystemId) {
+            // Fallback: single fileSystemId (backward compatibility)
             const fs = networkRegistry.getFileSystem(device.fileSystemId);
             if (fs) {
               availableFileSystems.push({

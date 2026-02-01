@@ -17,9 +17,95 @@
 import { getClientById } from '../data/clientRegistry';
 import { generateSubnet, generateIpInSubnet, generateNarAttachments, randomInt } from './networkUtils';
 import { getSanitizedNamePrefix } from '../utils/helpers';
+import { getVolumeNames } from '../data/deviceTemplates';
 
 // Track generated mission IDs to ensure uniqueness
 let missionIdCounter = 0;
+
+/**
+ * Network complexity configuration by difficulty
+ * Controls how many NAR entries, devices, and multi-file-system chances
+ */
+export const networkComplexityConfig = {
+    // NAR count by difficulty
+    narCountRange: {
+        Easy: { min: 2, max: 3 },
+        Medium: { min: 2, max: 4 },
+        Hard: { min: 3, max: 5 }
+    },
+    // Additional narrative devices per network (beyond file servers)
+    narrativeDevicesPerNetwork: {
+        Easy: { min: 1, max: 2 },
+        Medium: { min: 2, max: 4 },
+        Hard: { min: 3, max: 5 }
+    },
+    // Chance a device has multiple file systems (for investigation missions)
+    multiFileSystemChance: {
+        server: 0.4,    // 40% chance for servers
+        database: 0.3   // 30% chance for DB servers
+    }
+};
+
+/**
+ * Corruption backstory patterns for pre-populating device logs
+ * Used in investigation missions to help player identify correct volume
+ */
+const corruptionBackstoryPatterns = {
+    diskFailure: [
+        { type: 'system', action: 'disk_error', note: 'Bad sector detected', delayBefore: 120000 },
+        { type: 'system', action: 'corruption_detected', note: 'CRC check failed - file integrity compromised', delayBefore: 0 }
+    ],
+    malware: [
+        { type: 'remote', action: 'unauthorized_access', user: 'unknown', note: 'Connection from external IP', delayBefore: 300000 },
+        { type: 'process', action: 'file_modified', note: 'File modified by external process', delayBefore: 60000 },
+        { type: 'system', action: 'corruption_detected', note: 'File integrity check failed', delayBefore: 0 }
+    ],
+    networkIssue: [
+        { type: 'remote', action: 'transfer_interrupted', note: 'Network timeout during file sync', delayBefore: 180000 },
+        { type: 'system', action: 'corruption_detected', note: 'Incomplete write detected', delayBefore: 0 }
+    ],
+    powerLoss: [
+        { type: 'system', action: 'unexpected_shutdown', note: 'Power failure detected', delayBefore: 240000 },
+        { type: 'system', action: 'corruption_detected', note: 'Write operation interrupted', delayBefore: 0 }
+    ]
+};
+
+/**
+ * Deletion backstory patterns for recovery investigation missions
+ */
+const deletionBackstoryPatterns = {
+    maliciousDeletion: [
+        { type: 'remote', action: 'unauthorized_access', user: 'unknown', note: 'Suspicious login attempt', delayBefore: 600000 },
+        { type: 'file', action: 'delete', user: 'unknown', note: 'Files deleted by external actor', delayBefore: 0 }
+    ],
+    accidentalDeletion: [
+        { type: 'file', action: 'delete', note: 'Batch cleanup operation', delayBefore: 0 }
+    ],
+    ransomware: [
+        { type: 'process', action: 'execute', note: 'Suspicious process started: cryptolocker.exe', delayBefore: 300000 },
+        { type: 'file', action: 'encrypt', note: 'File encrypted', delayBefore: 60000 },
+        { type: 'file', action: 'delete', note: 'Original file removed', delayBefore: 0 }
+    ],
+    cleanupGoneWrong: [
+        { type: 'file', action: 'batch_delete', user: 'admin', note: 'Maintenance cleanup script', delayBefore: 0 }
+    ]
+};
+
+/**
+ * Secure deletion backstory patterns (files that need secure removal)
+ */
+const secureDeleteBackstoryPatterns = {
+    complianceFlag: [
+        { type: 'system', action: 'compliance_flag', user: 'compliance-bot', note: 'Flagged for secure removal - audit compliance', delayBefore: 0 }
+    ],
+    piracy: [
+        { type: 'remote', action: 'upload', user: 'anonymous@external', note: 'Unauthorized file upload detected', delayBefore: 0 }
+    ],
+    malwareDetection: [
+        { type: 'process', action: 'execute', note: 'Suspicious process activity detected', delayBefore: 300000 },
+        { type: 'system', action: 'malware_detected', note: 'Antivirus flagged file as malicious', delayBefore: 0 }
+    ]
+};
 
 /**
  * Generate a unique mission ID
@@ -1715,6 +1801,820 @@ export function resetMissionIdCounter() {
     missionIdCounter = 0;
 }
 
+/**
+ * Generate pre-populated activity logs for a file system
+ * Used in investigation missions to help player identify correct volume
+ * @param {Array} files - Files that need activity logs
+ * @param {string} pattern - Backstory pattern type (diskFailure, malware, etc.)
+ * @param {Date} baseTime - Base time for log entries (corruption/deletion time)
+ * @returns {Array} Array of log entries
+ */
+function generateActivityLogs(files, pattern, baseTime) {
+    const logs = [];
+    const patterns = pattern.includes('delete') || pattern.includes('Delete')
+        ? deletionBackstoryPatterns
+        : pattern.includes('secure') || pattern.includes('Secure')
+            ? secureDeleteBackstoryPatterns
+            : corruptionBackstoryPatterns;
+
+    const patternKey = Object.keys(patterns)[Math.floor(Math.random() * Object.keys(patterns).length)];
+    const backstory = patterns[patternKey] || patterns[Object.keys(patterns)[0]];
+
+    files.forEach(file => {
+        // Generate backstory events for this file
+        let currentTime = new Date(baseTime.getTime());
+
+        backstory.forEach(event => {
+            currentTime = new Date(currentTime.getTime() - event.delayBefore);
+            logs.push({
+                id: `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                timestamp: currentTime.toISOString(),
+                type: event.type,
+                action: event.action,
+                user: event.user || 'SYSTEM',
+                fileName: file.name,
+                note: event.note
+            });
+        });
+    });
+
+    // Sort logs by timestamp (oldest first)
+    logs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    return logs;
+}
+
+/**
+ * Generate decoy files for non-target file systems
+ * These are legitimate-looking files but not related to the mission
+ * @param {string} industry - Client industry
+ * @param {number} count - Number of decoy files
+ * @returns {Array} Array of file objects
+ */
+function generateDecoyFiles(industry, count = 3) {
+    const decoyTemplates = {
+        banking: ['readme.txt', 'system_config.cfg', 'old_backup_2019.dat', 'temp_cache.tmp', 'archive_index.log'],
+        healthcare: ['system_readme.txt', 'calibration_data.cfg', 'archive_2018.dat', 'temp.tmp', 'maintenance_log.log'],
+        government: ['policy_manual.pdf', 'config_backup.cfg', 'archive_records.dat', 'session_temp.tmp', 'audit_history.log'],
+        corporate: ['onboarding_guide.pdf', 'network_config.cfg', 'legacy_data.dat', 'cache.tmp', 'system_events.log'],
+        utilities: ['safety_protocols.pdf', 'sensor_config.cfg', 'historical_data.dat', 'buffer.tmp', 'maintenance_history.log'],
+        shipping: ['driver_handbook.pdf', 'route_config.cfg', 'archive_manifests.dat', 'gps_cache.tmp', 'delivery_history.log'],
+        emergency: ['protocol_manual.pdf', 'radio_config.cfg', 'call_archive.dat', 'dispatch_cache.tmp', 'incident_history.log'],
+        nonprofit: ['volunteer_guide.pdf', 'settings.cfg', 'historical_donors.dat', 'temp_uploads.tmp', 'event_history.log'],
+        cultural: ['visitor_guide.pdf', 'display_config.cfg', 'old_catalog.dat', 'media_cache.tmp', 'loan_history.log']
+    };
+
+    const templates = decoyTemplates[industry] || decoyTemplates.corporate;
+    const files = [];
+    const usedNames = new Set();
+
+    while (files.length < count && files.length < templates.length) {
+        const name = templates[Math.floor(Math.random() * templates.length)];
+        if (!usedNames.has(name)) {
+            usedNames.add(name);
+            const { size, sizeBytes } = generateFileSize(name, 'backup');
+            files.push({
+                name,
+                size,
+                sizeBytes,
+                corrupted: false,
+                targetFile: false
+            });
+        }
+    }
+
+    return files;
+}
+
+/**
+ * Generate an investigation repair mission
+ * Player must use Log Viewer to identify which file system contains corrupted files
+ * @param {Object} client - Client object
+ * @param {Object} options - Mission options
+ * @returns {Object} Complete mission object
+ */
+export function generateInvestigationRepairMission(client, options = {}) {
+    const { hasTimed = false, arcId = null, arcSequence = null, arcTotal = null, arcContext = {} } = options;
+
+    // Target file count: 3-5 files for investigation missions
+    const targetFileCount = randomInt(3, 5);
+
+    // Create device with multiple file systems (2-4 volumes)
+    const fileSystemCount = randomInt(2, 4);
+    const primaryNetworkId = `${client.id}-network-${Date.now()}`;
+    const primarySubnet = generateSubnet();
+    const deviceIp = generateIpInSubnet(primarySubnet, 10);
+    const hostname = generateHostname(client, 'server');
+
+    // One file system is the target (has corrupted files with recent activity)
+    const targetFsIndex = randomInt(0, fileSystemCount - 1);
+    const volumeNames = getVolumeNames('server', fileSystemCount);
+
+    const fileSystems = [];
+    let targetFileSystemId = null;
+    let allTargetFiles = [];
+    let totalDataBytes = 0;
+
+    // Base time for corruption events (a few hours before mission)
+    const corruptionTime = new Date(Date.now() - randomInt(2, 8) * 60 * 60 * 1000);
+
+    for (let i = 0; i < fileSystemCount; i++) {
+        const fsId = `fs-${client.id}-${Date.now()}-vol${i}`;
+        const isTargetFs = (i === targetFsIndex);
+        const volumeName = volumeNames[i] || `/vol${i}`;
+
+        let files;
+        let activityLogs = [];
+
+        if (isTargetFs) {
+            // Generate target files with corruption
+            const result = generateFiles(client.industry, 'repair', targetFileCount, true);
+            files = result.files;
+            allTargetFiles = result.targetFiles;
+            totalDataBytes = files.filter(f => f.targetFile).reduce((sum, f) => sum + f.sizeBytes, 0);
+            targetFileSystemId = fsId;
+
+            // Generate activity logs showing corruption
+            activityLogs = generateActivityLogs(
+                files.filter(f => f.corrupted),
+                'corruption',
+                corruptionTime
+            );
+        } else {
+            // Generate decoy files (no corruption, old activity or none)
+            files = generateDecoyFiles(client.industry, randomInt(2, 4));
+        }
+
+        fileSystems.push({
+            id: fsId,
+            ip: deviceIp,
+            name: `${hostname}${volumeName}`,
+            volumeName,
+            files,
+            accessible: true,
+            logs: activityLogs
+        });
+    }
+
+    const networks = [{
+        networkId: primaryNetworkId,
+        networkName: generateNetworkName(client),
+        address: primarySubnet,
+        bandwidth: randomPick([500, 750, 1000, 1500, 2000]),
+        revokeOnComplete: true,
+        revokeReason: 'Mission access expired',
+        fileSystems
+    }];
+
+    // Objectives - note that briefing does NOT specify which volume
+    const objectives = [
+        {
+            id: 'obj-1',
+            description: `Connect to ${networks[0].networkName} network`,
+            type: 'networkConnection',
+            target: primaryNetworkId
+        },
+        {
+            id: 'obj-2',
+            description: `Scan network to find ${hostname}`,
+            type: 'networkScan',
+            target: primaryNetworkId,
+            expectedResult: hostname
+        },
+        {
+            id: 'obj-3',
+            description: `Use Log Viewer to identify which volume has corrupted files`,
+            type: 'investigation',
+            correctFileSystemId: targetFileSystemId,
+            target: deviceIp
+        },
+        {
+            id: 'obj-4',
+            description: `Connect to the correct file system`,
+            type: 'fileSystemConnection',
+            target: targetFileSystemId
+        },
+        {
+            id: 'obj-5',
+            description: `Repair ${allTargetFiles.length} corrupted files`,
+            type: 'fileOperation',
+            operation: 'repair',
+            target: 'specific-files',
+            targetFiles: allTargetFiles,
+            count: allTargetFiles.length
+        }
+    ];
+
+    // Add verification objective
+    objectives.push({
+        id: 'obj-verify',
+        description: 'Verify mission completion',
+        type: 'verification',
+        autoComplete: false
+    });
+
+    const timeLimitMinutes = hasTimed ? calculateTimeLimit(objectives.length) : null;
+    const basePayout = calculatePayout(objectives.length, timeLimitMinutes, client, totalDataBytes);
+
+    const missionId = generateMissionId('investigation-repair', client.id);
+
+    const briefingContext = {
+        ...arcContext,
+        targetFiles: allTargetFiles,
+        totalDataBytes
+    };
+
+    // Generate briefing that doesn't reveal which volume
+    const briefingBody = generateInvestigationBriefing(client, 'repair', networks, timeLimitMinutes, briefingContext);
+
+    return {
+        missionId,
+        title: `Investigation: File Repair for ${client.name}`,
+        client: client.name,
+        clientId: client.id,
+        clientType: client.clientType,
+        industry: client.industry,
+        difficulty: 'Hard',
+        missionType: 'investigation-repair',
+        basePayout,
+        category: arcId ? 'procedural-arc' : 'procedural',
+        networks,
+        objectives,
+        targetFiles: allTargetFiles,
+        totalDataBytes,
+        requirements: {
+            software: ['vpn-client', 'network-address-register', 'network-scanner', 'file-manager', 'log-viewer'],
+            minReputation: client.minReputation
+        },
+        consequences: {
+            success: generateSuccessConsequences(client, basePayout),
+            failure: generateFailureConsequences(client, basePayout)
+        },
+        timeLimitMinutes,
+        briefingMessage: briefingBody,
+        isProcedurallyGenerated: true,
+        generatedAt: new Date().toISOString(),
+        arcId,
+        arcSequence,
+        arcTotal,
+        requiresCompletedMission: arcSequence > 1 ? arcContext.previousMissionId : null,
+        // Investigation-specific fields
+        isInvestigation: true,
+        targetFileSystemId,
+        deviceIp,
+        volumeCount: fileSystemCount
+    };
+}
+
+/**
+ * Generate an investigation recovery mission
+ * Player must use Log Viewer to find where files were deleted, then use Data Recovery Tool
+ * @param {Object} client - Client object
+ * @param {Object} options - Mission options
+ * @returns {Object} Complete mission object
+ */
+export function generateInvestigationRecoveryMission(client, options = {}) {
+    const { hasTimed = false, arcId = null, arcSequence = null, arcTotal = null, arcContext = {} } = options;
+
+    // Target file count: 3-5 files for recovery
+    const targetFileCount = randomInt(3, 5);
+
+    // Create device with multiple file systems (2-4 volumes)
+    const fileSystemCount = randomInt(2, 4);
+    const primaryNetworkId = `${client.id}-network-${Date.now()}`;
+    const primarySubnet = generateSubnet();
+    const deviceIp = generateIpInSubnet(primarySubnet, 10);
+    const hostname = generateHostname(client, 'server');
+
+    // One file system is the target (has deleted files with deletion logs)
+    const targetFsIndex = randomInt(0, fileSystemCount - 1);
+    const volumeNames = getVolumeNames('server', fileSystemCount);
+
+    const fileSystems = [];
+    let targetFileSystemId = null;
+    let allTargetFiles = [];
+    let totalDataBytes = 0;
+
+    // Base time for deletion events
+    const deletionTime = new Date(Date.now() - randomInt(1, 4) * 60 * 60 * 1000);
+
+    for (let i = 0; i < fileSystemCount; i++) {
+        const fsId = `fs-${client.id}-${Date.now()}-vol${i}`;
+        const isTargetFs = (i === targetFsIndex);
+        const volumeName = volumeNames[i] || `/vol${i}`;
+
+        let files;
+        let activityLogs = [];
+
+        if (isTargetFs) {
+            // Generate target files marked as deleted
+            const result = generateFiles(client.industry, 'backup', targetFileCount, false);
+            files = result.files.map(f => ({
+                ...f,
+                status: f.targetFile ? 'deleted' : (f.status || 'normal')
+            }));
+            allTargetFiles = result.targetFiles;
+            totalDataBytes = files.filter(f => f.targetFile).reduce((sum, f) => sum + f.sizeBytes, 0);
+            targetFileSystemId = fsId;
+
+            // Generate activity logs showing deletion
+            activityLogs = generateActivityLogs(
+                files.filter(f => f.status === 'deleted'),
+                'deletion',
+                deletionTime
+            );
+        } else {
+            // Generate decoy files (no deleted files, old activity)
+            files = generateDecoyFiles(client.industry, randomInt(2, 4));
+        }
+
+        fileSystems.push({
+            id: fsId,
+            ip: deviceIp,
+            name: `${hostname}${volumeName}`,
+            volumeName,
+            files,
+            accessible: true,
+            logs: activityLogs
+        });
+    }
+
+    const networks = [{
+        networkId: primaryNetworkId,
+        networkName: generateNetworkName(client),
+        address: primarySubnet,
+        bandwidth: randomPick([500, 750, 1000, 1500, 2000]),
+        revokeOnComplete: true,
+        revokeReason: 'Mission access expired',
+        fileSystems
+    }];
+
+    const objectives = [
+        {
+            id: 'obj-1',
+            description: `Connect to ${networks[0].networkName} network`,
+            type: 'networkConnection',
+            target: primaryNetworkId
+        },
+        {
+            id: 'obj-2',
+            description: `Scan network to find ${hostname}`,
+            type: 'networkScan',
+            target: primaryNetworkId,
+            expectedResult: hostname
+        },
+        {
+            id: 'obj-3',
+            description: `Use Log Viewer to identify which volume had files deleted`,
+            type: 'investigation',
+            correctFileSystemId: targetFileSystemId,
+            target: deviceIp
+        },
+        {
+            id: 'obj-4',
+            description: `Connect Data Recovery Tool to the correct volume`,
+            type: 'fileSystemConnection',
+            target: targetFileSystemId
+        },
+        {
+            id: 'obj-5',
+            description: `Scan for deleted files using Data Recovery Tool`,
+            type: 'fileSystemConnection', // Completed when they scan
+            target: targetFileSystemId
+        },
+        {
+            id: 'obj-6',
+            description: `Recover ${allTargetFiles.length} deleted files`,
+            type: 'fileRecovery',
+            targetFiles: allTargetFiles,
+            count: allTargetFiles.length
+        }
+    ];
+
+    objectives.push({
+        id: 'obj-verify',
+        description: 'Verify mission completion',
+        type: 'verification',
+        autoComplete: false
+    });
+
+    const timeLimitMinutes = hasTimed ? calculateTimeLimit(objectives.length) : null;
+    const basePayout = calculatePayout(objectives.length, timeLimitMinutes, client, totalDataBytes);
+
+    const missionId = generateMissionId('investigation-recovery', client.id);
+
+    const briefingContext = {
+        ...arcContext,
+        targetFiles: allTargetFiles,
+        totalDataBytes
+    };
+
+    const briefingBody = generateInvestigationBriefing(client, 'recovery', networks, timeLimitMinutes, briefingContext);
+
+    return {
+        missionId,
+        title: `Investigation: Data Recovery for ${client.name}`,
+        client: client.name,
+        clientId: client.id,
+        clientType: client.clientType,
+        industry: client.industry,
+        difficulty: 'Hard',
+        missionType: 'investigation-recovery',
+        basePayout,
+        category: arcId ? 'procedural-arc' : 'procedural',
+        networks,
+        objectives,
+        targetFiles: allTargetFiles,
+        totalDataBytes,
+        requirements: {
+            software: ['vpn-client', 'network-address-register', 'network-scanner', 'file-manager', 'log-viewer', 'data-recovery-tool'],
+            minReputation: client.minReputation
+        },
+        consequences: {
+            success: generateSuccessConsequences(client, basePayout),
+            failure: generateFailureConsequences(client, basePayout)
+        },
+        timeLimitMinutes,
+        briefingMessage: briefingBody,
+        isProcedurallyGenerated: true,
+        generatedAt: new Date().toISOString(),
+        arcId,
+        arcSequence,
+        arcTotal,
+        requiresCompletedMission: arcSequence > 1 ? arcContext.previousMissionId : null,
+        isInvestigation: true,
+        targetFileSystemId,
+        deviceIp,
+        volumeCount: fileSystemCount
+    };
+}
+
+/**
+ * Generate a secure deletion mission
+ * Player must locate and securely delete unwanted files (malware, piracy, compliance)
+ * @param {Object} client - Client object
+ * @param {Object} options - Mission options
+ * @returns {Object} Complete mission object
+ */
+export function generateSecureDeletionMission(client, options = {}) {
+    const { hasTimed = false, arcId = null, arcSequence = null, arcTotal = null, arcContext = {} } = options;
+
+    // Choose a narrative variant
+    const variants = ['compliance', 'piracy', 'malware'];
+    const variant = variants[Math.floor(Math.random() * variants.length)];
+
+    // Target file count: 2-4 files to securely delete
+    const targetFileCount = randomInt(2, 4);
+
+    const primaryNetworkId = `${client.id}-network-${Date.now()}`;
+    const primarySubnet = generateSubnet();
+    const deviceIp = generateIpInSubnet(primarySubnet, 10);
+    const hostname = generateHostname(client, 'server');
+
+    // Generate files to delete based on variant
+    const filesToDelete = generateMaliciousFiles(variant, targetFileCount);
+    const targetFileNames = filesToDelete.map(f => f.name);
+
+    // Add some normal files too
+    const normalFiles = generateDecoyFiles(client.industry, randomInt(2, 4));
+    const allFiles = [...normalFiles, ...filesToDelete];
+
+    // Generate activity logs showing the problematic files
+    const flagTime = new Date(Date.now() - randomInt(1, 4) * 60 * 60 * 1000);
+    const activityLogs = generateActivityLogs(filesToDelete, 'secureDelete', flagTime);
+
+    const fileSystems = [{
+        id: `fs-${client.id}-${Date.now()}`,
+        ip: deviceIp,
+        name: hostname,
+        files: allFiles,
+        accessible: true,
+        logs: activityLogs
+    }];
+
+    const networks = [{
+        networkId: primaryNetworkId,
+        networkName: generateNetworkName(client),
+        address: primarySubnet,
+        bandwidth: randomPick([500, 750, 1000, 1500, 2000]),
+        revokeOnComplete: true,
+        revokeReason: 'Mission access expired',
+        fileSystems
+    }];
+
+    const objectives = [
+        {
+            id: 'obj-1',
+            description: `Connect to ${networks[0].networkName} network`,
+            type: 'networkConnection',
+            target: primaryNetworkId
+        },
+        {
+            id: 'obj-2',
+            description: `Scan network to find ${hostname}`,
+            type: 'networkScan',
+            target: primaryNetworkId,
+            expectedResult: hostname
+        },
+        {
+            id: 'obj-3',
+            description: `Use Log Viewer to identify flagged files`,
+            type: 'fileSystemConnection',
+            target: deviceIp
+        },
+        {
+            id: 'obj-4',
+            description: `Connect Data Recovery Tool to ${hostname}`,
+            type: 'fileSystemConnection',
+            target: deviceIp
+        },
+        {
+            id: 'obj-5',
+            description: `Securely delete ${targetFileCount} ${variant === 'malware' ? 'malicious' : variant === 'piracy' ? 'pirated' : 'flagged'} files`,
+            type: 'secureDelete',
+            targetFiles: targetFileNames,
+            count: targetFileCount
+        }
+    ];
+
+    objectives.push({
+        id: 'obj-verify',
+        description: 'Verify mission completion',
+        type: 'verification',
+        autoComplete: false
+    });
+
+    const totalDataBytes = filesToDelete.reduce((sum, f) => sum + f.sizeBytes, 0);
+    const timeLimitMinutes = hasTimed ? calculateTimeLimit(objectives.length) : null;
+    const basePayout = calculatePayout(objectives.length, timeLimitMinutes, client, totalDataBytes);
+
+    const missionId = generateMissionId('secure-deletion', client.id);
+
+    const briefingContext = {
+        ...arcContext,
+        targetFiles: targetFileNames,
+        totalDataBytes,
+        variant
+    };
+
+    const briefingBody = generateSecureDeletionBriefing(client, variant, networks, timeLimitMinutes, briefingContext);
+
+    return {
+        missionId,
+        title: `Secure Deletion: ${variant === 'malware' ? 'Malware Removal' : variant === 'piracy' ? 'Unauthorized Content' : 'Compliance Cleanup'} for ${client.name}`,
+        client: client.name,
+        clientId: client.id,
+        clientType: client.clientType,
+        industry: client.industry,
+        difficulty: 'Medium',
+        missionType: 'secure-deletion',
+        basePayout,
+        category: arcId ? 'procedural-arc' : 'procedural',
+        networks,
+        objectives,
+        targetFiles: targetFileNames,
+        totalDataBytes,
+        requirements: {
+            software: ['vpn-client', 'network-address-register', 'network-scanner', 'log-viewer', 'data-recovery-tool'],
+            minReputation: client.minReputation
+        },
+        consequences: {
+            success: generateSuccessConsequences(client, basePayout),
+            failure: generateFailureConsequences(client, basePayout)
+        },
+        timeLimitMinutes,
+        briefingMessage: briefingBody,
+        isProcedurallyGenerated: true,
+        generatedAt: new Date().toISOString(),
+        arcId,
+        arcSequence,
+        arcTotal,
+        requiresCompletedMission: arcSequence > 1 ? arcContext.previousMissionId : null,
+        secureDeleteVariant: variant
+    };
+}
+
+/**
+ * Generate malicious/unwanted files for secure deletion missions
+ * @param {string} variant - Type of files (compliance, piracy, malware)
+ * @param {number} count - Number of files to generate
+ * @returns {Array} Array of file objects
+ */
+function generateMaliciousFiles(variant, count) {
+    const fileTemplates = {
+        compliance: [
+            'unencrypted_customer_data.csv',
+            'personal_info_export.xlsx',
+            'old_passwords_backup.txt',
+            'credit_card_batch.dat',
+            'ssn_records_temp.csv'
+        ],
+        piracy: [
+            'movie_2020_pirated.iso',
+            'software_crack.zip',
+            'premium_content_rip.tar',
+            'streaming_download.mp4',
+            'bootleg_album.zip'
+        ],
+        malware: [
+            'cryptolocker.exe',
+            'trojan_dropper.dll',
+            'ransomware_payload.bin',
+            'keylogger_service.exe',
+            'backdoor_client.dat'
+        ]
+    };
+
+    const templates = fileTemplates[variant] || fileTemplates.malware;
+    const files = [];
+    const usedNames = new Set();
+
+    while (files.length < count && files.length < templates.length) {
+        const name = templates[Math.floor(Math.random() * templates.length)];
+        if (!usedNames.has(name)) {
+            usedNames.add(name);
+            const sizeBytes = randomInt(1024 * 1024, 500 * 1024 * 1024); // 1MB - 500MB
+            const size = sizeBytes >= 1024 * 1024
+                ? `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB`
+                : `${(sizeBytes / 1024).toFixed(1)} KB`;
+
+            files.push({
+                name,
+                size,
+                sizeBytes,
+                corrupted: false,
+                targetFile: true,
+                flagged: true // For secure deletion missions
+            });
+        }
+    }
+
+    return files;
+}
+
+/**
+ * Generate investigation briefing message (doesn't reveal which volume)
+ * @param {Object} client - Client object
+ * @param {string} investigationType - 'repair' or 'recovery'
+ * @param {Array} networks - Network definitions
+ * @param {number|null} timeLimitMinutes - Time limit
+ * @param {Object} context - Additional context
+ * @returns {Object} Message object
+ */
+function generateInvestigationBriefing(client, investigationType, networks, timeLimitMinutes, context = {}) {
+    const { arcSequence, arcTotal, referralText, targetFiles = [], totalDataBytes = 0 } = context;
+
+    const templates = {
+        repair: [
+            `We've detected corruption on one of our file server's volumes. Unfortunately, we're not sure which volume is affected. We need you to investigate and repair the damaged files.`,
+            `Our monitoring systems flagged file integrity issues on a server, but the specific volume wasn't identified. Please use your tools to locate and repair the corrupted data.`,
+            `There's been corruption reported on our main server. The IT team couldn't pinpoint exactly where. We need a specialist to investigate and fix this.`
+        ],
+        recovery: [
+            `Critical files were accidentally deleted from our server. We're not certain which volume they were on. Please investigate and recover the lost data.`,
+            `An employee reported missing files but couldn't remember which volume they were stored on. We need you to locate and restore them.`,
+            `Our backup verification showed missing files on the server, but the exact location is unknown. Please investigate and recover what you can.`
+        ]
+    };
+
+    let body = 'Dear {username},\n\n';
+    body += referralText ? `${referralText}\n\n` : '';
+    body += randomPick(templates[investigationType] || templates.repair);
+
+    body += `\n\n⚠️ INVESTIGATION REQUIRED: Use the Log Viewer to examine device activity and identify which volume contains the affected files.`;
+
+    if (targetFiles.length > 0) {
+        body += `\n\n📁 Files to ${investigationType === 'repair' ? 'repair' : 'recover'}:`;
+        targetFiles.forEach(file => {
+            body += `\n• ${file}`;
+        });
+
+        if (totalDataBytes > 0) {
+            let sizeStr;
+            if (totalDataBytes >= 1024 * 1024 * 1024) {
+                sizeStr = `${(totalDataBytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+            } else if (totalDataBytes >= 1024 * 1024) {
+                sizeStr = `${(totalDataBytes / (1024 * 1024)).toFixed(0)} MB`;
+            } else {
+                sizeStr = `${(totalDataBytes / 1024).toFixed(0)} KB`;
+            }
+            body += `\n\nTotal data: ${sizeStr}`;
+        }
+    }
+
+    if (timeLimitMinutes) {
+        body += `\n\n⚠️ TIME SENSITIVE: This task must be completed within ${timeLimitMinutes} minutes of acceptance.`;
+    }
+
+    body += `\n\nAttached are the network credentials you'll need.`;
+
+    if (arcSequence && arcTotal) {
+        body += `\n\n[Mission ${arcSequence} of ${arcTotal}]`;
+    }
+
+    body += `\n\nSincerely,\n{clientName}`;
+
+    const uniqueId = `msg-briefing-investigation-${client.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    return {
+        id: uniqueId,
+        from: client.name,
+        fromId: client.id,
+        fromName: client.name,
+        subject: `Mission Briefing: ${investigationType === 'repair' ? 'File Repair Investigation' : 'Data Recovery Investigation'}`,
+        body,
+        attachments: generateNarAttachments(networks),
+        read: false,
+        timestamp: new Date().toISOString()
+    };
+}
+
+/**
+ * Generate secure deletion briefing message
+ * @param {Object} client - Client object
+ * @param {string} variant - 'compliance', 'piracy', or 'malware'
+ * @param {Array} networks - Network definitions
+ * @param {number|null} timeLimitMinutes - Time limit
+ * @param {Object} context - Additional context
+ * @returns {Object} Message object
+ */
+function generateSecureDeletionBriefing(client, variant, networks, timeLimitMinutes, context = {}) {
+    const { arcSequence, arcTotal, referralText, targetFiles = [] } = context;
+
+    const templates = {
+        compliance: [
+            `Our compliance team has flagged several files that need to be securely removed before our upcoming audit. These files contain sensitive data that should not be stored on this server.`,
+            `We're preparing for a regulatory audit and discovered some files that violate our data retention policies. They need to be permanently and securely deleted.`
+        ],
+        piracy: [
+            `Unknown actors have uploaded unauthorized content to our server. We need these files securely removed before we face legal action.`,
+            `Our monitoring detected pirated content on our file server. This needs to be permanently deleted immediately to protect the company.`
+        ],
+        malware: [
+            `Our security team has detected malware on one of our servers. We need these malicious files securely removed to prevent further damage.`,
+            `A virus scan flagged several suspicious files on our server. They need to be securely deleted - regular deletion won't be sufficient.`
+        ]
+    };
+
+    let body = 'Dear {username},\n\n';
+    body += referralText ? `${referralText}\n\n` : '';
+    body += randomPick(templates[variant] || templates.compliance);
+
+    body += `\n\n🔍 Use the Log Viewer to identify the flagged files, then use the Data Recovery Tool's Secure Delete feature to permanently remove them.`;
+
+    if (targetFiles.length > 0) {
+        body += `\n\n📁 Expected files to remove: ${targetFiles.length} files`;
+    }
+
+    if (timeLimitMinutes) {
+        body += `\n\n⚠️ URGENT: This task must be completed within ${timeLimitMinutes} minutes of acceptance.`;
+    }
+
+    body += `\n\nAttached are the network credentials you'll need.`;
+
+    if (arcSequence && arcTotal) {
+        body += `\n\n[Mission ${arcSequence} of ${arcTotal}]`;
+    }
+
+    body += `\n\nSincerely,\n{clientName}`;
+
+    const uniqueId = `msg-briefing-secure-delete-${client.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    return {
+        id: uniqueId,
+        from: client.name,
+        fromId: client.id,
+        fromName: client.name,
+        subject: `Mission Briefing: Secure File Removal Required`,
+        body,
+        attachments: generateNarAttachments(networks),
+        read: false,
+        timestamp: new Date().toISOString()
+    };
+}
+
+/**
+ * Get available mission types based on unlocked software
+ * Investigation missions require investigation-tooling unlock
+ * @param {Array} unlockedSoftware - Array of unlocked software IDs
+ * @returns {Array} Array of available mission type strings
+ */
+export function getMissionTypesForPlayer(unlockedSoftware = []) {
+    const types = ['repair', 'backup', 'transfer', 'restore', 'repair-backup']; // Always available
+
+    // Check if investigation tools are unlocked (log-viewer and data-recovery-tool require 'investigation-tooling')
+    const hasInvestigationTools = unlockedSoftware.includes('investigation-tooling') ||
+        (unlockedSoftware.includes('log-viewer') && unlockedSoftware.includes('data-recovery-tool'));
+
+    if (hasInvestigationTools) {
+        types.push('investigation-repair');    // Log Viewer -> find corruption -> repair
+        types.push('investigation-recovery');  // Log Viewer -> find deletion -> Data Recovery
+        types.push('secure-deletion');         // Log Viewer -> find flagged files -> Secure Delete
+    }
+
+    return types;
+}
+
 export default {
     generateMission,
     generateRepairMission,
@@ -1722,9 +2622,14 @@ export default {
     generateTransferMission,
     generateRestoreFromBackupMission,
     generateRepairAndBackupMission,
+    generateInvestigationRepairMission,
+    generateInvestigationRecoveryMission,
+    generateSecureDeletionMission,
     generateMissionArc,
     generateNetworkInfrastructure,
     calculateTimeLimit,
     calculatePayout,
-    resetMissionIdCounter
+    resetMissionIdCounter,
+    getMissionTypesForPlayer,
+    networkComplexityConfig
 };

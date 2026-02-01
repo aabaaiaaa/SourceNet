@@ -99,6 +99,7 @@ describe('NetworkRegistry', () => {
                 hostname: 'server-01',
                 networkId: 'test-network',
                 fileSystemId: 'fs-01',
+                fileSystemIds: ['fs-01'], // Now also stores array for multi-volume support
                 accessible: false,
             });
         });
@@ -127,6 +128,111 @@ describe('NetworkRegistry', () => {
             });
 
             expect(result).toBe(false);
+        });
+
+        it('should support multiple file systems via fileSystemIds array', () => {
+            const result = registry.registerDevice({
+                ip: '10.1.1.10',
+                hostname: 'multi-volume-server',
+                networkId: 'test-network',
+                fileSystemIds: ['fs-vol0', 'fs-vol1', 'fs-vol2'],
+            });
+
+            expect(result).toBe(true);
+            const device = registry.getDevice('10.1.1.10');
+            expect(device.fileSystemIds).toEqual(['fs-vol0', 'fs-vol1', 'fs-vol2']);
+            expect(device.fileSystemId).toBe('fs-vol0'); // First one for backward compat
+        });
+
+        it('should prefer fileSystemIds over fileSystemId when both provided', () => {
+            const result = registry.registerDevice({
+                ip: '10.1.1.10',
+                hostname: 'server',
+                networkId: 'test-network',
+                fileSystemId: 'fs-single',
+                fileSystemIds: ['fs-vol0', 'fs-vol1'],
+            });
+
+            expect(result).toBe(true);
+            const device = registry.getDevice('10.1.1.10');
+            expect(device.fileSystemIds).toEqual(['fs-vol0', 'fs-vol1']);
+            expect(device.fileSystemId).toBe('fs-vol0');
+        });
+
+        it('should merge file system IDs when updating device', () => {
+            registry.registerDevice({
+                ip: '10.1.1.10',
+                hostname: 'server',
+                networkId: 'test-network',
+                fileSystemIds: ['fs-vol0', 'fs-vol1'],
+            });
+
+            registry.registerDevice({
+                ip: '10.1.1.10',
+                fileSystemIds: ['fs-vol1', 'fs-vol2'],
+            });
+
+            const device = registry.getDevice('10.1.1.10');
+            expect(device.fileSystemIds).toContain('fs-vol0');
+            expect(device.fileSystemIds).toContain('fs-vol1');
+            expect(device.fileSystemIds).toContain('fs-vol2');
+        });
+    });
+
+    describe('getDeviceFileSystems', () => {
+        it('should return all file systems for a multi-volume device', () => {
+            // Register file systems
+            registry.registerFileSystem({ id: 'fs-vol0', files: [{ name: 'system.log' }] });
+            registry.registerFileSystem({ id: 'fs-vol1', files: [{ name: 'data.db' }] });
+            registry.registerFileSystem({ id: 'fs-vol2', files: [{ name: 'backup.tar' }] });
+
+            // Register device with multiple volumes
+            registry.registerDevice({
+                ip: '10.1.1.10',
+                hostname: 'multi-volume-server',
+                networkId: 'test-network',
+                fileSystemIds: ['fs-vol0', 'fs-vol1', 'fs-vol2'],
+            });
+
+            const fileSystems = registry.getDeviceFileSystems('10.1.1.10');
+            expect(fileSystems).toHaveLength(3);
+            expect(fileSystems[0].id).toBe('fs-vol0');
+            expect(fileSystems[1].id).toBe('fs-vol1');
+            expect(fileSystems[2].id).toBe('fs-vol2');
+        });
+
+        it('should return empty array for unknown device', () => {
+            const fileSystems = registry.getDeviceFileSystems('unknown-ip');
+            expect(fileSystems).toEqual([]);
+        });
+
+        it('should handle device with single fileSystemId (backward compat)', () => {
+            registry.registerFileSystem({ id: 'fs-single', files: [{ name: 'file.txt' }] });
+            registry.registerDevice({
+                ip: '10.1.1.10',
+                hostname: 'single-fs-server',
+                networkId: 'test-network',
+                fileSystemId: 'fs-single',
+            });
+
+            const fileSystems = registry.getDeviceFileSystems('10.1.1.10');
+            expect(fileSystems).toHaveLength(1);
+            expect(fileSystems[0].id).toBe('fs-single');
+        });
+
+        it('should skip file systems that do not exist in registry', () => {
+            registry.registerFileSystem({ id: 'fs-vol0', files: [] });
+            // fs-vol1 not registered
+            registry.registerDevice({
+                ip: '10.1.1.10',
+                hostname: 'server',
+                networkId: 'test-network',
+                fileSystemIds: ['fs-vol0', 'fs-vol1-missing'],
+            });
+
+            const fileSystems = registry.getDeviceFileSystems('10.1.1.10');
+            expect(fileSystems).toHaveLength(1);
+            expect(fileSystems[0].id).toBe('fs-vol0');
         });
     });
 
