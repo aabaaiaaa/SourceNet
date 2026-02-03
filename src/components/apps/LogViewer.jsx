@@ -133,6 +133,17 @@ const LogViewer = () => {
       setDeviceLogs(logs);
       setDeviceLoading(false);
       deviceLoadingTimerRef.current = null;
+
+      // Emit event for objective tracking - player has viewed device logs
+      // This is used by investigation objectives to track when player identifies the correct device
+      const device = networkRegistry.getDevice(selectedDevice.ip);
+      triggerEventBus.emit('deviceLogsViewed', {
+        deviceIp: selectedDevice.ip,
+        hostname: selectedDevice.hostname,
+        networkId: selectedDevice.networkId,
+        fileSystemId: device?.fileSystemId || null,
+        logsCount: logs?.length || 0,
+      });
     }, LOG_FETCH_DELAY_MS, timeSpeed);
   };
 

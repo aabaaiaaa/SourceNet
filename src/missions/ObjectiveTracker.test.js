@@ -6,6 +6,7 @@ import {
   checkFileOperationObjective,
   checkNarEntryAddedObjective,
   checkInvestigationObjective,
+  checkDataRecoveryScanObjective,
   checkFileRecoveryObjective,
   checkSecureDeleteObjective,
   checkMissionObjectives,
@@ -716,49 +717,110 @@ describe('ObjectiveTracker', () => {
   });
 
   describe('checkInvestigationObjective', () => {
-    it('should return true when connected to correct file system', () => {
+    it('should return true when device logs viewed for correct file system', () => {
       const objective = {
         type: 'investigation',
         correctFileSystemId: 'fs-target-vol1',
       };
-      const connections = [
-        { fileSystemId: 'fs-target-vol1', ip: '10.1.1.10' },
+      const viewedDeviceLogs = [
+        { fileSystemId: 'fs-target-vol1', deviceIp: '10.1.1.10', hostname: 'server-01' },
       ];
 
-      expect(checkInvestigationObjective(objective, connections)).toBe(true);
+      expect(checkInvestigationObjective(objective, viewedDeviceLogs)).toBe(true);
     });
 
-    it('should return false when connected to wrong file system', () => {
+    it('should return false when device logs viewed for wrong file system', () => {
       const objective = {
         type: 'investigation',
         correctFileSystemId: 'fs-target-vol1',
       };
-      const connections = [
-        { fileSystemId: 'fs-target-vol2', ip: '10.1.1.10' },
+      const viewedDeviceLogs = [
+        { fileSystemId: 'fs-target-vol2', deviceIp: '10.1.1.10', hostname: 'server-01' },
       ];
 
-      expect(checkInvestigationObjective(objective, connections)).toBe(false);
+      expect(checkInvestigationObjective(objective, viewedDeviceLogs)).toBe(false);
     });
 
-    it('should return false when not connected to any file system', () => {
+    it('should return false when no device logs viewed', () => {
       const objective = {
         type: 'investigation',
         correctFileSystemId: 'fs-target-vol1',
       };
-      const connections = [];
+      const viewedDeviceLogs = [];
 
-      expect(checkInvestigationObjective(objective, connections)).toBe(false);
+      expect(checkInvestigationObjective(objective, viewedDeviceLogs)).toBe(false);
     });
 
     it('should return false when correctFileSystemId is missing', () => {
       const objective = {
         type: 'investigation',
       };
-      const connections = [
-        { fileSystemId: 'fs-target-vol1', ip: '10.1.1.10' },
+      const viewedDeviceLogs = [
+        { fileSystemId: 'fs-target-vol1', deviceIp: '10.1.1.10', hostname: 'server-01' },
       ];
 
-      expect(checkInvestigationObjective(objective, connections)).toBe(false);
+      expect(checkInvestigationObjective(objective, viewedDeviceLogs)).toBe(false);
+    });
+  });
+
+  describe('checkDataRecoveryScanObjective', () => {
+    it('should return true when target file system has been scanned', () => {
+      const objective = {
+        type: 'dataRecoveryScan',
+        target: 'fs-target-vol1',
+      };
+      const scannedFileSystems = [
+        { fileSystemId: 'fs-target-vol1', deletedFiles: ['file1.txt'] },
+      ];
+
+      expect(checkDataRecoveryScanObjective(objective, scannedFileSystems)).toBe(true);
+    });
+
+    it('should return false when different file system was scanned', () => {
+      const objective = {
+        type: 'dataRecoveryScan',
+        target: 'fs-target-vol1',
+      };
+      const scannedFileSystems = [
+        { fileSystemId: 'fs-other-vol2', deletedFiles: ['file1.txt'] },
+      ];
+
+      expect(checkDataRecoveryScanObjective(objective, scannedFileSystems)).toBe(false);
+    });
+
+    it('should return false when no scans performed', () => {
+      const objective = {
+        type: 'dataRecoveryScan',
+        target: 'fs-target-vol1',
+      };
+      const scannedFileSystems = [];
+
+      expect(checkDataRecoveryScanObjective(objective, scannedFileSystems)).toBe(false);
+    });
+
+    it('should return false when target is not specified', () => {
+      const objective = {
+        type: 'dataRecoveryScan',
+      };
+      const scannedFileSystems = [
+        { fileSystemId: 'fs-target-vol1', deletedFiles: ['file1.txt'] },
+      ];
+
+      expect(checkDataRecoveryScanObjective(objective, scannedFileSystems)).toBe(false);
+    });
+
+    it('should return true when target is among multiple scanned file systems', () => {
+      const objective = {
+        type: 'dataRecoveryScan',
+        target: 'fs-target-vol2',
+      };
+      const scannedFileSystems = [
+        { fileSystemId: 'fs-other-vol1', deletedFiles: [] },
+        { fileSystemId: 'fs-target-vol2', deletedFiles: ['important.dat'] },
+        { fileSystemId: 'fs-other-vol3', deletedFiles: [] },
+      ];
+
+      expect(checkDataRecoveryScanObjective(objective, scannedFileSystems)).toBe(true);
     });
   });
 

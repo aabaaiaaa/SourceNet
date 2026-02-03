@@ -28,7 +28,9 @@
       "Bash(npx eslint:*)",
       "Bash(grep:*)",
       "Bash(npx vitest:*)",
-      "Bash(dir /b:*)"
+      "Bash(dir /b:*)",
+      "Bash(npm run:*)",
+      "Bash(node -e:*)"
     ]
   }
 }

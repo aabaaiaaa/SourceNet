@@ -101,6 +101,7 @@ describe('NetworkRegistry', () => {
                 fileSystemId: 'fs-01',
                 fileSystemIds: ['fs-01'], // Now also stores array for multi-volume support
                 accessible: false,
+                logs: [], // Activity logs for investigation missions
             });
         });
 

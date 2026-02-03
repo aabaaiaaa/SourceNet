@@ -88,10 +88,11 @@ class NetworkRegistry {
      * @param {string} [device.fileSystemId] - Associated file system ID (single, for backward compat)
      * @param {Array<string>} [device.fileSystemIds] - Associated file system IDs (multiple volumes)
      * @param {boolean} [device.accessible=false] - Whether device is accessible (default false until NAR activated)
+     * @param {Array} [device.logs] - Activity logs for this device (used by investigation missions)
      * @returns {boolean} True if registered, false if invalid
      */
     registerDevice(device) {
-        const { ip, hostname, networkId, fileSystemId, fileSystemIds, accessible = false } = device;
+        const { ip, hostname, networkId, fileSystemId, fileSystemIds, accessible = false, logs } = device;
 
         if (!ip) {
             console.warn('NetworkRegistry: Cannot register device without IP');
@@ -118,6 +119,14 @@ class NetworkRegistry {
                 mergedFsIds = existing.fileSystemIds;
             }
 
+            // Merge logs if both old and new have them
+            let mergedLogs = logs;
+            if (existing.logs && logs) {
+                mergedLogs = [...existing.logs, ...logs];
+            } else if (existing.logs && !logs) {
+                mergedLogs = existing.logs;
+            }
+
             this.devices.set(ip, {
                 ...existing,
                 hostname: hostname || existing.hostname,
@@ -126,6 +135,7 @@ class NetworkRegistry {
                 // Keep single fileSystemId for backward compatibility (first in array)
                 fileSystemId: mergedFsIds?.[0] || existing.fileSystemId,
                 accessible: accessible ?? existing.accessible,
+                logs: mergedLogs,
             });
             return true;
         }
@@ -138,6 +148,7 @@ class NetworkRegistry {
             // Keep single fileSystemId for backward compatibility (first in array)
             fileSystemId: fsIds?.[0] || fileSystemId,
             accessible,
+            logs: logs || [],
         });
 
         return true;

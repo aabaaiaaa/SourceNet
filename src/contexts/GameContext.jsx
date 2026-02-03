@@ -34,7 +34,7 @@ import { BANKING_MESSAGES, HR_MESSAGES } from '../core/systemMessages';
 import { getReputationTier } from '../systems/ReputationSystem';
 import triggerEventBus from '../core/triggerEventBus';
 import { executeScriptedEvent } from '../missions/ScriptedEventExecutor';
-import { initializePool, refreshPool, shouldRefreshPool, handleArcProgression, handleArcFailure, generatePoolMission, addExpirationToMission, poolConfig } from '../missions/MissionPoolManager';
+import { initializePool, refreshPool, shouldRefreshPool, handleArcProgression, handleArcFailure, generatePoolMission, addExpirationToMission, poolConfig, getPoolConfigForProgression } from '../missions/MissionPoolManager';
 import { shouldTriggerExtension, generateExtension, getObjectiveProgress } from '../missions/MissionExtensionGenerator';
 import { checkObjectiveImpossible } from '../missions/ObjectiveTracker';
 import networkRegistry from '../systems/NetworkRegistry';
@@ -315,8 +315,8 @@ export const GameProvider = ({ children }) => {
         // Mark "better" message as read for hardware unlock trigger
         setBetterMessageRead(true);
 
-        // Initialize the mission pool
-        const poolState = initializePool(reputation, currentTime);
+        // Initialize the mission pool with unlocked features for investigation missions
+        const poolState = initializePool(reputation, currentTime, { unlockedSoftware: unlockedFeatures });
         console.log(`📋 Procedural pool initialized with ${poolState.missions.length} missions, ${Object.keys(poolState.pendingArcMissions || {}).length} arcs pending`);
         setMissionPool(poolState.missions);
         setPendingChainMissions(poolState.pendingArcMissions || {});
@@ -326,9 +326,9 @@ export const GameProvider = ({ children }) => {
 
     const unsubscribe = triggerEventBus.on('messageRead', handleMessageRead);
     return () => unsubscribe();
-  }, [reputation, currentTime]);
+  }, [reputation, currentTime, unlockedFeatures]);
 
-  // Refresh procedural mission pool when reputation changes or time advances significantly
+  // Refresh procedural mission pool when reputation changes or unlocked features change
   useEffect(() => {
     if (!proceduralMissionsEnabled || missionPool.length === 0) return;
 
@@ -339,15 +339,15 @@ export const GameProvider = ({ children }) => {
       lastRefresh: new Date().toISOString()
     };
 
-    if (shouldRefreshPool(poolState, reputation)) {
+    if (shouldRefreshPool(poolState, reputation, { unlockedSoftware: unlockedFeatures })) {
       console.log('🔄 Refreshing procedural mission pool...');
       const activeMissionId = activeMission?.missionId || null;
-      const newPoolState = refreshPool(poolState, reputation, currentTime, activeMissionId);
+      const newPoolState = refreshPool(poolState, reputation, currentTime, activeMissionId, { unlockedSoftware: unlockedFeatures });
       setMissionPool(newPoolState.missions);
       setPendingChainMissions(newPoolState.pendingArcMissions || {});
       setActiveClientIds(newPoolState.activeClientIds);
     }
-  }, [reputation]); // Only trigger on reputation change
+  }, [reputation, unlockedFeatures]); // Trigger on reputation or unlocked features change
 
   // Auto-regenerate missions after expiration (immediate generation, hidden for 1 game minute)
   useEffect(() => {
@@ -385,7 +385,9 @@ export const GameProvider = ({ children }) => {
         return currentTimeMs <= new Date(m.expiresAt).getTime();
       }).length + newMissions.length;
 
-      if (nonExpiredCount >= poolConfig.max) {
+      // Use progression-based pool config for capacity check
+      const currentPoolConfig = getPoolConfigForProgression(unlockedFeatures);
+      if (nonExpiredCount >= currentPoolConfig.max) {
         console.log(`⏭️ Mission "${mission.title}" expired but pool at max capacity - removing without replacement`);
         // Mark for removal without replacement
         expiredMissionsToMark.set(mission.missionId, { removeImmediately: true });
@@ -399,8 +401,8 @@ export const GameProvider = ({ children }) => {
         ...clientIdsToAdd
       ]);
 
-      // Generate replacement mission immediately
-      const result = generatePoolMission(reputation, currentTime, currentActiveClients, false);
+      // Generate replacement mission immediately with unlocked features
+      const result = generatePoolMission(reputation, currentTime, currentActiveClients, false, { unlockedSoftware: unlockedFeatures });
 
       if (result) {
         let newMission;
@@ -470,7 +472,7 @@ export const GameProvider = ({ children }) => {
         });
       }
     }
-  }, [proceduralMissionsEnabled, missionPool, currentTime, activeMission?.missionId, activeClientIds, reputation]);
+  }, [proceduralMissionsEnabled, missionPool, currentTime, activeMission?.missionId, activeClientIds, reputation, unlockedFeatures]);
 
   // Cleanup expired missions once their replacements become visible
   useEffect(() => {
@@ -662,6 +664,7 @@ export const GameProvider = ({ children }) => {
                 networkId: narAtt.networkId,
                 fileSystemId: fs.id,
                 accessible: false,
+                logs: fs.logs || [], // Pass activity logs if present
               });
               deviceIps.push(fs.ip);
 
@@ -1413,6 +1416,7 @@ export const GameProvider = ({ children }) => {
               networkId: network.networkId,
               fileSystemId: fs.id,
               accessible: false,
+              logs: fs.logs || [], // Pass activity logs for investigation missions
             });
 
             networkRegistry.registerFileSystem({

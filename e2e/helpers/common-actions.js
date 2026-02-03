@@ -333,3 +333,135 @@ export async function waitForAndDismissForcedDisconnection(page, timeout = 10000
     await page.click('.acknowledge-btn');
     await expect(page.locator('.forced-disconnect-overlay')).not.toBeVisible({ timeout: 2000 });
 }
+
+// ============================================================================
+// OBJECTIVE VERIFICATION HELPERS
+// ============================================================================
+
+/**
+ * Wait for an objective to be marked as complete
+ * @param {Page} page - Playwright page object
+ * @param {string} objectiveText - Partial text to match in the objective description
+ * @param {number} timeout - Timeout in milliseconds
+ */
+export async function waitForObjectiveComplete(page, objectiveText, timeout = 5000) {
+    const objective = page.locator(`.objective-item:has-text("${objectiveText}")`).first();
+    await expect(objective).toHaveClass(/objective-complete/, { timeout });
+}
+
+/**
+ * Verify an objective is still pending (not complete)
+ * @param {Page} page - Playwright page object
+ * @param {string} objectiveText - Partial text to match in the objective description
+ */
+export async function verifyObjectivePending(page, objectiveText) {
+    const objective = page.locator(`.objective-item:has-text("${objectiveText}")`).first();
+    await expect(objective).not.toHaveClass(/objective-complete/);
+}
+
+/**
+ * Get the status of an objective by its ID
+ * @param {Page} page - Playwright page object
+ * @param {string} objectiveId - The objective ID
+ * @returns {Promise<string>} The objective status or 'not-found'
+ */
+export async function getObjectiveStatus(page, objectiveId) {
+    return page.evaluate((id) => {
+        const mission = window.gameContext?.activeMission;
+        const obj = mission?.objectives?.find(o => o.id === id);
+        return obj?.status || 'not-found';
+    }, objectiveId);
+}
+
+// ============================================================================
+// NETWORK OPERATIONS
+// ============================================================================
+
+/**
+ * Connect to a network via VPN Client
+ * @param {Page} page - Playwright page object
+ * @param {string} networkName - The display name of the network to connect to
+ */
+export async function connectToNetwork(page, networkName) {
+    await openApp(page, 'VPN Client');
+    const vpn = page.locator('.window:has-text("VPN Client")');
+    await vpn.locator('select').selectOption({ label: networkName });
+    await vpn.locator('button:has-text("Connect")').click();
+    await expect(vpn.locator('button:has-text("Disconnect")')).toBeVisible({ timeout: 5000 });
+    await closeWindow(page, 'VPN Client');
+}
+
+/**
+ * Scan a network using the Network Scanner
+ * @param {Page} page - Playwright page object
+ * @param {string} networkName - The display name of the network to scan
+ * @param {string} expectedHost - Optional hostname to wait for in results
+ */
+export async function scanNetwork(page, networkName, expectedHost = null) {
+    await openApp(page, 'Network Scanner');
+    const scanner = page.locator('.window:has-text("Network Scanner")');
+    await scanner.locator('select').first().selectOption({ label: networkName });
+    await scanner.locator('select').last().selectOption('deep');
+    await scanner.locator('button:has-text("Scan")').click();
+
+    await page.evaluate(() => window.gameContext.setSpecificTimeSpeed(100));
+    if (expectedHost) {
+        await expect(scanner.locator(`text=${expectedHost}`).first()).toBeVisible({ timeout: 10000 });
+    } else {
+        await expect(scanner.locator('.machine-item').first()).toBeVisible({ timeout: 10000 });
+    }
+    await page.evaluate(() => window.gameContext.setSpecificTimeSpeed(1));
+    await closeWindow(page, 'Network Scanner');
+}
+
+// ============================================================================
+// FILE MANAGER OPERATIONS
+// ============================================================================
+
+/**
+ * Connect File Manager to a file system by its ID
+ * @param {Page} page - Playwright page object
+ * @param {string} fileSystemId - The file system ID to connect to
+ */
+export async function connectFileManager(page, fileSystemId) {
+    await openApp(page, 'File Manager');
+    const fm = page.locator('.window:has-text("File Manager")').first();
+    await fm.locator('select').first().selectOption(fileSystemId);
+    await page.waitForTimeout(200);
+}
+
+/**
+ * Select all corrupted files in File Manager
+ * @param {Page} page - Playwright page object
+ * @returns {Promise<number>} The number of corrupted files selected
+ */
+export async function selectCorruptedFiles(page) {
+    const fm = page.locator('.window:has-text("File Manager")').first();
+    const corrupted = fm.locator('.file-corrupted');
+    const count = await corrupted.count();
+    for (let i = 0; i < count; i++) {
+        await corrupted.nth(i).click({ modifiers: ['Control'] });
+    }
+    return count;
+}
+
+/**
+ * Repair selected files in File Manager
+ * @param {Page} page - Playwright page object
+ */
+export async function repairSelectedFiles(page) {
+    const fm = page.locator('.window:has-text("File Manager")').first();
+    await fm.locator('button:has-text("Repair")').click();
+    await page.evaluate(() => window.gameContext.setSpecificTimeSpeed(100));
+    await expect(fm.locator('.file-operating')).toHaveCount(0, { timeout: 30000 });
+    await page.evaluate(() => window.gameContext.setSpecificTimeSpeed(1));
+}
+
+/**
+ * Set game time speed to a specific value (for tests)
+ * @param {Page} page - Playwright page object
+ * @param {number} speed - The time speed to set (e.g., 100 for fast tests)
+ */
+export async function setSpecificTimeSpeed(page, speed) {
+    await page.evaluate((s) => window.gameContext.setSpecificTimeSpeed(s), speed);
+}

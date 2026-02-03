@@ -121,22 +121,27 @@ export function addExpirationToMission(mission, currentTime) {
  * Initialize a new mission pool
  * @param {number} reputation - Player's current reputation tier
  * @param {Date} currentTime - Current game time
+ * @param {Object} options - Additional options { unlockedSoftware }
  * @returns {Object} Initial pool state
  */
-export function initializePool(reputation, currentTime) {
+export function initializePool(reputation, currentTime, options = {}) {
+    const { unlockedSoftware = [] } = options;
     const pool = [];
     const pendingArcMissions = {}; // arcId -> array of hidden missions
     const activeClientIds = new Set();
     const completedMissions = new Set(); // Track completed mission IDs for arc unlocking
 
+    // Use progression-based pool config
+    const config = getPoolConfigForProgression(unlockedSoftware);
+
     const targetSize = Math.floor(
-        poolConfig.min +
-        Math.random() * (poolConfig.max - poolConfig.min + 1)
+        config.min +
+        Math.random() * (config.max - config.min + 1)
     );
 
     // Generate initial missions
     while (pool.length < targetSize) {
-        const result = generatePoolMission(reputation, currentTime, activeClientIds, pool.length < poolConfig.minAccessible);
+        const result = generatePoolMission(reputation, currentTime, activeClientIds, pool.length < config.minAccessible, { unlockedSoftware });
 
         if (result) {
             if (result.arcId) {
@@ -229,7 +234,13 @@ export function generatePoolMission(reputation, currentTime, excludeClientIds, m
     const config = getPoolConfigForProgression(unlockedSoftware);
 
     // Check if we should generate an investigation mission
-    if (config.investigationChance > 0 && Math.random() < config.investigationChance) {
+    // When pool cap increases due to new mission types being available, use 100% chance
+    // for those new types since the extra capacity was specifically added for them
+    const { guaranteeInvestigation = false } = options;
+    const shouldGenerateInvestigation = guaranteeInvestigation ||
+        (config.investigationChance > 0 && Math.random() < config.investigationChance);
+
+    if (shouldGenerateInvestigation) {
         const investigationTypes = availableTypes.filter(t =>
             t.startsWith('investigation-') || t === 'secure-deletion'
         );
@@ -306,12 +317,17 @@ function getClientsForArc(storyline, initialClient, excludeClientIds, reputation
  * @param {number} reputation - Player reputation
  * @param {Date} currentTime - Current game time
  * @param {string|null} activeMissionId - Currently active mission ID (exclude from removal)
+ * @param {Object} options - Additional options { unlockedSoftware }
  * @returns {Object} Updated pool state
  */
-export function refreshPool(poolState, reputation, currentTime, activeMissionId = null) {
+export function refreshPool(poolState, reputation, currentTime, activeMissionId = null, options = {}) {
+    const { unlockedSoftware = [] } = options;
     const { missions, pendingArcMissions, activeClientIds, completedMissions } = poolState;
     const currentTimeMs = currentTime.getTime();
     const activeClients = new Set(activeClientIds);
+
+    // Use progression-based pool config
+    const config = getPoolConfigForProgression(unlockedSoftware);
 
     // Remove expired missions (but not the active one)
     const validMissions = missions.filter(mission => {
@@ -344,20 +360,35 @@ export function refreshPool(poolState, reputation, currentTime, activeMissionId 
     // Determine how many missions to add
     const currentSize = validMissions.length;
     const targetSize = Math.floor(
-        poolConfig.min +
-        Math.random() * (poolConfig.max - poolConfig.min + 1)
+        config.min +
+        Math.random() * (config.max - config.min + 1)
     );
-    const needAccessible = Math.max(0, poolConfig.minAccessible - accessibleCount);
-    const missionsToAdd = Math.max(needAccessible, targetSize - currentSize);
+    const needAccessible = Math.max(0, config.minAccessible - accessibleCount);
+
+    // Check if we need investigation missions - if investigation tooling is unlocked but
+    // no investigation missions exist, we MUST add at least one
+    const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
+    const hasInvestigationMissions = validMissions.some(m => investigationTypes.includes(m.missionType));
+    const needsInvestigationMissions = config.investigationChance > 0 && !hasInvestigationMissions;
+
+    // When investigation missions are needed, ensure we add at least 1 even if pool is at max
+    const minToAddForInvestigation = needsInvestigationMissions ? 1 : 0;
+    const missionsToAdd = Math.max(needAccessible, targetSize - currentSize, minToAddForInvestigation);
 
     // Generate new missions
     const newMissions = [...validMissions];
     const newPendingArcMissions = { ...pendingArcMissions };
     let accessibleAdded = 0;
+    let investigationAdded = false;
 
     for (let i = 0; i < missionsToAdd; i++) {
         const mustBeAccessible = accessibleAdded < needAccessible;
-        const result = generatePoolMission(reputation, currentTime, activeClients, mustBeAccessible);
+        // Guarantee investigation mission when pool cap increased for new types and we haven't added one yet
+        const guaranteeInvestigation = needsInvestigationMissions && !investigationAdded;
+        const result = generatePoolMission(reputation, currentTime, activeClients, mustBeAccessible, {
+            unlockedSoftware,
+            guaranteeInvestigation
+        });
 
         if (result) {
             if (result.arcId) {
@@ -366,11 +397,19 @@ export function refreshPool(poolState, reputation, currentTime, activeMissionId 
                 newMissions.push(firstMission);
                 activeClients.add(firstMission.clientId);
                 newPendingArcMissions[result.arcId] = result.missions.slice(1);
+                // Track if we added an investigation mission
+                if (investigationTypes.includes(firstMission.missionType)) {
+                    investigationAdded = true;
+                }
             } else {
                 // Single mission - add expiration
                 const mission = addExpirationToMission(result, currentTime);
                 newMissions.push(mission);
                 activeClients.add(mission.clientId);
+                // Track if we added an investigation mission
+                if (investigationTypes.includes(mission.missionType)) {
+                    investigationAdded = true;
+                }
             }
 
             if (mustBeAccessible) {
@@ -582,13 +621,25 @@ export function getPoolStats(poolState, reputation) {
  * Check if pool needs refresh based on configuration
  * @param {Object} poolState - Current pool state
  * @param {number} reputation - Player reputation
+ * @param {Object} options - Additional options { unlockedSoftware }
  * @returns {boolean} Whether pool should be refreshed
  */
-export function shouldRefreshPool(poolState, reputation) {
+export function shouldRefreshPool(poolState, reputation, options = {}) {
+    const { unlockedSoftware = [] } = options;
     const { missions } = poolState;
 
+    // Use progression-based pool config
+    const config = getPoolConfigForProgression(unlockedSoftware);
+
     // Refresh if below minimum size
-    if (missions.length < poolConfig.min) {
+    if (missions.length < config.min) {
+        return true;
+    }
+
+    // Refresh if pool is below the midpoint of the target range
+    // This ensures pool grows when cap increases (e.g., from 4-6 to 5-8)
+    const targetMidpoint = Math.floor((config.min + config.max) / 2);
+    if (missions.length < targetMidpoint) {
         return true;
     }
 
@@ -597,8 +648,18 @@ export function shouldRefreshPool(poolState, reputation) {
         canAccessClientType(m.clientType, reputation)
     ).length;
 
-    if (accessibleCount < poolConfig.minAccessible) {
+    if (accessibleCount < config.minAccessible) {
         return true;
+    }
+
+    // Refresh if investigation tooling is unlocked but no investigation missions exist
+    // This ensures new mission types appear naturally as the pool refreshes
+    if (config.investigationChance > 0) {
+        const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
+        const hasInvestigationMissions = missions.some(m => investigationTypes.includes(m.missionType));
+        if (!hasInvestigationMissions) {
+            return true;
+        }
     }
 
     return false;

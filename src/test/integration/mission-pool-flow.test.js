@@ -18,7 +18,15 @@ vi.mock('../../missions/missionData.js', () => ({
 
 // Import after mocks are set up
 import { generateMission, generateMissionArc } from '../../missions/MissionGenerator';
-import { initializePool, refreshPool, handleArcProgression, removeMissionFromPool } from '../../missions/MissionPoolManager';
+import {
+    initializePool,
+    refreshPool,
+    handleArcProgression,
+    removeMissionFromPool,
+    shouldRefreshPool,
+    getProgressionLevel,
+    getPoolConfigForProgression
+} from '../../missions/MissionPoolManager';
 import { getRandomStoryline } from '../../missions/arcStorylines';
 import { getAllClients, getClientById, getAccessibleClients } from '../../data/clientRegistry';
 
@@ -383,6 +391,211 @@ describe('Mission Pool Flow Integration', () => {
             expect(lookedUp).toBeDefined();
             expect(lookedUp.id).toBe(client.id);
             expect(lookedUp.name).toBe(client.name);
+        });
+    });
+
+    // ========================================================================
+    // Feature Unlock Integration (Investigation Missions)
+    // ========================================================================
+
+    describe('feature unlock integration', () => {
+        it('should return early progression level when no features unlocked', () => {
+            const level = getProgressionLevel([]);
+            expect(level).toBe('early');
+        });
+
+        it('should return midGame progression level when investigation-tooling is unlocked', () => {
+            const level = getProgressionLevel(['investigation-tooling']);
+            expect(level).toBe('midGame');
+        });
+
+        it('should return midGame when both log-viewer and data-recovery-tool are unlocked', () => {
+            const level = getProgressionLevel(['log-viewer', 'data-recovery-tool']);
+            expect(level).toBe('midGame');
+        });
+
+        it('should use early game pool config when no features unlocked', () => {
+            const config = getPoolConfigForProgression([]);
+            expect(config.min).toBe(4);
+            expect(config.max).toBe(6);
+            expect(config.minAccessible).toBe(2);
+            expect(config.investigationChance).toBe(0);
+        });
+
+        it('should use midGame pool config when investigation-tooling is unlocked', () => {
+            const config = getPoolConfigForProgression(['investigation-tooling']);
+            expect(config.min).toBe(5);
+            expect(config.max).toBe(8);
+            expect(config.minAccessible).toBe(3);
+            expect(config.investigationChance).toBe(0.25);
+        });
+
+        it('should initialize larger pool when investigation-tooling is unlocked', () => {
+            const currentTime = new Date('2026-01-22T12:00:00Z');
+            const reputation = 1;
+
+            // Without investigation-tooling
+            const earlyPool = initializePool(reputation, currentTime, { unlockedSoftware: [] });
+            expect(earlyPool.missions.length).toBeGreaterThanOrEqual(4);
+            expect(earlyPool.missions.length).toBeLessThanOrEqual(6);
+
+            // With investigation-tooling
+            const midGamePool = initializePool(reputation, currentTime, { unlockedSoftware: ['investigation-tooling'] });
+            expect(midGamePool.missions.length).toBeGreaterThanOrEqual(5);
+            expect(midGamePool.missions.length).toBeLessThanOrEqual(8);
+        });
+
+        it('should generate investigation missions when investigation-tooling is unlocked', () => {
+            const currentTime = new Date('2026-01-22T12:00:00Z');
+            const reputation = 1;
+
+            // Generate many pools to statistically verify investigation missions appear
+            let foundInvestigationMission = false;
+            const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
+
+            for (let i = 0; i < 20 && !foundInvestigationMission; i++) {
+                const pool = initializePool(reputation, currentTime, { unlockedSoftware: ['investigation-tooling'] });
+                foundInvestigationMission = pool.missions.some(m => investigationTypes.includes(m.missionType));
+            }
+
+            // With 25% chance per mission and 5-8 missions per pool over 20 pools,
+            // we should almost certainly see at least one investigation mission
+            expect(foundInvestigationMission).toBe(true);
+        });
+
+        it('should NOT generate investigation missions when investigation-tooling is NOT unlocked', () => {
+            const currentTime = new Date('2026-01-22T12:00:00Z');
+            const reputation = 1;
+            const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
+
+            // Generate multiple pools without investigation-tooling
+            for (let i = 0; i < 10; i++) {
+                const pool = initializePool(reputation, currentTime, { unlockedSoftware: [] });
+                const hasInvestigation = pool.missions.some(m => investigationTypes.includes(m.missionType));
+                expect(hasInvestigation).toBe(false);
+            }
+        });
+
+        it('should use correct config in refreshPool when investigation-tooling is unlocked', () => {
+            const startTime = new Date('2026-01-22T12:00:00Z');
+
+            // Start with empty pool
+            const emptyPool = {
+                missions: [],
+                pendingArcMissions: {},
+                completedMissions: [],
+                activeClientIds: [],
+                lastRefresh: startTime.toISOString(),
+            };
+
+            // Refresh with investigation-tooling should target 5-8 missions
+            const refreshed = refreshPool(emptyPool, 1, startTime, null, { unlockedSoftware: ['investigation-tooling'] });
+            expect(refreshed.missions.length).toBeGreaterThanOrEqual(5);
+            expect(refreshed.missions.length).toBeLessThanOrEqual(8);
+        });
+
+        it('should use correct config in shouldRefreshPool when investigation-tooling is unlocked', () => {
+            // Pool with 5 missions - at early game midpoint, but below midGame midpoint
+            // Use client types accessible at reputation 1: gov-library, cultural-local, nonprofit-community
+            const pool = {
+                missions: [
+                    { clientType: 'gov-library' },
+                    { clientType: 'cultural-local' },
+                    { clientType: 'nonprofit-community' },
+                    { clientType: 'gov-library' },
+                    { clientType: 'cultural-local' },
+                ],
+                pendingArcMissions: {},
+                activeClientIds: [],
+            };
+
+            // Without investigation-tooling, midpoint is (4+6)/2=5, pool is at midpoint - no refresh
+            expect(shouldRefreshPool(pool, 1, { unlockedSoftware: [] })).toBe(false);
+
+            // With investigation-tooling, midpoint is (5+8)/2=6, pool is 5 < 6 - should refresh
+            expect(shouldRefreshPool(pool, 1, { unlockedSoftware: ['investigation-tooling'] })).toBe(true);
+        });
+
+        it('should pass unlockedSoftware through to generatePoolMission during refresh', () => {
+            const currentTime = new Date('2026-01-22T12:00:00Z');
+            const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
+
+            // Start with empty pool and refresh with investigation-tooling
+            const emptyPool = {
+                missions: [],
+                pendingArcMissions: {},
+                completedMissions: [],
+                activeClientIds: [],
+                lastRefresh: currentTime.toISOString(),
+            };
+
+            // Refresh multiple times to verify investigation missions can be generated
+            let foundInvestigationMission = false;
+            for (let i = 0; i < 20 && !foundInvestigationMission; i++) {
+                const refreshed = refreshPool(emptyPool, 1, currentTime, null, { unlockedSoftware: ['investigation-tooling'] });
+                foundInvestigationMission = refreshed.missions.some(m => investigationTypes.includes(m.missionType));
+            }
+
+            expect(foundInvestigationMission).toBe(true);
+        });
+
+        it('should trigger refresh when pool is below midpoint of target range', () => {
+            // Pool with 5 missions including investigation - below midpoint but has investigation
+            const pool = {
+                missions: [
+                    { clientType: 'gov-library', missionType: 'repair' },
+                    { clientType: 'cultural-local', missionType: 'investigation-repair' },
+                    { clientType: 'nonprofit-community', missionType: 'transfer' },
+                    { clientType: 'gov-library', missionType: 'restore' },
+                    { clientType: 'cultural-local', missionType: 'repair' },
+                ],
+                pendingArcMissions: {},
+                activeClientIds: [],
+            };
+
+            // Without investigation-tooling, midpoint is (4+6)/2=5, so 5 is at midpoint - no refresh
+            expect(shouldRefreshPool(pool, 1, { unlockedSoftware: [] })).toBe(false);
+
+            // With investigation-tooling, midpoint is (5+8)/2=6, so 5 < 6 - should refresh
+            expect(shouldRefreshPool(pool, 1, { unlockedSoftware: ['investigation-tooling'] })).toBe(true);
+        });
+
+        it('should NOT trigger refresh when pool is at midpoint and has investigation missions', () => {
+            // Pool with 6 missions including investigation - at midpoint and has investigation
+            const pool = {
+                missions: [
+                    { clientType: 'gov-library', missionType: 'repair' },
+                    { clientType: 'cultural-local', missionType: 'investigation-repair' },
+                    { clientType: 'nonprofit-community', missionType: 'transfer' },
+                    { clientType: 'gov-library', missionType: 'restore' },
+                    { clientType: 'cultural-local', missionType: 'repair' },
+                    { clientType: 'nonprofit-community', missionType: 'backup' },
+                ],
+                pendingArcMissions: {},
+                activeClientIds: [],
+            };
+
+            // With investigation-tooling, midpoint is 6, pool has investigation - no refresh needed
+            expect(shouldRefreshPool(pool, 1, { unlockedSoftware: ['investigation-tooling'] })).toBe(false);
+        });
+
+        it('should trigger refresh when pool is at midpoint but missing investigation missions', () => {
+            // Pool with 6 missions but NO investigation - at midpoint but missing new mission type
+            const pool = {
+                missions: [
+                    { clientType: 'gov-library', missionType: 'repair' },
+                    { clientType: 'cultural-local', missionType: 'backup' },
+                    { clientType: 'nonprofit-community', missionType: 'transfer' },
+                    { clientType: 'gov-library', missionType: 'restore' },
+                    { clientType: 'cultural-local', missionType: 'repair' },
+                    { clientType: 'nonprofit-community', missionType: 'backup' },
+                ],
+                pendingArcMissions: {},
+                activeClientIds: [],
+            };
+
+            // With investigation-tooling but no investigation missions - should refresh
+            expect(shouldRefreshPool(pool, 1, { unlockedSoftware: ['investigation-tooling'] })).toBe(true);
         });
     });
 

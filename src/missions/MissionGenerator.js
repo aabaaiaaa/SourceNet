@@ -2174,12 +2174,13 @@ export function generateInvestigationRecoveryMission(client, options = {}) {
             id: 'obj-4',
             description: `Connect Data Recovery Tool to the correct volume`,
             type: 'fileSystemConnection',
+            app: 'dataRecoveryTool',
             target: targetFileSystemId
         },
         {
             id: 'obj-5',
             description: `Scan for deleted files using Data Recovery Tool`,
-            type: 'fileSystemConnection', // Completed when they scan
+            type: 'dataRecoveryScan',
             target: targetFileSystemId
         },
         {
@@ -2283,8 +2284,9 @@ export function generateSecureDeletionMission(client, options = {}) {
     const flagTime = new Date(Date.now() - randomInt(1, 4) * 60 * 60 * 1000);
     const activityLogs = generateActivityLogs(filesToDelete, 'secureDelete', flagTime);
 
+    const targetFileSystemId = `fs-${client.id}-${Date.now()}`;
     const fileSystems = [{
-        id: `fs-${client.id}-${Date.now()}`,
+        id: targetFileSystemId,
         ip: deviceIp,
         name: hostname,
         files: allFiles,
@@ -2319,14 +2321,15 @@ export function generateSecureDeletionMission(client, options = {}) {
         {
             id: 'obj-3',
             description: `Use Log Viewer to identify flagged files`,
-            type: 'fileSystemConnection',
-            target: deviceIp
+            type: 'investigation',
+            correctFileSystemId: targetFileSystemId
         },
         {
             id: 'obj-4',
             description: `Connect Data Recovery Tool to ${hostname}`,
             type: 'fileSystemConnection',
-            target: deviceIp
+            app: 'dataRecoveryTool',
+            target: targetFileSystemId
         },
         {
             id: 'obj-5',
@@ -2390,7 +2393,10 @@ export function generateSecureDeletionMission(client, options = {}) {
         arcSequence,
         arcTotal,
         requiresCompletedMission: arcSequence > 1 ? arcContext.previousMissionId : null,
-        secureDeleteVariant: variant
+        secureDeleteVariant: variant,
+        isInvestigation: true,
+        targetFileSystemId,
+        deviceIp
     };
 }
 

@@ -162,6 +162,13 @@ const DataRecoveryTool = () => {
 
     // Cancel any ongoing operations
     activeOperationsRef.current.clear();
+
+    // Emit event for objective tracking - Data Recovery Tool connected to file system
+    triggerEventBus.emit('dataRecoveryToolConnected', {
+      fileSystemId: fileSystemId,
+      ip: fileSystem.ip,
+      networkId: fileSystem.networkId,
+    });
   };
 
   // Start scan for deleted files
@@ -193,6 +200,12 @@ const DataRecoveryTool = () => {
       if (progress >= 100) {
         setScanning(false);
         scanAnimationRef.current = null;
+
+        // Emit event for objective tracking - scan complete
+        triggerEventBus.emit('dataRecoveryScanComplete', {
+          fileSystemId: selectedFileSystem,
+          deletedFilesFound: discoveredSoFar.size,
+        });
       } else {
         scanAnimationRef.current = requestAnimationFrame(animate);
       }

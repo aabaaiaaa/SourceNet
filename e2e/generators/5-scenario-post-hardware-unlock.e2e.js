@@ -208,7 +208,44 @@ test.describe('Scenario Generator', () => {
         await page.waitForFunction(() => window.gameContext?.setSpecificTimeSpeed, { timeout: 10000 });
 
         // ========================================
-        // STEP 7: Save the game state
+        // STEP 7: Verify investigation missions are generated
+        // ========================================
+        console.log('Waiting for investigation missions to be generated...');
+        await setSpeed(100);
+
+        const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
+        let hasInvestigationMission = false;
+
+        for (let attempt = 0; attempt < 30; attempt++) {
+            await page.waitForTimeout(200); // 20s game time per iteration
+            const pool = await page.evaluate(() => window.gameContext.missionPool);
+            hasInvestigationMission = pool?.some(m => investigationTypes.includes(m.missionType)) || false;
+            if (hasInvestigationMission) {
+                console.log(`✅ Investigation mission found after ${attempt + 1} attempts`);
+                break;
+            }
+        }
+
+        await setSpeed(1);
+
+        if (!hasInvestigationMission) {
+            const pool = await page.evaluate(() => window.gameContext.missionPool);
+            console.log('⚠️ Mission pool contents:', pool?.map(m => m.missionType));
+            throw new Error('No investigation missions generated - fixture would be invalid');
+        }
+
+        // Verify mission pool state
+        const poolState = await page.evaluate(() => ({
+            poolSize: window.gameContext.missionPool?.length,
+            missionTypes: window.gameContext.missionPool?.map(m => m.missionType),
+            unlockedFeatures: window.gameContext.unlockedFeatures
+        }));
+        console.log(`✅ Pool size: ${poolState.poolSize}`);
+        console.log(`✅ Mission types: ${poolState.missionTypes?.join(', ')}`);
+        console.log(`✅ Unlocked features: ${poolState.unlockedFeatures?.join(', ')}`);
+
+        // ========================================
+        // STEP 8: Save the game state
         // ========================================
         console.log('Saving game state...');
 
@@ -229,7 +266,7 @@ test.describe('Scenario Generator', () => {
         console.log('✅ Game saved');
 
         // ========================================
-        // STEP 8: Extract and write fixture
+        // STEP 9: Extract and write fixture
         // ========================================
         const saveData = await page.evaluate(() => {
             const saves = JSON.parse(localStorage.getItem('sourcenet_saves') || '{}');

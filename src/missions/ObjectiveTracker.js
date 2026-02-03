@@ -47,12 +47,18 @@ export const checkNetworkScanObjective = (objective, scanResults) => {
 
 /**
  * Check if file system connection objective is complete
- * @param {object} objective - Objective definition
+ * Supports both File Manager and Data Recovery Tool connections via the `app` field
+ * @param {object} objective - Objective definition (optional `app` field: 'fileManager' or 'dataRecoveryTool')
  * @param {array} fileManagerConnections - Active File Manager connections
+ * @param {array} dataRecoveryToolConnections - Active Data Recovery Tool connections
  * @returns {boolean} Objective complete
  */
-export const checkFileSystemConnectionObjective = (objective, fileManagerConnections) => {
-  return fileManagerConnections.some(
+export const checkFileSystemConnectionObjective = (objective, fileManagerConnections, dataRecoveryToolConnections = []) => {
+  // Determine which connections to check based on `app` field
+  const app = objective.app || 'fileManager';
+  const connections = app === 'dataRecoveryTool' ? dataRecoveryToolConnections : fileManagerConnections;
+
+  return connections.some(
     (conn) => conn.ip === objective.target || conn.fileSystemId === objective.target
   );
 };
@@ -74,17 +80,32 @@ export const checkNarEntryAddedObjective = (objective, narEntries) => {
 
 /**
  * Check if investigation objective is complete
- * Investigation objectives track when player connects to the CORRECT file system
- * (the one identified via Log Viewer that contains the target files)
+ * Investigation objectives track when player uses Log Viewer to view device logs
+ * for the device that contains the target file system (with flagged/corrupted files)
  * @param {object} objective - Objective definition with correctFileSystemId
- * @param {array} fileManagerConnections - Active File Manager connections
+ * @param {array} viewedDeviceLogs - Array of devices whose logs have been viewed [{fileSystemId, deviceIp, ...}]
  * @returns {boolean} Objective complete
  */
-export const checkInvestigationObjective = (objective, fileManagerConnections) => {
+export const checkInvestigationObjective = (objective, viewedDeviceLogs) => {
   if (!objective.correctFileSystemId) return false;
 
-  return fileManagerConnections.some(
-    (conn) => conn.fileSystemId === objective.correctFileSystemId
+  return viewedDeviceLogs.some(
+    (viewed) => viewed.fileSystemId === objective.correctFileSystemId
+  );
+};
+
+/**
+ * Check if data recovery scan objective is complete
+ * Tracks when player uses Data Recovery Tool to scan for deleted files
+ * @param {object} objective - Objective definition with target fileSystemId
+ * @param {array} scannedFileSystems - File systems that have been scanned
+ * @returns {boolean} Objective complete
+ */
+export const checkDataRecoveryScanObjective = (objective, scannedFileSystems) => {
+  if (!objective.target) return false;
+
+  return scannedFileSystems.some(
+    (scanned) => scanned.fileSystemId === objective.target
   );
 };
 
@@ -358,7 +379,8 @@ const isObjectiveComplete = (objective, gameState) => {
     case 'fileSystemConnection':
       return checkFileSystemConnectionObjective(
         objective,
-        gameState.fileManagerConnections || []
+        gameState.fileManagerConnections || [],
+        gameState.dataRecoveryToolConnections || []
       );
 
     case 'fileOperation':
@@ -377,7 +399,13 @@ const isObjectiveComplete = (objective, gameState) => {
     case 'investigation':
       return checkInvestigationObjective(
         objective,
-        gameState.fileManagerConnections || []
+        gameState.viewedDeviceLogs || []
+      );
+
+    case 'dataRecoveryScan':
+      return checkDataRecoveryScanObjective(
+        objective,
+        gameState.dataRecoveryScans || []
       );
 
     case 'fileRecovery':

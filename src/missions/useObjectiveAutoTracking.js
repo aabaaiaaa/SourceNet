@@ -46,6 +46,24 @@ export const useObjectiveAutoTracking = (
   // Track latest file operation from event (more reliable than gameState due to React timing)
   const lastFileOperationRef = useRef(null);
 
+  // Track latest scan results from event (more reliable than gameState due to React timing)
+  const lastScanResultsRef = useRef(null);
+
+  // Track latest file system connection from event (more reliable than gameState due to React timing)
+  const lastFileSystemConnectionRef = useRef(null);
+
+  // Track viewed device logs for investigation objectives (accumulates during mission)
+  const viewedDeviceLogsRef = useRef([]);
+
+  // Track Data Recovery Tool connections (accumulates during mission)
+  const dataRecoveryToolConnectionsRef = useRef([]);
+
+  // Track Data Recovery Tool scans (accumulates during mission)
+  const dataRecoveryScansRef = useRef([]);
+
+  // Track recovery operations (restore/secure-delete) from Data Recovery Tool
+  const missionRecoveryOperationsRef = useRef({ restored: new Set(), secureDeleted: new Set() });
+
   // Keep refs updated with latest values
   useEffect(() => {
     gameStateRef.current = gameState;
@@ -63,10 +81,27 @@ export const useObjectiveAutoTracking = (
     const accessibleNetworks = networkRegistry.getSnapshot().networks.filter(n => n.accessible);
     const narEntries = accessibleNetworks.map(n => ({ networkId: n.networkId, authorized: true }));
 
+    // Merge file system connection from event if not already in state
+    let effectiveFileManagerConnections = currentGameState.fileManagerConnections || [];
+    if (lastFileSystemConnectionRef.current) {
+      const alreadyInState = effectiveFileManagerConnections.some(
+        conn => conn.fileSystemId === lastFileSystemConnectionRef.current.fileSystemId
+      );
+      if (!alreadyInState) {
+        effectiveFileManagerConnections = [...effectiveFileManagerConnections, lastFileSystemConnectionRef.current];
+      }
+    }
+
     const effectiveGameState = {
       ...currentGameState,
       narEntries,
+      fileManagerConnections: effectiveFileManagerConnections,
+      dataRecoveryToolConnections: dataRecoveryToolConnectionsRef.current,
+      dataRecoveryScans: dataRecoveryScansRef.current,
+      viewedDeviceLogs: viewedDeviceLogsRef.current,
+      missionRecoveryOperations: missionRecoveryOperationsRef.current,
       ...(lastFileOperationRef.current ? { lastFileOperation: lastFileOperationRef.current } : {}),
+      ...(lastScanResultsRef.current ? { lastScanResults: lastScanResultsRef.current } : {}),
     };
 
     if (!enabled || !currentMission || !currentMission.objectives || processingRef.current) {
@@ -140,14 +175,92 @@ export const useObjectiveAutoTracking = (
 
     const eventHandlers = [
       { event: 'networkConnected', handler: () => setTimeout(checkAndCompleteObjectives, 50) },
-      { event: 'networkScanComplete', handler: () => setTimeout(checkAndCompleteObjectives, 50) },
-      { event: 'fileSystemConnected', handler: () => setTimeout(checkAndCompleteObjectives, 50) },
+      {
+        event: 'networkScanComplete',
+        handler: (data) => {
+          // Store the scan results directly from the event (avoids React state timing issues)
+          lastScanResultsRef.current = data.results;
+          setTimeout(checkAndCompleteObjectives, 50);
+        }
+      },
+      {
+        event: 'fileSystemConnected',
+        handler: (data) => {
+          // Store the connection data directly from the event (avoids React state timing issues)
+          lastFileSystemConnectionRef.current = data;
+          setTimeout(checkAndCompleteObjectives, 50);
+        }
+      },
       { event: 'narEntryAdded', handler: () => setTimeout(checkAndCompleteObjectives, 50) },
+      {
+        event: 'deviceLogsViewed',
+        handler: (data) => {
+          // Track viewed device logs for investigation objectives
+          // Only add if not already tracked (avoid duplicates)
+          const alreadyViewed = viewedDeviceLogsRef.current.some(
+            v => v.fileSystemId === data.fileSystemId
+          );
+          if (!alreadyViewed && data.fileSystemId) {
+            viewedDeviceLogsRef.current = [...viewedDeviceLogsRef.current, data];
+          }
+          setTimeout(checkAndCompleteObjectives, 50);
+        }
+      },
       {
         event: 'fileOperationComplete',
         handler: (data) => {
           // Store the operation data directly from the event (avoids React state timing issues)
           lastFileOperationRef.current = data;
+          setTimeout(checkAndCompleteObjectives, 50);
+        }
+      },
+      {
+        event: 'dataRecoveryToolConnected',
+        handler: (data) => {
+          // Track Data Recovery Tool connections for fileSystemConnection objectives with app='dataRecoveryTool'
+          const alreadyConnected = dataRecoveryToolConnectionsRef.current.some(
+            c => c.fileSystemId === data.fileSystemId
+          );
+          if (!alreadyConnected) {
+            dataRecoveryToolConnectionsRef.current = [...dataRecoveryToolConnectionsRef.current, data];
+          }
+          setTimeout(checkAndCompleteObjectives, 50);
+        }
+      },
+      {
+        event: 'dataRecoveryScanComplete',
+        handler: (data) => {
+          // Track Data Recovery Tool scans for dataRecoveryScan objectives
+          const alreadyScanned = dataRecoveryScansRef.current.some(
+            s => s.fileSystemId === data.fileSystemId
+          );
+          if (!alreadyScanned) {
+            dataRecoveryScansRef.current = [...dataRecoveryScansRef.current, data];
+          }
+          setTimeout(checkAndCompleteObjectives, 50);
+        }
+      },
+      {
+        event: 'fileRecoveryComplete',
+        handler: (data) => {
+          if (data.fileName) {
+            const current = missionRecoveryOperationsRef.current;
+            const newRestored = new Set(current.restored);
+            newRestored.add(data.fileName);
+            missionRecoveryOperationsRef.current = { ...current, restored: newRestored };
+          }
+          setTimeout(checkAndCompleteObjectives, 50);
+        }
+      },
+      {
+        event: 'secureDeleteComplete',
+        handler: (data) => {
+          if (data.fileName) {
+            const current = missionRecoveryOperationsRef.current;
+            const newSecureDeleted = new Set(current.secureDeleted);
+            newSecureDeleted.add(data.fileName);
+            missionRecoveryOperationsRef.current = { ...current, secureDeleted: newSecureDeleted };
+          }
           setTimeout(checkAndCompleteObjectives, 50);
         }
       },
@@ -168,6 +281,10 @@ export const useObjectiveAutoTracking = (
     if (missionId) {
       // Reset refs for new mission
       completedObjectiveIdsRef.current = new Set();
+      viewedDeviceLogsRef.current = [];
+      dataRecoveryToolConnectionsRef.current = [];
+      dataRecoveryScansRef.current = [];
+      missionRecoveryOperationsRef.current = { restored: new Set(), secureDeleted: new Set() };
       // Only reset missionCompletedRef if it's a different mission
       if (missionCompletedRef.current !== missionId) {
         missionCompletedRef.current = null;
