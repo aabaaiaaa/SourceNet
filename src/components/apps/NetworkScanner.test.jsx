@@ -30,7 +30,7 @@ describe('NetworkScanner Component', () => {
   it('should show scan controls', () => {
     renderWithProvider(<NetworkScanner />);
     expect(screen.getByText(/Network:/)).toBeInTheDocument();
-    // Scan type is only shown when a network is connected
+    // Scan button is only shown when a network is connected
     expect(screen.getByText(/No networks connected/i)).toBeInTheDocument();
   });
 

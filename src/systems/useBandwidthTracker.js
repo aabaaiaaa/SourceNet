@@ -36,7 +36,7 @@ export const BANDWIDTH_OPERATION_TYPES = {
 export const OPERATION_SIZES = {
   [BANDWIDTH_OPERATION_TYPES.FILE_COPY]: 2, // 2 MB per file copy
   [BANDWIDTH_OPERATION_TYPES.FILE_REPAIR]: 1, // 1 MB per file repair
-  [BANDWIDTH_OPERATION_TYPES.NETWORK_SCAN]: 5, // 5 MB for quick scan, 15 MB for deep
+  [BANDWIDTH_OPERATION_TYPES.NETWORK_SCAN]: 5, // Default fallback, actual size calculated from device count
 };
 
 /**

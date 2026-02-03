@@ -792,7 +792,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await vpnWindow3.locator('.window-controls button:has-text("×")').click();
         await page.waitForTimeout(100);
 
-        // Deep scan
+        // Scan the network
         await page.click('text=☰');
         await page.waitForTimeout(200);
         const scannerMenuItem2 = page.locator('.app-launcher-menu >> text=Network Scanner').or(
@@ -805,10 +805,6 @@ test.describe('E2E: Tutorial Mission Flow', () => {
 
         const scannerNetworkDropdown2 = scannerWindow3.locator('label:has-text("Network:") select');
         await scannerNetworkDropdown2.selectOption('clienta-corporate');
-        await page.waitForTimeout(100);
-
-        const scanTypeDropdown = scannerWindow3.locator('label:has-text("Scan Type:") select');
-        await scanTypeDropdown.selectOption('deep');
         await page.waitForTimeout(100);
 
         const scanButton2 = scannerWindow3.locator('button:has-text("Scan")').or(

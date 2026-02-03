@@ -158,7 +158,7 @@ describe('Network Scanner Integration', () => {
             expect(screen.getByText(/scanning/i)).toBeInTheDocument();
         });
 
-        // Wait for scan to complete (Deep scan takes ~15 seconds game time)
+        // Wait for scan to complete (scan duration scales with device count)
         await waitFor(() => {
             expect(screen.getByText('Scan Results')).toBeInTheDocument();
         }, { timeout: 6000 });

@@ -134,7 +134,6 @@ test.describe('Scenario Generator: Post Tutorial Complete', () => {
         await page.click('.app-launcher-menu >> text=Network Scanner');
         const scanner2 = page.locator('.window:has(.window-header:has-text("Network Scanner"))');
         await scanner2.locator('label:has-text("Network:") select').selectOption('clienta-corporate');
-        await scanner2.locator('label:has-text("Scan Type:") select').selectOption('deep');
         await scanner2.locator('button:has-text("Scan")').click();
         await setSpeed(100);
         await page.waitForTimeout(300);
