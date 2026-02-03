@@ -2,14 +2,12 @@ import { useState, useRef, useEffect } from 'react';
 import { useGame } from '../../contexts/useGame';
 import triggerEventBus from '../../core/triggerEventBus';
 import networkRegistry from '../../systems/NetworkRegistry';
-import { generateDevicesForNetwork } from '../../systems/NetworkDeviceGenerator';
+import { generateDevicesForNetwork, calculateDeviceCount } from '../../systems/NetworkDeviceGenerator';
 import './NetworkScanner.css';
 
-// Data sizes for scan types (in MB)
-const SCAN_SIZES = {
-  quick: 5,  // 5 MB for quick scan
-  deep: 15,  // 15 MB for deep scan
-};
+// Scan data size formula: BASE + (deviceCount * PER_DEVICE)
+const BASE_SCAN_SIZE_MB = 10;  // Network overhead
+const PER_DEVICE_SIZE_MB = 5;  // Per device data
 
 const NetworkScanner = () => {
   const game = useGame();
@@ -20,7 +18,6 @@ const NetworkScanner = () => {
   const registerBandwidthOperation = game.registerBandwidthOperation || (() => ({ operationId: null, estimatedTimeMs: 5000 }));
   const completeBandwidthOperation = game.completeBandwidthOperation || (() => { });
   const [selectedNetwork, setSelectedNetwork] = useState('');
-  const [scanType, setScanType] = useState('deep'); // 'quick' or 'deep'
   const [scanning, setScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
   const [scanResults, setScanResults] = useState(null);
@@ -92,7 +89,7 @@ const NetworkScanner = () => {
       const network = networkRegistry.getNetwork(selectedNetwork);
 
       // Generate devices using the device generator
-      const machines = generateDevicesForNetwork(network, scanType);
+      const machines = generateDevicesForNetwork(network);
 
       const results = {
         network: selectedNetwork,
@@ -117,17 +114,19 @@ const NetworkScanner = () => {
       setScanStartTime(null);
       console.log(`🔍 Scan complete: Found ${results.machines.length} machines`);
     }
-  }, [scanning, scanStartTime, currentTime, estimatedDuration, selectedNetwork, scanType, completeBandwidthOperation, setLastScanResults, addDiscoveredDevices]);
+  }, [scanning, scanStartTime, currentTime, estimatedDuration, selectedNetwork, completeBandwidthOperation, setLastScanResults, addDiscoveredDevices]);
 
   const handleScan = () => {
     if (!selectedNetwork || scanning || !currentTime) return;
 
-    // Register bandwidth operation based on scan type
-    const sizeInMB = SCAN_SIZES[scanType];
+    // Calculate scan size based on device count
+    const deviceCount = calculateDeviceCount(selectedNetwork);
+    const sizeInMB = BASE_SCAN_SIZE_MB + (deviceCount * PER_DEVICE_SIZE_MB);
+
     const { operationId, estimatedTimeMs } = registerBandwidthOperation(
       'network_scan',
       sizeInMB,
-      { network: selectedNetwork, scanType }
+      { network: selectedNetwork }
     );
 
     operationIdRef.current = operationId;
@@ -178,27 +177,13 @@ const NetworkScanner = () => {
         )}
 
         {isNetworkConnected && (
-          <>
-            <label>
-              Scan Type:
-              <select
-                value={scanType}
-                onChange={(e) => setScanType(e.target.value)}
-                disabled={scanning}
-              >
-                <option value="quick">Quick Scan (5s - machines only)</option>
-                <option value="deep">Deep Scan (15s - machines + file systems)</option>
-              </select>
-            </label>
-
-            <button
-              className={`scan-btn ${scanning ? 'scanning' : ''}`}
-              onClick={handleScan}
-              disabled={scanning}
-            >
-              {scanning ? `Scanning... ${Math.floor(scanProgress)}%` : 'Start Scan'}
-            </button>
-          </>
+          <button
+            className={`scan-btn ${scanning ? 'scanning' : ''}`}
+            onClick={handleScan}
+            disabled={scanning}
+          >
+            {scanning ? `Scanning... ${Math.floor(scanProgress)}%` : 'Start Scan'}
+          </button>
         )}
       </div>
 

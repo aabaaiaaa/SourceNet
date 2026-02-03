@@ -146,13 +146,39 @@ export function generateRandomDevices(network, count, types, random, startIP = 3
 }
 
 /**
- * Generate devices for a network based on network data and scan type
+ * Calculate the total device count for a network without generating full device objects
+ * Used to determine scan duration (more devices = longer scan)
+ * @param {Object|string} networkOrId - Network object from registry, or network ID string
+ * @returns {number} Total device count (required + random)
+ */
+export function calculateDeviceCount(networkOrId) {
+    if (!networkOrId) {
+        return 0;
+    }
+
+    // Extract networkId from either a network object or string
+    const networkId = typeof networkOrId === 'string' ? networkOrId : (networkOrId.id || networkOrId.networkId);
+    if (!networkId) {
+        return 0;
+    }
+
+    // Get required devices count from registry
+    const requiredDevices = getRequiredDevices(networkId);
+
+    // Calculate random device count using same seeded random as generateDevicesForNetwork
+    const random = createSeededRandom(networkId);
+    const randomCount = Math.floor(random() * 4) + 2; // 2-5 random devices
+
+    return requiredDevices.length + randomCount;
+}
+
+/**
+ * Generate devices for a network based on network data
  * Uses NetworkRegistry as the primary source for network and device data
  * @param {Object|string} networkOrId - Network object from registry, or network ID string
- * @param {string} scanType - 'quick' or 'deep'
  * @returns {Array} Array of device objects
  */
-export function generateDevicesForNetwork(networkOrId, scanType = 'deep') {
+export function generateDevicesForNetwork(networkOrId) {
     if (!networkOrId) {
         return [];
     }
@@ -166,20 +192,13 @@ export function generateDevicesForNetwork(networkOrId, scanType = 'deep') {
     // Get required devices from registry
     const requiredDevices = getRequiredDevices(networkId);
 
-    // Quick scan only returns critical devices (fileserver, database)
-    if (scanType === 'quick') {
-        return requiredDevices.filter(d =>
-            d.type === 'fileserver' || d.type === 'database'
-        );
-    }
-
-    // Deep scan includes required devices + random background devices
+    // Include required devices + random background devices
     const random = createSeededRandom(networkId);
 
     // Determine how many random devices to add (2-5 based on network)
     const randomCount = Math.floor(random() * 4) + 2;
 
-    // Background device types for deep scans
+    // Background device types
     const backgroundTypes = ['workstation', 'printer', 'iot'];
 
     // Find the highest IP used by required devices to avoid collisions

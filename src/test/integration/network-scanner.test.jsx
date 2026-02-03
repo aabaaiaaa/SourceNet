@@ -149,10 +149,6 @@ describe('Network Scanner Integration', () => {
         const networkSelect = screen.getByRole('combobox', { name: /network/i });
         await user.selectOptions(networkSelect, 'corp-net-1');
 
-        // Select deep scan
-        const scanTypeSelect = screen.getByRole('combobox', { name: /scan type/i });
-        await user.selectOptions(scanTypeSelect, 'deep');
-
         // Start scan
         const scanButton = screen.getByRole('button', { name: /start scan/i });
         await user.click(scanButton);
@@ -173,7 +169,7 @@ describe('Network Scanner Integration', () => {
         expect(screen.getByText('192.168.50.20')).toBeInTheDocument();
         expect(screen.getByText('backup-server')).toBeInTheDocument();
 
-        // Deep scan should also include random devices (workstations, printers, etc.)
+        // Should also include random devices (workstations, printers, etc.)
         const machineItems = container.querySelectorAll('.machine-item');
         expect(machineItems.length).toBeGreaterThan(2); // More than just the 2 fileservers
     }, 20000);
@@ -299,96 +295,7 @@ describe('Network Scanner Integration', () => {
         expect(screen.queryByText('alpha-fileserver')).not.toBeInTheDocument();
     }, 20000);
 
-    it('should show only critical devices on quick scan', async () => {
-        const user = userEvent.setup({ delay: null });
-
-        // Define file systems for the test
-        const fileSystems = [
-            {
-                id: 'fs-001',
-                ip: '192.168.50.10',
-                name: 'fileserver-01',
-                files: [],
-            },
-            {
-                id: 'fs-002',
-                ip: '192.168.50.20',
-                name: 'database-primary',
-                files: [],
-            },
-        ];
-
-        // Populate NetworkRegistry with file systems
-        const registrySnapshot = populateNetworkRegistry({
-            networkId: 'corp-net-1',
-            networkName: 'Corporate Network',
-            fileSystems,
-        });
-
-        // Create NAR entry
-        const network = createNetworkWithFileSystem({
-            networkId: 'corp-net-1',
-            networkName: 'Corporate Network',
-            address: '192.168.50.0/24',
-            fileSystems,
-        });
-
-        const saveState = createCompleteSaveState({
-            username: 'test_user',
-            overrides: {
-                narEntries: [network],
-                activeConnections: [
-                    {
-                        networkId: network.networkId,
-                        networkName: network.networkName,
-                        address: network.address,
-                    },
-                ],
-                networkRegistry: registrySnapshot,
-            },
-        });
-
-        setSaveInLocalStorage('test_user', saveState);
-
-        const { container } = render(
-            <GameProvider>
-                <GameLoader username="test_user" />
-                <TopBar />
-                <NetworkScanner />
-            </GameProvider>
-        );
-
-        // Wait for game to load
-        await waitFor(() => {
-            const topBarCredits = screen.getByTitle('Click to open Banking App');
-            expect(topBarCredits).toHaveTextContent(/credits/);
-        });
-
-        // Select network and quick scan
-        const networkSelect = screen.getByRole('combobox', { name: /network/i });
-        await user.selectOptions(networkSelect, 'corp-net-1');
-
-        const scanTypeSelect = screen.getByRole('combobox', { name: /scan type/i });
-        await user.selectOptions(scanTypeSelect, 'quick');
-
-        const scanButton = screen.getByRole('button', { name: /start scan/i });
-        await user.click(scanButton);
-
-        // Wait for scan to complete (Quick scan is faster, ~5 seconds)
-        await waitFor(() => {
-            expect(screen.getByText('Scan Results')).toBeInTheDocument();
-        }, { timeout: 6000 });
-
-        // Should show the critical devices (fileserver, database)
-        expect(screen.getByText('fileserver-01')).toBeInTheDocument();
-        expect(screen.getByText('database-primary')).toBeInTheDocument();
-
-        // Quick scan should only show required devices, no random ones
-        const machineItems = container.querySelectorAll('.machine-item');
-        expect(machineItems.length).toBe(2); // Exactly the 2 critical devices
-    }, 20000);
-
-    it('should show all devices including workstations on deep scan', async () => {
+    it('should show all devices including workstations on scan', async () => {
         const user = userEvent.setup({ delay: null });
 
         // Define file systems for the test
@@ -447,12 +354,9 @@ describe('Network Scanner Integration', () => {
             expect(topBarCredits).toHaveTextContent(/credits/);
         });
 
-        // Select network and deep scan
+        // Select network
         const networkSelect = screen.getByRole('combobox', { name: /network/i });
         await user.selectOptions(networkSelect, 'corp-net-1');
-
-        const scanTypeSelect = screen.getByRole('combobox', { name: /scan type/i });
-        await user.selectOptions(scanTypeSelect, 'deep');
 
         const scanButton = screen.getByRole('button', { name: /start scan/i });
         await user.click(scanButton);
@@ -464,7 +368,7 @@ describe('Network Scanner Integration', () => {
         // Should show required device
         expect(screen.getByText('fileserver-01')).toBeInTheDocument();
 
-        // Deep scan should include additional random devices
+        // Should include additional random devices
         const machineItems = container.querySelectorAll('.machine-item');
         expect(machineItems.length).toBeGreaterThan(1); // More than just the fileserver
     }, 20000);
@@ -644,7 +548,7 @@ describe('Network Scanner Integration', () => {
         expect(fileSystemsEl.textContent).toContain('/fileserver-01/');
     }, 20000);
 
-    it('should always discover mission-critical file systems regardless of scan type', async () => {
+    it('should always discover mission-critical file systems', async () => {
         const user = userEvent.setup({ delay: null });
 
         // Define mission-critical file systems (like tutorial missions)
@@ -713,12 +617,9 @@ describe('Network Scanner Integration', () => {
             expect(topBarCredits).toHaveTextContent(/credits/);
         });
 
-        // Test Quick Scan - should still find critical devices
+        // Scan the network
         const networkSelect = screen.getByRole('combobox', { name: /network/i });
         await user.selectOptions(networkSelect, 'clienta-corporate');
-
-        const scanTypeSelect = screen.getByRole('combobox', { name: /scan type/i });
-        await user.selectOptions(scanTypeSelect, 'quick');
 
         const scanButton = screen.getByRole('button', { name: /start scan/i });
         await user.click(scanButton);
@@ -727,13 +628,13 @@ describe('Network Scanner Integration', () => {
             expect(screen.getByText('Scan Results')).toBeInTheDocument();
         }, { timeout: 6000 });
 
-        // Both mission-critical file systems MUST be discovered even on quick scan
+        // Both mission-critical file systems MUST be discovered
         expect(screen.getByText('192.168.50.10')).toBeInTheDocument();
         expect(screen.getByText('fileserver-01')).toBeInTheDocument();
         expect(screen.getByText('192.168.50.20')).toBeInTheDocument();
         expect(screen.getByText('backup-server')).toBeInTheDocument();
 
-        // Verify both devices are present (fileserver and database are always shown on quick scan)
+        // Verify both devices are present
         const machineItems = container.querySelectorAll('.machine-item');
         expect(machineItems.length).toBeGreaterThanOrEqual(2);
 

@@ -78,6 +78,51 @@ describe('ObjectiveTracker', () => {
       const objective = { type: 'networkScan', expectedResult: 'fileserver-01' };
       expect(checkNetworkScanObjective(objective, null)).toBe(false);
     });
+
+    it('should handle expectedResults array - all found', () => {
+      const objective = {
+        type: 'networkScan',
+        expectedResults: ['192.168.50.10', '192.168.50.11']
+      };
+      const scanResults = {
+        machines: [
+          { ip: '192.168.50.10', hostname: 'fileserver-01' },
+          { ip: '192.168.50.11', hostname: 'fileserver-02' },
+          { ip: '192.168.50.12', hostname: 'other-device' }
+        ]
+      };
+
+      expect(checkNetworkScanObjective(objective, scanResults)).toBe(true);
+    });
+
+    it('should handle expectedResults array - partial match returns false', () => {
+      const objective = {
+        type: 'networkScan',
+        expectedResults: ['192.168.50.10', '192.168.50.99']
+      };
+      const scanResults = {
+        machines: [
+          { ip: '192.168.50.10', hostname: 'fileserver-01' }
+        ]
+      };
+
+      expect(checkNetworkScanObjective(objective, scanResults)).toBe(false);
+    });
+
+    it('should handle expectedResults array matching by hostname', () => {
+      const objective = {
+        type: 'networkScan',
+        expectedResults: ['fileserver-01', 'fileserver-02']
+      };
+      const scanResults = {
+        machines: [
+          { ip: '192.168.50.10', hostname: 'fileserver-01' },
+          { ip: '192.168.50.11', hostname: 'fileserver-02' }
+        ]
+      };
+
+      expect(checkNetworkScanObjective(objective, scanResults)).toBe(true);
+    });
   });
 
   describe('checkFileSystemConnectionObjective', () => {

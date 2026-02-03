@@ -34,14 +34,10 @@ const GameLoader = ({ username }) => {
 };
 
 // Helper function to perform network scan
-async function performNetworkScan(user, networkId, scanType = 'deep') {
+async function performNetworkScan(user, networkId) {
     // Select the network
     const networkSelect = screen.getByRole('combobox', { name: /network/i });
     await user.selectOptions(networkSelect, networkId);
-
-    // Select scan type
-    const scanTypeSelect = screen.getByRole('combobox', { name: /scan type/i });
-    await user.selectOptions(scanTypeSelect, scanType);
 
     // Start scan
     const scanButton = screen.getByRole('button', { name: /start scan/i });

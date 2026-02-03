@@ -181,6 +181,17 @@ const LogViewer = () => {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  // Get file system label from file system ID
+  const getFileSystemLabel = (fileSystemId) => {
+    if (!fileSystemId) return '-';
+
+    const fs = networkRegistry.getFileSystem(fileSystemId);
+    if (!fs) return fileSystemId.slice(-4);  // Show last 4 chars of ID
+
+    // Return file system name (e.g., "/data", "/logs", "/backup")
+    return fs.fileSystemName || fileSystemId.slice(-4);
+  };
+
   const hasConnectedNetworks = activeConnections && activeConnections.length > 0;
 
   return (
@@ -327,15 +338,28 @@ const LogViewer = () => {
                   {deviceLogs.length === 0 ? (
                     <div className="log-empty">No logs found for this device.</div>
                   ) : (
-                    deviceLogs.map((log) => (
-                      <div key={log.id} className="log-table-row">
-                        <span className="log-col-timestamp">{formatTimestamp(log.timestamp)}</span>
-                        <span className="log-col-action">{log.action?.toUpperCase()}</span>
-                        <span className="log-col-user">{log.user || '-'}</span>
-                        <span className="log-col-filename">{log.fileName || ''}</span>
-                        {log.sizeBytes && <span className="log-col-size">{formatSize(log.sizeBytes)}</span>}
+                    <>
+                      <div className="log-table-header">
+                        <span className="log-col-timestamp">Timestamp</span>
+                        <span className="log-col-action">Action</span>
+                        <span className="log-col-user">User</span>
+                        <span className="log-col-filename">Filename</span>
+                        <span className="log-col-filesystem">File System</span>
+                        <span className="log-col-size">Size</span>
                       </div>
-                    ))
+                      {deviceLogs.map((log) => (
+                        <div key={log.id} className="log-table-row">
+                          <span className="log-col-timestamp">{formatTimestamp(log.timestamp)}</span>
+                          <span className="log-col-action">{log.action?.toUpperCase()}</span>
+                          <span className="log-col-user">{log.user || '-'}</span>
+                          <span className="log-col-filename">{log.fileName || ''}</span>
+                          <span className="log-col-filesystem">
+                            {getFileSystemLabel(log.fileSystemId)}
+                          </span>
+                          {log.sizeBytes && <span className="log-col-size">{formatSize(log.sizeBytes)}</span>}
+                        </div>
+                      ))}
+                    </>
                   )}
                 </div>
               )}

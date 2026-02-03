@@ -29,6 +29,7 @@ import {
     generateRandomDevices,
     generateDevicesForNetwork,
     mapDevicesToFileSystems,
+    calculateDeviceCount,
 } from './NetworkDeviceGenerator';
 
 import networkRegistry from './NetworkRegistry';
@@ -189,28 +190,67 @@ describe('NetworkDeviceGenerator', () => {
     });
 
     // ========================================================================
+    // calculateDeviceCount
+    // ========================================================================
+
+    describe('calculateDeviceCount', () => {
+        it('should return total device count (required + random)', () => {
+            const count = calculateDeviceCount('test-network-1');
+
+            // 2 required devices from mock + random devices (count varies by network seed)
+            expect(count).toBeGreaterThanOrEqual(2); // At minimum, the required devices
+        });
+
+        it('should return 0 for null input', () => {
+            expect(calculateDeviceCount(null)).toBe(0);
+        });
+
+        it('should return 0 for undefined input', () => {
+            expect(calculateDeviceCount(undefined)).toBe(0);
+        });
+
+        it('should accept network ID string', () => {
+            const count = calculateDeviceCount('test-network-1');
+            expect(count).toBeGreaterThan(0);
+        });
+
+        it('should accept network object with networkId property', () => {
+            const count = calculateDeviceCount({ networkId: 'test-network-1' });
+            expect(count).toBeGreaterThanOrEqual(2);
+        });
+
+        it('should accept network object with id property', () => {
+            const count = calculateDeviceCount({ id: 'test-network-1' });
+            expect(count).toBeGreaterThanOrEqual(2);
+        });
+
+        it('should return deterministic count for same network ID', () => {
+            const count1 = calculateDeviceCount('test-network-1');
+            const count2 = calculateDeviceCount('test-network-1');
+            expect(count1).toBe(count2);
+        });
+
+        it('should match actual device count from generateDevicesForNetwork', () => {
+            const count = calculateDeviceCount('test-network-1');
+            const devices = generateDevicesForNetwork('test-network-1');
+            expect(count).toBe(devices.length);
+        });
+    });
+
+    // ========================================================================
     // generateDevicesForNetwork
     // ========================================================================
 
     describe('generateDevicesForNetwork', () => {
-        it('should return required devices for quick scan', () => {
-            const devices = generateDevicesForNetwork('test-network-1', 'quick');
+        it('should return required devices plus random devices', () => {
+            const devices = generateDevicesForNetwork('test-network-1');
 
-            // Quick scan only returns fileserver and database types
-            devices.forEach(device => {
-                expect(['fileserver', 'database']).toContain(device.type);
-            });
-        });
-
-        it('should return required devices plus random for deep scan', () => {
-            const devices = generateDevicesForNetwork('test-network-1', 'deep');
-
-            // Deep scan includes required devices + random background devices
+            // Includes required devices + random background devices
             const requiredDevices = devices.filter(d => d.required);
             const randomDevices = devices.filter(d => !d.required);
 
             expect(requiredDevices.length).toBe(2); // From mock
-            expect(randomDevices.length).toBeGreaterThanOrEqual(0); // 0+ random
+            expect(randomDevices.length).toBeGreaterThanOrEqual(0); // Variable random count
             expect(devices.length).toBeGreaterThan(requiredDevices.length); // Should have some random
         });
 
@@ -223,32 +263,20 @@ describe('NetworkDeviceGenerator', () => {
         });
 
         it('should accept network ID string', () => {
-            const devices = generateDevicesForNetwork('test-network-1', 'quick');
+            const devices = generateDevicesForNetwork('test-network-1');
 
             expect(devices.length).toBeGreaterThan(0);
         });
 
         it('should accept network object', () => {
-            const devices = generateDevicesForNetwork({ networkId: 'test-network-1' }, 'quick');
+            const devices = generateDevicesForNetwork({ networkId: 'test-network-1' });
 
             expect(devices.length).toBeGreaterThan(0);
         });
 
-        it('should default to deep scan', () => {
-            const devicesDefault = generateDevicesForNetwork('test-network-1');
-            const devicesDeep = generateDevicesForNetwork('test-network-1', 'deep');
-
-            // Both should include random devices (not just required)
-            const defaultRandom = devicesDefault.filter(d => !d.required);
-            const deepRandom = devicesDeep.filter(d => !d.required);
-
-            expect(defaultRandom.length).toBeGreaterThan(0);
-            expect(deepRandom.length).toBeGreaterThan(0);
-        });
-
         it('should generate deterministic random devices (seeded by network ID)', () => {
-            const devices1 = generateDevicesForNetwork('test-network-1', 'deep');
-            const devices2 = generateDevicesForNetwork('test-network-1', 'deep');
+            const devices1 = generateDevicesForNetwork('test-network-1');
+            const devices2 = generateDevicesForNetwork('test-network-1');
 
             // Same network ID should produce same random devices (deterministic)
             expect(devices1.length).toBe(devices2.length);
@@ -264,12 +292,12 @@ describe('NetworkDeviceGenerator', () => {
             }
         });
 
-        it('should include various device types in deep scan', () => {
+        it('should include various device types', () => {
             // Run multiple times with different networks to ensure coverage
             const allTypes = new Set();
 
             for (let i = 1; i <= 5; i++) {
-                const devices = generateDevicesForNetwork(`test-network-${i}`, 'deep');
+                const devices = generateDevicesForNetwork(`test-network-${i}`);
                 devices.forEach(d => allTypes.add(d.type));
             }
 

@@ -1409,22 +1409,49 @@ export const GameProvider = ({ children }) => {
 
         // Register devices and file systems
         if (network.fileSystems && Array.isArray(network.fileSystems)) {
+          // Group file systems by IP (multiple file systems per device)
+          const devicesByIp = new Map();
+
           network.fileSystems.forEach(fs => {
+            if (!devicesByIp.has(fs.ip)) {
+              devicesByIp.set(fs.ip, {
+                ip: fs.ip,
+                hostname: fs.name.split('/')[0],  // Base hostname without file system suffix
+                fileSystemIds: [],
+                logs: []
+              });
+            }
+
+            const device = devicesByIp.get(fs.ip);
+            device.fileSystemIds.push(fs.id);
+
+            // Merge logs from all file systems
+            if (fs.logs && Array.isArray(fs.logs)) {
+              device.logs.push(...fs.logs);
+            }
+          });
+
+          // Register devices (one per unique IP)
+          devicesByIp.forEach(device => {
             networkRegistry.registerDevice({
-              ip: fs.ip,
-              hostname: fs.name,
+              ip: device.ip,
+              hostname: device.hostname,
               networkId: network.networkId,
-              fileSystemId: fs.id,
+              fileSystemIds: device.fileSystemIds,  // Array of file system IDs
               accessible: false,
-              logs: fs.logs || [], // Pass activity logs for investigation missions
+              logs: device.logs
             });
 
+            console.log(`📡 NetworkRegistry: Registered ${device.hostname} (${device.ip}) with ${device.fileSystemIds.length} file systems on ${network.networkName}`);
+          });
+
+          // Register individual file systems
+          network.fileSystems.forEach(fs => {
             networkRegistry.registerFileSystem({
               id: fs.id,
               files: fs.files || [],
+              fileSystemName: fs.fileSystemName
             });
-
-            console.log(`📡 NetworkRegistry: Registered ${fs.name} (${fs.ip}) on ${network.networkName}`);
           });
         }
       });

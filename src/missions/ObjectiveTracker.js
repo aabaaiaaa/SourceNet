@@ -34,9 +34,22 @@ export const checkNetworkConnectionObjective = (objective, activeConnections) =>
 export const checkNetworkScanObjective = (objective, scanResults) => {
   if (!scanResults || !scanResults.machines) return false;
 
-  const { expectedResult } = objective;
+  const { expectedResult, expectedResults } = objective;
 
-  // Check if expected machine/hostname found in results
+  // Handle both singular expectedResult and plural expectedResults (array)
+  // For expectedResults array, ALL expected values must be found in scan results
+  if (expectedResults && Array.isArray(expectedResults)) {
+    return expectedResults.every(expected =>
+      scanResults.machines.some(
+        (machine) =>
+          machine.hostname === expected ||
+          machine.ip === expected ||
+          machine.id === expected
+      )
+    );
+  }
+
+  // Check if expected machine/hostname found in results (singular)
   return scanResults.machines.some(
     (machine) =>
       machine.hostname === expectedResult ||

@@ -70,6 +70,7 @@ const FileManager = () => {
         user: username,
         fileName: entry.fileName,
         filePath: entry.filePath,
+        fileSystemId: selectedFileSystemRef.current,  // REQUIRED: which file system
         sizeBytes: entry.sizeBytes,
         sourceIp: entry.sourceIp,
         destIp: entry.destIp,

@@ -120,6 +120,21 @@
   font-size: 11px;
 }
 
+.log-table-header {
+  display: flex;
+  gap: 8px;
+  padding: 6px 8px;
+  background: #E0E0E0;
+  border-bottom: 2px solid var(--osnet-border);
+  font-weight: bold;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #333;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
 .log-table-row {
   display: flex;
   gap: 8px;
@@ -165,6 +180,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.log-col-filesystem {
+  min-width: 100px;
+  padding: 0 0.5rem;
+  color: #64B5F6;
+  font-size: 0.9em;
+  font-family: 'Courier New', monospace;
 }
 
 .log-col-size {

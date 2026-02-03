@@ -293,6 +293,7 @@ class NetworkRegistry {
      * @param {Object} logEntry - Log entry data
      * @param {string} logEntry.action - Action type ('copy', 'paste', 'delete', 'download', 'upload')
      * @param {string} logEntry.fileName - Name of the file
+     * @param {string} logEntry.fileSystemId - REQUIRED: File system ID where activity occurred
      * @param {string} [logEntry.filePath] - Full path of the file
      * @param {number} [logEntry.sizeBytes] - File size in bytes
      * @param {string} [logEntry.sourceIp] - Source IP for transfers
@@ -317,6 +318,11 @@ class NetworkRegistry {
             throw new Error('NetworkRegistry.addDeviceLog requires logEntry.type to be set (file|remote|process)');
         }
 
+        // Require fileSystemId for file logs
+        if (logEntry.type === 'file' && !logEntry.fileSystemId) {
+            throw new Error('NetworkRegistry.addDeviceLog requires logEntry.fileSystemId for file type logs');
+        }
+
         // Create log entry with timestamp, unique ID and type
         const entry = {
             id: `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -326,6 +332,7 @@ class NetworkRegistry {
             user: logEntry.user,
             fileName: logEntry.fileName,
             filePath: logEntry.filePath,
+            fileSystemId: logEntry.fileSystemId,  // REQUIRED: which file system
             sizeBytes: logEntry.sizeBytes,
             sourceIp: logEntry.sourceIp,
             destIp: logEntry.destIp,

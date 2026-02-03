@@ -235,10 +235,12 @@ describe('MissionGenerator', () => {
         });
 
         it('should support multiple source file systems', () => {
-            const infra = generateNetworkInfrastructure(mockClient, 'repair', 6, { sourceCount: 3 });
+            const infra = generateNetworkInfrastructure(mockClient, 'repair', 6, {
+                deviceConfigs: [{ fileSystemCount: 1 }, { fileSystemCount: 1 }, { fileSystemCount: 1 }]
+            });
 
             expect(infra.primaryFileSystems.length).toBe(3);
-            expect(infra.sourceCount).toBe(3);
+            expect(infra.devices.length).toBe(3);
         });
 
         it('should calculate total data bytes', () => {
@@ -664,9 +666,9 @@ describe('MissionGenerator', () => {
         it('should create multiple file systems (2-4 volumes)', () => {
             const mission = generateInvestigationRepairMission(mockClient);
 
-            expect(mission.volumeCount).toBeGreaterThanOrEqual(2);
-            expect(mission.volumeCount).toBeLessThanOrEqual(4);
-            expect(mission.networks[0].fileSystems.length).toBe(mission.volumeCount);
+            expect(mission.fileSystemCount).toBeGreaterThanOrEqual(10);
+            expect(mission.fileSystemCount).toBeLessThanOrEqual(35);
+            expect(mission.networks[0].fileSystems.length).toBe(mission.fileSystemCount);
         });
 
         it('should have exactly one target file system with corrupted files', () => {
@@ -733,8 +735,8 @@ describe('MissionGenerator', () => {
         it('should create multiple file systems (2-4 volumes)', () => {
             const mission = generateInvestigationRecoveryMission(mockClient);
 
-            expect(mission.volumeCount).toBeGreaterThanOrEqual(2);
-            expect(mission.volumeCount).toBeLessThanOrEqual(4);
+            expect(mission.fileSystemCount).toBeGreaterThanOrEqual(10);
+            expect(mission.fileSystemCount).toBeLessThanOrEqual(35);
         });
 
         it('should have target file system with deleted files', () => {
@@ -966,6 +968,34 @@ describe('MissionGenerator', () => {
                 const mission = generateRepairMission(mockClient);
                 expect(mission.objectives.length).toBeLessThanOrEqual(16);
             }
+        });
+
+        it('fileOperation objectives should have valid string arrays for targetFiles', () => {
+            const missions = [
+                generateRepairMission(mockClient),
+                generateBackupMission(mockClient),
+                generateTransferMission(mockClient),
+                generateRestoreFromBackupMission(mockClient),
+                generateRepairAndBackupMission(mockClient),
+            ];
+
+            missions.forEach(mission => {
+                const fileOpObjectives = mission.objectives.filter(
+                    o => o.type === 'fileOperation' && o.targetFiles
+                );
+
+                fileOpObjectives.forEach(obj => {
+                    expect(Array.isArray(obj.targetFiles)).toBe(true);
+                    expect(obj.targetFiles.length).toBeGreaterThan(0);
+                    // Verify each item is a non-null string (catches the .map(f => f.name) bug)
+                    obj.targetFiles.forEach(fileName => {
+                        expect(typeof fileName).toBe('string');
+                        expect(fileName).not.toBeNull();
+                        expect(fileName).not.toBeUndefined();
+                        expect(fileName.length).toBeGreaterThan(0);
+                    });
+                });
+            });
         });
     });
 });

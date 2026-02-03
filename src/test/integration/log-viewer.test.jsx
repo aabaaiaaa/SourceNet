@@ -138,6 +138,7 @@ describe('Log Viewer Integration', () => {
         action: 'copy',
         user: 'testuser',
         fileName: 'backup.log',
+        fileSystemId: 'fs-01',
         sizeBytes: 12500,
         timestamp: '2020-03-25T10:05:00.000Z',
       });

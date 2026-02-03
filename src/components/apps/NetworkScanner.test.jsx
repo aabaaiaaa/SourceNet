@@ -41,11 +41,10 @@ describe('NetworkScanner Component', () => {
     expect(screen.getByText(/No networks connected/i)).toBeInTheDocument();
   });
 
-  it('should hide scan options when no network connected', () => {
+  it('should hide scan button when no network connected', () => {
     renderWithProvider(<NetworkScanner />);
-    // Scan type selector not visible without connection
-    expect(screen.queryByText(/Quick Scan/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Deep Scan/i)).not.toBeInTheDocument();
+    // Scan button not visible without connection
+    expect(screen.queryByRole('button', { name: /Start Scan/i })).not.toBeInTheDocument();
   });
 
   it('should show network selector placeholder', () => {
@@ -76,11 +75,10 @@ describe('NetworkScanner bandwidth integration', () => {
     expect(screen.getByText(/No networks connected/i)).toBeInTheDocument();
   });
 
-  it('should have scan sizes defined for quick and deep scans', () => {
-    // The SCAN_SIZES constant in NetworkScanner defines:
-    // - quick: 5 MB
-    // - deep: 15 MB
-    // Scan options are only visible when a network is connected
+  it('should use device-based scan sizing', () => {
+    // NetworkScanner uses device-based scan sizing:
+    // totalSizeMB = BASE_SCAN_SIZE_MB (10) + deviceCount * PER_DEVICE_SIZE_MB (5)
+    // Scan controls are only visible when a network is connected
     // This test verifies the no-connection state is shown properly
     renderWithProvider(<NetworkScanner />);
 

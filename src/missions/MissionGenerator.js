@@ -87,7 +87,7 @@ const deletionBackstoryPatterns = {
         { type: 'file', action: 'delete', note: 'Original file removed', delayBefore: 0 }
     ],
     cleanupGoneWrong: [
-        { type: 'file', action: 'batch_delete', user: 'admin', note: 'Maintenance cleanup script', delayBefore: 0 }
+        { type: 'file', action: 'delete', user: 'admin', note: 'Maintenance cleanup script', delayBefore: 0 }
     ]
 };
 
@@ -99,7 +99,8 @@ const secureDeleteBackstoryPatterns = {
         { type: 'system', action: 'compliance_flag', user: 'compliance-bot', note: 'Flagged for secure removal - audit compliance', delayBefore: 0 }
     ],
     piracy: [
-        { type: 'remote', action: 'upload', user: 'anonymous@external', note: 'Unauthorized file upload detected', delayBefore: 0 }
+        { type: 'remote', action: 'upload', user: 'anonymous@external', note: 'Unauthorized file upload detected', delayBefore: 300000 },
+        { type: 'system', action: 'compliance_flag', user: 'content-scanner', note: 'Copyright violation detected - marked for removal', delayBefore: 0 }
     ],
     malwareDetection: [
         { type: 'process', action: 'execute', note: 'Suspicious process activity detected', delayBefore: 300000 },
@@ -356,44 +357,80 @@ function generateFiles(industry, missionType, targetCount, corrupted = false) {
  * @returns {Object} { networks, primaryNetworkId, primaryIp, targetFiles, totalDataBytes, ... }
  */
 export function generateNetworkInfrastructure(client, missionType, targetFileCount, options = {}) {
-    const { corrupted = false, secondNetwork = false, sameNetworkBackup = false, sourceCount = 1 } = options;
+    const {
+        corrupted = false,
+        secondNetwork = false,
+        sameNetworkBackup = false,
+        deviceConfigs = [{ fileSystemCount: 1 }]  // NEW: Array of device configs
+    } = options;
 
     const networks = [];
     const primaryNetworkId = `${client.id}-network-${Date.now()}`;
     const primarySubnet = generateSubnet();
 
-    // Track all target files across all source file systems
     let allTargetFiles = [];
     let totalDataBytes = 0;
-
-    // Distribute target files across source file systems
-    const filesPerSource = Math.ceil(targetFileCount / sourceCount);
-
-    // Generate primary network with potentially multiple source file systems
     const primaryFileSystems = [];
+    const devices = [];
 
-    for (let i = 0; i < sourceCount; i++) {
-        const ip = generateIpInSubnet(primarySubnet, 10 + i);
-        const purpose = sourceCount > 1 ? `fileserver-${String(i + 1).padStart(2, '0')}` : 'fileserver';
+    // Generate devices and their file systems
+    deviceConfigs.forEach((deviceConfig, deviceIndex) => {
+        const deviceIp = generateIpInSubnet(primarySubnet, 10 + deviceIndex);
+        const purpose = deviceConfigs.length > 1
+            ? `fileserver-${String(deviceIndex + 1).padStart(2, '0')}`
+            : 'fileserver';
         const hostname = generateHostname(client, purpose.replace('-', ''));
 
-        // Calculate how many target files for this file system
-        const remainingTargets = targetFileCount - allTargetFiles.length;
-        const thisSourceTargets = Math.min(filesPerSource, remainingTargets);
+        const { fileSystemCount = 1 } = deviceConfig;
 
-        const { files, targetFiles } = generateFiles(client.industry, missionType, thisSourceTargets, corrupted);
+        // Get file system names for this device
+        const fileSystemNames = fileSystemCount > 1
+            ? getVolumeNames('server', fileSystemCount)
+            : [''];
 
-        allTargetFiles = [...allTargetFiles, ...targetFiles];
-        totalDataBytes += files.filter(f => f.targetFile).reduce((sum, f) => sum + f.sizeBytes, 0);
+        // Generate file systems for this device
+        for (let fsIndex = 0; fsIndex < fileSystemCount; fsIndex++) {
+            const fsName = fileSystemNames[fsIndex] || '';
+            const fsId = `fs-${client.id}-${Date.now()}-d${deviceIndex}-fs${fsIndex}`;
 
-        primaryFileSystems.push({
-            id: `fs-${client.id}-${Date.now()}-${String(i + 1).padStart(2, '0')}`,
-            ip,
-            name: hostname,
-            files,
-            accessible: true
+            // Distribute target files across all file systems
+            const remainingTargets = targetFileCount - allTargetFiles.length;
+            const totalRemainingFs = deviceConfigs
+                .slice(deviceIndex)
+                .reduce((sum, dc, idx) =>
+                    idx === 0
+                        ? sum + (dc.fileSystemCount - fsIndex)
+                        : sum + dc.fileSystemCount
+                , 0);
+            const filesPerFs = Math.ceil(remainingTargets / totalRemainingFs);
+            const thisFsTargets = Math.min(filesPerFs, remainingTargets);
+
+            const { files, targetFiles } = generateFiles(
+                client.industry,
+                missionType,
+                thisFsTargets,
+                corrupted
+            );
+
+            allTargetFiles = [...allTargetFiles, ...targetFiles];
+            totalDataBytes += files.filter(f => f.targetFile).reduce((sum, f) => sum + f.sizeBytes, 0);
+
+            primaryFileSystems.push({
+                id: fsId,
+                ip: deviceIp,  // Same IP for all file systems on this device
+                name: fsName ? `${hostname}${fsName}` : hostname,
+                fileSystemName: fsName || undefined,
+                files,
+                accessible: true
+            });
+        }
+
+        devices.push({
+            ip: deviceIp,
+            hostname,
+            fileSystemCount
         });
-    }
+    });
 
     networks.push({
         networkId: primaryNetworkId,
@@ -405,25 +442,24 @@ export function generateNetworkInfrastructure(client, missionType, targetFileCou
         fileSystems: primaryFileSystems
     });
 
-    // Add backup server to same network (for simpler backup missions)
+    // Backup/destination server (if needed)
     let backupServerIp = null;
     let backupServerName = null;
 
     if (sameNetworkBackup) {
-        backupServerIp = generateIpInSubnet(primarySubnet, 20); // Different IP in same subnet
+        backupServerIp = generateIpInSubnet(primarySubnet, 20);
         backupServerName = generateHostname(client, 'backup');
 
-        // Add backup server as second file system in same network
         networks[0].fileSystems.push({
             id: `fs-${client.id}-${Date.now()}-backup`,
             ip: backupServerIp,
             name: backupServerName,
-            files: [], // Empty - files will be backed up here
+            files: [],
             accessible: true
         });
     }
 
-    // Generate secondary network for backup/transfer missions (separate network)
+    // Secondary network (if needed)
     let secondaryNetworkId = null;
     let secondaryIp = null;
     let secondaryHostname = null;
@@ -445,7 +481,7 @@ export function generateNetworkInfrastructure(client, missionType, targetFileCou
                 id: `fs-${client.id}-${Date.now()}-dest`,
                 ip: secondaryIp,
                 name: secondaryHostname,
-                files: [], // Empty - files will be transferred/backed up here
+                files: [],
                 accessible: true
             }]
         });
@@ -454,8 +490,9 @@ export function generateNetworkInfrastructure(client, missionType, targetFileCou
     return {
         networks,
         primaryNetworkId,
-        primaryIp: primaryFileSystems[0].ip,
+        primaryIp: devices[0].ip,
         primaryFileSystems,
+        devices,  // NEW: Array of device info
         secondaryNetworkId,
         secondaryIp,
         secondaryHostname,
@@ -464,8 +501,7 @@ export function generateNetworkInfrastructure(client, missionType, targetFileCou
         useSameNetwork: sameNetworkBackup,
         targetFiles: allTargetFiles,
         totalDataBytes,
-        hostname: networks[0].fileSystems[0].name,
-        sourceCount
+        hostname: networks[0].fileSystems[0].name.split('/')[0]  // Base hostname without file system suffix
     };
 }
 
@@ -541,52 +577,39 @@ export function calculatePayout(objectiveCount, timeLimitMinutes, client, totalD
  * @returns {Array} Array of objective objects
  */
 function generateRepairObjectives(infra) {
+    const { primaryNetworkId, networks, devices, targetFiles } = infra;
+
+    // 1. Network scan objective (finds all devices)
+    const deviceCount = devices.length;
+    const deviceLabel = deviceCount === 1 ? 'the file server' : `${deviceCount} file servers`;
+
     const objectives = [
         {
             id: 'obj-1',
-            description: `Connect to ${infra.networks[0].networkName} network`,
+            description: `Connect to ${networks[0].networkName} network`,
             type: 'networkConnection',
-            target: infra.primaryNetworkId
+            target: primaryNetworkId
         },
         {
             id: 'obj-2',
-            description: `Scan network to find file servers`,
+            description: `Use Network Scanner to locate ${deviceLabel}`,
             type: 'networkScan',
-            target: infra.primaryNetworkId,
-            expectedResult: infra.hostname
+            target: primaryNetworkId,
+            expectedResults: devices.map(d => d.ip)  // Find all device IPs
         }
     ];
 
-    let objIndex = 3;
+    // 2. Single repair objective across ALL devices and file systems
+    const totalFileSystems = devices.reduce((sum, d) => sum + d.fileSystemCount, 0);
+    const fsLabel = totalFileSystems > 1 ? ` across ${totalFileSystems} file systems` : '';
 
-    // Add objectives for each source file system
-    for (let i = 0; i < infra.primaryFileSystems.length; i++) {
-        const fs = infra.primaryFileSystems[i];
-        const filesOnThisFs = infra.targetFiles.filter((_, idx) => {
-            // Distribute target files across file systems
-            const filesPerFs = Math.ceil(infra.targetFiles.length / infra.primaryFileSystems.length);
-            return Math.floor(idx / filesPerFs) === i;
-        });
-
-        if (filesOnThisFs.length === 0) continue;
-
-        objectives.push({
-            id: `obj-${objIndex++}`,
-            description: `Connect to ${fs.name} file system`,
-            type: 'fileSystemConnection',
-            target: fs.ip
-        });
-
-        objectives.push({
-            id: `obj-${objIndex++}`,
-            description: `Repair ${filesOnThisFs.length} corrupted files on ${fs.name}`,
-            type: 'fileOperation',
-            operation: 'repair',
-            target: 'specific-files',
-            targetFiles: filesOnThisFs,
-            count: filesOnThisFs.length
-        });
-    }
+    objectives.push({
+        id: 'obj-3',
+        description: `Repair ${targetFiles.length} corrupted files${fsLabel}`,
+        type: 'fileOperation',
+        operation: 'repair',
+        targetFiles
+    });
 
     return objectives;
 }
@@ -597,151 +620,98 @@ function generateRepairObjectives(infra) {
  * @returns {Array} Array of objective objects
  */
 function generateBackupObjectives(infra) {
+    const { primaryNetworkId, networks, devices, targetFiles } = infra;
+
     // Same-network backup: simpler, fewer objectives
     if (infra.useSameNetwork) {
+        const deviceCount = devices.length;
+        const deviceLabel = deviceCount === 1 ? 'file server' : `${deviceCount} file servers`;
+        const totalFileSystems = devices.reduce((sum, d) => sum + d.fileSystemCount, 0);
+        const fsLabel = totalFileSystems > 1 ? ` from ${totalFileSystems} file systems` : '';
+
         const objectives = [
             {
                 id: 'obj-1',
-                description: `Connect to ${infra.networks[0].networkName} network`,
+                description: `Connect to ${networks[0].networkName} network`,
                 type: 'networkConnection',
-                target: infra.primaryNetworkId
+                target: primaryNetworkId
             },
             {
                 id: 'obj-2',
-                description: `Scan network to find file servers`,
+                description: `Use Network Scanner to locate ${deviceLabel}`,
                 type: 'networkScan',
-                target: infra.primaryNetworkId,
-                expectedResult: infra.hostname
-            }
-        ];
-
-        let objIndex = 3;
-
-        // Add copy objectives for each source file system
-        for (let i = 0; i < infra.primaryFileSystems.length; i++) {
-            const fs = infra.primaryFileSystems[i];
-            // Skip the backup server (last file system in same-network backup)
-            if (fs.ip === infra.backupServerIp) continue;
-
-            const filesOnThisFs = fs.files.filter(f => f.targetFile).map(f => f.name);
-            if (filesOnThisFs.length === 0) continue;
-
-            objectives.push({
-                id: `obj-${objIndex++}`,
-                description: `Connect to ${fs.name} (source)`,
-                type: 'fileSystemConnection',
-                target: fs.ip
-            });
-
-            objectives.push({
-                id: `obj-${objIndex++}`,
-                description: `Copy ${filesOnThisFs.length} files from ${fs.name}`,
+                target: primaryNetworkId,
+                expectedResults: devices.map(d => d.ip)
+            },
+            {
+                id: 'obj-3',
+                description: `Copy ${targetFiles.length} files${fsLabel} to backup server`,
                 type: 'fileOperation',
                 operation: 'copy',
-                target: 'specific-files',
-                targetFiles: filesOnThisFs,
-                count: filesOnThisFs.length
-            });
-        }
-
-        // Add paste to backup server
-        objectives.push({
-            id: `obj-${objIndex++}`,
-            description: `Connect to ${infra.backupServerName} (backup)`,
-            type: 'fileSystemConnection',
-            target: infra.backupServerIp
-        });
-
-        objectives.push({
-            id: `obj-${objIndex++}`,
-            description: `Paste ${infra.targetFiles.length} files to backup server`,
-            type: 'fileOperation',
-            operation: 'paste',
-            target: 'specific-files',
-            targetFiles: infra.targetFiles,
-            count: infra.targetFiles.length,
-            destination: infra.backupServerIp
-        });
+                targetFiles
+            },
+            {
+                id: 'obj-4',
+                description: `Paste ${targetFiles.length} files to ${infra.backupServerName}`,
+                type: 'fileOperation',
+                operation: 'paste',
+                targetFiles,
+                destination: infra.backupServerIp
+            }
+        ];
 
         return objectives;
     }
 
     // Different-network backup: more complex, requires connecting to second network
-    const destNetwork = infra.networks[1];
+    const deviceCount = devices.length;
+    const deviceLabel = deviceCount === 1 ? 'file server' : `${deviceCount} file servers`;
+    const totalFileSystems = devices.reduce((sum, d) => sum + d.fileSystemCount, 0);
+    const fsLabel = totalFileSystems > 1 ? ` from ${totalFileSystems} file systems` : '';
+
     const objectives = [
         {
             id: 'obj-1',
-            description: `Connect to ${infra.networks[0].networkName} network`,
+            description: `Connect to ${networks[0].networkName} network`,
             type: 'networkConnection',
-            target: infra.primaryNetworkId
+            target: primaryNetworkId
         },
         {
             id: 'obj-2',
-            description: `Scan network to find file servers`,
+            description: `Use Network Scanner to locate ${deviceLabel}`,
             type: 'networkScan',
-            target: infra.primaryNetworkId,
-            expectedResult: infra.hostname
-        }
-    ];
-
-    let objIndex = 3;
-
-    // Add copy objectives for each source file system
-    for (let i = 0; i < infra.primaryFileSystems.length; i++) {
-        const fs = infra.primaryFileSystems[i];
-        const filesOnThisFs = fs.files.filter(f => f.targetFile).map(f => f.name);
-        if (filesOnThisFs.length === 0) continue;
-
-        objectives.push({
-            id: `obj-${objIndex++}`,
-            description: `Connect to ${fs.name} (source)`,
-            type: 'fileSystemConnection',
-            target: fs.ip
-        });
-
-        objectives.push({
-            id: `obj-${objIndex++}`,
-            description: `Copy ${filesOnThisFs.length} files from ${fs.name}`,
+            target: primaryNetworkId,
+            expectedResults: devices.map(d => d.ip)
+        },
+        {
+            id: 'obj-3',
+            description: `Copy ${targetFiles.length} files${fsLabel}`,
             type: 'fileOperation',
             operation: 'copy',
-            target: 'specific-files',
-            targetFiles: filesOnThisFs,
-            count: filesOnThisFs.length
-        });
-    }
-
-    // Add destination network objectives
-    objectives.push(
+            targetFiles
+        },
         {
-            id: `obj-${objIndex++}`,
-            description: `Connect to ${destNetwork.networkName} network`,
+            id: 'obj-4',
+            description: `Connect to ${infra.networks[1].networkName} network`,
             type: 'networkConnection',
             target: infra.secondaryNetworkId
         },
         {
-            id: `obj-${objIndex++}`,
-            description: `Scan backup network to find ${infra.secondaryHostname}`,
+            id: 'obj-5',
+            description: `Use Network Scanner to find ${infra.secondaryHostname}`,
             type: 'networkScan',
             target: infra.secondaryNetworkId,
             expectedResult: infra.secondaryHostname
         },
         {
-            id: `obj-${objIndex++}`,
-            description: `Connect to ${infra.secondaryHostname} (backup)`,
-            type: 'fileSystemConnection',
-            target: infra.secondaryIp
-        },
-        {
-            id: `obj-${objIndex++}`,
-            description: `Paste ${infra.targetFiles.length} files to backup server`,
+            id: 'obj-6',
+            description: `Paste ${targetFiles.length} files to backup server`,
             type: 'fileOperation',
             operation: 'paste',
-            target: 'specific-files',
-            targetFiles: infra.targetFiles,
-            count: infra.targetFiles.length,
+            targetFiles,
             destination: infra.secondaryIp
         }
-    );
+    ];
 
     return objectives;
 }
@@ -752,83 +722,56 @@ function generateBackupObjectives(infra) {
  * @returns {Array} Array of objective objects
  */
 function generateTransferObjectives(infra) {
-    const sourceNetwork = infra.networks[0];
-    const destNetwork = infra.networks[1];
-    const destHostname = destNetwork.fileSystems[0].name;
+    const { primaryNetworkId, networks, devices, targetFiles, secondaryNetworkId, secondaryIp, secondaryHostname } = infra;
+
+    const deviceCount = devices.length;
+    const deviceLabel = deviceCount === 1 ? 'file server' : `${deviceCount} file servers`;
+    const totalFileSystems = devices.reduce((sum, d) => sum + d.fileSystemCount, 0);
+    const fsLabel = totalFileSystems > 1 ? ` from ${totalFileSystems} file systems` : '';
 
     const objectives = [
         {
             id: 'obj-1',
-            description: `Connect to ${sourceNetwork.networkName} network`,
+            description: `Connect to ${networks[0].networkName} network`,
             type: 'networkConnection',
-            target: infra.primaryNetworkId
+            target: primaryNetworkId
         },
         {
             id: 'obj-2',
-            description: `Scan ${sourceNetwork.networkName} to find file servers`,
+            description: `Use Network Scanner to locate ${deviceLabel}`,
             type: 'networkScan',
-            target: infra.primaryNetworkId,
-            expectedResult: infra.hostname
-        }
-    ];
-
-    let objIndex = 3;
-
-    // Add copy objectives for each source file system
-    for (let i = 0; i < infra.primaryFileSystems.length; i++) {
-        const fs = infra.primaryFileSystems[i];
-        const filesOnThisFs = fs.files.filter(f => f.targetFile).map(f => f.name);
-        if (filesOnThisFs.length === 0) continue;
-
-        objectives.push({
-            id: `obj-${objIndex++}`,
-            description: `Connect to ${fs.name} file system`,
-            type: 'fileSystemConnection',
-            target: fs.ip
-        });
-
-        objectives.push({
-            id: `obj-${objIndex++}`,
-            description: `Copy ${filesOnThisFs.length} files from ${fs.name}`,
+            target: primaryNetworkId,
+            expectedResults: devices.map(d => d.ip)
+        },
+        {
+            id: 'obj-3',
+            description: `Copy ${targetFiles.length} files${fsLabel}`,
             type: 'fileOperation',
             operation: 'copy',
-            target: 'specific-files',
-            targetFiles: filesOnThisFs,
-            count: filesOnThisFs.length
-        });
-    }
-
-    // Add destination network objectives
-    objectives.push(
+            targetFiles
+        },
         {
-            id: `obj-${objIndex++}`,
-            description: `Connect to ${destNetwork.networkName} network`,
+            id: 'obj-4',
+            description: `Connect to ${networks[1].networkName} network`,
             type: 'networkConnection',
-            target: infra.secondaryNetworkId
+            target: secondaryNetworkId
         },
         {
-            id: `obj-${objIndex++}`,
-            description: `Scan ${destNetwork.networkName} to find ${destHostname}`,
+            id: 'obj-5',
+            description: `Use Network Scanner to find ${secondaryHostname}`,
             type: 'networkScan',
-            target: infra.secondaryNetworkId,
-            expectedResult: destHostname
+            target: secondaryNetworkId,
+            expectedResult: secondaryHostname
         },
         {
-            id: `obj-${objIndex++}`,
-            description: `Connect to ${destHostname} file system`,
-            type: 'fileSystemConnection',
-            target: infra.secondaryIp
-        },
-        {
-            id: `obj-${objIndex++}`,
-            description: `Paste ${infra.targetFiles.length} files to destination`,
+            id: 'obj-6',
+            description: `Paste ${targetFiles.length} files to destination`,
             type: 'fileOperation',
             operation: 'paste',
-            target: 'specific-files',
-            targetFiles: infra.targetFiles,
-            count: infra.targetFiles.length
+            targetFiles,
+            destination: secondaryIp
         }
-    );
+    ];
 
     return objectives;
 }
@@ -1081,12 +1024,58 @@ export function generateRepairMission(client, options = {}) {
     // Target file count: 4-8 files
     const targetFileCount = randomInt(4, 8);
 
-    // Randomly choose number of source file systems (1-3 for repair)
-    const sourceCount = Math.random() < 0.6 ? 1 : Math.random() < 0.7 ? 2 : 3;
+    // Determine difficulty based on file count
+    const difficulty = targetFileCount <= 5 ? 'Easy' : targetFileCount <= 7 ? 'Medium' : 'Hard';
+
+    // Generate varied infrastructure based on difficulty
+    let deviceConfigs;
+    const roll = Math.random();
+
+    if (difficulty === 'Easy') {
+        // Easy: Simple configurations
+        deviceConfigs = roll < 0.5
+            ? [{ fileSystemCount: 1 }]  // 1 device, 1 file system
+            : [{ fileSystemCount: randomInt(2, 3) }];  // 1 device, 2-3 file systems
+    } else if (difficulty === 'Medium') {
+        // Medium: More variety
+        if (roll < 0.3) {
+            deviceConfigs = [{ fileSystemCount: randomInt(3, 5) }];  // 1 device, 3-5 file systems
+        } else if (roll < 0.6) {
+            deviceConfigs = [
+                { fileSystemCount: randomInt(1, 3) },
+                { fileSystemCount: randomInt(1, 3) }
+            ];  // 2 devices with varied file systems
+        } else {
+            deviceConfigs = [
+                { fileSystemCount: 1 },
+                { fileSystemCount: 1 },
+                { fileSystemCount: randomInt(1, 2) }
+            ];  // 3 devices, mixed
+        }
+    } else {  // Hard
+        // Hard: Complex configurations
+        if (roll < 0.25) {
+            deviceConfigs = [{ fileSystemCount: randomInt(5, 8) }];  // 1 device, many file systems
+        } else if (roll < 0.5) {
+            deviceConfigs = Array(randomInt(2, 4)).fill(null).map(() => ({
+                fileSystemCount: randomInt(2, 4)
+            }));  // 2-4 devices, each with 2-4 file systems
+        } else if (roll < 0.75) {
+            deviceConfigs = Array(randomInt(3, 5)).fill(null).map(() => ({
+                fileSystemCount: randomInt(1, 2)
+            }));  // 3-5 devices, 1-2 file systems each
+        } else {
+            deviceConfigs = [
+                { fileSystemCount: randomInt(3, 5) },
+                { fileSystemCount: 1 },
+                { fileSystemCount: randomInt(1, 3) }
+            ];  // Mixed: one big device, others smaller
+        }
+    }
 
     const infra = generateNetworkInfrastructure(client, 'repair', targetFileCount, {
         corrupted: true,
-        sourceCount
+        deviceConfigs
     });
     const objectives = generateRepairObjectives(infra);
 
@@ -1122,7 +1111,7 @@ export function generateRepairMission(client, options = {}) {
         clientId: client.id,
         clientType: client.clientType,
         industry: client.industry,
-        difficulty: targetFileCount <= 5 ? 'Easy' : targetFileCount <= 7 ? 'Medium' : 'Hard',
+        difficulty,
         missionType: 'repair',
         basePayout,
         category: arcId ? 'procedural-arc' : 'procedural',
@@ -1165,14 +1154,25 @@ export function generateBackupMission(client, options = {}) {
     // Randomly choose: backup to same network (simpler) or different network (more complex)
     const useSameNetwork = Math.random() < 0.4; // 40% same network, 60% different network
 
-    // Randomly choose number of source file systems (1-4 for backup - consolidation scenario)
-    const sourceCount = Math.random() < 0.5 ? 1 : Math.random() < 0.6 ? 2 : Math.random() < 0.8 ? 3 : 4;
+    // Generate varied device/file system configurations
+    let deviceConfigs;
+    const roll = Math.random();
+
+    if (roll < 0.4) {
+        deviceConfigs = [{ fileSystemCount: 1 }];  // Simple: 1 device, 1 file system
+    } else if (roll < 0.7) {
+        deviceConfigs = [{ fileSystemCount: randomInt(2, 4) }];  // 1 device, multiple file systems
+    } else {
+        deviceConfigs = Array(randomInt(2, 3)).fill(null).map(() => ({
+            fileSystemCount: randomInt(1, 2)
+        }));  // 2-3 devices
+    }
 
     const infra = generateNetworkInfrastructure(client, 'backup', targetFileCount, {
         corrupted: false,
         secondNetwork: !useSameNetwork,
         sameNetworkBackup: useSameNetwork,
-        sourceCount
+        deviceConfigs
     });
     const objectives = generateBackupObjectives(infra);
 
@@ -1248,13 +1248,24 @@ export function generateTransferMission(client, options = {}) {
     // Target file count: 3-6 files
     const targetFileCount = randomInt(3, 6);
 
-    // Randomly choose number of source file systems (1-3 for transfer)
-    const sourceCount = Math.random() < 0.6 ? 1 : Math.random() < 0.8 ? 2 : 3;
+    // Generate varied device/file system configurations
+    let deviceConfigs;
+    const roll = Math.random();
+
+    if (roll < 0.4) {
+        deviceConfigs = [{ fileSystemCount: 1 }];  // Simple: 1 device, 1 file system
+    } else if (roll < 0.7) {
+        deviceConfigs = [{ fileSystemCount: randomInt(2, 4) }];  // 1 device, multiple file systems
+    } else {
+        deviceConfigs = Array(randomInt(2, 3)).fill(null).map(() => ({
+            fileSystemCount: randomInt(1, 2)
+        }));  // 2-3 devices
+    }
 
     const infra = generateNetworkInfrastructure(client, 'transfer', targetFileCount, {
         corrupted: false,
         secondNetwork: true,
-        sourceCount
+        deviceConfigs
     });
     const objectives = generateTransferObjectives(infra);
 
@@ -1290,7 +1301,7 @@ export function generateTransferMission(client, options = {}) {
         clientId: client.id,
         clientType: client.clientType,
         industry: client.industry,
-        difficulty: sourceCount > 1 ? 'Hard' : 'Medium',
+        difficulty: infra.devices.length > 1 ? 'Hard' : 'Medium',
         missionType: 'transfer',
         basePayout,
         category: arcId ? 'procedural-arc' : 'procedural',
@@ -1391,7 +1402,7 @@ export function generateRestoreFromBackupMission(client, options = {}) {
         },
         {
             id: 'obj-2',
-            description: `Scan network to find file servers`,
+            description: `Use Network Scanner to find file servers`,
             type: 'networkScan',
             target: primaryNetworkId,
             expectedResult: hostname
@@ -1563,7 +1574,7 @@ export function generateRepairAndBackupMission(client, options = {}) {
         },
         {
             id: 'obj-2',
-            description: `Scan network to find file servers`,
+            description: `Use Network Scanner to find file servers`,
             type: 'networkScan',
             target: primaryNetworkId,
             expectedResult: hostname
@@ -1809,15 +1820,34 @@ export function resetMissionIdCounter() {
  * @param {Date} baseTime - Base time for log entries (corruption/deletion time)
  * @returns {Array} Array of log entries
  */
-function generateActivityLogs(files, pattern, baseTime) {
+function generateActivityLogs(files, pattern, baseTime, fileSystemId) {
     const logs = [];
-    const patterns = pattern.includes('delete') || pattern.includes('Delete')
-        ? deletionBackstoryPatterns
-        : pattern.includes('secure') || pattern.includes('Secure')
-            ? secureDeleteBackstoryPatterns
-            : corruptionBackstoryPatterns;
 
-    const patternKey = Object.keys(patterns)[Math.floor(Math.random() * Object.keys(patterns).length)];
+    // Determine which pattern set to use
+    let patterns;
+    let patternKey;
+
+    if (pattern.includes('delete') || pattern.includes('Delete')) {
+        patterns = deletionBackstoryPatterns;
+        patternKey = Object.keys(patterns)[Math.floor(Math.random() * Object.keys(patterns).length)];
+    } else if (pattern === 'compliance' || pattern === 'piracy' || pattern === 'malware') {
+        // Secure deletion variants - map to specific backstory patterns
+        patterns = secureDeleteBackstoryPatterns;
+        if (pattern === 'compliance') {
+            patternKey = 'complianceFlag';
+        } else if (pattern === 'piracy') {
+            patternKey = 'piracy';
+        } else if (pattern === 'malware') {
+            patternKey = 'malwareDetection';
+        }
+    } else if (pattern.includes('secure') || pattern.includes('Secure')) {
+        patterns = secureDeleteBackstoryPatterns;
+        patternKey = Object.keys(patterns)[Math.floor(Math.random() * Object.keys(patterns).length)];
+    } else {
+        patterns = corruptionBackstoryPatterns;
+        patternKey = Object.keys(patterns)[Math.floor(Math.random() * Object.keys(patterns).length)];
+    }
+
     const backstory = patterns[patternKey] || patterns[Object.keys(patterns)[0]];
 
     files.forEach(file => {
@@ -1833,7 +1863,8 @@ function generateActivityLogs(files, pattern, baseTime) {
                 action: event.action,
                 user: event.user || 'SYSTEM',
                 fileName: file.name,
-                note: event.note
+                note: event.note,
+                fileSystemId
             });
         });
     });
@@ -1899,62 +1930,108 @@ export function generateInvestigationRepairMission(client, options = {}) {
     // Target file count: 3-5 files for investigation missions
     const targetFileCount = randomInt(3, 5);
 
-    // Create device with multiple file systems (2-4 volumes)
-    const fileSystemCount = randomInt(2, 4);
+    // Create needle in haystack - lots of devices OR lots of file systems OR both
+    const roll = Math.random();
+    let deviceConfigs;
+    let totalFileSystemCount;
+
+    if (roll < 0.3) {
+        // Pattern A: Many file systems on single device
+        const fsCount = randomInt(10, 15);
+        deviceConfigs = [{ fileSystemCount: fsCount }];
+        totalFileSystemCount = fsCount;
+    } else if (roll < 0.6) {
+        // Pattern B: Many devices with 1-2 file systems each
+        const deviceCount = randomInt(8, 12);
+        deviceConfigs = Array(deviceCount).fill(null).map(() => ({
+            fileSystemCount: randomInt(1, 2)
+        }));
+        totalFileSystemCount = deviceConfigs.reduce((sum, dc) => sum + dc.fileSystemCount, 0);
+    } else {
+        // Pattern C: Mix - several devices with varied file system counts
+        const deviceCount = randomInt(3, 6);
+        deviceConfigs = Array(deviceCount).fill(null).map(() => ({
+            fileSystemCount: randomInt(2, 5)
+        }));
+        totalFileSystemCount = deviceConfigs.reduce((sum, dc) => sum + dc.fileSystemCount, 0);
+    }
+
     const primaryNetworkId = `${client.id}-network-${Date.now()}`;
     const primarySubnet = generateSubnet();
-    const deviceIp = generateIpInSubnet(primarySubnet, 10);
-    const hostname = generateHostname(client, 'server');
 
     // One file system is the target (has corrupted files with recent activity)
-    const targetFsIndex = randomInt(0, fileSystemCount - 1);
-    const volumeNames = getVolumeNames('server', fileSystemCount);
+    const targetFsIndex = randomInt(0, totalFileSystemCount - 1);
 
     const fileSystems = [];
+    const devices = [];
     let targetFileSystemId = null;
     let allTargetFiles = [];
     let totalDataBytes = 0;
+    let targetDeviceIp = null;
 
     // Base time for corruption events (a few hours before mission)
     const corruptionTime = new Date(Date.now() - randomInt(2, 8) * 60 * 60 * 1000);
 
-    for (let i = 0; i < fileSystemCount; i++) {
-        const fsId = `fs-${client.id}-${Date.now()}-vol${i}`;
-        const isTargetFs = (i === targetFsIndex);
-        const volumeName = volumeNames[i] || `/vol${i}`;
+    let globalFsIndex = 0;
 
-        let files;
-        let activityLogs = [];
+    deviceConfigs.forEach((deviceConfig, deviceIndex) => {
+        const deviceIp = generateIpInSubnet(primarySubnet, 10 + deviceIndex);
+        const purpose = deviceConfigs.length > 1
+            ? `fileserver-${String(deviceIndex + 1).padStart(2, '0')}`
+            : 'server';
+        const hostname = generateHostname(client, purpose.replace('-', ''));
 
-        if (isTargetFs) {
-            // Generate target files with corruption
-            const result = generateFiles(client.industry, 'repair', targetFileCount, true);
-            files = result.files;
-            allTargetFiles = result.targetFiles;
-            totalDataBytes = files.filter(f => f.targetFile).reduce((sum, f) => sum + f.sizeBytes, 0);
-            targetFileSystemId = fsId;
+        const { fileSystemCount = 1 } = deviceConfig;
+        const volumeNames = fileSystemCount > 1 ? getVolumeNames('server', fileSystemCount) : [''];
 
-            // Generate activity logs showing corruption
-            activityLogs = generateActivityLogs(
-                files.filter(f => f.corrupted),
-                'corruption',
-                corruptionTime
-            );
-        } else {
-            // Generate decoy files (no corruption, old activity or none)
-            files = generateDecoyFiles(client.industry, randomInt(2, 4));
+        for (let fsIndex = 0; fsIndex < fileSystemCount; fsIndex++) {
+            const fsId = `fs-${client.id}-${Date.now()}-d${deviceIndex}-fs${fsIndex}`;
+            const isTargetFs = (globalFsIndex === targetFsIndex);
+            const volumeName = volumeNames[fsIndex] || '';
+
+            let files;
+            let activityLogs = [];
+
+            if (isTargetFs) {
+                // Generate target files with corruption
+                const result = generateFiles(client.industry, 'repair', targetFileCount, true);
+                files = result.files;
+                allTargetFiles = result.targetFiles;
+                totalDataBytes = files.filter(f => f.targetFile).reduce((sum, f) => sum + f.sizeBytes, 0);
+                targetFileSystemId = fsId;
+                targetDeviceIp = deviceIp;
+
+                // Generate activity logs showing corruption
+                activityLogs = generateActivityLogs(
+                    files.filter(f => f.corrupted),
+                    'corruption',
+                    corruptionTime,
+                    fsId
+                );
+            } else {
+                // Generate decoy files (no corruption, old activity or none)
+                files = generateDecoyFiles(client.industry, randomInt(2, 4));
+            }
+
+            fileSystems.push({
+                id: fsId,
+                ip: deviceIp,
+                name: volumeName ? `${hostname}${volumeName}` : hostname,
+                fileSystemName: volumeName || undefined,
+                files,
+                accessible: true,
+                logs: activityLogs
+            });
+
+            globalFsIndex++;
         }
 
-        fileSystems.push({
-            id: fsId,
+        devices.push({
             ip: deviceIp,
-            name: `${hostname}${volumeName}`,
-            volumeName,
-            files,
-            accessible: true,
-            logs: activityLogs
+            hostname,
+            fileSystemCount
         });
-    }
+    });
 
     const networks = [{
         networkId: primaryNetworkId,
@@ -1966,7 +2043,10 @@ export function generateInvestigationRepairMission(client, options = {}) {
         fileSystems
     }];
 
-    // Objectives - note that briefing does NOT specify which volume
+    // Objectives - note that briefing does NOT specify which file system
+    const deviceLabel = devices.length === 1 ? 'file server' : `${devices.length} file servers`;
+    const fsLabel = totalFileSystemCount > 1 ? ` across ${totalFileSystemCount} file systems` : '';
+
     const objectives = [
         {
             id: 'obj-1',
@@ -1976,17 +2056,17 @@ export function generateInvestigationRepairMission(client, options = {}) {
         },
         {
             id: 'obj-2',
-            description: `Scan network to find ${hostname}`,
+            description: `Use Network Scanner to find ${deviceLabel}`,
             type: 'networkScan',
             target: primaryNetworkId,
-            expectedResult: hostname
+            expectedResults: devices.map(d => d.ip)
         },
         {
             id: 'obj-3',
-            description: `Use Log Viewer to identify which volume has corrupted files`,
+            description: `Use Log Viewer to identify which file system has corrupted files${fsLabel}`,
             type: 'investigation',
             correctFileSystemId: targetFileSystemId,
-            target: deviceIp
+            target: targetDeviceIp
         },
         {
             id: 'obj-4',
@@ -1999,9 +2079,7 @@ export function generateInvestigationRepairMission(client, options = {}) {
             description: `Repair ${allTargetFiles.length} corrupted files`,
             type: 'fileOperation',
             operation: 'repair',
-            target: 'specific-files',
-            targetFiles: allTargetFiles,
-            count: allTargetFiles.length
+            targetFiles: allTargetFiles.map(f => f.name)
         }
     ];
 
@@ -2061,8 +2139,9 @@ export function generateInvestigationRepairMission(client, options = {}) {
         // Investigation-specific fields
         isInvestigation: true,
         targetFileSystemId,
-        deviceIp,
-        volumeCount: fileSystemCount
+        targetDeviceIp,
+        devices,
+        fileSystemCount: totalFileSystemCount
     };
 }
 
@@ -2079,65 +2158,111 @@ export function generateInvestigationRecoveryMission(client, options = {}) {
     // Target file count: 3-5 files for recovery
     const targetFileCount = randomInt(3, 5);
 
-    // Create device with multiple file systems (2-4 volumes)
-    const fileSystemCount = randomInt(2, 4);
+    // Create needle in haystack - lots of devices OR lots of file systems OR both
+    const roll = Math.random();
+    let deviceConfigs;
+    let totalFileSystemCount;
+
+    if (roll < 0.3) {
+        // Pattern A: Many file systems on single device
+        const fsCount = randomInt(10, 15);
+        deviceConfigs = [{ fileSystemCount: fsCount }];
+        totalFileSystemCount = fsCount;
+    } else if (roll < 0.6) {
+        // Pattern B: Many devices with 1-2 file systems each
+        const deviceCount = randomInt(8, 12);
+        deviceConfigs = Array(deviceCount).fill(null).map(() => ({
+            fileSystemCount: randomInt(1, 2)
+        }));
+        totalFileSystemCount = deviceConfigs.reduce((sum, dc) => sum + dc.fileSystemCount, 0);
+    } else {
+        // Pattern C: Mix - several devices with varied file system counts
+        const deviceCount = randomInt(3, 6);
+        deviceConfigs = Array(deviceCount).fill(null).map(() => ({
+            fileSystemCount: randomInt(2, 5)
+        }));
+        totalFileSystemCount = deviceConfigs.reduce((sum, dc) => sum + dc.fileSystemCount, 0);
+    }
+
     const primaryNetworkId = `${client.id}-network-${Date.now()}`;
     const primarySubnet = generateSubnet();
-    const deviceIp = generateIpInSubnet(primarySubnet, 10);
-    const hostname = generateHostname(client, 'server');
 
     // One file system is the target (has deleted files with deletion logs)
-    const targetFsIndex = randomInt(0, fileSystemCount - 1);
-    const volumeNames = getVolumeNames('server', fileSystemCount);
+    const targetFsIndex = randomInt(0, totalFileSystemCount - 1);
 
     const fileSystems = [];
+    const devices = [];
     let targetFileSystemId = null;
     let allTargetFiles = [];
     let totalDataBytes = 0;
+    let targetDeviceIp = null;
 
     // Base time for deletion events
     const deletionTime = new Date(Date.now() - randomInt(1, 4) * 60 * 60 * 1000);
 
-    for (let i = 0; i < fileSystemCount; i++) {
-        const fsId = `fs-${client.id}-${Date.now()}-vol${i}`;
-        const isTargetFs = (i === targetFsIndex);
-        const volumeName = volumeNames[i] || `/vol${i}`;
+    let globalFsIndex = 0;
 
-        let files;
-        let activityLogs = [];
+    deviceConfigs.forEach((deviceConfig, deviceIndex) => {
+        const deviceIp = generateIpInSubnet(primarySubnet, 10 + deviceIndex);
+        const purpose = deviceConfigs.length > 1
+            ? `fileserver-${String(deviceIndex + 1).padStart(2, '0')}`
+            : 'server';
+        const hostname = generateHostname(client, purpose.replace('-', ''));
 
-        if (isTargetFs) {
-            // Generate target files marked as deleted
-            const result = generateFiles(client.industry, 'backup', targetFileCount, false);
-            files = result.files.map(f => ({
-                ...f,
-                status: f.targetFile ? 'deleted' : (f.status || 'normal')
-            }));
-            allTargetFiles = result.targetFiles;
-            totalDataBytes = files.filter(f => f.targetFile).reduce((sum, f) => sum + f.sizeBytes, 0);
-            targetFileSystemId = fsId;
+        const { fileSystemCount = 1 } = deviceConfig;
+        const volumeNames = fileSystemCount > 1 ? getVolumeNames('server', fileSystemCount) : [''];
 
-            // Generate activity logs showing deletion
-            activityLogs = generateActivityLogs(
-                files.filter(f => f.status === 'deleted'),
-                'deletion',
-                deletionTime
-            );
-        } else {
-            // Generate decoy files (no deleted files, old activity)
-            files = generateDecoyFiles(client.industry, randomInt(2, 4));
+        for (let fsIndex = 0; fsIndex < fileSystemCount; fsIndex++) {
+            const fsId = `fs-${client.id}-${Date.now()}-d${deviceIndex}-fs${fsIndex}`;
+            const isTargetFs = (globalFsIndex === targetFsIndex);
+            const volumeName = volumeNames[fsIndex] || '';
+
+            let files;
+            let activityLogs = [];
+
+            if (isTargetFs) {
+                // Generate target files marked as deleted
+                const result = generateFiles(client.industry, 'backup', targetFileCount, false);
+                files = result.files.map(f => ({
+                    ...f,
+                    status: f.targetFile ? 'deleted' : (f.status || 'normal')
+                }));
+                allTargetFiles = result.targetFiles;
+                totalDataBytes = files.filter(f => f.targetFile).reduce((sum, f) => sum + f.sizeBytes, 0);
+                targetFileSystemId = fsId;
+                targetDeviceIp = deviceIp;
+
+                // Generate activity logs showing deletion
+                activityLogs = generateActivityLogs(
+                    files.filter(f => f.status === 'deleted'),
+                    'deletion',
+                    deletionTime,
+                    fsId
+                );
+            } else {
+                // Generate decoy files (no deleted files, old activity)
+                files = generateDecoyFiles(client.industry, randomInt(2, 4));
+            }
+
+            fileSystems.push({
+                id: fsId,
+                ip: deviceIp,
+                name: volumeName ? `${hostname}${volumeName}` : hostname,
+                fileSystemName: volumeName || undefined,
+                files,
+                accessible: true,
+                logs: activityLogs
+            });
+
+            globalFsIndex++;
         }
 
-        fileSystems.push({
-            id: fsId,
+        devices.push({
             ip: deviceIp,
-            name: `${hostname}${volumeName}`,
-            volumeName,
-            files,
-            accessible: true,
-            logs: activityLogs
+            hostname,
+            fileSystemCount
         });
-    }
+    });
 
     const networks = [{
         networkId: primaryNetworkId,
@@ -2149,6 +2274,9 @@ export function generateInvestigationRecoveryMission(client, options = {}) {
         fileSystems
     }];
 
+    const deviceLabel = devices.length === 1 ? 'file server' : `${devices.length} file servers`;
+    const fsLabel = totalFileSystemCount > 1 ? ` across ${totalFileSystemCount} file systems` : '';
+
     const objectives = [
         {
             id: 'obj-1',
@@ -2158,21 +2286,21 @@ export function generateInvestigationRecoveryMission(client, options = {}) {
         },
         {
             id: 'obj-2',
-            description: `Scan network to find ${hostname}`,
+            description: `Use Network Scanner to find ${deviceLabel}`,
             type: 'networkScan',
             target: primaryNetworkId,
-            expectedResult: hostname
+            expectedResults: devices.map(d => d.ip)
         },
         {
             id: 'obj-3',
-            description: `Use Log Viewer to identify which volume had files deleted`,
+            description: `Use Log Viewer to identify which file system had files deleted${fsLabel}`,
             type: 'investigation',
             correctFileSystemId: targetFileSystemId,
-            target: deviceIp
+            target: targetDeviceIp
         },
         {
             id: 'obj-4',
-            description: `Connect Data Recovery Tool to the correct volume`,
+            description: `Connect Data Recovery Tool to the correct file system`,
             type: 'fileSystemConnection',
             app: 'dataRecoveryTool',
             target: targetFileSystemId
@@ -2187,8 +2315,7 @@ export function generateInvestigationRecoveryMission(client, options = {}) {
             id: 'obj-6',
             description: `Recover ${allTargetFiles.length} deleted files`,
             type: 'fileRecovery',
-            targetFiles: allTargetFiles,
-            count: allTargetFiles.length
+            targetFiles: allTargetFiles.map(f => f.name)
         }
     ];
 
@@ -2245,8 +2372,9 @@ export function generateInvestigationRecoveryMission(client, options = {}) {
         requiresCompletedMission: arcSequence > 1 ? arcContext.previousMissionId : null,
         isInvestigation: true,
         targetFileSystemId,
-        deviceIp,
-        volumeCount: fileSystemCount
+        targetDeviceIp,
+        devices,
+        fileSystemCount: totalFileSystemCount
     };
 }
 
@@ -2280,11 +2408,12 @@ export function generateSecureDeletionMission(client, options = {}) {
     const normalFiles = generateDecoyFiles(client.industry, randomInt(2, 4));
     const allFiles = [...normalFiles, ...filesToDelete];
 
-    // Generate activity logs showing the problematic files
-    const flagTime = new Date(Date.now() - randomInt(1, 4) * 60 * 60 * 1000);
-    const activityLogs = generateActivityLogs(filesToDelete, 'secureDelete', flagTime);
-
     const targetFileSystemId = `fs-${client.id}-${Date.now()}`;
+
+    // Generate activity logs showing the problematic files
+    // Pass variant name to select matching backstory pattern
+    const flagTime = new Date(Date.now() - randomInt(1, 4) * 60 * 60 * 1000);
+    const activityLogs = generateActivityLogs(filesToDelete, variant, flagTime, targetFileSystemId);
     const fileSystems = [{
         id: targetFileSystemId,
         ip: deviceIp,
@@ -2313,7 +2442,7 @@ export function generateSecureDeletionMission(client, options = {}) {
         },
         {
             id: 'obj-2',
-            description: `Scan network to find ${hostname}`,
+            description: `Use Network Scanner to find ${hostname}`,
             type: 'networkScan',
             target: primaryNetworkId,
             expectedResult: hostname
