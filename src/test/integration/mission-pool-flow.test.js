@@ -427,7 +427,7 @@ describe('Mission Pool Flow Integration', () => {
             expect(config.min).toBe(5);
             expect(config.max).toBe(8);
             expect(config.minAccessible).toBe(3);
-            expect(config.investigationChance).toBe(0.25);
+            expect(config.investigationChance).toBe(0.50);
         });
 
         it('should initialize larger pool when investigation-tooling is unlocked', () => {

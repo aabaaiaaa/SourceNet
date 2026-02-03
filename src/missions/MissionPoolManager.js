@@ -45,12 +45,12 @@ export const poolConfigByProgression = {
     midGame: {
         min: 5, max: 8,
         minAccessible: 3,
-        investigationChance: 0.25 // 25% chance for investigation missions
+        investigationChance: 0.50 // 50% chance for investigation missions
     },
     lateGame: {
         min: 6, max: 10,
         minAccessible: 4,
-        investigationChance: 0.35 // 35% chance for investigation missions
+        investigationChance: 0.60 // 60% chance for investigation missions
     }
 };
 

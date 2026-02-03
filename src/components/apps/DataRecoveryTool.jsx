@@ -30,6 +30,12 @@ const DataRecoveryTool = () => {
   const scanStartTimeRef = useRef(null);
   const scanDurationRef = useRef(0);
   const activeOperationsRef = useRef(new Map()); // Map of fileName -> operation data
+  const currentTimeRef = useRef(currentTime);
+
+  // Keep currentTimeRef up to date for animation loops
+  useEffect(() => {
+    currentTimeRef.current = currentTime;
+  }, [currentTime]);
 
   // Get network bandwidth from NetworkRegistry
   const getNetworkBandwidth = useCallback((networkId) => {
@@ -188,7 +194,7 @@ const DataRecoveryTool = () => {
     const deletedFiles = allFiles.filter(f => f.status === 'deleted');
 
     const animate = () => {
-      const now = currentTime.getTime();
+      const now = currentTimeRef.current.getTime();
       const elapsedGameMs = now - scanStartTimeRef.current;
       const progress = Math.min(100, (elapsedGameMs / scanDurationRef.current) * 100);
       setScanProgress(progress);
@@ -240,7 +246,7 @@ const DataRecoveryTool = () => {
     if (activeOperationsRef.current.size === 0 || !currentTime) return;
 
     const animate = () => {
-      const now = currentTime.getTime();
+      const now = currentTimeRef.current.getTime();
       const updates = {};
       const completedOps = [];
 
