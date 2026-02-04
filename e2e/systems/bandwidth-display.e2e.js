@@ -83,13 +83,12 @@ test.describe('Bandwidth Display - Downloads', () => {
 
   test('should show shared bandwidth with multiple concurrent downloads', async ({ page }) => {
     await completeBoot(page, 'bw_multi_download');
-    await setCreditsViaDebug(page, 5000);
-    await openPortalSoftware(page);
 
-    // Purchase first software
-    await purchaseSoftware(page);
+    // Register first download operation directly (large size to prevent quick completion)
+    await page.evaluate(() => {
+      window.gameContext.registerBandwidthOperation('software_download', 500, { id: 'download1' });
+    });
 
-    // Wait for speed element to be visible and have a value
     const speedElement = page.locator('.bandwidth-speed');
     await expect(speedElement).toBeVisible({ timeout: 5000 });
 
@@ -98,28 +97,20 @@ test.describe('Bandwidth Display - Downloads', () => {
     const initialSpeed = await speedElement.textContent();
     const initialSpeedNum = parseFloat(initialSpeed);
 
-    // Purchase second software (if available)
-    const secondPurchasable = page.locator('.portal-item:has(button:has-text("Purchase"))').first();
-    if (await secondPurchasable.isVisible()) {
-      await secondPurchasable.locator('button:has-text("Purchase")').click();
-      const modal = page.locator('.modal-content');
-      await expect(modal).toBeVisible();
-      await modal.locator('button:has-text("Confirm Purchase")').click();
-      await expect(modal).not.toBeVisible();
+    // Register second download operation
+    await page.evaluate(() => {
+      window.gameContext.registerBandwidthOperation('software_download', 500, { id: 'download2' });
+    });
 
-      // Wait for speed to change (should be less than initial due to sharing)
-      // Use a function matcher to wait for the speed to decrease
-      await expect(async () => {
-        const newSpeed = await speedElement.textContent();
-        const newSpeedNum = parseFloat(newSpeed);
-        expect(newSpeedNum).toBeLessThan(initialSpeedNum);
-      }).toPass({ timeout: 5000 });
-
+    // Wait for speed to decrease (bandwidth sharing halves the speed)
+    await expect(async () => {
       const newSpeed = await speedElement.textContent();
-      console.log(`Speed reduced from ${initialSpeed} to ${newSpeed} with concurrent download`);
-    } else {
-      console.log('Only one purchasable item available, skipping concurrent test');
-    }
+      const newSpeedNum = parseFloat(newSpeed);
+      expect(newSpeedNum).toBeLessThan(initialSpeedNum);
+    }).toPass({ timeout: 5000 });
+
+    const newSpeed = await speedElement.textContent();
+    console.log(`Speed reduced from ${initialSpeed} to ${newSpeed} with concurrent download`);
   });
 
   test('should revert to idle after download completes', async ({ page }) => {
