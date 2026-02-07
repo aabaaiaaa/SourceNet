@@ -55,19 +55,25 @@ export const poolConfigByProgression = {
 };
 
 /**
- * Determine player progression level based on unlocked software
+ * Determine player progression level based on unlocked software/features
+ *
+ * NOTE: The 'investigation-missions' feature is unlocked by completing the
+ * data-detective story mission, NOT by just having the tools installed.
+ * This separates tool availability (for story mission) from procedural
+ * mission generation (unlocked after story mission completion).
+ *
  * @param {Array} unlockedSoftware - Array of unlocked software/feature IDs
  * @returns {string} Progression level: 'early', 'midGame', or 'lateGame'
  */
 export function getProgressionLevel(unlockedSoftware = []) {
-    // Investigation tools unlock marks mid-game
-    const hasInvestigationTools = unlockedSoftware.includes('investigation-tooling') ||
-        (unlockedSoftware.includes('log-viewer') && unlockedSoftware.includes('data-recovery-tool'));
+    // Investigation missions unlock marks mid-game
+    // This is unlocked by completing the data-detective story mission
+    const hasInvestigationMissions = unlockedSoftware.includes('investigation-missions');
 
     // Additional tool unlocks mark late game (future expansion)
     // const hasAdvancedTools = unlockedSoftware.includes('decryption-tools');
 
-    if (hasInvestigationTools) {
+    if (hasInvestigationMissions) {
         return 'midGame';
     }
 
@@ -139,6 +145,11 @@ export function initializePool(reputation, currentTime, options = {}) {
         Math.random() * (config.max - config.min + 1)
     );
 
+    // Check if we need investigation missions based on progression
+    const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
+    const needsInvestigationMissions = config.investigationChance > 0;
+    let investigationAdded = false;
+
     // Generate initial missions
     while (pool.length < targetSize) {
         const result = generatePoolMission(reputation, currentTime, activeClientIds, pool.length < config.minAccessible, { unlockedSoftware });
@@ -150,15 +161,40 @@ export function initializePool(reputation, currentTime, options = {}) {
                 pool.push(firstMission);
                 activeClientIds.add(firstMission.clientId);
                 pendingArcMissions[result.arcId] = result.missions.slice(1);
+                // Track if investigation mission was added
+                if (investigationTypes.includes(firstMission.missionType)) {
+                    investigationAdded = true;
+                }
             } else {
                 // Single mission - add expiration
                 const mission = addExpirationToMission(result, currentTime);
                 pool.push(mission);
                 activeClientIds.add(mission.clientId);
+                // Track if investigation mission was added
+                if (investigationTypes.includes(mission.missionType)) {
+                    investigationAdded = true;
+                }
             }
         } else {
             // Couldn't generate mission - break to avoid infinite loop
             break;
+        }
+    }
+
+    // GUARANTEE investigation mission if needed but not added during initial generation
+    if (needsInvestigationMissions && !investigationAdded) {
+        for (let attempt = 0; attempt < 10 && !investigationAdded; attempt++) {
+            const result = generatePoolMission(reputation, currentTime, activeClientIds, false, {
+                unlockedSoftware,
+                guaranteeInvestigation: true
+            });
+
+            if (result && !result.arcId && investigationTypes.includes(result.missionType)) {
+                const mission = addExpirationToMission(result, currentTime);
+                pool.push(mission);
+                activeClientIds.add(mission.clientId);
+                investigationAdded = true;
+            }
         }
     }
 
@@ -181,7 +217,7 @@ export function initializePool(reputation, currentTime, options = {}) {
  * @returns {Object|null} Generated mission or arc
  */
 export function generatePoolMission(reputation, currentTime, excludeClientIds, mustBeAccessible, options = {}) {
-    const { unlockedSoftware = [] } = options;
+    const { unlockedSoftware = [], guaranteeInvestigation = false } = options;
 
     // Get available clients
     let client;
@@ -217,8 +253,9 @@ export function generatePoolMission(reputation, currentTime, excludeClientIds, m
         return null;
     }
 
-    // Decide if this should be an arc
-    if (Math.random() < poolConfig.arcChance) {
+    // Decide if this should be an arc (but NOT when we must guarantee an investigation type)
+    // Arc generation would bypass investigation generation, so skip arcs when guaranteeing
+    if (!guaranteeInvestigation && Math.random() < poolConfig.arcChance) {
         const storyline = getRandomStoryline();
         if (storyline) {
             // Get clients for each mission in the arc
@@ -236,7 +273,6 @@ export function generatePoolMission(reputation, currentTime, excludeClientIds, m
     // Check if we should generate an investigation mission
     // When pool cap increases due to new mission types being available, use 100% chance
     // for those new types since the extra capacity was specifically added for them
-    const { guaranteeInvestigation = false } = options;
     const shouldGenerateInvestigation = guaranteeInvestigation ||
         (config.investigationChance > 0 && Math.random() < config.investigationChance);
 
@@ -414,6 +450,24 @@ export function refreshPool(poolState, reputation, currentTime, activeMissionId 
 
             if (mustBeAccessible) {
                 accessibleAdded++;
+            }
+        }
+    }
+
+    // GUARANTEE investigation mission if still needed after main loop
+    // This handles cases where arc generation or random chance prevented adding one
+    if (needsInvestigationMissions && !investigationAdded) {
+        for (let attempt = 0; attempt < 10 && !investigationAdded; attempt++) {
+            const result = generatePoolMission(reputation, currentTime, activeClients, false, {
+                unlockedSoftware,
+                guaranteeInvestigation: true
+            });
+
+            if (result && !result.arcId && investigationTypes.includes(result.missionType)) {
+                const mission = addExpirationToMission(result, currentTime);
+                newMissions.push(mission);
+                activeClients.add(mission.clientId);
+                investigationAdded = true;
             }
         }
     }

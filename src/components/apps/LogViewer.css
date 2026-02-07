@@ -111,91 +111,93 @@
   font-style: italic;
 }
 
-/* Log Table - matches FileManager activity log styling */
-.log-table {
+/* Log Table Container */
+.log-table-container {
   flex: 1;
   border: 2px solid var(--osnet-border);
+  overflow-x: auto;
   overflow-y: auto;
   background: #FAFAFA;
   font-size: 11px;
 }
 
+/* Log Table - HTML table for auto-sizing columns */
+.log-table {
+  width: 100%;
+  table-layout: auto;
+  border-collapse: collapse;
+}
+
 .log-table-header {
-  display: flex;
-  gap: 8px;
-  padding: 6px 8px;
   background: #E0E0E0;
-  border-bottom: 2px solid var(--osnet-border);
+}
+
+.log-table-header th {
+  padding: 6px 8px;
   font-weight: bold;
   font-size: 10px;
   text-transform: uppercase;
   color: #333;
+  text-align: left;
+  white-space: nowrap;
   position: sticky;
   top: 0;
+  background: #E0E0E0;
   z-index: 1;
+  border-bottom: 2px solid var(--osnet-border);
 }
 
-.log-table-row {
-  display: flex;
-  gap: 8px;
+.log-table-row td {
   padding: 4px 8px;
   border-bottom: 1px solid #EEE;
-  align-items: center;
+  vertical-align: middle;
 }
 
-.log-table-row:last-child {
+.log-table tbody .log-table-row:last-child td {
   border-bottom: none;
 }
 
 .log-col-timestamp {
   color: #888;
   font-size: 10px;
-  min-width: 130px;
-  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .log-col-action {
   font-weight: bold;
-  min-width: 60px;
   text-transform: uppercase;
   color: #333;
+  white-space: nowrap;
 }
 
 .log-col-user {
   color: #2196F3;
   font-weight: bold;
-  min-width: 80px;
+  white-space: nowrap;
 }
 
 .log-col-note {
-  flex: 1;
   color: #666;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .log-col-filename {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .log-col-filesystem {
-  min-width: 100px;
   padding: 0 0.5rem;
   color: #64B5F6;
   font-size: 0.9em;
   font-family: 'Courier New', monospace;
+  white-space: nowrap;
 }
 
 .log-col-size {
   color: #888;
   font-size: 10px;
-  flex-shrink: 0;
-  min-width: 60px;
   text-align: right;
+  white-space: nowrap;
 }
 
 .log-empty {

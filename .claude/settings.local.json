@@ -30,7 +30,9 @@
       "Bash(npx vitest:*)",
       "Bash(dir /b:*)",
       "Bash(npm run:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)"
     ]
   }
 }

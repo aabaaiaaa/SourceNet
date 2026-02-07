@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useGame } from '../../contexts/useGame';
 import { canAcceptMission, calculateMissionPayout } from '../../systems/MissionSystem';
 import { getReputationTier, canAccessClientType } from '../../systems/ReputationSystem';
-import { getFileOperationProgress, getFileOperationDetails } from '../../missions/ObjectiveTracker';
+import { getFileOperationProgress, getFileOperationDetails, areAllRequiredObjectivesComplete, hasIncompleteOptionalObjectives } from '../../missions/ObjectiveTracker';
 import './MissionBoard.css';
 
 /**
@@ -79,6 +79,8 @@ const MissionBoard = () => {
     software,
     reputation,
     acceptMission,
+    dismissMission,
+    submitMissionForCompletion,
     missionFileOperations,
     // Procedural mission state
     proceduralMissionsEnabled,
@@ -129,6 +131,14 @@ const MissionBoard = () => {
     setActiveTab('active');
   };
 
+  const handleDismissMission = (mission) => {
+    // Only allow dismissing procedural missions
+    if (!mission.isProcedurallyGenerated) {
+      return;
+    }
+    dismissMission(mission);
+  };
+
   const renderAvailableTab = () => {
     if (!allAvailableMissions || allAvailableMissions.length === 0) {
       return (
@@ -171,6 +181,9 @@ const MissionBoard = () => {
               <div className="mission-header">
                 <h3>{mission.title}</h3>
                 <div className="mission-badges">
+                  {!mission.isProcedurallyGenerated && (
+                    <span className="story-badge">STORY</span>
+                  )}
                   {isChainMission && (
                     <span className="chain-badge">
                       Part {mission.partNumber}/{mission.totalParts}
@@ -261,6 +274,18 @@ const MissionBoard = () => {
               >
                 {isExpired ? 'Expired' : !canAccess ? 'Locked' : !validation.canAccept ? validation.reason : 'Accept Mission'}
               </button>
+
+              {/* Dismiss button - only for procedural missions */}
+              {mission.isProcedurallyGenerated && (
+                <button
+                  className="dismiss-mission-btn"
+                  onClick={() => handleDismissMission(mission)}
+                  disabled={isExpired}
+                  title={isArcMission ? 'Dismissing will remove the entire storyline' : 'Remove this mission from the board'}
+                >
+                  {isArcMission ? 'Dismiss Storyline' : 'Dismiss'}
+                </button>
+              )}
             </div>
           );
         })}
@@ -349,6 +374,9 @@ const MissionBoard = () => {
                   </span>
                   <span className="objective-description">
                     {objective.description}
+                    {objective.required === false && (
+                      <span className="optional-label">(Optional)</span>
+                    )}
                     {progress && objective.status !== 'complete' && (
                       <span className="objective-progress"> ({progress.current}/{progress.total})</span>
                     )}
@@ -398,6 +426,23 @@ const MissionBoard = () => {
           <div className="mission-failed">
             <strong>Mission Failed</strong>
             {activeMission.failureReason && <p>{activeMission.failureReason}</p>}
+          </div>
+        )}
+
+        {/* Submit button - shown when all required objectives complete but optional remain */}
+        {activeMission.status === 'active' &&
+          areAllRequiredObjectivesComplete(activeMission.objectives) &&
+          hasIncompleteOptionalObjectives(activeMission.objectives) && (
+          <div className="mission-submit-section">
+            <p className="submit-info">
+              All required objectives complete. You can submit now or complete optional objectives for bonus rewards.
+            </p>
+            <button
+              className="submit-mission-btn"
+              onClick={() => submitMissionForCompletion && submitMissionForCompletion()}
+            >
+              Submit for Completion
+            </button>
           </div>
         )}
       </div>

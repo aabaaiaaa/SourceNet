@@ -14,6 +14,8 @@ import scenarioPostTutorialPart2 from './scenario-post-tutorial-part-2.save.json
 import scenarioTutorialPart1PriorToSabotage from './scenario-tutorial-part-1-prior-to-sabotage.save.json';
 import scenarioPreHardwareUnlock from './scenario-pre-hardware-unlock.save.json';
 import scenarioPostHardwareUnlock from './scenario-post-hardware-unlock.save.json';
+import scenarioPostDataDetectiveRecovery from './scenario-post-data-detective-recovery.save.json';
+import scenarioPostDataDetectiveCompletion from './scenario-post-data-detective-completion.save.json';
 
 // Export all available scenarios
 export const SCENARIO_FIXTURES = {
@@ -22,6 +24,8 @@ export const SCENARIO_FIXTURES = {
     'tutorial-part-1-prior-to-sabotage': scenarioTutorialPart1PriorToSabotage,
     'pre-hardware-unlock': scenarioPreHardwareUnlock,
     'post-hardware-unlock': scenarioPostHardwareUnlock,
+    'post-data-detective-recovery': scenarioPostDataDetectiveRecovery,
+    'post-data-detective-completion': scenarioPostDataDetectiveCompletion,
 };
 
 /**

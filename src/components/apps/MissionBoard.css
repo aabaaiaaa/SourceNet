@@ -503,3 +503,93 @@
   margin-left: auto;
   cursor: help;
 }
+
+/* Dismiss Mission Button */
+.dismiss-mission-btn {
+  width: 100%;
+  padding: 8px;
+  margin-top: 8px;
+  background: #888;
+  color: white;
+  border: 2px solid #666;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.dismiss-mission-btn:hover:not(:disabled) {
+  background: #666;
+  border-color: #444;
+}
+
+.dismiss-mission-btn:disabled {
+  background: #aaa;
+  border-color: #888;
+  cursor: not-allowed;
+  color: #ccc;
+}
+
+/* Story Mission Badge */
+.story-badge {
+  background: #2196F3;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+/* Optional Objective Label */
+.optional-label {
+  color: #888;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-left: 6px;
+}
+
+/* Optional objective styling */
+.objective-item.objective-optional {
+  border-left-color: #888;
+}
+
+.objective-item.objective-optional .objective-description {
+  color: #666;
+}
+
+/* Submit Mission Section */
+.mission-submit-section {
+  margin-top: 15px;
+  padding: 15px;
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+  border: 2px solid #4CAF50;
+  border-radius: 5px;
+}
+
+.mission-submit-section .submit-info {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  color: #2E7D32;
+}
+
+.submit-mission-btn {
+  width: 100%;
+  padding: 12px;
+  background: #4CAF50;
+  color: white;
+  border: 2px solid #388E3C;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 3px;
+}
+
+.submit-mission-btn:hover {
+  background: #388E3C;
+  border-color: #2E7D32;
+}
+
+.submit-mission-btn:active {
+  background: #2E7D32;
+}

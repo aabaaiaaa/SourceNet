@@ -59,7 +59,7 @@ describe('Mission Pool Flow Integration', () => {
             const pool = initializePool(1, currentTime);
 
             // Each mission should have a unique client (no duplicates in pool)
-            const clientIds = pool.missions.map(m => m.clientId);
+            const _clientIds = pool.missions.map(m => m.clientId);
             const nonArcMissions = pool.missions.filter(m => !m.arcId);
 
             // For non-arc missions, client IDs should be tracked
@@ -404,14 +404,16 @@ describe('Mission Pool Flow Integration', () => {
             expect(level).toBe('early');
         });
 
-        it('should return midGame progression level when investigation-tooling is unlocked', () => {
-            const level = getProgressionLevel(['investigation-tooling']);
+        it('should return midGame progression level when investigation-missions is unlocked', () => {
+            const level = getProgressionLevel(['investigation-missions']);
             expect(level).toBe('midGame');
         });
 
-        it('should return midGame when both log-viewer and data-recovery-tool are unlocked', () => {
+        it('should return early when log-viewer and data-recovery-tool are unlocked but not investigation-missions', () => {
+            // Just having the tools installed does NOT unlock investigation missions
+            // The player must complete the data-detective story mission to unlock investigation-missions
             const level = getProgressionLevel(['log-viewer', 'data-recovery-tool']);
-            expect(level).toBe('midGame');
+            expect(level).toBe('early');
         });
 
         it('should use early game pool config when no features unlocked', () => {
@@ -422,30 +424,30 @@ describe('Mission Pool Flow Integration', () => {
             expect(config.investigationChance).toBe(0);
         });
 
-        it('should use midGame pool config when investigation-tooling is unlocked', () => {
-            const config = getPoolConfigForProgression(['investigation-tooling']);
+        it('should use midGame pool config when investigation-missions is unlocked', () => {
+            const config = getPoolConfigForProgression(['investigation-missions']);
             expect(config.min).toBe(5);
             expect(config.max).toBe(8);
             expect(config.minAccessible).toBe(3);
             expect(config.investigationChance).toBe(0.50);
         });
 
-        it('should initialize larger pool when investigation-tooling is unlocked', () => {
+        it('should initialize larger pool when investigation-missions is unlocked', () => {
             const currentTime = new Date('2026-01-22T12:00:00Z');
             const reputation = 1;
 
-            // Without investigation-tooling
+            // Without investigation-missions
             const earlyPool = initializePool(reputation, currentTime, { unlockedSoftware: [] });
             expect(earlyPool.missions.length).toBeGreaterThanOrEqual(4);
             expect(earlyPool.missions.length).toBeLessThanOrEqual(6);
 
-            // With investigation-tooling
-            const midGamePool = initializePool(reputation, currentTime, { unlockedSoftware: ['investigation-tooling'] });
+            // With investigation-missions
+            const midGamePool = initializePool(reputation, currentTime, { unlockedSoftware: ['investigation-missions'] });
             expect(midGamePool.missions.length).toBeGreaterThanOrEqual(5);
             expect(midGamePool.missions.length).toBeLessThanOrEqual(8);
         });
 
-        it('should generate investigation missions when investigation-tooling is unlocked', () => {
+        it('should generate investigation missions when investigation-missions is unlocked', () => {
             const currentTime = new Date('2026-01-22T12:00:00Z');
             const reputation = 1;
 
@@ -454,7 +456,7 @@ describe('Mission Pool Flow Integration', () => {
             const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
 
             for (let i = 0; i < 20 && !foundInvestigationMission; i++) {
-                const pool = initializePool(reputation, currentTime, { unlockedSoftware: ['investigation-tooling'] });
+                const pool = initializePool(reputation, currentTime, { unlockedSoftware: ['investigation-missions'] });
                 foundInvestigationMission = pool.missions.some(m => investigationTypes.includes(m.missionType));
             }
 
@@ -463,12 +465,12 @@ describe('Mission Pool Flow Integration', () => {
             expect(foundInvestigationMission).toBe(true);
         });
 
-        it('should NOT generate investigation missions when investigation-tooling is NOT unlocked', () => {
+        it('should NOT generate investigation missions when investigation-missions is NOT unlocked', () => {
             const currentTime = new Date('2026-01-22T12:00:00Z');
             const reputation = 1;
             const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
 
-            // Generate multiple pools without investigation-tooling
+            // Generate multiple pools without investigation-missions
             for (let i = 0; i < 10; i++) {
                 const pool = initializePool(reputation, currentTime, { unlockedSoftware: [] });
                 const hasInvestigation = pool.missions.some(m => investigationTypes.includes(m.missionType));
@@ -476,7 +478,7 @@ describe('Mission Pool Flow Integration', () => {
             }
         });
 
-        it('should use correct config in refreshPool when investigation-tooling is unlocked', () => {
+        it('should use correct config in refreshPool when investigation-missions is unlocked', () => {
             const startTime = new Date('2026-01-22T12:00:00Z');
 
             // Start with empty pool
@@ -488,13 +490,13 @@ describe('Mission Pool Flow Integration', () => {
                 lastRefresh: startTime.toISOString(),
             };
 
-            // Refresh with investigation-tooling should target 5-8 missions
-            const refreshed = refreshPool(emptyPool, 1, startTime, null, { unlockedSoftware: ['investigation-tooling'] });
+            // Refresh with investigation-missions should target 5-8 missions
+            const refreshed = refreshPool(emptyPool, 1, startTime, null, { unlockedSoftware: ['investigation-missions'] });
             expect(refreshed.missions.length).toBeGreaterThanOrEqual(5);
             expect(refreshed.missions.length).toBeLessThanOrEqual(8);
         });
 
-        it('should use correct config in shouldRefreshPool when investigation-tooling is unlocked', () => {
+        it('should use correct config in shouldRefreshPool when investigation-missions is unlocked', () => {
             // Pool with 5 missions - at early game midpoint, but below midGame midpoint
             // Use client types accessible at reputation 1: gov-library, cultural-local, nonprofit-community
             const pool = {
@@ -509,18 +511,18 @@ describe('Mission Pool Flow Integration', () => {
                 activeClientIds: [],
             };
 
-            // Without investigation-tooling, midpoint is (4+6)/2=5, pool is at midpoint - no refresh
+            // Without investigation-missions, midpoint is (4+6)/2=5, pool is at midpoint - no refresh
             expect(shouldRefreshPool(pool, 1, { unlockedSoftware: [] })).toBe(false);
 
-            // With investigation-tooling, midpoint is (5+8)/2=6, pool is 5 < 6 - should refresh
-            expect(shouldRefreshPool(pool, 1, { unlockedSoftware: ['investigation-tooling'] })).toBe(true);
+            // With investigation-missions, midpoint is (5+8)/2=6, pool is 5 < 6 - should refresh
+            expect(shouldRefreshPool(pool, 1, { unlockedSoftware: ['investigation-missions'] })).toBe(true);
         });
 
         it('should pass unlockedSoftware through to generatePoolMission during refresh', () => {
             const currentTime = new Date('2026-01-22T12:00:00Z');
             const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
 
-            // Start with empty pool and refresh with investigation-tooling
+            // Start with empty pool and refresh with investigation-missions
             const emptyPool = {
                 missions: [],
                 pendingArcMissions: {},
@@ -532,7 +534,7 @@ describe('Mission Pool Flow Integration', () => {
             // Refresh multiple times to verify investigation missions can be generated
             let foundInvestigationMission = false;
             for (let i = 0; i < 20 && !foundInvestigationMission; i++) {
-                const refreshed = refreshPool(emptyPool, 1, currentTime, null, { unlockedSoftware: ['investigation-tooling'] });
+                const refreshed = refreshPool(emptyPool, 1, currentTime, null, { unlockedSoftware: ['investigation-missions'] });
                 foundInvestigationMission = refreshed.missions.some(m => investigationTypes.includes(m.missionType));
             }
 
@@ -553,11 +555,11 @@ describe('Mission Pool Flow Integration', () => {
                 activeClientIds: [],
             };
 
-            // Without investigation-tooling, midpoint is (4+6)/2=5, so 5 is at midpoint - no refresh
+            // Without investigation-missions, midpoint is (4+6)/2=5, so 5 is at midpoint - no refresh
             expect(shouldRefreshPool(pool, 1, { unlockedSoftware: [] })).toBe(false);
 
-            // With investigation-tooling, midpoint is (5+8)/2=6, so 5 < 6 - should refresh
-            expect(shouldRefreshPool(pool, 1, { unlockedSoftware: ['investigation-tooling'] })).toBe(true);
+            // With investigation-missions, midpoint is (5+8)/2=6, so 5 < 6 - should refresh
+            expect(shouldRefreshPool(pool, 1, { unlockedSoftware: ['investigation-missions'] })).toBe(true);
         });
 
         it('should NOT trigger refresh when pool is at midpoint and has investigation missions', () => {
@@ -575,8 +577,8 @@ describe('Mission Pool Flow Integration', () => {
                 activeClientIds: [],
             };
 
-            // With investigation-tooling, midpoint is 6, pool has investigation - no refresh needed
-            expect(shouldRefreshPool(pool, 1, { unlockedSoftware: ['investigation-tooling'] })).toBe(false);
+            // With investigation-missions, midpoint is 6, pool has investigation - no refresh needed
+            expect(shouldRefreshPool(pool, 1, { unlockedSoftware: ['investigation-missions'] })).toBe(false);
         });
 
         it('should trigger refresh when pool is at midpoint but missing investigation missions', () => {
@@ -594,8 +596,8 @@ describe('Mission Pool Flow Integration', () => {
                 activeClientIds: [],
             };
 
-            // With investigation-tooling but no investigation missions - should refresh
-            expect(shouldRefreshPool(pool, 1, { unlockedSoftware: ['investigation-tooling'] })).toBe(true);
+            // With investigation-missions but no investigation missions - should refresh
+            expect(shouldRefreshPool(pool, 1, { unlockedSoftware: ['investigation-missions'] })).toBe(true);
         });
     });
 

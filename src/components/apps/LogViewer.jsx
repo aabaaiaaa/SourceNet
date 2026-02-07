@@ -185,11 +185,14 @@ const LogViewer = () => {
   const getFileSystemLabel = (fileSystemId) => {
     if (!fileSystemId) return '-';
 
-    const fs = networkRegistry.getFileSystem(fileSystemId);
-    if (!fs) return fileSystemId.slice(-4);  // Show last 4 chars of ID
+    // Find the device that owns this file system
+    const device = networkRegistry.getDeviceByFileSystem(fileSystemId);
+    if (device) {
+      return device.hostname || device.ip;
+    }
 
-    // Return file system name (e.g., "/data", "/logs", "/backup")
-    return fs.fileSystemName || fileSystemId.slice(-4);
+    // Fallback to last 4 chars of ID if device not found
+    return fileSystemId.slice(-4);
   };
 
   const hasConnectedNetworks = activeConnections && activeConnections.length > 0;
@@ -268,18 +271,22 @@ const LogViewer = () => {
               )}
 
               {networkLogs !== null && !networkLoading && (
-                <div className="log-table">
+                <div className="log-table-container">
                   {networkLogs.length === 0 ? (
                     <div className="log-empty">No logs found for this network.</div>
                   ) : (
-                    networkLogs.map((log) => (
-                      <div key={log.id} className="log-table-row">
-                        <span className="log-col-timestamp">{formatTimestamp(log.timestamp)}</span>
-                        <span className="log-col-action">{log.action?.toUpperCase()}</span>
-                        <span className="log-col-user">{log.user || '-'}</span>
-                        <span className="log-col-note">{log.note || ''}</span>
-                      </div>
-                    ))
+                    <table className="log-table">
+                      <tbody>
+                        {networkLogs.map((log) => (
+                          <tr key={log.id} className="log-table-row">
+                            <td className="log-col-timestamp">{formatTimestamp(log.timestamp)}</td>
+                            <td className="log-col-action">{log.action?.toUpperCase()}</td>
+                            <td className="log-col-user">{log.user || '-'}</td>
+                            <td className="log-col-note">{log.note || ''}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   )}
                 </div>
               )}
@@ -334,32 +341,34 @@ const LogViewer = () => {
               )}
 
               {deviceLogs !== null && !deviceLoading && (
-                <div className="log-table">
+                <div className="log-table-container">
                   {deviceLogs.length === 0 ? (
                     <div className="log-empty">No logs found for this device.</div>
                   ) : (
-                    <>
-                      <div className="log-table-header">
-                        <span className="log-col-timestamp">Timestamp</span>
-                        <span className="log-col-action">Action</span>
-                        <span className="log-col-user">User</span>
-                        <span className="log-col-filename">Filename</span>
-                        <span className="log-col-filesystem">File System</span>
-                        <span className="log-col-size">Size</span>
-                      </div>
-                      {deviceLogs.map((log) => (
-                        <div key={log.id} className="log-table-row">
-                          <span className="log-col-timestamp">{formatTimestamp(log.timestamp)}</span>
-                          <span className="log-col-action">{log.action?.toUpperCase()}</span>
-                          <span className="log-col-user">{log.user || '-'}</span>
-                          <span className="log-col-filename">{log.fileName || ''}</span>
-                          <span className="log-col-filesystem">
-                            {getFileSystemLabel(log.fileSystemId)}
-                          </span>
-                          {log.sizeBytes && <span className="log-col-size">{formatSize(log.sizeBytes)}</span>}
-                        </div>
-                      ))}
-                    </>
+                    <table className="log-table">
+                      <thead>
+                        <tr className="log-table-header">
+                          <th className="log-col-timestamp">Timestamp</th>
+                          <th className="log-col-action">Action</th>
+                          <th className="log-col-user">User</th>
+                          <th className="log-col-filename">Filename</th>
+                          <th className="log-col-filesystem">File System</th>
+                          <th className="log-col-size">Size</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {deviceLogs.map((log) => (
+                          <tr key={log.id} className="log-table-row">
+                            <td className="log-col-timestamp">{formatTimestamp(log.timestamp)}</td>
+                            <td className="log-col-action">{log.action?.toUpperCase()}</td>
+                            <td className="log-col-user">{log.user || '-'}</td>
+                            <td className="log-col-filename">{log.fileName || ''}</td>
+                            <td className="log-col-filesystem">{getFileSystemLabel(log.fileSystemId)}</td>
+                            <td className="log-col-size">{log.sizeBytes ? formatSize(log.sizeBytes) : ''}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   )}
                 </div>
               )}

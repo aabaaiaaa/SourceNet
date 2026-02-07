@@ -1,0 +1,24 @@
+{
+  "missionId": "investigation-intro",
+  "category": "investigation",
+  "events": [
+    {
+      "id": "msg-investigative-jobs",
+      "trigger": {
+        "type": "timeSinceEvent",
+        "conditions": [
+          { "type": "softwareInstalled", "softwareId": "log-viewer" },
+          { "type": "softwareInstalled", "softwareId": "data-recovery-tool" }
+        ],
+        "delay": 5000
+      },
+      "message": {
+        "from": "SourceNet Manager",
+        "fromId": "SNET-MGR-{random}",
+        "fromName": "SourceNet Manager {managerName}",
+        "subject": "Investigative Work Available",
+        "body": "{username},\n\nGood - you've got both the Log Viewer and Data Recovery Tool installed. That means you're ready for investigative work.\n\nThese contracts are different from basic file operations. Clients come to us when something's gone wrong - data's been deleted, someone's been messing with their systems, or they need to track down what happened. Your job is to figure out what occurred and fix it.\n\nThe tools you just installed are essential:\n- Log Viewer: Shows you who did what on a network. Every file access, every deletion, every connection - it's all logged.\n- Data Recovery Tool: Deleted files aren't truly gone until someone overwrites them. You can scan for and restore files that were \"deleted\" but not securely wiped.\n\nI've got your first investigation lined up. A local library had some files go missing from their archives. They suspect an intern, but they need proof and they need the files back.\n\nCheck the Mission Board - the contract should be available now.\n\n- {managerName}"
+      }
+    }
+  ]
+}

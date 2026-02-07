@@ -9,6 +9,10 @@ import './NetworkScanner.css';
 const BASE_SCAN_SIZE_MB = 10;  // Network overhead
 const PER_DEVICE_SIZE_MB = 5;  // Per device data
 
+// Minimum scan times in game milliseconds
+const MIN_SCAN_TIME_MS = 2000;  // Minimum 2 seconds for any scan
+const PER_DEVICE_SCAN_TIME_MS = 500;  // Additional 0.5 seconds per device
+
 const NetworkScanner = () => {
   const game = useGame();
   const { currentTime } = game;
@@ -129,8 +133,12 @@ const NetworkScanner = () => {
       { network: selectedNetwork }
     );
 
+    // Enforce minimum scan time: base minimum + per-device time
+    const minRequiredTimeMs = MIN_SCAN_TIME_MS + (deviceCount * PER_DEVICE_SCAN_TIME_MS);
+    const actualDuration = Math.max(estimatedTimeMs, minRequiredTimeMs);
+
     operationIdRef.current = operationId;
-    setEstimatedDuration(estimatedTimeMs);
+    setEstimatedDuration(actualDuration);
     setScanStartTime(currentTime.getTime());
     setScanning(true);
     setScanProgress(0);

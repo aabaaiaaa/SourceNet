@@ -2729,19 +2729,18 @@ function generateSecureDeletionBriefing(client, variant, networks, timeLimitMinu
 }
 
 /**
- * Get available mission types based on unlocked software
- * Investigation missions require investigation-tooling unlock
- * @param {Array} unlockedSoftware - Array of unlocked software IDs
+ * Get available mission types based on unlocked features
+ * Investigation missions require 'investigation-missions' unlock (earned by completing data-detective)
+ * @param {Array} unlockedSoftware - Array of unlocked software/feature IDs
  * @returns {Array} Array of available mission type strings
  */
 export function getMissionTypesForPlayer(unlockedSoftware = []) {
     const types = ['repair', 'backup', 'transfer', 'restore', 'repair-backup']; // Always available
 
-    // Check if investigation tools are unlocked (log-viewer and data-recovery-tool require 'investigation-tooling')
-    const hasInvestigationTools = unlockedSoftware.includes('investigation-tooling') ||
-        (unlockedSoftware.includes('log-viewer') && unlockedSoftware.includes('data-recovery-tool'));
+    // Check if investigation missions are unlocked (unlocked by completing data-detective story mission)
+    const hasInvestigationMissions = unlockedSoftware.includes('investigation-missions');
 
-    if (hasInvestigationTools) {
+    if (hasInvestigationMissions) {
         types.push('investigation-repair');    // Log Viewer -> find corruption -> repair
         types.push('investigation-recovery');  // Log Viewer -> find deletion -> Data Recovery
         types.push('secure-deletion');         // Log Viewer -> find flagged files -> Secure Delete

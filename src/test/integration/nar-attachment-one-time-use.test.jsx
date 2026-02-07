@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { GameProvider } from '../../contexts/GameContext';
 import { useGame } from '../../contexts/useGame';
 import SNetMail from '../../components/apps/SNetMail';
@@ -28,7 +28,9 @@ const GameLoader = ({ username }) => {
 // Helper component to expose game state for assertions
 const StateInspector = ({ stateRef }) => {
     const game = useGame();
-    stateRef.current = game;
+    useEffect(() => {
+        stateRef.current = game;
+    });
     return null;
 };
 

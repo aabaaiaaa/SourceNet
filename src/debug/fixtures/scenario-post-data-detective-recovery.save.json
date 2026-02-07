@@ -1,7 +1,7 @@
 {
   "username": "scenario_user",
   "playerMailId": "SNET-FW5-JDF-Y49",
-  "currentTime": "2020-03-25T09:12:59.000Z",
+  "currentTime": "2020-03-25T09:19:52.000Z",
   "hardware": {
     "cpu": {
       "id": "cpu-1ghz-single",
@@ -348,16 +348,568 @@
       "subject": "Investigative Work Available",
       "body": "scenario_user,\n\nGood - you've got both the Log Viewer and Data Recovery Tool installed. That means you're ready for investigative work.\n\nThese contracts are different from basic file operations. Clients come to us when something's gone wrong - data's been deleted, someone's been messing with their systems, or they need to track down what happened. Your job is to figure out what occurred and fix it.\n\nThe tools you just installed are essential:\n- Log Viewer: Shows you who did what on a network. Every file access, every deletion, every connection - it's all logged.\n- Data Recovery Tool: Deleted files aren't truly gone until someone overwrites them. You can scan for and restore files that were \"deleted\" but not securely wiped.\n\nI've got your first investigation lined up. A local library had some files go missing from their archives. They suspect an intern, but they need proof and they need the files back.\n\nCheck the Mission Board - the contract should be available now.\n\n- Casey",
       "timestamp": "2020-03-25T09:12:11.000Z",
-      "read": false,
+      "read": true,
       "archived": false,
       "attachments": []
+    },
+    {
+      "id": "msg-briefing-data-detective-1770421236604",
+      "from": "Westbrook Public Library",
+      "fromId": "LIB-WEST-001",
+      "fromName": "Westbrook Public Library",
+      "subject": "Investigation Request - Missing Archive Files",
+      "body": "Dear SourceNet Contractor,\n\nWe have a sensitive situation at Westbrook Public Library that requires discreet investigation.\n\nLast week, several valuable digital documents from our Special Collections archive went missing. These are irreplaceable historical records — correspondence from the library's founders, a scan of the original town charter, our historical photo collection, and a first-edition catalog we've been building for years.\n\nWe suspect one of our summer interns may be responsible, but we can't make accusations without proof. We need someone to dig through the server logs and confirm who deleted the files.\n\nMore importantly, we need those files back. If there's any way to recover them, that is our top priority.\n\nWe've also noticed some files missing from our periodicals archive around the same time. We're not sure if it's related, but if you're able to look into that as well we'd be happy to pay extra for the trouble.\n\nNetwork credentials are attached. Please handle this matter with discretion — we'd prefer to resolve this quietly.\n\nSincerely,\nHead Librarian\nWestbrook Public Library",
+      "timestamp": "2020-03-25T09:13:22.000Z",
+      "read": true,
+      "archived": false,
+      "attachments": [
+        {
+          "type": "networkAddress",
+          "networkId": "westbrook-library",
+          "networkName": "Westbrook Library",
+          "address": "172.20.0.0/24",
+          "deviceIps": [
+            "172.20.0.10",
+            "172.20.0.11",
+            "172.20.0.12",
+            "172.20.0.13",
+            "172.20.0.20",
+            "172.20.0.21",
+            "172.20.0.30",
+            "172.20.0.50"
+          ],
+          "activated": true
+        }
+      ]
     }
   ],
   "managerName": "Casey",
   "windows": [],
   "reputation": 3,
   "reputationCountdown": null,
-  "activeMission": null,
+  "activeMission": {
+    "missionId": "data-detective",
+    "title": "The Missing Archives",
+    "description": "Westbrook Library reports missing files from their Special Collections archive. They suspect an intern but need proof. Use the Log Viewer to identify the culprit and recover the deleted files.",
+    "client": "Westbrook Public Library",
+    "difficulty": "Medium",
+    "basePayout": 3500,
+    "oneTime": true,
+    "category": "investigation",
+    "triggers": {
+      "start": {
+        "type": "timeSinceEvent",
+        "event": "messageRead",
+        "condition": {
+          "messageId": "msg-investigative-jobs"
+        },
+        "delay": 3000
+      }
+    },
+    "briefingMessage": {
+      "from": "Westbrook Public Library",
+      "fromId": "LIB-WEST-001",
+      "fromName": "Westbrook Public Library",
+      "subject": "Investigation Request - Missing Archive Files",
+      "body": "Dear SourceNet Contractor,\n\nWe have a sensitive situation at Westbrook Public Library that requires discreet investigation.\n\nLast week, several valuable digital documents from our Special Collections archive went missing. These are irreplaceable historical records — correspondence from the library's founders, a scan of the original town charter, our historical photo collection, and a first-edition catalog we've been building for years.\n\nWe suspect one of our summer interns may be responsible, but we can't make accusations without proof. We need someone to dig through the server logs and confirm who deleted the files.\n\nMore importantly, we need those files back. If there's any way to recover them, that is our top priority.\n\nWe've also noticed some files missing from our periodicals archive around the same time. We're not sure if it's related, but if you're able to look into that as well we'd be happy to pay extra for the trouble.\n\nNetwork credentials are attached. Please handle this matter with discretion — we'd prefer to resolve this quietly.\n\nSincerely,\nHead Librarian\nWestbrook Public Library",
+      "attachments": [
+        {
+          "type": "networkAddress",
+          "networkId": "westbrook-library",
+          "networkName": "Westbrook Library",
+          "address": "172.20.0.0/24",
+          "deviceIps": [
+            "172.20.0.10",
+            "172.20.0.11",
+            "172.20.0.12",
+            "172.20.0.13",
+            "172.20.0.20",
+            "172.20.0.21",
+            "172.20.0.30",
+            "172.20.0.50"
+          ]
+        }
+      ]
+    },
+    "networks": [
+      {
+        "networkId": "westbrook-library",
+        "networkName": "Westbrook Library",
+        "address": "172.20.0.0/24",
+        "bandwidth": 100,
+        "revokeOnComplete": true,
+        "revokeReason": "Investigation complete - access revoked",
+        "fileSystems": [
+          {
+            "id": "fs-lib-main-catalog",
+            "name": "main-catalog",
+            "ip": "172.20.0.10",
+            "description": "Main Library Catalog Server",
+            "files": [
+              {
+                "name": "catalog-database.db",
+                "size": "45 MB"
+              },
+              {
+                "name": "patron-records.enc",
+                "size": "12 MB"
+              },
+              {
+                "name": "checkout-history-2020.log",
+                "size": "8.5 MB"
+              },
+              {
+                "name": "inventory-audit.xlsx",
+                "size": "2.5 MB"
+              },
+              {
+                "name": "dewey-decimal-index.json",
+                "size": "1.8 MB"
+              }
+            ]
+          },
+          {
+            "id": "fs-lib-circulation",
+            "name": "circulation",
+            "ip": "172.20.0.11",
+            "description": "Circulation Desk System",
+            "files": [
+              {
+                "name": "holds-queue.json",
+                "size": "450 KB"
+              },
+              {
+                "name": "overdue-notices.txt",
+                "size": "125 KB"
+              },
+              {
+                "name": "interlibrary-loans.csv",
+                "size": "890 KB"
+              },
+              {
+                "name": "staff-schedule.xlsx",
+                "size": "65 KB"
+              },
+              {
+                "name": "return-processing.log",
+                "size": "2.1 MB"
+              }
+            ]
+          },
+          {
+            "id": "fs-lib-periodicals",
+            "name": "periodicals",
+            "ip": "172.20.0.12",
+            "description": "Periodicals Archive Server",
+            "files": [
+              {
+                "name": "newspaper-index-1950-1960.json",
+                "size": "15 MB"
+              },
+              {
+                "name": "newspaper-index-1960-1970.json",
+                "size": "18.5 MB"
+              },
+              {
+                "name": "magazine-catalog.db",
+                "size": "8.9 MB"
+              },
+              {
+                "name": "microfilm-locations.csv",
+                "size": "340 KB"
+              },
+              {
+                "name": "local-gazette-archives.pdf",
+                "size": "125 MB",
+                "status": "deleted"
+              },
+              {
+                "name": "historical-photos-index.json",
+                "size": "4.5 MB",
+                "status": "deleted"
+              }
+            ]
+          },
+          {
+            "id": "fs-lib-reference",
+            "name": "reference",
+            "ip": "172.20.0.13",
+            "description": "Reference Section Server",
+            "files": [
+              {
+                "name": "encyclopedia-britannica.db",
+                "size": "85 MB"
+              },
+              {
+                "name": "research-guides.pdf",
+                "size": "12.5 MB"
+              },
+              {
+                "name": "citation-styles.json",
+                "size": "450 KB"
+              },
+              {
+                "name": "academic-journals-index.csv",
+                "size": "5.6 MB"
+              },
+              {
+                "name": "local-history-collection.db",
+                "size": "34 MB"
+              }
+            ]
+          },
+          {
+            "id": "fs-lib-archives-general",
+            "name": "archives-general",
+            "ip": "172.20.0.20",
+            "description": "General Archives Server",
+            "files": [
+              {
+                "name": "city-records-1900-1950.pdf",
+                "size": "78 MB"
+              },
+              {
+                "name": "city-records-1950-2000.pdf",
+                "size": "92 MB"
+              },
+              {
+                "name": "genealogy-records.db",
+                "size": "45 MB"
+              },
+              {
+                "name": "historical-maps.zip",
+                "size": "156 MB"
+              },
+              {
+                "name": "oral-histories-index.json",
+                "size": "2.8 MB"
+              }
+            ]
+          },
+          {
+            "id": "fs-lib-archives-special",
+            "name": "archives-special",
+            "ip": "172.20.0.21",
+            "description": "Special Collections Archive",
+            "files": [
+              {
+                "name": "rare-manuscripts-catalog.json",
+                "size": "5.6 MB"
+              },
+              {
+                "name": "donation-records.xlsx",
+                "size": "890 KB"
+              },
+              {
+                "name": "preservation-notes.txt",
+                "size": "125 KB"
+              },
+              {
+                "name": "founders-correspondence-1885.pdf",
+                "size": "45 MB",
+                "status": "deleted"
+              },
+              {
+                "name": "original-charter-scan.tiff",
+                "size": "125 MB",
+                "status": "deleted"
+              },
+              {
+                "name": "historical-photos-collection.zip",
+                "size": "890 MB",
+                "status": "deleted"
+              },
+              {
+                "name": "first-edition-catalog.json",
+                "size": "2.8 MB",
+                "status": "deleted"
+              }
+            ],
+            "logs": [
+              {
+                "timestamp": -180,
+                "type": "remote",
+                "user": "jthompson_intern",
+                "action": "login",
+                "fileSystemId": "fs-lib-archives-special",
+                "note": "Remote session from 192.168.1.45"
+              },
+              {
+                "timestamp": -175,
+                "type": "file",
+                "user": "jthompson_intern",
+                "action": "access",
+                "fileName": "rare-manuscripts-catalog.json",
+                "fileSystemId": "fs-lib-archives-special",
+                "sizeBytes": 5872640
+              },
+              {
+                "timestamp": -170,
+                "type": "file",
+                "user": "jthompson_intern",
+                "action": "delete",
+                "fileName": "founders-correspondence-1885.pdf",
+                "fileSystemId": "fs-lib-archives-special",
+                "sizeBytes": 47185920
+              },
+              {
+                "timestamp": -165,
+                "type": "file",
+                "user": "jthompson_intern",
+                "action": "delete",
+                "fileName": "original-charter-scan.tiff",
+                "fileSystemId": "fs-lib-archives-special",
+                "sizeBytes": 131072000
+              },
+              {
+                "timestamp": -160,
+                "type": "file",
+                "user": "jthompson_intern",
+                "action": "delete",
+                "fileName": "historical-photos-collection.zip",
+                "fileSystemId": "fs-lib-archives-special",
+                "sizeBytes": 933232640
+              },
+              {
+                "timestamp": -155,
+                "type": "file",
+                "user": "jthompson_intern",
+                "action": "delete",
+                "fileName": "first-edition-catalog.json",
+                "fileSystemId": "fs-lib-archives-special",
+                "sizeBytes": 2936013
+              },
+              {
+                "timestamp": -150,
+                "type": "remote",
+                "user": "jthompson_intern",
+                "action": "logout",
+                "fileSystemId": "fs-lib-archives-special",
+                "note": "Session ended"
+              },
+              {
+                "timestamp": -60,
+                "type": "remote",
+                "user": "m_henderson",
+                "action": "login",
+                "fileSystemId": "fs-lib-archives-special",
+                "note": "Local login from terminal ARCH-01"
+              },
+              {
+                "timestamp": -55,
+                "type": "file",
+                "user": "m_henderson",
+                "action": "access",
+                "fileName": "donation-records.xlsx",
+                "fileSystemId": "fs-lib-archives-special",
+                "sizeBytes": 911360
+              },
+              {
+                "timestamp": -30,
+                "type": "remote",
+                "user": "m_henderson",
+                "action": "logout",
+                "fileSystemId": "fs-lib-archives-special",
+                "note": "Session ended"
+              }
+            ]
+          },
+          {
+            "id": "fs-lib-media",
+            "name": "media-server",
+            "ip": "172.20.0.30",
+            "description": "Digital Media Server",
+            "files": [
+              {
+                "name": "audiobooks-catalog.db",
+                "size": "15 MB"
+              },
+              {
+                "name": "dvd-collection.json",
+                "size": "3.4 MB"
+              },
+              {
+                "name": "streaming-licenses.enc",
+                "size": "890 KB"
+              },
+              {
+                "name": "music-collection-index.csv",
+                "size": "2.1 MB"
+              }
+            ]
+          },
+          {
+            "id": "fs-lib-admin",
+            "name": "admin-server",
+            "ip": "172.20.0.50",
+            "description": "Library Administration",
+            "files": [
+              {
+                "name": "budget-2020.xlsx",
+                "size": "450 KB"
+              },
+              {
+                "name": "staff-directory.json",
+                "size": "125 KB"
+              },
+              {
+                "name": "grant-applications.pdf",
+                "size": "8.9 MB"
+              },
+              {
+                "name": "board-meeting-minutes.docx",
+                "size": "2.5 MB"
+              },
+              {
+                "name": "intern-records.xlsx",
+                "size": "340 KB"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "objectives": [
+      {
+        "id": "obj-nar",
+        "description": "Add Westbrook Library credentials to your NAR",
+        "type": "narEntryAdded",
+        "target": "westbrook-library",
+        "status": "complete",
+        "preCompleted": false
+      },
+      {
+        "id": "obj-connect",
+        "description": "Connect to Westbrook Library network",
+        "type": "networkConnection",
+        "target": "westbrook-library",
+        "status": "complete",
+        "preCompleted": false
+      },
+      {
+        "id": "obj-scan",
+        "description": "Scan the network and locate archives-special server",
+        "type": "networkScan",
+        "target": "westbrook-library",
+        "expectedResult": "archives-special",
+        "status": "complete",
+        "preCompleted": false
+      },
+      {
+        "id": "obj-drt-connect",
+        "description": "Connect Data Recovery Tool to archives-special",
+        "type": "fileSystemConnection",
+        "app": "dataRecoveryTool",
+        "target": "172.20.0.21",
+        "status": "complete",
+        "preCompleted": true
+      },
+      {
+        "id": "obj-drt-scan",
+        "description": "Scan archives-special for deleted files",
+        "type": "dataRecoveryScan",
+        "target": "fs-lib-archives-special",
+        "status": "complete",
+        "preCompleted": false
+      },
+      {
+        "id": "obj-recover-files",
+        "description": "Recover the 4 Special Collection files",
+        "type": "fileRecovery",
+        "targetFiles": [
+          "founders-correspondence-1885.pdf",
+          "original-charter-scan.tiff",
+          "historical-photos-collection.zip",
+          "first-edition-catalog.json"
+        ],
+        "status": "complete",
+        "preCompleted": false
+      },
+      {
+        "id": "obj-investigate",
+        "description": "View archives-special logs to identify the culprit",
+        "type": "investigation",
+        "correctFileSystemId": "fs-lib-archives-special",
+        "status": "pending"
+      },
+      {
+        "id": "obj-periodicals-scan",
+        "description": "Scan periodicals server for deleted files",
+        "type": "dataRecoveryScan",
+        "target": "fs-lib-periodicals",
+        "required": false,
+        "bonusPayout": 250,
+        "status": "pending"
+      },
+      {
+        "id": "obj-periodicals-recover",
+        "description": "Recover the 2 missing periodicals files",
+        "type": "fileRecovery",
+        "targetFiles": [
+          "local-gazette-archives.pdf",
+          "historical-photos-index.json"
+        ],
+        "required": false,
+        "bonusPayout": 250,
+        "status": "pending"
+      },
+      {
+        "id": "obj-verify",
+        "description": "Verify mission completion",
+        "type": "verification",
+        "autoComplete": false,
+        "status": "pending"
+      }
+    ],
+    "scriptedEvents": [
+      {
+        "id": "evt-critical-file-deleted",
+        "trigger": {
+          "type": "secureDelete",
+          "targetFiles": [
+            "founders-correspondence-1885.pdf",
+            "original-charter-scan.tiff",
+            "historical-photos-collection.zip",
+            "first-edition-catalog.json"
+          ]
+        },
+        "actions": [
+          {
+            "type": "setMissionStatus",
+            "status": "failed",
+            "failureReason": "Critical archive file was permanently destroyed. The library needed these files recovered, not deleted forever."
+          }
+        ]
+      }
+    ],
+    "consequences": {
+      "success": {
+        "credits": 3500,
+        "reputation": 1,
+        "messages": [
+          {
+            "templateId": "investigation-intro-success",
+            "delay": 5000
+          }
+        ]
+      },
+      "failure": {
+        "credits": -2000,
+        "reputation": -2,
+        "retryable": true,
+        "retryDelay": 60000,
+        "messages": [
+          {
+            "templateId": "investigation-failure-retry",
+            "delay": 3000
+          }
+        ]
+      }
+    },
+    "startTime": "2020-03-25T09:13:22.000Z",
+    "acceptedTime": "2020-03-25T09:13:22.000Z",
+    "deadlineTime": null
+  },
   "completedMissions": [
     {
       "id": "tutorial-part-1",
@@ -392,43 +944,87 @@
   },
   "activeConnections": [],
   "lastScanResults": {
-    "network": "clienta-corporate",
+    "network": "westbrook-library",
     "machines": [
       {
-        "ip": "192.168.50.10",
-        "hostname": "fileserver-01",
-        "id": "fs-clienta-01",
+        "ip": "172.20.0.10",
+        "hostname": "main-catalog",
+        "id": "fs-lib-main-catalog",
         "type": "fileserver",
         "fileSystems": [
-          "/fileserver-01/"
+          "/main-catalog/"
         ],
         "required": true
       },
       {
-        "ip": "192.168.50.20",
-        "hostname": "backup-server",
-        "id": "fs-clienta-backup",
+        "ip": "172.20.0.11",
+        "hostname": "circulation",
+        "id": "fs-lib-circulation",
         "type": "fileserver",
         "fileSystems": [
-          "/backup-server/"
+          "/circulation/"
         ],
         "required": true
       },
       {
-        "ip": "192.168.50.63",
-        "hostname": "ws-447",
-        "id": "workstation-1",
-        "type": "workstation",
-        "fileSystems": [],
-        "required": false
+        "ip": "172.20.0.12",
+        "hostname": "periodicals",
+        "id": "fs-lib-periodicals",
+        "type": "fileserver",
+        "fileSystems": [
+          "/periodicals/"
+        ],
+        "required": true
       },
       {
-        "ip": "192.168.50.182",
-        "hostname": "ws-777",
-        "id": "workstation-2",
-        "type": "workstation",
-        "fileSystems": [],
-        "required": false
+        "ip": "172.20.0.13",
+        "hostname": "reference",
+        "id": "fs-lib-reference",
+        "type": "fileserver",
+        "fileSystems": [
+          "/reference/"
+        ],
+        "required": true
+      },
+      {
+        "ip": "172.20.0.20",
+        "hostname": "archives-general",
+        "id": "fs-lib-archives-general",
+        "type": "fileserver",
+        "fileSystems": [
+          "/archives-general/"
+        ],
+        "required": true
+      },
+      {
+        "ip": "172.20.0.21",
+        "hostname": "archives-special",
+        "id": "fs-lib-archives-special",
+        "type": "fileserver",
+        "fileSystems": [
+          "/archives-special/"
+        ],
+        "required": true
+      },
+      {
+        "ip": "172.20.0.30",
+        "hostname": "media-server",
+        "id": "fs-lib-media",
+        "type": "fileserver",
+        "fileSystems": [
+          "/media-server/"
+        ],
+        "required": true
+      },
+      {
+        "ip": "172.20.0.50",
+        "hostname": "admin-server",
+        "id": "fs-lib-admin",
+        "type": "fileserver",
+        "fileSystems": [
+          "/admin-server/"
+        ],
+        "required": true
       }
     ]
   },
@@ -440,6 +1036,16 @@
       "192.168.50.20",
       "192.168.50.63",
       "192.168.50.182"
+    ],
+    "westbrook-library": [
+      "172.20.0.10",
+      "172.20.0.11",
+      "172.20.0.12",
+      "172.20.0.13",
+      "172.20.0.20",
+      "172.20.0.21",
+      "172.20.0.30",
+      "172.20.0.50"
     ]
   },
   "fileManagerConnections": [
@@ -2897,6 +3503,33 @@
           }
         ],
         "revokedReason": "Mission access expired"
+      },
+      {
+        "networkId": "westbrook-library",
+        "networkName": "Westbrook Library",
+        "address": "172.20.0.0/24",
+        "bandwidth": 100,
+        "accessible": true,
+        "discovered": true,
+        "accessGrantedDate": "2026-02-06T23:40:38.814Z",
+        "logs": [
+          {
+            "id": "log-1770421241856-lffttk46p",
+            "timestamp": "2020-03-25T09:14:17.000Z",
+            "type": "remote",
+            "action": "connect",
+            "user": "scenario_user",
+            "note": "Connected via VPN"
+          },
+          {
+            "id": "log-1770421241856-ae6zkuf59",
+            "timestamp": "2020-03-25T09:14:17.000Z",
+            "type": "remote",
+            "action": "connect",
+            "user": "scenario_user",
+            "note": "Connected via VPN"
+          }
+        ]
       }
     ],
     "devices": [
@@ -3163,6 +3796,191 @@
             "sizeBytes": 3379
           }
         ]
+      },
+      {
+        "ip": "172.20.0.10",
+        "hostname": "main-catalog",
+        "networkId": "westbrook-library",
+        "fileSystemIds": [
+          "fs-lib-main-catalog"
+        ],
+        "fileSystemId": "fs-lib-main-catalog",
+        "accessible": true,
+        "logs": []
+      },
+      {
+        "ip": "172.20.0.11",
+        "hostname": "circulation",
+        "networkId": "westbrook-library",
+        "fileSystemIds": [
+          "fs-lib-circulation"
+        ],
+        "fileSystemId": "fs-lib-circulation",
+        "accessible": true,
+        "logs": []
+      },
+      {
+        "ip": "172.20.0.12",
+        "hostname": "periodicals",
+        "networkId": "westbrook-library",
+        "fileSystemIds": [
+          "fs-lib-periodicals"
+        ],
+        "fileSystemId": "fs-lib-periodicals",
+        "accessible": true,
+        "logs": []
+      },
+      {
+        "ip": "172.20.0.13",
+        "hostname": "reference",
+        "networkId": "westbrook-library",
+        "fileSystemIds": [
+          "fs-lib-reference"
+        ],
+        "fileSystemId": "fs-lib-reference",
+        "accessible": true,
+        "logs": []
+      },
+      {
+        "ip": "172.20.0.20",
+        "hostname": "archives-general",
+        "networkId": "westbrook-library",
+        "fileSystemIds": [
+          "fs-lib-archives-general"
+        ],
+        "fileSystemId": "fs-lib-archives-general",
+        "accessible": true,
+        "logs": []
+      },
+      {
+        "ip": "172.20.0.21",
+        "hostname": "archives-special",
+        "networkId": "westbrook-library",
+        "fileSystemIds": [
+          "fs-lib-archives-special"
+        ],
+        "fileSystemId": "fs-lib-archives-special",
+        "accessible": true,
+        "logs": [
+          {
+            "timestamp": "2020-03-25T09:10:22.000Z",
+            "type": "remote",
+            "user": "jthompson_intern",
+            "action": "login",
+            "fileSystemId": "fs-lib-archives-special",
+            "note": "Remote session from 192.168.1.45",
+            "id": "mission-log-fs-lib-archives-special-0"
+          },
+          {
+            "timestamp": "2020-03-25T09:10:27.000Z",
+            "type": "file",
+            "user": "jthompson_intern",
+            "action": "access",
+            "fileName": "rare-manuscripts-catalog.json",
+            "fileSystemId": "fs-lib-archives-special",
+            "sizeBytes": 5872640,
+            "id": "mission-log-fs-lib-archives-special-1"
+          },
+          {
+            "timestamp": "2020-03-25T09:10:32.000Z",
+            "type": "file",
+            "user": "jthompson_intern",
+            "action": "delete",
+            "fileName": "founders-correspondence-1885.pdf",
+            "fileSystemId": "fs-lib-archives-special",
+            "sizeBytes": 47185920,
+            "id": "mission-log-fs-lib-archives-special-2"
+          },
+          {
+            "timestamp": "2020-03-25T09:10:37.000Z",
+            "type": "file",
+            "user": "jthompson_intern",
+            "action": "delete",
+            "fileName": "original-charter-scan.tiff",
+            "fileSystemId": "fs-lib-archives-special",
+            "sizeBytes": 131072000,
+            "id": "mission-log-fs-lib-archives-special-3"
+          },
+          {
+            "timestamp": "2020-03-25T09:10:42.000Z",
+            "type": "file",
+            "user": "jthompson_intern",
+            "action": "delete",
+            "fileName": "historical-photos-collection.zip",
+            "fileSystemId": "fs-lib-archives-special",
+            "sizeBytes": 933232640,
+            "id": "mission-log-fs-lib-archives-special-4"
+          },
+          {
+            "timestamp": "2020-03-25T09:10:47.000Z",
+            "type": "file",
+            "user": "jthompson_intern",
+            "action": "delete",
+            "fileName": "first-edition-catalog.json",
+            "fileSystemId": "fs-lib-archives-special",
+            "sizeBytes": 2936013,
+            "id": "mission-log-fs-lib-archives-special-5"
+          },
+          {
+            "timestamp": "2020-03-25T09:10:52.000Z",
+            "type": "remote",
+            "user": "jthompson_intern",
+            "action": "logout",
+            "fileSystemId": "fs-lib-archives-special",
+            "note": "Session ended",
+            "id": "mission-log-fs-lib-archives-special-6"
+          },
+          {
+            "timestamp": "2020-03-25T09:12:22.000Z",
+            "type": "remote",
+            "user": "m_henderson",
+            "action": "login",
+            "fileSystemId": "fs-lib-archives-special",
+            "note": "Local login from terminal ARCH-01",
+            "id": "mission-log-fs-lib-archives-special-7"
+          },
+          {
+            "timestamp": "2020-03-25T09:12:27.000Z",
+            "type": "file",
+            "user": "m_henderson",
+            "action": "access",
+            "fileName": "donation-records.xlsx",
+            "fileSystemId": "fs-lib-archives-special",
+            "sizeBytes": 911360,
+            "id": "mission-log-fs-lib-archives-special-8"
+          },
+          {
+            "timestamp": "2020-03-25T09:12:52.000Z",
+            "type": "remote",
+            "user": "m_henderson",
+            "action": "logout",
+            "fileSystemId": "fs-lib-archives-special",
+            "note": "Session ended",
+            "id": "mission-log-fs-lib-archives-special-9"
+          }
+        ]
+      },
+      {
+        "ip": "172.20.0.30",
+        "hostname": "media-server",
+        "networkId": "westbrook-library",
+        "fileSystemIds": [
+          "fs-lib-media"
+        ],
+        "fileSystemId": "fs-lib-media",
+        "accessible": true,
+        "logs": []
+      },
+      {
+        "ip": "172.20.0.50",
+        "hostname": "admin-server",
+        "networkId": "westbrook-library",
+        "fileSystemIds": [
+          "fs-lib-admin"
+        ],
+        "fileSystemId": "fs-lib-admin",
+        "accessible": true,
+        "logs": []
       }
     ],
     "fileSystems": [
@@ -3270,9 +4088,223 @@
             "corrupted": false
           }
         ]
+      },
+      {
+        "id": "fs-lib-main-catalog",
+        "files": [
+          {
+            "name": "catalog-database.db",
+            "size": "45 MB"
+          },
+          {
+            "name": "patron-records.enc",
+            "size": "12 MB"
+          },
+          {
+            "name": "checkout-history-2020.log",
+            "size": "8.5 MB"
+          },
+          {
+            "name": "inventory-audit.xlsx",
+            "size": "2.5 MB"
+          },
+          {
+            "name": "dewey-decimal-index.json",
+            "size": "1.8 MB"
+          }
+        ]
+      },
+      {
+        "id": "fs-lib-circulation",
+        "files": [
+          {
+            "name": "holds-queue.json",
+            "size": "450 KB"
+          },
+          {
+            "name": "overdue-notices.txt",
+            "size": "125 KB"
+          },
+          {
+            "name": "interlibrary-loans.csv",
+            "size": "890 KB"
+          },
+          {
+            "name": "staff-schedule.xlsx",
+            "size": "65 KB"
+          },
+          {
+            "name": "return-processing.log",
+            "size": "2.1 MB"
+          }
+        ]
+      },
+      {
+        "id": "fs-lib-periodicals",
+        "files": [
+          {
+            "name": "newspaper-index-1950-1960.json",
+            "size": "15 MB"
+          },
+          {
+            "name": "newspaper-index-1960-1970.json",
+            "size": "18.5 MB"
+          },
+          {
+            "name": "magazine-catalog.db",
+            "size": "8.9 MB"
+          },
+          {
+            "name": "microfilm-locations.csv",
+            "size": "340 KB"
+          },
+          {
+            "name": "local-gazette-archives.pdf",
+            "size": "125 MB",
+            "status": "deleted"
+          },
+          {
+            "name": "historical-photos-index.json",
+            "size": "4.5 MB",
+            "status": "deleted"
+          }
+        ]
+      },
+      {
+        "id": "fs-lib-reference",
+        "files": [
+          {
+            "name": "encyclopedia-britannica.db",
+            "size": "85 MB"
+          },
+          {
+            "name": "research-guides.pdf",
+            "size": "12.5 MB"
+          },
+          {
+            "name": "citation-styles.json",
+            "size": "450 KB"
+          },
+          {
+            "name": "academic-journals-index.csv",
+            "size": "5.6 MB"
+          },
+          {
+            "name": "local-history-collection.db",
+            "size": "34 MB"
+          }
+        ]
+      },
+      {
+        "id": "fs-lib-archives-general",
+        "files": [
+          {
+            "name": "city-records-1900-1950.pdf",
+            "size": "78 MB"
+          },
+          {
+            "name": "city-records-1950-2000.pdf",
+            "size": "92 MB"
+          },
+          {
+            "name": "genealogy-records.db",
+            "size": "45 MB"
+          },
+          {
+            "name": "historical-maps.zip",
+            "size": "156 MB"
+          },
+          {
+            "name": "oral-histories-index.json",
+            "size": "2.8 MB"
+          }
+        ]
+      },
+      {
+        "id": "fs-lib-archives-special",
+        "files": [
+          {
+            "name": "rare-manuscripts-catalog.json",
+            "size": "5.6 MB"
+          },
+          {
+            "name": "donation-records.xlsx",
+            "size": "890 KB"
+          },
+          {
+            "name": "preservation-notes.txt",
+            "size": "125 KB"
+          },
+          {
+            "name": "founders-correspondence-1885.pdf",
+            "size": "45 MB",
+            "status": "normal"
+          },
+          {
+            "name": "original-charter-scan.tiff",
+            "size": "125 MB",
+            "status": "normal"
+          },
+          {
+            "name": "historical-photos-collection.zip",
+            "size": "890 MB",
+            "status": "normal"
+          },
+          {
+            "name": "first-edition-catalog.json",
+            "size": "2.8 MB",
+            "status": "normal"
+          }
+        ]
+      },
+      {
+        "id": "fs-lib-media",
+        "files": [
+          {
+            "name": "audiobooks-catalog.db",
+            "size": "15 MB"
+          },
+          {
+            "name": "dvd-collection.json",
+            "size": "3.4 MB"
+          },
+          {
+            "name": "streaming-licenses.enc",
+            "size": "890 KB"
+          },
+          {
+            "name": "music-collection-index.csv",
+            "size": "2.1 MB"
+          }
+        ]
+      },
+      {
+        "id": "fs-lib-admin",
+        "files": [
+          {
+            "name": "budget-2020.xlsx",
+            "size": "450 KB"
+          },
+          {
+            "name": "staff-directory.json",
+            "size": "125 KB"
+          },
+          {
+            "name": "grant-applications.pdf",
+            "size": "8.9 MB"
+          },
+          {
+            "name": "board-meeting-minutes.docx",
+            "size": "2.5 MB"
+          },
+          {
+            "name": "intern-records.xlsx",
+            "size": "340 KB"
+          }
+        ]
       }
     ]
   },
-  "savedAt": "2026-02-06T23:40:28.706Z",
-  "saveName": "25/03/2020 09:12:59"
+  "savedAt": "2026-02-06T23:40:47.666Z",
+  "saveName": "25/03/2020 09:19:52"
 }

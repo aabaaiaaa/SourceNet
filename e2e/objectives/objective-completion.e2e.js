@@ -18,6 +18,7 @@ import {
     selectCorruptedFiles,
     repairSelectedFiles,
     setSpecificTimeSpeed,
+    activateMissionNar,
 } from '../helpers/common-actions.js';
 
 test.setTimeout(120000);
@@ -53,7 +54,7 @@ test.describe('Objective Completion', () => {
             // Accept the mission
             await openApp(page, 'Mission Board');
             await page.locator('.tab:has-text("Available Missions")').click();
-            const missionCard = page.locator(`.mission-card:has-text("${mission.title.substring(0, 20)}")`);
+            const missionCard = page.locator(`.mission-card:has-text("${mission.title.substring(0, 20)}")`).first();
             await missionCard.locator('button:has-text("Accept")').click();
 
             // Switch to Active tab
@@ -74,12 +75,15 @@ test.describe('Objective Completion', () => {
                 return;
             }
 
-            // First connect to the network
+            // First activate the NAR attachment from the briefing message
             await closeWindow(page, 'Mission Board');
-            await connectToNetwork(page, activeMission.networks[0].name);
+            await activateMissionNar(page);
+
+            // Connect to the network
+            await connectToNetwork(page, activeMission.networks[0].networkName);
 
             // Now scan the network
-            await scanNetwork(page, activeMission.networks[0].name, scanObj.expectedResult);
+            await scanNetwork(page, activeMission.networks[0].networkName, scanObj.expectedResult);
 
             // Verify the networkScan objective completed
             await openApp(page, 'Mission Board');
@@ -119,16 +123,18 @@ test.describe('Objective Completion', () => {
             await verifyObjectivePending(page, 'Repair');
             await closeWindow(page, 'Mission Board');
 
-            // Connect to network and file system
-            const networkObj = activeMission.objectives.find(o => o.type === 'networkConnection');
-            if (networkObj) {
-                await connectToNetwork(page, networkObj.target);
+            // Connect to network and file system (use network display name, not ID)
+            if (activeMission.networks?.length > 0) {
+                await connectToNetwork(page, activeMission.networks[0].networkName);
             }
 
             // Connect File Manager and repair files
+            // The fileSystemConnection target is an IP, but File Manager dropdown uses file system IDs
             const fsObj = activeMission.objectives.find(o => o.type === 'fileSystemConnection');
             if (fsObj) {
-                await connectFileManager(page, fsObj.target);
+                const fileSystems = activeMission.networks?.flatMap(n => n.fileSystems || []) || [];
+                const fs = fileSystems.find(f => f.ip === fsObj.target) || fileSystems[0];
+                await connectFileManager(page, fs.id);
             }
 
             await selectCorruptedFiles(page);
@@ -173,7 +179,7 @@ test.describe('Objective Completion', () => {
             // Accept the mission
             await openApp(page, 'Mission Board');
             await page.locator('.tab:has-text("Available Missions")').click();
-            const missionCard = page.locator(`.mission-card:has-text("${mission.title.substring(0, 20)}")`);
+            const missionCard = page.locator(`.mission-card:has-text("${mission.title.substring(0, 20)}")`).first();
             await missionCard.locator('button:has-text("Accept")').click();
 
             // Switch to Active tab and verify networkConnection is pending
@@ -182,11 +188,12 @@ test.describe('Objective Completion', () => {
             await verifyObjectivePending(page, 'Connect');
             await closeWindow(page, 'Mission Board');
 
+            // Activate the NAR attachment from the briefing message
+            await activateMissionNar(page);
+
             // Connect to the target network
             const activeMission = await page.evaluate(() => window.gameContext.activeMission);
-            const networkObj = activeMission.objectives.find(o => o.type === 'networkConnection');
-
-            await connectToNetwork(page, activeMission.networks[0].name);
+            await connectToNetwork(page, activeMission.networks[0].networkName);
 
             // Verify objective completed
             await openApp(page, 'Mission Board');
@@ -227,21 +234,24 @@ test.describe('Objective Completion', () => {
             // Accept the mission
             await openApp(page, 'Mission Board');
             await page.locator('.tab:has-text("Available Missions")').click();
-            const missionCard = page.locator(`.mission-card:has-text("${mission.title.substring(0, 20)}")`);
+            const missionCard = page.locator(`.mission-card:has-text("${mission.title.substring(0, 20)}")`).first();
             await missionCard.locator('button:has-text("Accept")').click();
 
             // Switch to Active tab
             await page.locator('.tab:has-text("Active Mission")').click();
             await closeWindow(page, 'Mission Board');
 
+            // Activate the NAR attachment from the briefing message
+            await activateMissionNar(page);
+
             // First connect to the network
             const activeMission = await page.evaluate(() => window.gameContext.activeMission);
-            await connectToNetwork(page, activeMission.networks[0].name);
+            await connectToNetwork(page, activeMission.networks[0].networkName);
 
             // Then scan to find the file system
             const scanObj = activeMission.objectives.find(o => o.type === 'networkScan');
             if (scanObj) {
-                await scanNetwork(page, activeMission.networks[0].name, scanObj.expectedResult);
+                await scanNetwork(page, activeMission.networks[0].networkName, scanObj.expectedResult);
             }
 
             // Connect File Manager to the target file system
@@ -291,7 +301,7 @@ test.describe('Objective Completion', () => {
             // Accept the mission
             await openApp(page, 'Mission Board');
             await page.locator('.tab:has-text("Available Missions")').click();
-            const missionCard = page.locator(`.mission-card:has-text("${mission.title.substring(0, 20)}")`);
+            const missionCard = page.locator(`.mission-card:has-text("${mission.title.substring(0, 20)}")`).first();
             await missionCard.locator('button:has-text("Accept")').click();
 
             // Switch to Active tab
@@ -317,16 +327,18 @@ test.describe('Objective Completion', () => {
             await verifyObjectivePending(page, 'Log Viewer');
             await closeWindow(page, 'Mission Board');
 
+            // Activate the NAR attachment from the briefing message
+            await activateMissionNar(page);
+
             // Connect to the network first
-            const networkObj = activeMission.objectives.find(o => o.type === 'networkConnection');
-            if (networkObj && activeMission.networks?.[0]) {
-                await connectToNetwork(page, activeMission.networks[0].name);
+            if (activeMission.networks?.[0]) {
+                await connectToNetwork(page, activeMission.networks[0].networkName);
             }
 
             // Scan the network
             const scanObj = activeMission.objectives.find(o => o.type === 'networkScan');
             if (scanObj && activeMission.networks?.[0]) {
-                await scanNetwork(page, activeMission.networks[0].name, scanObj.expectedResult);
+                await scanNetwork(page, activeMission.networks[0].networkName, scanObj.expectedResult);
             }
 
             // Connect File Manager to the correct file system (the one from the investigation objective)

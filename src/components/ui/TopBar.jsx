@@ -484,6 +484,7 @@ const TopBar = () => {
                       }}
                     >
                       {obj.status === 'complete' ? '☑' : '☐'} {obj.description}
+                      {obj.required === false && <span className="optional-label">(Optional)</span>}
                     </div>
                   ))}
                 </div>

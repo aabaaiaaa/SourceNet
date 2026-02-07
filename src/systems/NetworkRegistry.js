@@ -229,6 +229,21 @@ class NetworkRegistry {
     }
 
     /**
+     * Get a device by its file system ID
+     * @param {string} fileSystemId - File system identifier
+     * @returns {Object|null} Device data or null if not found
+     */
+    getDeviceByFileSystem(fileSystemId) {
+        for (const device of this.devices.values()) {
+            const fsIds = device.fileSystemIds || (device.fileSystemId ? [device.fileSystemId] : []);
+            if (fsIds.includes(fileSystemId)) {
+                return { ...device };
+            }
+        }
+        return null;
+    }
+
+    /**
      * Get a file system by ID
      * @param {string} fileSystemId - File system identifier
      * @returns {Object|null} File system data or null if not found
@@ -795,6 +810,69 @@ class NetworkRegistry {
         });
 
         console.log(`🚫 NetworkRegistry: Revoked access to ${network.networkName} - ${reason}`);
+        return true;
+    }
+
+    /**
+     * Reset a network for mission retry
+     * Restores file systems to original state and revokes access
+     * @param {string} networkId - Network identifier
+     * @param {Object} originalNetworkData - Original mission network data with fileSystems
+     * @returns {boolean} True if reset successful
+     */
+    resetNetworkForRetry(networkId, originalNetworkData) {
+        const network = this.networks.get(networkId);
+        if (!network) {
+            console.warn(`NetworkRegistry: Cannot reset - network not found: ${networkId}`);
+            return false;
+        }
+
+        console.log(`🔄 NetworkRegistry: Resetting network ${network.networkName} for retry`);
+
+        // Reset file systems to original state
+        if (originalNetworkData.fileSystems) {
+            for (const fsData of originalNetworkData.fileSystems) {
+                const fsId = fsData.id;
+                const fs = this.fileSystems.get(fsId);
+
+                if (fs) {
+                    // Restore original files (this resets any changes made during the mission)
+                    const originalFiles = (fsData.files || []).map(f => ({
+                        ...f,
+                        corrupted: f.corrupted || false,
+                    }));
+
+                    this.fileSystems.set(fsId, {
+                        ...fs,
+                        files: originalFiles,
+                        // Restore deleted files list if it existed
+                        deletedFiles: fsData.deletedFiles || [],
+                    });
+
+                    console.log(`  ✅ Reset file system ${fsId} with ${originalFiles.length} files`);
+                }
+            }
+        }
+
+        // Revoke network access (player will need to re-activate NAR)
+        this.networks.set(networkId, {
+            ...network,
+            accessible: false,
+            discovered: false,
+            revokedReason: null, // Clear any previous revocation reason
+        });
+
+        // Revoke access to all devices on this network
+        for (const device of this.devices.values()) {
+            if (device.networkId === networkId) {
+                this.devices.set(device.ip, {
+                    ...device,
+                    accessible: false,
+                });
+            }
+        }
+
+        console.log(`🔄 NetworkRegistry: Reset complete for ${network.networkName}`);
         return true;
     }
 

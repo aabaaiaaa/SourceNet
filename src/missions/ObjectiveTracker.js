@@ -313,6 +313,40 @@ export const areAllObjectivesComplete = (objectives) => {
 };
 
 /**
+ * Check if all REQUIRED objectives are complete
+ * Required objectives are those without `required: false`
+ * @param {array} objectives - Mission objectives
+ * @returns {boolean} All required objectives complete
+ */
+export const areAllRequiredObjectivesComplete = (objectives) => {
+  if (!objectives || objectives.length === 0) return false;
+  const requiredObjectives = objectives.filter(obj => obj.required !== false);
+  return requiredObjectives.every((obj) => obj.status === 'complete');
+};
+
+/**
+ * Check if there are any incomplete optional objectives
+ * Optional objectives are those with `required: false`
+ * @param {array} objectives - Mission objectives
+ * @returns {boolean} Has incomplete optional objectives
+ */
+export const hasIncompleteOptionalObjectives = (objectives) => {
+  if (!objectives || objectives.length === 0) return false;
+  const optionalObjectives = objectives.filter(obj => obj.required === false);
+  return optionalObjectives.some((obj) => obj.status !== 'complete');
+};
+
+/**
+ * Check if mission has any optional objectives
+ * @param {array} objectives - Mission objectives
+ * @returns {boolean} Has optional objectives
+ */
+export const hasOptionalObjectives = (objectives) => {
+  if (!objectives || objectives.length === 0) return false;
+  return objectives.some(obj => obj.required === false);
+};
+
+/**
  * Check if a file operation objective is impossible to complete
  * because its target files no longer exist in any of the mission's file systems.
  * 

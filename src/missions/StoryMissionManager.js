@@ -594,6 +594,26 @@ class StoryMissionManager {
 
         this.addUnsubscriber(missionDef.missionId, unsubscribe);
       }
+
+      // Handle secureDelete trigger - fires when player secure-deletes specific files
+      if (type === 'secureDelete') {
+        const { targetFiles } = scriptedEvent.trigger;
+        const unsubscribe = triggerEventBus.on('secureDeleteComplete', (data) => {
+          console.log(`🗑️ secureDeleteComplete: file=${data.fileName}, mission context check`);
+
+          // Check if the deleted file is one of the target files that should trigger failure
+          if (targetFiles && targetFiles.includes(data.fileName)) {
+            console.log(`🚨 Critical file secure-deleted: ${data.fileName} - triggering scripted event`);
+            // Use game-time-aware scheduling with persistence tracking
+            const payload = { missionId: missionDef.missionId, eventId: scriptedEvent.id, scriptedEvent };
+            this.schedulePendingEvent('scriptedEvent', payload, delay || 0, () => {
+              this.executeScriptedEvent(missionDef.missionId, scriptedEvent);
+            });
+          }
+        });
+
+        this.addUnsubscriber(missionDef.missionId, unsubscribe);
+      }
     });
   }
 

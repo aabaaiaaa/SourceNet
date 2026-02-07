@@ -51,7 +51,7 @@ describe('MissionBoard Component', () => {
   });
 
   describe('file checklist display', () => {
-    const createMissionWithFileObjective = (objectiveOverrides = {}, missionFileOps = {}) => ({
+    const createMissionWithFileObjective = (objectiveOverrides = {}, _missionFileOps = {}) => ({
       missionId: 'test-mission-1',
       title: 'Test File Mission',
       client: 'TestClient',

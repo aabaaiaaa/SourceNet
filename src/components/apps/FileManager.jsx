@@ -33,7 +33,7 @@ const FileManager = () => {
   const [activityLog, setActivityLog] = useState([]); // Ephemeral activity log (clears on unmount)
   const [isLogCollapsed, setIsLogCollapsed] = useState(false);
   const animationFrameRef = useRef(null);
-  const activeOperationsRef = useRef(new Map()); // Map of fileIndex -> {startTime, duration, operation, operationId}
+  const activeOperationsRef = useRef(new Map()); // Map of fileName -> {startTime, duration, operation, operationId, ...}
   const currentTimeRef = useRef(currentTime);
   const logIdCounterRef = useRef(0);
 
@@ -180,16 +180,16 @@ const FileManager = () => {
             const registryFileNames = new Set(normalFiles.map(f => f.name));
 
             // Keep files that are in the registry OR are currently being pasted
-            const pastedFileIndices = new Set();
-            activeOperationsRef.current.forEach((op, idx) => {
+            const pastedFileNames = new Set();
+            activeOperationsRef.current.forEach((op, fileName) => {
               if (op.operation === 'paste') {
-                pastedFileIndices.add(idx);
+                pastedFileNames.add(fileName);
               }
             });
 
             // Get files being pasted that aren't in registry yet
-            const inFlightFiles = prevFiles.filter((f, idx) =>
-              pastedFileIndices.has(idx) && !registryFileNames.has(f.name)
+            const inFlightFiles = prevFiles.filter((f) =>
+              pastedFileNames.has(f.name) && !registryFileNames.has(f.name)
             );
 
             // Combine registry files with in-flight paste files
@@ -252,48 +252,57 @@ const FileManager = () => {
       const statsUpdates = {};
       const completedOps = [];
 
-      activeOperationsRef.current.forEach((opData, fileIndex) => {
+      activeOperationsRef.current.forEach((opData, fileName) => {
         const elapsedGameMs = now - opData.startTime;
         const progress = Math.min(100, (elapsedGameMs / opData.duration) * 100);
-        updates[fileIndex] = progress;
+        updates[fileName] = progress;
 
         // Calculate remaining time and transfer speed for display
         const remainingMs = Math.max(0, opData.duration - elapsedGameMs);
         const remainingSeconds = remainingMs / 1000;
         const transferSpeedMBps = opData.transferSpeedMBps || 0;
 
-        statsUpdates[fileIndex] = {
+        statsUpdates[fileName] = {
           remainingSeconds,
           transferSpeedMBps,
         };
 
         if (progress >= 100) {
-          completedOps.push({ fileIndex, operation: opData.operation, operationId: opData.operationId, fileName: opData.fileName });
+          completedOps.push({
+            fileName,
+            operation: opData.operation,
+            operationId: opData.operationId,
+            sizeBytes: opData.fileSizeInMB ? Math.round(opData.fileSizeInMB * 1024 * 1024) : undefined,
+          });
         }
       });
 
       setFileProgress(prev => ({ ...prev, ...updates }));
       setFileOperationStats(prev => ({ ...prev, ...statsUpdates }));
 
-      // Handle completed operations - sort deletes by index descending to avoid index shifting issues
-      const sortedCompletedOps = completedOps.sort((a, b) => {
-        if (a.operation === 'delete' && b.operation === 'delete') {
-          return b.fileIndex - a.fileIndex; // Delete from highest index first
-        }
-        return 0;
-      });
+      // With filename-based tracking, no need to sort by index
+      const sortedCompletedOps = completedOps;
 
       // Handle completed operations
-      sortedCompletedOps.forEach(({ fileIndex, operation, operationId, fileName }) => {
-        console.log(`✅ Operation complete: ${operation} on ${fileName} (index ${fileIndex})`);
-        activeOperationsRef.current.delete(fileIndex);
+      sortedCompletedOps.forEach(({ fileName, operation, operationId }) => {
+        console.log(`✅ Operation complete: ${operation} on ${fileName}`);
 
         if (operationId) {
           completeBandwidthOperation(operationId);
         }
 
         // Update file state based on operation
+        // IMPORTANT: Delete from activeOperationsRef INSIDE the setFiles callback to prevent race condition
+        // where fileSystemChanged event handler could see no active operation and overwrite in-flight files
         setFiles(prevFiles => {
+          const fileIndex = prevFiles.findIndex(f => f.name === fileName);
+          if (fileIndex === -1) {
+            console.warn(`File not found for operation completion: ${fileName}`);
+            // Still need to clean up the ref even if file wasn't found
+            activeOperationsRef.current.delete(fileName);
+            return prevFiles;
+          }
+
           const newFiles = [...prevFiles];
           if (operation === 'repair') {
             newFiles[fileIndex] = { ...newFiles[fileIndex], corrupted: false, selected: false };
@@ -335,30 +344,33 @@ const FileManager = () => {
             }
           }
 
+          // Delete from activeOperationsRef AFTER file state update to prevent race condition
+          activeOperationsRef.current.delete(fileName);
+
           return newFiles;
         });
 
         setOperatingFiles(prev => {
           const next = new Set(prev);
-          next.delete(fileIndex);
+          next.delete(fileName);
           return next;
         });
 
         setFileProgress(prev => {
           const next = { ...prev };
-          delete next[fileIndex];
+          delete next[fileName];
           return next;
         });
 
         setFileOperations(prev => {
           const next = { ...prev };
-          delete next[fileIndex];
+          delete next[fileName];
           return next;
         });
 
         setFileOperationStats(prev => {
           const next = { ...prev };
-          delete next[fileIndex];
+          delete next[fileName];
           return next;
         });
 
@@ -442,7 +454,7 @@ const FileManager = () => {
     const now = currentTime.getTime();
 
     // Recalculate duration for each active operation
-    activeOperationsRef.current.forEach((opData, fileIndex) => {
+    activeOperationsRef.current.forEach((opData, fileName) => {
       // Skip copy operations (they don't depend on network bandwidth)
       if (opData.operation === 'copy') return;
 
@@ -484,9 +496,9 @@ const FileManager = () => {
       // Update operation data with new duration (elapsed + new remaining)
       const newDuration = elapsedGameMs + newRemainingTimeMs;
 
-      console.log(`  📁 ${opData.fileName}: ${progressPercent.toFixed(0)}% complete, bandwidth ${oldBandwidth} -> ${newBandwidth} Mbps, remaining ${(newRemainingTimeMs / 1000).toFixed(1)}s`);
+      console.log(`  📁 ${fileName}: ${progressPercent.toFixed(0)}% complete, bandwidth ${oldBandwidth} -> ${newBandwidth} Mbps, remaining ${(newRemainingTimeMs / 1000).toFixed(1)}s`);
 
-      activeOperationsRef.current.set(fileIndex, {
+      activeOperationsRef.current.set(fileName, {
         ...opData,
         duration: newDuration,
         effectiveBandwidth: newBandwidth,
@@ -600,7 +612,8 @@ const FileManager = () => {
   };
 
   const handleFileSelect = (index) => {
-    if (operatingFiles.has(index)) return; // Can't select files being operated on
+    const file = files[index];
+    if (!file || operatingFiles.has(file.name)) return; // Can't select files being operated on
 
     setFiles(prevFiles => {
       const newFiles = [...prevFiles];
@@ -614,7 +627,7 @@ const FileManager = () => {
 
     const selectedIndices = [];
     files.forEach((file, index) => {
-      if (file.selected && !operatingFiles.has(index)) {
+      if (file.selected && !operatingFiles.has(file.name)) {
         selectedIndices.push(index);
       }
     });
@@ -638,20 +651,19 @@ const FileManager = () => {
         { fileSystem: selectedFileSystem, fileName: file.name }
       );
 
-      activeOperationsRef.current.set(index, {
+      activeOperationsRef.current.set(file.name, {
         startTime: currentTime.getTime(),
         duration,
         operation: 'copy',
         operationId,
-        fileName: file.name,
         fileSizeInMB: sizeInMB,
         effectiveBandwidth: bandwidth,
         transferSpeedMBps,
       });
 
-      setOperatingFiles(prev => new Set([...prev, index]));
-      setFileProgress(prev => ({ ...prev, [index]: 0 }));
-      setFileOperations(prev => ({ ...prev, [index]: 'copy' }));
+      setOperatingFiles(prev => new Set([...prev, file.name]));
+      setFileProgress(prev => ({ ...prev, [file.name]: 0 }));
+      setFileOperations(prev => ({ ...prev, [file.name]: 'copy' }));
     });
 
     // Set clipboard after operations start
@@ -708,15 +720,13 @@ const FileManager = () => {
     }
 
     // Add files to the array immediately (they'll show progress)
-    const startIndex = files.length;
     const newFiles = filesToPaste.map(f => ({ ...f, selected: false }));
     setFiles(prev => [...prev, ...newFiles]);
 
     const isCrossNetwork = fileClipboard.sourceNetworkId !== currentNetworkId;
 
     // Start paste operation for each file
-    newFiles.forEach((file, relativeIndex) => {
-      const absoluteIndex = startIndex + relativeIndex;
+    newFiles.forEach((file) => {
       const duration = calculateOperationDuration(file, 'paste', effectiveBandwidth);
       const sizeInMB = parseFileSizeToMB(file.size);
       // Calculate transfer speed: bandwidth in Mbps -> MB/s = bandwidth / 8
@@ -734,22 +744,21 @@ const FileManager = () => {
         }
       );
 
-      activeOperationsRef.current.set(absoluteIndex, {
+      activeOperationsRef.current.set(file.name, {
         startTime: currentTime.getTime(),
         duration,
         operation: 'paste',
         operationId,
         crossNetwork: isCrossNetwork,
         sourceNetworkId: fileClipboard.sourceNetworkId,
-        fileName: file.name,
         fileSizeInMB: sizeInMB,
         effectiveBandwidth,
         transferSpeedMBps,
       });
 
-      setOperatingFiles(prev => new Set([...prev, absoluteIndex]));
-      setFileProgress(prev => ({ ...prev, [absoluteIndex]: 0 }));
-      setFileOperations(prev => ({ ...prev, [absoluteIndex]: isCrossNetwork ? 'paste-cross' : 'paste' }));
+      setOperatingFiles(prev => new Set([...prev, file.name]));
+      setFileProgress(prev => ({ ...prev, [file.name]: 0 }));
+      setFileOperations(prev => ({ ...prev, [file.name]: isCrossNetwork ? 'paste-cross' : 'paste' }));
     });
 
     // Clear clipboard after paste (one-time use for game purposes)
@@ -763,7 +772,7 @@ const FileManager = () => {
 
     const selectedIndices = [];
     files.forEach((file, index) => {
-      if (file.selected && !operatingFiles.has(index)) {
+      if (file.selected && !operatingFiles.has(file.name)) {
         selectedIndices.push(index);
       }
     });
@@ -787,20 +796,19 @@ const FileManager = () => {
         { fileSystem: selectedFileSystem, fileName: file.name }
       );
 
-      activeOperationsRef.current.set(index, {
+      activeOperationsRef.current.set(file.name, {
         startTime: currentTime.getTime(),
         duration,
         operation: 'delete',
         operationId,
-        fileName: file.name,
         fileSizeInMB: sizeInMB,
         effectiveBandwidth: bandwidth,
         transferSpeedMBps,
       });
 
-      setOperatingFiles(prev => new Set([...prev, index]));
-      setFileProgress(prev => ({ ...prev, [index]: 0 }));
-      setFileOperations(prev => ({ ...prev, [index]: 'delete' }));
+      setOperatingFiles(prev => new Set([...prev, file.name]));
+      setFileProgress(prev => ({ ...prev, [file.name]: 0 }));
+      setFileOperations(prev => ({ ...prev, [file.name]: 'delete' }));
     });
   };
 
@@ -809,7 +817,7 @@ const FileManager = () => {
 
     const selectedCorruptedIndices = [];
     files.forEach((file, index) => {
-      if (file.selected && file.corrupted && !operatingFiles.has(index)) {
+      if (file.selected && file.corrupted && !operatingFiles.has(file.name)) {
         selectedCorruptedIndices.push(index);
       }
     });
@@ -833,20 +841,19 @@ const FileManager = () => {
         { fileSystem: selectedFileSystem, fileName: file.name }
       );
 
-      activeOperationsRef.current.set(index, {
+      activeOperationsRef.current.set(file.name, {
         startTime: currentTime.getTime(),
         duration,
         operation: 'repair',
         operationId,
-        fileName: file.name,
         fileSizeInMB: sizeInMB,
         effectiveBandwidth: bandwidth,
         transferSpeedMBps,
       });
 
-      setOperatingFiles(prev => new Set([...prev, index]));
-      setFileProgress(prev => ({ ...prev, [index]: 0 }));
-      setFileOperations(prev => ({ ...prev, [index]: 'repair' }));
+      setOperatingFiles(prev => new Set([...prev, file.name]));
+      setFileProgress(prev => ({ ...prev, [file.name]: 0 }));
+      setFileOperations(prev => ({ ...prev, [file.name]: 'repair' }));
     });
   };
 
@@ -944,10 +951,10 @@ const FileManager = () => {
 
               <div className="file-list">
                 {files.map((file, idx) => {
-                  const isOperating = operatingFiles.has(idx);
-                  const progress = fileProgress[idx] || 0;
-                  const operation = fileOperations[idx];
-                  const stats = fileOperationStats[idx] || {};
+                  const isOperating = operatingFiles.has(file.name);
+                  const progress = fileProgress[file.name] || 0;
+                  const operation = fileOperations[file.name];
+                  const stats = fileOperationStats[file.name] || {};
                   const isCrossNetworkPaste = operation === 'paste-cross';
 
                   return (

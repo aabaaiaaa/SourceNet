@@ -52,7 +52,7 @@ export async function openApp(page, appName) {
  */
 export async function closeWindow(page, windowTitle) {
     const window = page.locator(`.window:has-text("${windowTitle}")`);
-    await window.locator('.close-btn').click();
+    await window.locator('.window-control-btn[title="Close"]').click();
     await expect(window).not.toBeVisible();
 }
 
@@ -102,20 +102,46 @@ export async function readMessage(page, subject) {
  * @param {Page} page - Playwright page object
  * @param {string} accountName - Account name to deposit into (e.g., 'Current Account')
  */
-export async function depositCheque(page, accountName = 'Current Account') {
-    // Click on cheque attachment
-    await page.click('.cheque-attachment');
+export async function depositCheque(page) {
+    // Click on cheque attachment (scroll into view first since it may be below fold)
+    const chequeItem = page.locator('.attachment-item:has-text("Click to deposit")');
+    await chequeItem.scrollIntoViewIfNeeded();
+    await chequeItem.click();
 
     // Banking window should open and show deposit prompt
-    await expect(page.locator('.banking-window')).toBeVisible();
-    await expect(page.locator('.cheque-deposit-prompt')).toBeVisible();
+    await expect(page.locator('.cheque-deposit-prompt')).toBeVisible({ timeout: 5000 });
 
-    // Select account and deposit
-    await page.selectOption('.account-select', accountName);
-    await page.click('button:has-text("Deposit")');
+    // Click the first account button to deposit
+    await page.locator('.account-select-btn').first().click();
 
-    // Wait for confirmation
+    // Wait for deposit prompt to close
     await expect(page.locator('.cheque-deposit-prompt')).not.toBeVisible();
+}
+
+/**
+ * Activate a NAR (Network Address Register) attachment from a mission briefing message.
+ * Opens SNet Mail, reads the most recent unread message, clicks the NAR attachment,
+ * then closes mail. Must be called after accepting a mission.
+ * @param {Page} page - Playwright page object
+ */
+export async function activateMissionNar(page) {
+    await openMail(page);
+
+    // Click the first unread message (the briefing message)
+    const unreadMessage = page.locator('.message-item.unread').first();
+    await expect(unreadMessage).toBeVisible({ timeout: 5000 });
+    await unreadMessage.click();
+    await expect(page.locator('.message-view')).toBeVisible();
+
+    // Click the NAR attachment
+    const narAttachment = page.locator('.attachment-item:has-text("Click to add")');
+    await narAttachment.scrollIntoViewIfNeeded();
+    await narAttachment.click();
+
+    // Wait for NAR activation (attachment text changes to "Network credentials used")
+    await expect(page.locator('.attachment-item:has-text("credentials used")')).toBeVisible({ timeout: 5000 });
+
+    await closeWindow(page, 'SNet Mail');
 }
 
 // ============================================================================
@@ -400,9 +426,8 @@ export async function connectToNetwork(page, networkName) {
 export async function scanNetwork(page, networkName, expectedHost = null) {
     await openApp(page, 'Network Scanner');
     const scanner = page.locator('.window:has-text("Network Scanner")');
-    await scanner.locator('select').first().selectOption({ label: networkName });
-    await scanner.locator('select').last().selectOption('deep');
-    await scanner.locator('button:has-text("Scan")').click();
+    await scanner.locator('select').selectOption({ label: networkName });
+    await scanner.locator('button:has-text("Start Scan")').click();
 
     await page.evaluate(() => window.gameContext.setSpecificTimeSpeed(100));
     if (expectedHost) {

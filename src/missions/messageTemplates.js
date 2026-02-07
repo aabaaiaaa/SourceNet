@@ -456,7 +456,69 @@ Keep in mind that YOUR activity is being logged too - network administrators can
 
 Check the Portal - Network Adapters (hardware), Log Viewer and Data Recovery Tool (software) are now available for purchase.
 
-Get your hardware upgraded and the new tools installed. I'll send details on the new mission once you're ready.
+Once you have BOTH the Log Viewer AND the Data Recovery Tool installed, I'll reach out with details on investigative work that requires these tools.
+
+- {managerName}`,
+  },
+
+  // ===== INVESTIGATION MISSION TEMPLATES =====
+
+  // Sent after data-detective mission is completed successfully
+  'investigation-intro-success': {
+    from: 'SourceNet Manager',
+    fromId: 'SNET-MGR-{random}',
+    fromName: 'SourceNet Manager {managerName}',
+    subject: 'Excellent Work - Investigation Missions Unlocked',
+    body: `{username},
+
+Outstanding work on the Westbrook Library case. You've proven you can handle investigative work - using the logs to track down the culprit and recovering those deleted files was exactly what I needed to see.
+
+I'm now opening up investigation missions for you. These contracts require the skills you just demonstrated:
+- Analyzing system logs to identify suspicious activity
+- Recovering deleted files that clients need restored
+- Secure deletion when sensitive data needs to be permanently removed
+
+The pay is better than basic file work, but the stakes are higher too. Clients expect results, and some of these cases are time-sensitive.
+
+Check the Mission Board - you'll start seeing investigation contracts mixed in with the regular work.
+
+Keep it up.
+
+- {managerName}`,
+  },
+
+  // Sent when data-detective mission fails (retry available)
+  'investigation-failure-retry': {
+    from: 'SourceNet Manager',
+    fromId: 'SNET-MGR-{random}',
+    fromName: 'SourceNet Manager {managerName}',
+    subject: 'Mission Failed - Another Chance',
+    body: `{username},
+
+That didn't go well. The Westbrook Library needed those files recovered intact, not permanently destroyed.
+
+Look, I get it - the Data Recovery Tool's secure delete function is powerful, but you need to be careful when to use it. Secure deletion is for when clients WANT data gone forever, not for files they're desperately trying to get back.
+
+I've talked to the client. They're not happy, but they've agreed to let you try again. The library has restored their systems from backup, so you'll have another shot at this.
+
+The mission will be available again shortly. Don't make the same mistake twice.
+
+- {managerName}`,
+  },
+
+  // Placeholder message for decryption tools tease (triggered at +10k credits)
+  'decryption-tease': {
+    from: 'SourceNet Manager',
+    fromId: 'SNET-MGR-{random}',
+    fromName: 'SourceNet Manager {managerName}',
+    subject: 'New Tools Coming Soon',
+    body: `{username},
+
+You've been building up a nice reserve of credits. Good thinking - you'll need them.
+
+I'm working on getting you access to some more advanced tools. There's encrypted data out there that clients need accessed, and the software to handle it isn't cheap.
+
+Keep saving. When you've got enough, I'll unlock the next tier of equipment.
 
 - {managerName}`,
   },

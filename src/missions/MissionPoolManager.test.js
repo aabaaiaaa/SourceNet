@@ -100,10 +100,9 @@ vi.mock('./MissionGenerator', () => ({
     })),
     getMissionTypesForPlayer: vi.fn((unlockedSoftware = []) => {
         const types = ['repair', 'backup', 'transfer', 'restore', 'repair-backup'];
-        // Check for investigation tools
-        const hasInvestigationTools = unlockedSoftware.includes('investigation-tooling') ||
-            (unlockedSoftware.includes('log-viewer') && unlockedSoftware.includes('data-recovery-tool'));
-        if (hasInvestigationTools) {
+        // Check for investigation-missions feature (unlocked by completing data-detective story mission)
+        const hasInvestigationMissions = unlockedSoftware.includes('investigation-missions');
+        if (hasInvestigationMissions) {
             types.push('investigation-repair', 'investigation-recovery', 'secure-deletion');
         }
         return types;
@@ -142,7 +141,6 @@ import {
     poolConfig,
 } from './MissionPoolManager';
 
-import { generateMission } from './MissionGenerator';
 import { canAccessClientType } from '../systems/ReputationSystem';
 
 // ============================================================================
@@ -290,7 +288,7 @@ describe('MissionPoolManager', () => {
 
         it('should maintain minimum accessible missions', () => {
             // Mock to simulate some inaccessible missions
-            canAccessClientType.mockImplementation((clientType, rep) => {
+            canAccessClientType.mockImplementation((clientType, _rep) => {
                 return clientType !== 'bank-national';
             });
 
@@ -611,7 +609,7 @@ describe('MissionPoolManager', () => {
         });
 
         it('should count accessible vs locked missions', () => {
-            canAccessClientType.mockImplementation((clientType, rep) => {
+            canAccessClientType.mockImplementation((clientType, _rep) => {
                 return clientType !== 'bank-national';
             });
 
@@ -826,11 +824,11 @@ describe('MissionPoolManager', () => {
 
         it('should potentially generate an arc (20% chance)', () => {
             // Run multiple times to test arc generation path
-            let arcGenerated = false;
+            let _arcGenerated = false;
             for (let i = 0; i < 50; i++) {
                 const result = generatePoolMission(1, mockCurrentTime, new Set(), false);
                 if (result && result.arcId) {
-                    arcGenerated = true;
+                    _arcGenerated = true;
                     expect(result.missions).toBeDefined();
                     expect(result.missions.length).toBeGreaterThan(0);
                     break;
@@ -838,6 +836,114 @@ describe('MissionPoolManager', () => {
             }
             // Note: With 20% chance, we should get an arc in 50 tries most of the time
             // but this test won't fail if we don't - it's probabilistic
+        });
+    });
+
+    // ========================================================================
+    // Investigation Mission Guarantee
+    // ========================================================================
+
+    describe('Investigation Mission Guarantee', () => {
+        // The 'investigation-missions' feature is unlocked by completing the data-detective story mission
+        const investigationTools = ['investigation-missions'];
+
+        it('should skip arc generation when guaranteeInvestigation is true', () => {
+            // When guaranteeInvestigation is true, arc generation should be bypassed
+            // We can test this by running many iterations and verifying no arcs are returned
+            // when the flag is set
+            for (let i = 0; i < 20; i++) {
+                const result = generatePoolMission(1, mockCurrentTime, new Set(), false, {
+                    unlockedSoftware: investigationTools,
+                    guaranteeInvestigation: true
+                });
+
+                // Should never return an arc when guaranteeInvestigation is true
+                expect(result.arcId).toBeUndefined();
+                expect(result.missions).toBeUndefined();
+            }
+        });
+
+        it('should always include investigation mission in initializePool when tools unlocked', () => {
+            const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
+
+            // Run multiple times to ensure the guarantee works consistently
+            for (let i = 0; i < 10; i++) {
+                const pool = initializePool(1, mockCurrentTime, { unlockedSoftware: investigationTools });
+
+                const hasInvestigation = pool.missions.some(m =>
+                    investigationTypes.includes(m.missionType)
+                );
+
+                expect(hasInvestigation).toBe(true);
+            }
+        });
+
+        it('should always include investigation mission in refreshPool when tools unlocked and none exist', () => {
+            const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
+
+            // Start with a pool that has no investigation missions
+            const poolState = createMockPoolState({
+                missions: [
+                    createMockMission({ missionType: 'repair' }),
+                    createMockMission({ missionType: 'backup', clientId: 'client-2' }),
+                ],
+                activeClientIds: ['client-1', 'client-2'],
+            });
+
+            // Run multiple times to ensure the guarantee works consistently
+            for (let i = 0; i < 10; i++) {
+                const refreshed = refreshPool(poolState, 1, mockCurrentTime, null, {
+                    unlockedSoftware: investigationTools
+                });
+
+                const hasInvestigation = refreshed.missions.some(m =>
+                    investigationTypes.includes(m.missionType)
+                );
+
+                expect(hasInvestigation).toBe(true);
+            }
+        });
+
+        it('should not require investigation mission when tools not unlocked', () => {
+            const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
+
+            // Without investigation tools, pool should work normally
+            const pool = initializePool(1, mockCurrentTime, { unlockedSoftware: [] });
+
+            // No investigation missions should be present (since tools aren't unlocked)
+            const hasInvestigation = pool.missions.some(m =>
+                investigationTypes.includes(m.missionType)
+            );
+
+            expect(hasInvestigation).toBe(false);
+        });
+
+        it('should add investigation mission even when pool is at max capacity', () => {
+            const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
+
+            // Create a full pool (6 missions - max for early game) with no investigation missions
+            const poolState = createMockPoolState({
+                missions: [
+                    createMockMission({ missionType: 'repair', clientId: 'client-1' }),
+                    createMockMission({ missionType: 'backup', clientId: 'client-2' }),
+                    createMockMission({ missionType: 'transfer', clientId: 'client-3' }),
+                    createMockMission({ missionType: 'restore', clientId: 'client-4' }),
+                    createMockMission({ missionType: 'repair', clientId: 'client-5' }),
+                    createMockMission({ missionType: 'backup', clientId: 'client-6' }),
+                ],
+                activeClientIds: ['client-1', 'client-2', 'client-3', 'client-4', 'client-5', 'client-6'],
+            });
+
+            const refreshed = refreshPool(poolState, 1, mockCurrentTime, null, {
+                unlockedSoftware: investigationTools
+            });
+
+            const hasInvestigation = refreshed.missions.some(m =>
+                investigationTypes.includes(m.missionType)
+            );
+
+            // Should still add investigation mission due to guarantee
+            expect(hasInvestigation).toBe(true);
         });
     });
 

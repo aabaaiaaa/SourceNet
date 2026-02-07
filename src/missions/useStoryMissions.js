@@ -17,6 +17,7 @@ import triggerEventBus from '../core/triggerEventBus';
 import messageTemplates from './messageTemplates';
 import { scheduleGameTimeCallback, clearGameTimeCallback } from '../core/gameTimeScheduler';
 import { VERIFICATION_DELAY_MS } from '../constants/gameConstants';
+import { hasOptionalObjectives } from './ObjectiveTracker';
 
 // Module-level state that persists across component remounts (including React Strict Mode)
 let eventsSubscribed = false;
@@ -279,7 +280,20 @@ export const useStoryMissions = (gameState, actions) => {
     );
     const allOtherComplete = otherObjectives.every(obj => obj.status === 'complete');
 
-    if (!allOtherComplete) {
+    // Check if all required objectives are complete (excludes optional ones)
+    const requiredObjectives = otherObjectives.filter(obj => obj.required !== false);
+    const allRequiredComplete = requiredObjectives.every(obj => obj.status === 'complete');
+
+    // If not all required objectives complete, can't verify
+    if (!allRequiredComplete) {
+      return;
+    }
+
+    // If there are optional objectives and not all objectives complete,
+    // don't auto-verify - player must use submit button
+    const missionHasOptionalObjectives = hasOptionalObjectives(otherObjectives);
+    if (missionHasOptionalObjectives && !allOtherComplete) {
+      console.log('[VERIFY] Mission has incomplete optional objectives, waiting for manual submit');
       return;
     }
 

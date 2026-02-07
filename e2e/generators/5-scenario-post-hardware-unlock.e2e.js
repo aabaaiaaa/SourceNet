@@ -9,12 +9,17 @@ import * as fs from 'fs';
  * with the new tools purchased and network adapter installed:
  * - Tutorial Part 1 & 2 completed
  * - "Better" message read
- * - Hardware unlock message received and read (unlocks network-adapters AND investigation-tooling)
+ * - Hardware unlock message received and read (unlocks network-adapters)
  * - Credits >= 3000 (enough to buy everything)
  * - Network adapter purchased and installed (via reboot)
- * - Log Viewer purchased and installed
+ * - Log Viewer and Data Recovery Tool purchased and installed
+ * - "Investigative Work Available" message received (triggered by having both tools)
  *
- * Use Case: Testing features that require the new hardware and investigation tools
+ * Note: Procedural investigation missions are NOT yet unlocked - they require
+ * completing the data-detective story mission first.
+ *
+ * Use Case: Testing features that require the new hardware and investigation tools,
+ * and testing the data-detective story mission flow.
  */
 
 test.setTimeout(300000);
@@ -208,41 +213,44 @@ test.describe('Scenario Generator', () => {
         await page.waitForFunction(() => window.gameContext?.setSpecificTimeSpeed, { timeout: 10000 });
 
         // ========================================
-        // STEP 7: Verify investigation missions are generated
+        // STEP 7: Wait for and verify "Investigative Work Available" message
         // ========================================
-        console.log('Waiting for investigation missions to be generated...');
+        console.log('Waiting for "Investigative Work Available" message...');
         await setSpeed(100);
 
-        const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
-        let hasInvestigationMission = false;
-
+        let hasInvestigativeMessage = false;
         for (let attempt = 0; attempt < 30; attempt++) {
             await page.waitForTimeout(200); // 20s game time per iteration
-            const pool = await page.evaluate(() => window.gameContext.missionPool);
-            hasInvestigationMission = pool?.some(m => investigationTypes.includes(m.missionType)) || false;
-            if (hasInvestigationMission) {
-                console.log(`✅ Investigation mission found after ${attempt + 1} attempts`);
+            const messages = await page.evaluate(() => window.gameContext.messages);
+            hasInvestigativeMessage = messages?.some(m =>
+                m.subject?.includes('Investigative Work') || m.id === 'msg-investigative-jobs'
+            ) || false;
+            if (hasInvestigativeMessage) {
+                console.log(`✅ Investigative Work message found after ${attempt + 1} attempts`);
                 break;
             }
         }
 
         await setSpeed(1);
 
-        if (!hasInvestigationMission) {
-            const pool = await page.evaluate(() => window.gameContext.missionPool);
-            console.log('⚠️ Mission pool contents:', pool?.map(m => m.missionType));
-            throw new Error('No investigation missions generated - fixture would be invalid');
+        if (!hasInvestigativeMessage) {
+            const messages = await page.evaluate(() => window.gameContext.messages?.map(m => m.subject));
+            console.log('⚠️ Message subjects:', messages);
+            throw new Error('Investigative Work Available message not received - fixture would be invalid');
         }
 
-        // Verify mission pool state
-        const poolState = await page.evaluate(() => ({
+        // Verify state - note: procedural investigation missions are NOT yet unlocked
+        // They require completing the data-detective story mission first
+        const gameState = await page.evaluate(() => ({
             poolSize: window.gameContext.missionPool?.length,
             missionTypes: window.gameContext.missionPool?.map(m => m.missionType),
-            unlockedFeatures: window.gameContext.unlockedFeatures
+            unlockedFeatures: window.gameContext.unlockedFeatures,
+            installedSoftware: window.gameContext.installedSoftware
         }));
-        console.log(`✅ Pool size: ${poolState.poolSize}`);
-        console.log(`✅ Mission types: ${poolState.missionTypes?.join(', ')}`);
-        console.log(`✅ Unlocked features: ${poolState.unlockedFeatures?.join(', ')}`);
+        console.log(`✅ Pool size: ${gameState.poolSize}`);
+        console.log(`✅ Mission types: ${gameState.missionTypes?.join(', ')}`);
+        console.log(`✅ Unlocked features: ${gameState.unlockedFeatures?.join(', ')}`);
+        console.log(`✅ Installed software: ${gameState.installedSoftware?.join(', ')}`);
 
         // ========================================
         // STEP 8: Save the game state
@@ -282,8 +290,8 @@ test.describe('Scenario Generator', () => {
         // Verify key state properties
         console.log('\n=== Fixture State Summary ===');
         console.log(`Credits: ${saveData.bankAccounts?.[0]?.balance || 0}`);
-        console.log(`Unlocks: ${JSON.stringify(saveData.unlocks || [])}`);
-        console.log(`Installed Software: ${JSON.stringify(saveData.installedSoftware || [])}`);
+        console.log(`Unlocked Features: ${JSON.stringify(saveData.unlockedFeatures || [])}`);
+        console.log(`Installed Software: ${JSON.stringify(saveData.software || [])}`);
         console.log(`Hardware: ${JSON.stringify(saveData.hardware || {})}`);
         console.log(`Messages count: ${saveData.messages?.length || 0}`);
         console.log('=============================\n');

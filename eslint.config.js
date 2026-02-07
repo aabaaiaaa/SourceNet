@@ -5,7 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'playwright-report']),
   {
     files: ['**/*.{js,jsx}'],
     extends: [
@@ -39,6 +39,8 @@ export default defineConfig([
       'react-hooks/set-state-in-effect': 'off',
       'react-hooks/exhaustive-deps': 'off',
       'react-hooks/preserve-manual-memoization': 'off',
+      'react-hooks/immutability': 'off',
+      'react-hooks/refs': 'off',
       'react-refresh/only-export-components': ['warn', { allowExportNames: ['GameContext'] }],
     },
   },

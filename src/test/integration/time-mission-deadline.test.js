@@ -189,7 +189,7 @@ describe('Time and Mission Deadline Integration', () => {
             pool.missions.forEach(mission => {
                 const expiresAt = new Date(mission.expiresAt);
                 // Expiration should be at least 15 minutes from time2
-                const minExpiration = new Date(time2.getTime() + 15 * 60 * 1000);
+                const _minExpiration = new Date(time2.getTime() + 15 * 60 * 1000);
                 // Allow for existing missions that haven't expired yet
                 expect(expiresAt.getTime()).toBeGreaterThanOrEqual(time2.getTime());
             });

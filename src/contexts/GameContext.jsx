@@ -170,6 +170,10 @@ export const GameProvider = ({ children }) => {
   const [pendingHardwareUpgrades, setPendingHardwareUpgrades] = useState({}); // Hardware queued for install on reboot
   const [lastAppliedHardware, setLastAppliedHardware] = useState([]); // Hardware applied in last reboot (for boot message)
 
+  // ===== FUTURE CONTENT TEASE SYSTEM =====
+  const [creditThresholdForDecryption, setCreditThresholdForDecryption] = useState(null); // Credit threshold for decryption tease message
+  const [decryptionMessageSent, setDecryptionMessageSent] = useState(false); // Track if decryption tease message was sent
+
   // ===== BANKING HELPERS =====
   // Helper function to update bank balance and emit creditsChanged event
   // This ensures consistent event emission across all balance-changing operations
@@ -988,6 +992,40 @@ export const GameProvider = ({ children }) => {
     return () => unsubscribe();
   }, [betterMessageRead, hardwareUnlockMessageSent, username, managerName, timeSpeed, addMessage]);
 
+  // Decryption tease message trigger: when credits reach the threshold set after completing data-detective mission
+  useEffect(() => {
+    // Skip if no threshold set or message already sent
+    if (creditThresholdForDecryption === null || decryptionMessageSent) return;
+
+    const handleCreditsChanged = (data) => {
+      const { newBalance } = data;
+
+      // Trigger when player reaches the threshold
+      if (newBalance >= creditThresholdForDecryption) {
+        console.log('💰 Decryption tease trigger met (credits:', newBalance, '>= threshold:', creditThresholdForDecryption, ')');
+
+        // Mark as sent to prevent duplicate
+        setDecryptionMessageSent(true);
+
+        // Schedule the decryption tease message with a small delay
+        scheduleGameTimeCallback(() => {
+          const message = createMessageFromTemplate('decryption-tease', {
+            username,
+            managerName,
+          });
+
+          if (message) {
+            console.log('📧 Sending "decryption-tease" message');
+            addMessage(message);
+          }
+        }, 5000, timeSpeed);
+      }
+    };
+
+    const unsubscribe = triggerEventBus.on('creditsChanged', handleCreditsChanged);
+    return () => unsubscribe();
+  }, [creditThresholdForDecryption, decryptionMessageSent, username, managerName, timeSpeed, addMessage]);
+
   // Add discovered devices from network scan
   const addDiscoveredDevices = useCallback((networkId, ips) => {
     setDiscoveredDevices((prev) => {
@@ -1425,9 +1463,16 @@ export const GameProvider = ({ children }) => {
             const device = devicesByIp.get(fs.ip);
             device.fileSystemIds.push(fs.id);
 
-            // Merge logs from all file systems
+            // Merge logs from all file systems, converting relative timestamps to absolute
             if (fs.logs && Array.isArray(fs.logs)) {
-              device.logs.push(...fs.logs);
+              const processedLogs = fs.logs.map((log, index) => ({
+                ...log,
+                id: `mission-log-${fs.id}-${index}`,
+                timestamp: typeof log.timestamp === 'number'
+                  ? new Date(currentTime.getTime() + log.timestamp * 1000).toISOString()
+                  : log.timestamp,
+              }));
+              device.logs.push(...processedLogs);
             }
           });
 
@@ -1490,6 +1535,77 @@ export const GameProvider = ({ children }) => {
       addMessage(briefingWithTimestamp);
     }
   }, [addMessage, currentTime, username, managerName]);
+
+  // Dismiss a procedural mission (removes from pool, frees client, generates replacement)
+  const dismissMission = useCallback((mission) => {
+    // Only allow dismissing procedural missions
+    if (!mission.isProcedurallyGenerated) {
+      console.log('⚠️ Cannot dismiss non-procedural mission:', mission.missionId);
+      return;
+    }
+
+    console.log('🗑️ Dismissing mission:', mission.missionId, mission.title);
+
+    const currentTimeMs = currentTime.getTime();
+    const currentPoolConfig = getPoolConfigForProgression(unlockedFeatures);
+
+    // Remove mission from pool
+    setMissionPool(prev => prev.filter(m => m.missionId !== mission.missionId));
+
+    // Free the client slot
+    setActiveClientIds(prev => prev.filter(id => id !== mission.clientId));
+
+    // If this is an arc mission, remove the entire arc from pending
+    if (mission.arcId) {
+      console.log('🗑️ Removing arc from pending:', mission.arcId);
+      setPendingChainMissions(prev => {
+        const newPending = { ...prev };
+        delete newPending[mission.arcId];
+        return newPending;
+      });
+    }
+
+    // Generate a replacement mission with visibility delay
+    const currentActiveClients = new Set(
+      activeClientIds.filter(id => id !== mission.clientId)
+    );
+
+    const result = generatePoolMission(reputation, currentTime, currentActiveClients, false, { unlockedSoftware: unlockedFeatures });
+
+    if (result) {
+      const visibleAt = new Date(currentTimeMs + currentPoolConfig.regenerationDelayMs).toISOString();
+      let newMission;
+
+      if (result.arcId) {
+        // Arc - add first mission with expiration and visibleAt, store rest in pending
+        newMission = {
+          ...addExpirationToMission(result.missions[0], currentTime),
+          visibleAt,
+        };
+        setPendingChainMissions(prev => ({ ...prev, [result.arcId]: result.missions.slice(1) }));
+      } else {
+        // Single mission - add expiration and visibleAt
+        newMission = {
+          ...addExpirationToMission(result, currentTime),
+          visibleAt,
+        };
+      }
+
+      console.log(`🔄 Generated replacement mission: "${newMission.title}" - visible at ${visibleAt}`);
+      setMissionPool(prev => [...prev, newMission]);
+      setActiveClientIds(prev => [...prev, newMission.clientId]);
+    } else {
+      console.log('⚠️ Failed to generate replacement mission for dismissed mission');
+    }
+
+    // Emit event for tracking/debugging
+    triggerEventBus.emit('missionDismissed', {
+      missionId: mission.missionId,
+      title: mission.title,
+      clientId: mission.clientId,
+      arcId: mission.arcId,
+    });
+  }, [currentTime, reputation, unlockedFeatures, activeClientIds]);
 
   // Complete mission objective
   // isPreCompleted: true if this objective was completed before becoming the "current" objective
@@ -1689,6 +1805,42 @@ export const GameProvider = ({ children }) => {
     }
   }, [activeMission, currentTime, bankAccounts, timeSpeed, username, addMessage]);
 
+  // Submit mission for completion manually (used when optional objectives remain)
+  // This triggers the verification process as if all objectives were complete
+  const submitMissionForCompletion = useCallback(() => {
+    if (!activeMission) {
+      console.log('⚠️ submitMissionForCompletion: No active mission');
+      return;
+    }
+
+    // Check that all required objectives are complete
+    const objectives = activeMission.objectives || [];
+    const requiredObjectives = objectives.filter(obj => obj.required !== false && obj.id !== 'obj-verify');
+    const allRequiredComplete = requiredObjectives.every(obj => obj.status === 'complete');
+
+    if (!allRequiredComplete) {
+      console.log('⚠️ submitMissionForCompletion: Not all required objectives complete');
+      return;
+    }
+
+    console.log('✅ submitMissionForCompletion: Submitting mission with optional objectives incomplete');
+
+    // Mark any incomplete optional objectives as skipped (not failed)
+    const optionalObjectives = objectives.filter(obj => obj.required === false && obj.status !== 'complete');
+    optionalObjectives.forEach(obj => {
+      console.log(`  ⏭️ Skipping optional objective: ${obj.description}`);
+    });
+
+    // Complete the verification objective to trigger mission completion
+    completeMissionObjective('obj-verify');
+
+    // Emit event for tracking
+    triggerEventBus.emit('missionManuallySubmitted', {
+      missionId: activeMission.missionId,
+      skippedOptionalObjectives: optionalObjectives.map(obj => obj.id),
+    });
+  }, [activeMission, completeMissionObjective]);
+
   // Keep completeMissionRef updated
   useEffect(() => {
     completeMissionRef.current = completeMission;
@@ -1840,6 +1992,90 @@ export const GameProvider = ({ children }) => {
     console.log(`  💰 Penalty: ${penaltyCredits} credits`);
     console.log(`  📊 Reputation change: ${reputationChange}`);
   }, [activeMission, currentTime, bankAccounts, completedMissions, username, managerName, addMessage]);
+
+  // Unlock investigation missions when data-detective mission is completed successfully
+  useEffect(() => {
+    const handleMissionComplete = (data) => {
+      const { missionId, status } = data;
+
+      // Check if this is the data-detective mission completing successfully
+      if (missionId === 'data-detective' && status === 'success') {
+        console.log('✅ Data Detective mission completed - unlocking investigation missions');
+
+        // Add 'investigation-missions' to unlocked features
+        setUnlockedFeatures(prev => {
+          if (prev.includes('investigation-missions')) return prev;
+          return [...prev, 'investigation-missions'];
+        });
+
+        // Set the credit threshold for decryption tease message
+        // Threshold = current balance + 10000
+        const currentBalance = bankAccounts.reduce((sum, acc) => sum + acc.balance, 0);
+        const threshold = currentBalance + 10000;
+        console.log(`💰 Setting decryption message threshold to ${threshold} credits (current: ${currentBalance} + 10000)`);
+        setCreditThresholdForDecryption(threshold);
+
+        // Force mission pool refresh to include investigation missions
+        // This is done by triggering a refresh check on the next pool tick
+        setMissionPool(prev => {
+          console.log('🔄 Triggering mission pool refresh for investigation missions');
+          return [...prev]; // Trigger re-render which will check shouldRefreshPool
+        });
+      }
+    };
+
+    const unsubscribe = triggerEventBus.on('missionComplete', handleMissionComplete);
+    return () => unsubscribe();
+  }, [bankAccounts]);
+
+  // Handle retryable mission failures - schedule mission to reappear after delay
+  useEffect(() => {
+    const handleMissionFailureRetry = (data) => {
+      const { missionId, status } = data;
+
+      // Only handle failures
+      if (status !== 'failed') return;
+
+      // Find the mission definition from StoryMissionManager
+      const missionDef = storyMissionManager.getMission(missionId);
+      if (!missionDef) return;
+
+      // Check if mission is retryable
+      const failureConsequences = missionDef.consequences?.failure;
+      if (!failureConsequences?.retryable) return;
+
+      const retryDelay = failureConsequences.retryDelay || 60000; // Default 1 minute
+
+      console.log(`🔄 Mission ${missionId} is retryable - scheduling retry in ${retryDelay}ms game time`);
+
+      // Reset network state for retry
+      if (missionDef.networks) {
+        missionDef.networks.forEach(net => {
+          networkRegistry.resetNetworkForRetry(net.networkId, net);
+        });
+      }
+
+      // Schedule mission to reappear in available missions
+      scheduleGameTimeCallback(() => {
+        console.log(`🔄 Re-adding retryable mission ${missionId} to available missions`);
+
+        // Re-add to available missions
+        setAvailableMissions(prev => {
+          // Check if already in list (shouldn't be, but guard against duplicates)
+          if (prev.some(m => m.missionId === missionId)) {
+            return prev;
+          }
+          return [...prev, missionDef];
+        });
+
+        // Emit event for tracking
+        triggerEventBus.emit('missionRetryAvailable', { missionId });
+      }, retryDelay, timeSpeed);
+    };
+
+    const unsubscribe = triggerEventBus.on('missionComplete', handleMissionFailureRetry);
+    return () => unsubscribe();
+  }, [timeSpeed]);
 
   // Helper to process the banking message queue (sends next message with 5s delay)
   const processBankingMessageQueue = useCallback(() => {
@@ -2421,6 +2657,9 @@ export const GameProvider = ({ children }) => {
       hardwareUnlockMessageSent,
       unlockedFeatures,
       pendingHardwareUpgrades,
+      // Future content tease system
+      creditThresholdForDecryption,
+      decryptionMessageSent,
       // Global Network System
       networkRegistry: networkRegistry.getSnapshot(),
     };
@@ -2431,7 +2670,7 @@ export const GameProvider = ({ children }) => {
     activeConnections, lastScanResults, discoveredDevices, fileManagerConnections, lastFileOperation,
     downloadQueue, transactions, licensedSoftware, bankruptcyCountdown, lastInterestTime, bankingMessagesSent, reputationMessagesSent,
     proceduralMissionsEnabled, missionPool, pendingChainMissions, activeClientIds, clientStandings, extensionOffers, localSSDFiles,
-    betterMessageRead, hardwareUnlockMessageSent, unlockedFeatures, pendingHardwareUpgrades]);
+    betterMessageRead, hardwareUnlockMessageSent, unlockedFeatures, pendingHardwareUpgrades, creditThresholdForDecryption, decryptionMessageSent]);
 
   // Reboot system - also applies any pending hardware upgrades
   const rebootSystem = useCallback(() => {
@@ -2521,6 +2760,9 @@ export const GameProvider = ({ children }) => {
     setUnlockedFeatures([]);
     setPendingHardwareUpgrades({});
     setLastAppliedHardware([]);
+    // Reset future content tease system
+    setCreditThresholdForDecryption(null);
+    setDecryptionMessageSent(false);
     // Reset global network registry
     networkRegistry.clear();
 
@@ -2624,6 +2866,10 @@ export const GameProvider = ({ children }) => {
     setUnlockedFeatures(gameState.unlockedFeatures ?? []);
     setPendingHardwareUpgrades(gameState.pendingHardwareUpgrades ?? {});
     setLastAppliedHardware([]); // Don't restore - only set during reboot
+
+    // Restore future content tease system
+    setCreditThresholdForDecryption(gameState.creditThresholdForDecryption ?? null);
+    setDecryptionMessageSent(gameState.decryptionMessageSent ?? false);
 
     // Restore global network registry
     if (gameState.networkRegistry) {
@@ -2820,8 +3066,10 @@ export const GameProvider = ({ children }) => {
     activateLicense,
     getTotalCredits,
     acceptMission,
+    dismissMission,
     completeMissionObjective,
     completeMission,
+    submitMissionForCompletion,
     openWindow,
     closeWindow,
     minimizeWindow,

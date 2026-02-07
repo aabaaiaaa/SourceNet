@@ -64,13 +64,13 @@ const setupTestState = async (page) => {
                     {
                         id: 'fs-source-1',
                         files: [
-                            { name: 'file_from_source_1.txt', size: '1.0 KB', corrupted: false },
+                            { name: 'file_from_source_1.txt', size: '100.0 MB', corrupted: false },
                         ]
                     },
                     {
                         id: 'fs-source-2',
                         files: [
-                            { name: 'file_from_source_2.txt', size: '1.0 KB', corrupted: false },
+                            { name: 'file_from_source_2.txt', size: '100.0 MB', corrupted: false },
                         ]
                     },
                     {
@@ -185,8 +185,9 @@ const getFileNames = async (fileManagerWindow) => {
  * Wait for file transfer to complete (no more transferring files)
  */
 const waitForTransferComplete = async (fileManagerWindow, timeout = 10000) => {
-    // Wait for any transferring indicators to disappear
-    await expect(fileManagerWindow.locator('.file-item.transferring')).toHaveCount(0, { timeout });
+    // Wait for any operating file indicators to disappear
+    // FileManager uses .file-operating class for files with active operations
+    await expect(fileManagerWindow.locator('.file-item.file-operating')).toHaveCount(0, { timeout });
 };
 
 /**

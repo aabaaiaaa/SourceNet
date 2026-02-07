@@ -13,6 +13,8 @@ import welcomeMessages from './data/welcome-messages.json';
 import missionBoardIntro from './data/mission-board-intro.json';
 import tutorialPart1 from './data/tutorial-part-1.json';
 import tutorialPart2 from './data/tutorial-part-2.json';
+import investigationIntro from './data/investigation-intro.json';
+import dataDetective from './data/data-detective.json';
 
 /**
  * All story event definitions (initial welcome messages)
@@ -20,6 +22,7 @@ import tutorialPart2 from './data/tutorial-part-2.json';
 export const storyEvents = [
   welcomeMessages,
   missionBoardIntro,
+  investigationIntro,
 ];
 
 /**
@@ -31,10 +34,18 @@ export const tutorialMissions = [
 ];
 
 /**
- * All missions combined (tutorial only, procedural replaces post-tutorial)
+ * Story missions (post-tutorial, non-procedural)
+ */
+export const storyMissions = [
+  dataDetective,
+];
+
+/**
+ * All missions combined (tutorial + story missions)
  */
 export const allMissions = [
   ...tutorialMissions,
+  ...storyMissions,
 ];
 
 /**
@@ -79,6 +90,7 @@ export const initializeAllMissions = (storyMissionManager) => {
 export default {
   storyEvents,
   tutorialMissions,
+  storyMissions,
   allMissions,
   getMissionById,
   getMissionsByCategory,

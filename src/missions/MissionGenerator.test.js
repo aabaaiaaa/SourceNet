@@ -868,20 +868,22 @@ describe('MissionGenerator', () => {
             expect(types).not.toContain('secure-deletion');
         });
 
-        it('should unlock investigation missions when investigation-tooling is unlocked', () => {
-            const types = getMissionTypesForPlayer(['investigation-tooling']);
+        it('should unlock investigation missions when investigation-missions is unlocked', () => {
+            // investigation-missions is unlocked by completing the data-detective story mission
+            const types = getMissionTypesForPlayer(['investigation-missions']);
 
             expect(types).toContain('investigation-repair');
             expect(types).toContain('investigation-recovery');
             expect(types).toContain('secure-deletion');
         });
 
-        it('should unlock investigation missions when log-viewer AND data-recovery-tool are unlocked', () => {
+        it('should NOT unlock investigation missions when only log-viewer AND data-recovery-tool are unlocked', () => {
+            // Just having the tools is not enough - must complete data-detective story mission
             const types = getMissionTypesForPlayer(['log-viewer', 'data-recovery-tool']);
 
-            expect(types).toContain('investigation-repair');
-            expect(types).toContain('investigation-recovery');
-            expect(types).toContain('secure-deletion');
+            expect(types).not.toContain('investigation-repair');
+            expect(types).not.toContain('investigation-recovery');
+            expect(types).not.toContain('secure-deletion');
         });
 
         it('should not unlock investigation missions with only log-viewer', () => {

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useGame } from '../../contexts/useGame';
 import triggerEventBus from '../../core/triggerEventBus';
 import TopBar from './TopBar';
@@ -105,7 +105,7 @@ const Desktop = () => {
 
   // Subscribe to scripted event completion to restore control
   useEffect(() => {
-    const handleScriptedEventComplete = (data) => {
+    const handleScriptedEventComplete = (_data) => {
       console.log('✅ Scripted event complete - restoring terminal control');
       setIsTerminalLocked(false);
       setIsDeletionActive(false);

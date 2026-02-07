@@ -61,7 +61,7 @@ describe('arcStorylines', () => {
             const validTypes = ['repair', 'backup', 'transfer', 'restore', 'repair-backup'];
 
             arcStorylines.forEach(storyline => {
-                storyline.missionSequence.forEach((step, index) => {
+                storyline.missionSequence.forEach((step, _index) => {
                     expect(validTypes).toContain(step.missionType);
                 });
             });
@@ -69,7 +69,7 @@ describe('arcStorylines', () => {
 
         it('all mission steps should have required properties', () => {
             arcStorylines.forEach(storyline => {
-                storyline.missionSequence.forEach((step, index) => {
+                storyline.missionSequence.forEach((step, _index) => {
                     expect(step.missionType).toBeDefined();
                     expect(step.narrativeTemplate).toBeDefined();
                     expect(typeof step.hasTimed).toBe('boolean');
@@ -84,7 +84,7 @@ describe('arcStorylines', () => {
 
         it('first mission step should not have referralText', () => {
             arcStorylines.forEach(storyline => {
-                const firstStep = storyline.missionSequence[0];
+                const _firstStep = storyline.missionSequence[0];
                 // First step typically doesn't have referral text (it's the initial contact)
                 // This is a soft check - some storylines might have it
             });

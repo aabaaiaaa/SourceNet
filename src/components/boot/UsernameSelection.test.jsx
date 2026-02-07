@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { GameProvider } from '../../contexts/GameContext';
 import UsernameSelection from './UsernameSelection';
 
 // Mock initializePlayer
@@ -13,12 +12,6 @@ vi.mock('../../contexts/useGame', () => ({
     generateUsername: mockGenerateUsername,
   })),
 }));
-
-import { useGame } from '../../contexts/useGame';
-
-const renderWithProvider = (component) => {
-  return render(<GameProvider>{component}</GameProvider>);
-};
 
 const renderComponent = () => {
   return render(<UsernameSelection />);

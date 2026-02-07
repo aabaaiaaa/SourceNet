@@ -527,6 +527,13 @@
   animation: countdown-pulse 0.5s ease-in-out infinite;
 }
 
+.notification-preview .optional-label {
+  color: #888;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-left: 4px;
+}
+
 @keyframes countdown-pulse {
 
   0%,
