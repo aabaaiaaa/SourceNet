@@ -142,8 +142,7 @@ test.describe('Scenario Generator', () => {
         // Click View Logs
         await logViewer.locator('.log-viewer-btn').click();
 
-        // Wait for loading then results
-        await expect(logViewer.locator('.log-viewer-loading')).toBeVisible({ timeout: 5000 });
+        // Wait for results (loading state may be too brief at 100x speed to observe)
         await expect(logViewer.locator('.log-table')).toBeVisible({ timeout: 30000 });
 
         // Wait for obj-investigate to complete (objective tracker processes after 50ms delay)

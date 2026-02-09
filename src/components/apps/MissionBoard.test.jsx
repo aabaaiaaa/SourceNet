@@ -197,4 +197,38 @@ describe('MissionBoard Component', () => {
       expect(document.querySelector('.file-list')).not.toBeInTheDocument();
     });
   });
+
+  describe('submit for completion button', () => {
+    it('should show submit button when all required objectives complete but optional remain (data-detective scenario)', () => {
+      const mission = {
+        missionId: 'data-detective',
+        title: 'The Missing Archives',
+        client: 'Westbrook Public Library',
+        status: 'active',
+        objectives: [
+          { id: 'obj-nar', type: 'narEntryAdded', description: 'Add credentials', status: 'complete' },
+          { id: 'obj-connect', type: 'networkConnection', description: 'Connect to network', status: 'complete' },
+          { id: 'obj-scan', type: 'networkScan', description: 'Scan network', status: 'complete' },
+          { id: 'obj-drt-connect', type: 'fileSystemConnection', description: 'Connect DRT', status: 'complete' },
+          { id: 'obj-drt-scan', type: 'dataRecoveryScan', description: 'Scan for deleted', status: 'complete' },
+          { id: 'obj-recover-files', type: 'fileRecovery', description: 'Recover files', status: 'complete' },
+          { id: 'obj-investigate', type: 'investigation', description: 'View logs', status: 'complete' },
+          { id: 'obj-periodicals-scan', type: 'dataRecoveryScan', description: 'Scan periodicals', status: 'pending', required: false, bonusPayout: 250 },
+          { id: 'obj-periodicals-recover', type: 'fileRecovery', description: 'Recover periodicals', status: 'pending', required: false, bonusPayout: 250 },
+          { id: 'obj-verify', type: 'verification', description: 'Verify mission completion', status: 'pending', autoComplete: false },
+        ],
+      };
+
+      const submitFn = vi.fn();
+      renderWithContext(<MissionBoard />, {
+        activeMission: mission,
+        submitMissionForCompletion: submitFn,
+      });
+
+      fireEvent.click(screen.getByText('Active Mission'));
+
+      expect(screen.getByText('Submit for Completion')).toBeInTheDocument();
+      expect(screen.getByText(/All required objectives complete/)).toBeInTheDocument();
+    });
+  });
 });

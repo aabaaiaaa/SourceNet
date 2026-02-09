@@ -2601,14 +2601,27 @@ function generateInvestigationBriefing(client, investigationType, networks, time
 
     const templates = {
         repair: [
-            `We've detected corruption on one of our file server's volumes. Unfortunately, we're not sure which volume is affected. We need you to investigate and repair the damaged files.`,
-            `Our monitoring systems flagged file integrity issues on a server, but the specific volume wasn't identified. Please use your tools to locate and repair the corrupted data.`,
-            `There's been corruption reported on our main server. The IT team couldn't pinpoint exactly where. We need a specialist to investigate and fix this.`
+            `We've been having trouble with some files on our server — they seem to be corrupted and we can't open them. Our IT team took a look but couldn't figure out which part of the system is affected. We're hoping you can dig into it and get these files working again.`,
+            `Some important files on our server have gone bad. Nobody here can tell exactly where the problem is — we have a few different volumes and the corruption could be on any of them. We just need someone who can track down the issue and fix these files for us.`,
+            `We've got a situation with corrupted files on one of our servers. Honestly, we're not sure which volume they're on — our internal team couldn't narrow it down. Can you take a look and see if you can repair the damage?`
         ],
         recovery: [
-            `Critical files were accidentally deleted from our server. We're not certain which volume they were on. Please investigate and recover the lost data.`,
-            `An employee reported missing files but couldn't remember which volume they were stored on. We need you to locate and restore them.`,
-            `Our backup verification showed missing files on the server, but the exact location is unknown. Please investigate and recover what you can.`
+            `We've lost some critical files from our server and we're in a bit of a panic. We're not entirely sure which volume they were stored on, and our team hasn't been able to find them. We've been told recovery might be possible and we're really hoping that's the case.`,
+            `One of our staff accidentally deleted some important files. The problem is, nobody can remember exactly where on the server they were kept. We need someone who can figure out where these files were and get them back for us.`,
+            `We've discovered that some key files have gone missing from our server. We've checked around but can't figure out which volume they were on. If there's any way to recover them, we'd be incredibly grateful — this data is important to our operations.`
+        ]
+    };
+
+    const subjects = {
+        repair: [
+            `Help Needed - Corrupted Files on Our Server`,
+            `Can't Open Files - Need Repair Help`,
+            `File Corruption Issue - Investigation Needed`
+        ],
+        recovery: [
+            `Urgent - Missing Files Need Recovery`,
+            `Lost Files - Need Help Getting Them Back`,
+            `Deleted Files - Recovery Assistance Needed`
         ]
     };
 
@@ -2616,12 +2629,10 @@ function generateInvestigationBriefing(client, investigationType, networks, time
     body += referralText ? `${referralText}\n\n` : '';
     body += randomPick(templates[investigationType] || templates.repair);
 
-    body += `\n\n⚠️ INVESTIGATION REQUIRED: Use the Log Viewer to examine device activity and identify which volume contains the affected files.`;
-
     if (targetFiles.length > 0) {
-        body += `\n\n📁 Files to ${investigationType === 'repair' ? 'repair' : 'recover'}:`;
+        body += `\n\nThe affected files include:`;
         targetFiles.forEach(file => {
-            body += `\n• ${file}`;
+            body += `\n- ${file}`;
         });
 
         if (totalDataBytes > 0) {
@@ -2633,21 +2644,21 @@ function generateInvestigationBriefing(client, investigationType, networks, time
             } else {
                 sizeStr = `${(totalDataBytes / 1024).toFixed(0)} KB`;
             }
-            body += `\n\nTotal data: ${sizeStr}`;
+            body += `\n\nThat's about ${sizeStr} of data in total.`;
         }
     }
 
     if (timeLimitMinutes) {
-        body += `\n\n⚠️ TIME SENSITIVE: This task must be completed within ${timeLimitMinutes} minutes of acceptance.`;
+        body += `\n\nThis is quite time-sensitive for us — we'd need this resolved within ${timeLimitMinutes} minutes if possible.`;
     }
 
-    body += `\n\nAttached are the network credentials you'll need.`;
+    body += `\n\nOur IT department has set up remote access for you — credentials are attached.`;
 
     if (arcSequence && arcTotal) {
         body += `\n\n[Mission ${arcSequence} of ${arcTotal}]`;
     }
 
-    body += `\n\nSincerely,\n{clientName}`;
+    body += `\n\nBest regards,\n{clientName}`;
 
     const uniqueId = `msg-briefing-investigation-${client.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -2656,7 +2667,7 @@ function generateInvestigationBriefing(client, investigationType, networks, time
         from: client.name,
         fromId: client.id,
         fromName: client.name,
-        subject: `Mission Briefing: ${investigationType === 'repair' ? 'File Repair Investigation' : 'Data Recovery Investigation'}`,
+        subject: randomPick(subjects[investigationType] || subjects.repair),
         body,
         attachments: generateNarAttachments(networks),
         read: false,
@@ -2678,40 +2689,44 @@ function generateSecureDeletionBriefing(client, variant, networks, timeLimitMinu
 
     const templates = {
         compliance: [
-            `Our compliance team has flagged several files that need to be securely removed before our upcoming audit. These files contain sensitive data that should not be stored on this server.`,
-            `We're preparing for a regulatory audit and discovered some files that violate our data retention policies. They need to be permanently and securely deleted.`
+            `We have a regulatory audit coming up and our compliance team has found files on our server that shouldn't be there. These contain sensitive data that violates our retention policies, and we need them completely destroyed — not just deleted, but gone for good so they can't be recovered. Regular deletion isn't enough for our auditors.`,
+            `Our compliance review turned up some files that we're not supposed to be holding onto. With an audit on the horizon, we need these permanently wiped from our systems. Our auditors will verify that the data is unrecoverable, so a standard deletion won't cut it.`
         ],
         piracy: [
-            `Unknown actors have uploaded unauthorized content to our server. We need these files securely removed before we face legal action.`,
-            `Our monitoring detected pirated content on our file server. This needs to be permanently deleted immediately to protect the company.`
+            `Someone has been uploading unauthorized content to our server and we need it gone before we end up with a lawsuit. These files need to be permanently destroyed — we can't risk anyone recovering them later. Our legal team is breathing down our necks on this one.`,
+            `We've discovered pirated material on our file server and we need to act fast. These files need to be wiped completely — just moving them to the trash isn't going to protect us legally. We need them gone for good.`
         ],
         malware: [
-            `Our security team has detected malware on one of our servers. We need these malicious files securely removed to prevent further damage.`,
-            `A virus scan flagged several suspicious files on our server. They need to be securely deleted - regular deletion won't be sufficient.`
+            `Our security team found malicious files on one of our servers and we need them permanently removed. We can't just delete them normally — if someone restored them from the drive, we'd be right back where we started. These need to be wiped so they're completely unrecoverable.`,
+            `We've got malware on our server and it needs to be destroyed, not just deleted. Our concern is that a simple deletion could leave traces that might be restored. We need these files permanently and securely wiped from the system.`
         ]
     };
+
+    const subjects = [
+        `Confidential - Files That Need Permanent Removal`,
+        `Urgent - Secure File Deletion Required`,
+        `Need Files Permanently Wiped From Our Server`
+    ];
 
     let body = 'Dear {username},\n\n';
     body += referralText ? `${referralText}\n\n` : '';
     body += randomPick(templates[variant] || templates.compliance);
 
-    body += `\n\n🔍 Use the Log Viewer to identify the flagged files, then use the Data Recovery Tool's Secure Delete feature to permanently remove them.`;
-
     if (targetFiles.length > 0) {
-        body += `\n\n📁 Expected files to remove: ${targetFiles.length} files`;
+        body += `\n\nWe believe there are ${targetFiles.length} files that need to be dealt with.`;
     }
 
     if (timeLimitMinutes) {
-        body += `\n\n⚠️ URGENT: This task must be completed within ${timeLimitMinutes} minutes of acceptance.`;
+        body += `\n\nThis is urgent — we need this handled within ${timeLimitMinutes} minutes if at all possible.`;
     }
 
-    body += `\n\nAttached are the network credentials you'll need.`;
+    body += `\n\nOur IT department has set up remote access for you — credentials are attached.`;
 
     if (arcSequence && arcTotal) {
         body += `\n\n[Mission ${arcSequence} of ${arcTotal}]`;
     }
 
-    body += `\n\nSincerely,\n{clientName}`;
+    body += `\n\nBest regards,\n{clientName}`;
 
     const uniqueId = `msg-briefing-secure-delete-${client.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -2720,7 +2735,7 @@ function generateSecureDeletionBriefing(client, variant, networks, timeLimitMinu
         from: client.name,
         fromId: client.id,
         fromName: client.name,
-        subject: `Mission Briefing: Secure File Removal Required`,
+        subject: randomPick(subjects),
         body,
         attachments: generateNarAttachments(networks),
         read: false,

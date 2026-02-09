@@ -309,7 +309,7 @@ export const getFileOperationDetails = (objective, cumulativeOperations = {}) =>
  */
 export const areAllObjectivesComplete = (objectives) => {
   if (!objectives || objectives.length === 0) return false;
-  return objectives.every((obj) => obj.status === 'complete');
+  return objectives.every((obj) => obj.status === 'complete' || obj.status === 'skipped');
 };
 
 /**
@@ -333,7 +333,7 @@ export const areAllRequiredObjectivesComplete = (objectives) => {
 export const hasIncompleteOptionalObjectives = (objectives) => {
   if (!objectives || objectives.length === 0) return false;
   const optionalObjectives = objectives.filter(obj => obj.required === false);
-  return optionalObjectives.some((obj) => obj.status !== 'complete');
+  return optionalObjectives.some((obj) => obj.status !== 'complete' && obj.status !== 'skipped');
 };
 
 /**

@@ -8,6 +8,7 @@ import {
   MANAGER_NAMES,
   MULTI_INSTANCE_APPS,
   LOCAL_SSD_NETWORK_ID,
+  VERIFICATION_DELAY_MS,
 } from '../constants/gameConstants';
 import {
   generateMailId,
@@ -127,6 +128,7 @@ export const GameProvider = ({ children }) => {
   const [fileManagerConnections, setFileManagerConnections] = useState([]); // Active File Manager connections
   const [lastFileOperation, setLastFileOperation] = useState(null); // Last file operation completed
   const [missionFileOperations, setMissionFileOperations] = useState({}); // Cumulative file operations for current mission {repair: 5, copy: 3}
+  const [missionSubmitting, setMissionSubmitting] = useState(false); // True while submit-for-completion is in progress
 
   // Purchasing & Installation
   const [downloadQueue, setDownloadQueue] = useState([]); // Items being downloaded/installed
@@ -1416,6 +1418,7 @@ export const GameProvider = ({ children }) => {
 
     setActiveMission({
       ...mission,
+      status: 'active',
       startTime: currentTime.toISOString(),
       acceptedTime: currentTime.toISOString(),
       deadlineTime,
@@ -1686,6 +1689,7 @@ export const GameProvider = ({ children }) => {
 
     // Clear active mission
     setActiveMission(null);
+    setMissionSubmitting(false);
 
     // Emit missionComplete event for mission system
     triggerEventBus.emit('missionComplete', {
@@ -1808,8 +1812,8 @@ export const GameProvider = ({ children }) => {
   // Submit mission for completion manually (used when optional objectives remain)
   // This triggers the verification process as if all objectives were complete
   const submitMissionForCompletion = useCallback(() => {
-    if (!activeMission) {
-      console.log('⚠️ submitMissionForCompletion: No active mission');
+    if (!activeMission || missionSubmitting) {
+      console.log('⚠️ submitMissionForCompletion: No active mission or already submitting');
       return;
     }
 
@@ -1824,22 +1828,44 @@ export const GameProvider = ({ children }) => {
     }
 
     console.log('✅ submitMissionForCompletion: Submitting mission with optional objectives incomplete');
+    setMissionSubmitting(true);
 
-    // Mark any incomplete optional objectives as skipped (not failed)
-    const optionalObjectives = objectives.filter(obj => obj.required === false && obj.status !== 'complete');
-    optionalObjectives.forEach(obj => {
-      console.log(`  ⏭️ Skipping optional objective: ${obj.description}`);
-    });
+    // Mark any incomplete optional objectives as skipped in state
+    const optionalObjectiveIds = objectives
+      .filter(obj => obj.required === false && obj.status !== 'complete')
+      .map(obj => obj.id);
 
-    // Complete the verification objective to trigger mission completion
-    completeMissionObjective('obj-verify');
+    if (optionalObjectiveIds.length > 0) {
+      setActiveMission(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          objectives: prev.objectives.map(obj =>
+            optionalObjectiveIds.includes(obj.id)
+              ? { ...obj, status: 'skipped' }
+              : obj
+          ),
+        };
+      });
+      optionalObjectiveIds.forEach(id => {
+        const obj = objectives.find(o => o.id === id);
+        console.log(`  ⏭️ Skipping optional objective: ${obj?.description}`);
+      });
+    }
+
+    // Delay before completing verification (same delay as auto-verify)
+    // This gives the player visual feedback that submission is processing
+    scheduleGameTimeCallback(() => {
+      completeMissionObjective('obj-verify');
+      setMissionSubmitting(false);
+    }, VERIFICATION_DELAY_MS, timeSpeed);
 
     // Emit event for tracking
     triggerEventBus.emit('missionManuallySubmitted', {
       missionId: activeMission.missionId,
-      skippedOptionalObjectives: optionalObjectives.map(obj => obj.id),
+      skippedOptionalObjectives: optionalObjectiveIds,
     });
-  }, [activeMission, completeMissionObjective]);
+  }, [activeMission, missionSubmitting, completeMissionObjective, timeSpeed]);
 
   // Keep completeMissionRef updated
   useEffect(() => {
@@ -1895,6 +1921,7 @@ export const GameProvider = ({ children }) => {
 
     // Clear active mission
     setActiveMission(null);
+    setMissionSubmitting(false);
 
     // Emit missionComplete event for mission system
     triggerEventBus.emit('missionComplete', {
@@ -2008,13 +2035,6 @@ export const GameProvider = ({ children }) => {
           return [...prev, 'investigation-missions'];
         });
 
-        // Set the credit threshold for decryption tease message
-        // Threshold = current balance + 10000
-        const currentBalance = bankAccounts.reduce((sum, acc) => sum + acc.balance, 0);
-        const threshold = currentBalance + 10000;
-        console.log(`💰 Setting decryption message threshold to ${threshold} credits (current: ${currentBalance} + 10000)`);
-        setCreditThresholdForDecryption(threshold);
-
         // Force mission pool refresh to include investigation missions
         // This is done by triggering a refresh check on the next pool tick
         setMissionPool(prev => {
@@ -2026,7 +2046,25 @@ export const GameProvider = ({ children }) => {
 
     const unsubscribe = triggerEventBus.on('missionComplete', handleMissionComplete);
     return () => unsubscribe();
-  }, [bankAccounts]);
+  }, []);
+
+  // Set decryption tease threshold when player reads the "Investigation Missions Unlocked" message
+  useEffect(() => {
+    if (creditThresholdForDecryption !== null) return; // Already set
+
+    const handleMessageRead = (data) => {
+      const message = messages.find(m => m.id === data.messageId);
+      if (message?.subject?.includes('Investigation Missions Unlocked')) {
+        const currentBalance = bankAccounts.reduce((sum, acc) => sum + acc.balance, 0);
+        const threshold = currentBalance + 10000;
+        console.log(`💰 Setting decryption message threshold to ${threshold} credits (current: ${currentBalance} + 10000)`);
+        setCreditThresholdForDecryption(threshold);
+      }
+    };
+
+    const unsubscribe = triggerEventBus.on('messageRead', handleMessageRead);
+    return () => unsubscribe();
+  }, [messages, bankAccounts, creditThresholdForDecryption]);
 
   // Handle retryable mission failures - schedule mission to reappear after delay
   useEffect(() => {
@@ -2717,6 +2755,7 @@ export const GameProvider = ({ children }) => {
     setReputation(9); // Superb (starting reputation)
     setReputationCountdown(null);
     setActiveMission(null);
+    setMissionSubmitting(false);
     setCompletedMissions([]);
     setAvailableMissions([]);
     setMissionCooldowns({ easy: null, medium: null, hard: null });
@@ -3070,6 +3109,7 @@ export const GameProvider = ({ children }) => {
     completeMissionObjective,
     completeMission,
     submitMissionForCompletion,
+    missionSubmitting,
     openWindow,
     closeWindow,
     minimizeWindow,

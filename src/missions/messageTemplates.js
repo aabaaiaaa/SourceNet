@@ -482,6 +482,8 @@ The pay is better than basic file work, but the stakes are higher too. Clients e
 
 Check the Mission Board - you'll start seeing investigation contracts mixed in with the regular work.
 
+One more thing - I'm looking into getting you access to some advanced decryption tools. They're not cheap though. Keep taking contracts and building up your credits. Once you've earned another 10,000 or so, I should be able to sort something out.
+
 Keep it up.
 
 - {managerName}`,
@@ -511,14 +513,14 @@ The mission will be available again shortly. Don't make the same mistake twice.
     from: 'SourceNet Manager',
     fromId: 'SNET-MGR-{random}',
     fromName: 'SourceNet Manager {managerName}',
-    subject: 'New Tools Coming Soon',
+    subject: 'Decryption Work Available',
     body: `{username},
 
-You've been building up a nice reserve of credits. Good thinking - you'll need them.
+Good news. You've built up enough credits for me to get you access to the decryption tools I mentioned.
 
-I'm working on getting you access to some more advanced tools. There's encrypted data out there that clients need accessed, and the software to handle it isn't cheap.
+There's a growing demand for decryption work - clients with encrypted files they've lost access to, locked-out systems that need cracking, data recovery jobs where the files are encrypted. The pay is solid but the work requires patience and the right software.
 
-Keep saving. When you've got enough, I'll unlock the next tier of equipment.
+I'm sorting out the details now. Expect to hear from me again soon with everything you need to get started.
 
 - {managerName}`,
   },

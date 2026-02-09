@@ -81,6 +81,7 @@ const MissionBoard = () => {
     acceptMission,
     dismissMission,
     submitMissionForCompletion,
+    missionSubmitting,
     missionFileOperations,
     // Procedural mission state
     proceduralMissionsEnabled,
@@ -430,18 +431,22 @@ const MissionBoard = () => {
         )}
 
         {/* Submit button - shown when all required objectives complete but optional remain */}
+        {/* Exclude verification objective from check - it completes when the player submits */}
         {activeMission.status === 'active' &&
-          areAllRequiredObjectivesComplete(activeMission.objectives) &&
+          areAllRequiredObjectivesComplete(activeMission.objectives.filter(obj => obj.type !== 'verification')) &&
           hasIncompleteOptionalObjectives(activeMission.objectives) && (
           <div className="mission-submit-section">
             <p className="submit-info">
-              All required objectives complete. You can submit now or complete optional objectives for bonus rewards.
+              {missionSubmitting
+                ? 'Verifying mission completion...'
+                : 'All required objectives complete. You can submit now or complete optional objectives for bonus rewards.'}
             </p>
             <button
               className="submit-mission-btn"
               onClick={() => submitMissionForCompletion && submitMissionForCompletion()}
+              disabled={missionSubmitting}
             >
-              Submit for Completion
+              {missionSubmitting ? 'Submitting...' : 'Submit for Completion'}
             </button>
           </div>
         )}
