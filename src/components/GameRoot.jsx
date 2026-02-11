@@ -9,6 +9,7 @@ import Rebooting from './boot/Rebooting';
 import SleepOverlay from './ui/SleepOverlay';
 import Desktop from './ui/Desktop';
 import GameOverOverlay from './ui/GameOverOverlay';
+import RansomwareLockScreen from './boot/RansomwareLockScreen';
 
 /**
  * Apply a scenario fixture to the game state
@@ -147,6 +148,17 @@ const GameRoot = () => {
       return (
         <GameOverOverlay
           type="termination"
+          onLoadSave={() => {
+            setGamePhase('login');
+          }}
+          onNewGame={() => {
+            setGamePhase('login');
+          }}
+        />
+      );
+    case 'gameOver-ransomware':
+      return (
+        <RansomwareLockScreen
           onLoadSave={() => {
             setGamePhase('login');
           }}

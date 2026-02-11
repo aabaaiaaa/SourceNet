@@ -52,6 +52,12 @@ export const useStoryMissions = (gameState, actions) => {
       emittedConnectionsRef.current = new Set();
       emittedMissionRef.current = null;
       verificationScheduledForMissionRef.current = null;
+
+      // Re-subscribe scripted event triggers for the active mission (if loaded from save)
+      const activeMission = gameState.activeMission;
+      if (activeMission?.missionId) {
+        storyMissionManager.ensureScriptedEventSubscriptions(activeMission.missionId);
+      }
     }
   }, [gameState.gamePhase]);
 
@@ -318,7 +324,21 @@ export const useStoryMissions = (gameState, actions) => {
 
       verificationTimerRef.current = scheduleGameTimeCallback(() => {
         console.log('[VERIFY] Timer fired for', missionId);
-        if (gameStateRef.current.activeMission?.missionId === missionId) {
+        const currentMission = gameStateRef.current.activeMission;
+        if (currentMission?.missionId === missionId) {
+          // Re-check that all required non-verify objectives are still complete
+          // (extension objectives may have been added after the timer was scheduled)
+          const currentObjectives = currentMission.objectives || [];
+          const requiredNonVerify = currentObjectives.filter(
+            obj => obj.id !== 'obj-verify' && obj.required !== false
+          );
+          const allRequiredDone = requiredNonVerify.every(obj => obj.status === 'complete');
+          if (!allRequiredDone) {
+            console.log('[VERIFY] Not all required objectives complete, aborting verification');
+            verificationTimerRef.current = null;
+            verificationScheduledForMissionRef.current = null;
+            return;
+          }
           completeMissionObjectiveRef.current?.('obj-verify');
         }
         verificationTimerRef.current = null;
@@ -328,6 +348,17 @@ export const useStoryMissions = (gameState, actions) => {
       verificationScheduledForMissionRef.current = missionId;
       console.log('[VERIFY] Scheduled timer for', missionId, 'delay:', VERIFICATION_DELAY_MS, 'speed:', gameState.timeSpeed || 1);
     };
+
+    // Check if this mission has a setMissionStatus: success scripted event
+    // If so, skip auto-verification entirely — the event will complete obj-verify when appropriate
+    const hasSetMissionStatusSuccess = missionDef.scriptedEvents?.some(event =>
+      event.actions?.some(action => action.type === 'setMissionStatus' && action.status === 'success')
+    );
+
+    if (hasSetMissionStatusSuccess) {
+      console.log('[VERIFY] Mission has setMissionStatus:success event, skipping auto-verification for', missionId);
+      return;
+    }
 
     // Check if this mission has scripted events triggered by objective completion
     let hasScriptedEvents = false;
@@ -340,10 +371,24 @@ export const useStoryMissions = (gameState, actions) => {
     // For missions with scripted events, listen for scriptedEventComplete then schedule verification
     if (hasScriptedEvents) {
       const handleScriptedComplete = () => {
-        // Check mission wasn't failed by the scripted event
-        if (gameStateRef.current.activeMission?.missionId === missionId) {
+        // Defer to next macrotask to ensure React has processed any state updates
+        // from the same scripted event (e.g., extension objectives added by addExtensionObjectives)
+        setTimeout(() => {
+          const currentMission = gameStateRef.current.activeMission;
+          if (currentMission?.missionId !== missionId) return;
+
+          // Re-check that all required non-verify objectives are still complete
+          const objectives = currentMission.objectives || [];
+          const requiredNonVerify = objectives.filter(
+            obj => obj.id !== 'obj-verify' && obj.required !== false
+          );
+          if (!requiredNonVerify.every(obj => obj.status === 'complete')) {
+            console.log('[VERIFY] Not all required objectives complete after scripted event, skipping verification');
+            return;
+          }
+
           scheduleVerification();
-        }
+        }, 0);
       };
 
       triggerEventBus.on('scriptedEventComplete', handleScriptedComplete);

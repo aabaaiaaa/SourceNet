@@ -165,6 +165,92 @@ export const checkSecureDeleteObjective = (objective, recoveryOperations = {}) =
 };
 
 /**
+ * Check if file decryption objective is complete
+ * Tracks when player uses Decryption Tool to decrypt specific files
+ * @param {object} objective - Objective definition with targetFiles
+ * @param {object} decryptionOperations - Cumulative decryption operations { decrypted: Set<filename> }
+ * @returns {boolean} Objective complete
+ */
+export const checkFileDecryptionObjective = (objective, decryptionOperations = {}) => {
+  const { targetFiles } = objective;
+  if (!targetFiles || targetFiles.length === 0) return false;
+
+  const decryptedFiles = decryptionOperations.decrypted || new Set();
+  const completedCount = targetFiles.filter(file => decryptedFiles.has(file)).length;
+  return completedCount >= targetFiles.length;
+};
+
+/**
+ * Check if file upload objective is complete
+ * Tracks when player uploads decrypted files back to remote file systems
+ * @param {object} objective - Objective definition with targetFiles and optional destination
+ * @param {object} uploadOperations - Cumulative upload operations { uploaded: Set<filename>, uploadDestinations: Map<filename, ip> }
+ * @returns {boolean} Objective complete
+ */
+export const checkFileUploadObjective = (objective, uploadOperations = {}) => {
+  const { targetFiles, destination } = objective;
+  if (!targetFiles || targetFiles.length === 0) return false;
+
+  if (destination) {
+    const uploadDestinations = uploadOperations.uploadDestinations || new Map();
+    const completedCount = targetFiles.filter(file => uploadDestinations.get(file) === destination).length;
+    return completedCount >= targetFiles.length;
+  }
+
+  const uploadedFiles = uploadOperations.uploaded || new Set();
+  const completedCount = targetFiles.filter(file => uploadedFiles.has(file)).length;
+  return completedCount >= targetFiles.length;
+};
+
+/**
+ * Check if software activation objective is complete
+ * Tracks when player starts a passive software
+ * @param {object} objective - Objective definition with target softwareId
+ * @param {string[]} activePassiveSoftware - Array of active passive software IDs
+ * @returns {boolean} Objective complete
+ */
+export const checkSoftwareActivationObjective = (objective, activePassiveSoftware = []) => {
+  if (!objective.target) return false;
+  return activePassiveSoftware.includes(objective.target);
+};
+
+/**
+ * Get progress for file decryption objective
+ * @param {object} objective - Objective definition with targetFiles
+ * @param {object} decryptionOperations - Cumulative decryption operations
+ * @returns {object|null} Progress info {current, total} or null
+ */
+export const getFileDecryptionProgress = (objective, decryptionOperations = {}) => {
+  const { targetFiles } = objective;
+  if (!targetFiles || targetFiles.length === 0) return null;
+
+  const decryptedFiles = decryptionOperations.decrypted || new Set();
+  const completedCount = targetFiles.filter(file => decryptedFiles.has(file)).length;
+  return { current: completedCount, total: targetFiles.length };
+};
+
+/**
+ * Get progress for file upload objective
+ * @param {object} objective - Objective definition with targetFiles and optional destination
+ * @param {object} uploadOperations - Cumulative upload operations
+ * @returns {object|null} Progress info {current, total} or null
+ */
+export const getFileUploadProgress = (objective, uploadOperations = {}) => {
+  const { targetFiles, destination } = objective;
+  if (!targetFiles || targetFiles.length === 0) return null;
+
+  if (destination) {
+    const uploadDestinations = uploadOperations.uploadDestinations || new Map();
+    const completedCount = targetFiles.filter(file => uploadDestinations.get(file) === destination).length;
+    return { current: completedCount, total: targetFiles.length };
+  }
+
+  const uploadedFiles = uploadOperations.uploaded || new Set();
+  const completedCount = targetFiles.filter(file => uploadedFiles.has(file)).length;
+  return { current: completedCount, total: targetFiles.length };
+};
+
+/**
  * Check if file operation objective is complete
  * @param {object} objective - Objective definition with targetFiles array and optional destination
  * @param {object} operationData - File operation completion data (last operation)
@@ -467,6 +553,24 @@ const isObjectiveComplete = (objective, gameState) => {
         gameState.missionRecoveryOperations || {}
       );
 
+    case 'fileDecryption':
+      return checkFileDecryptionObjective(
+        objective,
+        gameState.missionDecryptionOperations || {}
+      );
+
+    case 'fileUpload':
+      return checkFileUploadObjective(
+        objective,
+        gameState.missionUploadOperations || {}
+      );
+
+    case 'softwareActivation':
+      return checkSoftwareActivationObjective(
+        objective,
+        gameState.activePassiveSoftware || []
+      );
+
     case 'verification':
       // Verification objectives never auto-complete
       return false;
@@ -527,6 +631,9 @@ export const initializeObjectiveTracking = (mission, onObjectiveComplete) => {
     'fileOperationComplete',
     'fileRecoveryComplete',   // Data Recovery Tool restore
     'secureDeleteComplete',   // Data Recovery Tool secure delete
+    'fileDecryptionComplete', // Decryption Tool decrypt
+    'fileUploadComplete',     // Decryption Tool upload
+    'passiveSoftwareStarted', // Passive software activation
   ];
 
   events.forEach((eventType) => {

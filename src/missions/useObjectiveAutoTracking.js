@@ -64,6 +64,15 @@ export const useObjectiveAutoTracking = (
   // Track recovery operations (restore/secure-delete) from Data Recovery Tool
   const missionRecoveryOperationsRef = useRef({ restored: new Set(), secureDeleted: new Set() });
 
+  // Track decryption operations from Decryption Tool
+  const missionDecryptionOperationsRef = useRef({ decrypted: new Set() });
+
+  // Track upload operations from Decryption Tool
+  const missionUploadOperationsRef = useRef({ uploaded: new Set(), uploadDestinations: new Map() });
+
+  // Track active passive software
+  const activePassiveSoftwareRef = useRef([]);
+
   // Keep refs updated with latest values
   useEffect(() => {
     gameStateRef.current = gameState;
@@ -100,6 +109,9 @@ export const useObjectiveAutoTracking = (
       dataRecoveryScans: dataRecoveryScansRef.current,
       viewedDeviceLogs: viewedDeviceLogsRef.current,
       missionRecoveryOperations: missionRecoveryOperationsRef.current,
+      missionDecryptionOperations: missionDecryptionOperationsRef.current,
+      missionUploadOperations: missionUploadOperationsRef.current,
+      activePassiveSoftware: activePassiveSoftwareRef.current,
       ...(lastFileOperationRef.current ? { lastFileOperation: lastFileOperationRef.current } : {}),
       ...(lastScanResultsRef.current ? { lastScanResults: lastScanResultsRef.current } : {}),
     };
@@ -264,6 +276,45 @@ export const useObjectiveAutoTracking = (
           setTimeout(checkAndCompleteObjectives, 50);
         }
       },
+      {
+        event: 'fileDecryptionComplete',
+        handler: (data) => {
+          if (data.fileName) {
+            const current = missionDecryptionOperationsRef.current;
+            const newDecrypted = new Set(current.decrypted);
+            newDecrypted.add(data.fileName);
+            missionDecryptionOperationsRef.current = { ...current, decrypted: newDecrypted };
+          }
+          setTimeout(checkAndCompleteObjectives, 50);
+        }
+      },
+      {
+        event: 'fileUploadComplete',
+        handler: (data) => {
+          if (data.fileName) {
+            const current = missionUploadOperationsRef.current;
+            const newUploaded = new Set(current.uploaded);
+            newUploaded.add(data.fileName);
+            const newDestinations = new Map(current.uploadDestinations);
+            if (data.destinationIp) {
+              newDestinations.set(data.fileName, data.destinationIp);
+            }
+            missionUploadOperationsRef.current = { ...current, uploaded: newUploaded, uploadDestinations: newDestinations };
+          }
+          setTimeout(checkAndCompleteObjectives, 50);
+        }
+      },
+      {
+        event: 'passiveSoftwareStarted',
+        handler: (data) => {
+          if (data.softwareId) {
+            if (!activePassiveSoftwareRef.current.includes(data.softwareId)) {
+              activePassiveSoftwareRef.current = [...activePassiveSoftwareRef.current, data.softwareId];
+            }
+          }
+          setTimeout(checkAndCompleteObjectives, 50);
+        }
+      },
     ];
 
     const unsubscribers = eventHandlers.map(({ event, handler }) =>
@@ -285,6 +336,9 @@ export const useObjectiveAutoTracking = (
       dataRecoveryToolConnectionsRef.current = [];
       dataRecoveryScansRef.current = [];
       missionRecoveryOperationsRef.current = { restored: new Set(), secureDeleted: new Set() };
+      missionDecryptionOperationsRef.current = { decrypted: new Set() };
+      missionUploadOperationsRef.current = { uploaded: new Set(), uploadDestinations: new Map() };
+      activePassiveSoftwareRef.current = [];
       // Only reset missionCompletedRef if it's a different mission
       if (missionCompletedRef.current !== missionId) {
         missionCompletedRef.current = null;

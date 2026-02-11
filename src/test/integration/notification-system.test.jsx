@@ -213,8 +213,9 @@ describe('Notification System Integration', () => {
     });
 
     // Verify preview content
-    expect(screen.getByText(/Max:/)).toBeInTheDocument();
-    expect(screen.getByText(/Current:/)).toBeInTheDocument();
+    expect(screen.getByText(/Total:/)).toBeInTheDocument();
+    expect(screen.getByText(/In Use:/)).toBeInTheDocument();
+    expect(screen.getByText(/Available:/)).toBeInTheDocument();
     expect(screen.getByText(/Active Operations:/)).toBeInTheDocument();
 
     const bandwidthPreview = container.querySelector('.bandwidth-preview');

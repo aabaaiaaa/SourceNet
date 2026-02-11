@@ -4,7 +4,9 @@ import { MULTI_INSTANCE_APPS } from '../../constants/gameConstants';
 import { formatDateTime, getAllSavesFlat } from '../../utils/helpers';
 import { getReputationTier } from '../../systems/ReputationSystem';
 import { calculateStorageUsed, calculateLocalFilesSize, formatStorage } from '../../systems/StorageSystem';
+import { SOFTWARE_CATALOG } from '../../constants/gameConstants';
 import networkRegistry from '../../systems/NetworkRegistry';
+import SecurityIndicator from './SecurityIndicator';
 import triggerEventBus from '../../core/triggerEventBus';
 import { scheduleGameTimeCallback, clearGameTimeCallback } from '../../core/gameTimeScheduler';
 import './TopBar.css';
@@ -66,6 +68,8 @@ const TopBar = () => {
     bandwidthOperations: _bandwidthOperations,
     downloadQueue: _downloadQueue,
     localSSDFiles,
+    activePassiveSoftware,
+    startPassiveSoftware,
   } = useGame();
 
   const [showPowerMenu, setShowPowerMenu] = useState(false);
@@ -78,6 +82,15 @@ const TopBar = () => {
   const [showMissionPreview, setShowMissionPreview] = useState(false);
   const [showBandwidthPreview, setShowBandwidthPreview] = useState(false);
   const [disconnectionNotices, setDisconnectionNotices] = useState([]);
+
+  // Ransomware cleanup state for SecurityIndicator
+  const [ransomwareThreat, setRansomwareThreat] = useState(false);
+  const [ransomwareCleaning, setRansomwareCleaning] = useState(false);
+  const [ransomwareCleanupProgress, setRansomwareCleanupProgress] = useState(0);
+
+  // Keep a ref to currentTime for use in animation frames
+  const currentTimeRef = useRef(currentTime);
+  currentTimeRef.current = currentTime;
 
   // Timeout refs for delayed menu closing
   const powerMenuTimeout = useRef(null);
@@ -116,6 +129,59 @@ const TopBar = () => {
     };
   }, [timeSpeed]);
 
+  // Subscribe to ransomware events for SecurityIndicator
+  useEffect(() => {
+    const handleTriggerRansomware = () => {
+      setRansomwareThreat(true);
+      setRansomwareCleaning(false);
+      setRansomwareCleanupProgress(0);
+    };
+
+    const handlePauseRansomware = () => {
+      setRansomwareCleaning(true);
+      setRansomwareCleanupProgress(0);
+
+      // Track cleanup progress over 30 game-time seconds
+      const cleanupStartGameTime = currentTimeRef.current?.getTime() || Date.now();
+      const cleanupDuration = 30000; // 30s in game time
+      let animId = null;
+
+      const updateCleanup = () => {
+        const now = currentTimeRef.current?.getTime() || Date.now();
+        const elapsed = now - cleanupStartGameTime;
+        const progress = Math.min(100, (elapsed / cleanupDuration) * 100);
+        setRansomwareCleanupProgress(progress);
+
+        if (progress < 100) {
+          animId = requestAnimationFrame(updateCleanup);
+        }
+      };
+
+      animId = requestAnimationFrame(updateCleanup);
+
+      // Store cancel function for cleanup
+      handlePauseRansomware._cancel = () => {
+        if (animId) cancelAnimationFrame(animId);
+      };
+    };
+
+    const handleCleanupComplete = () => {
+      setRansomwareThreat(false);
+      setRansomwareCleaning(false);
+      setRansomwareCleanupProgress(0);
+    };
+
+    triggerEventBus.on('triggerRansomware', handleTriggerRansomware);
+    triggerEventBus.on('pauseRansomware', handlePauseRansomware);
+    triggerEventBus.on('ransomwareCleanupComplete', handleCleanupComplete);
+
+    return () => {
+      triggerEventBus.off('triggerRansomware', handleTriggerRansomware);
+      triggerEventBus.off('pauseRansomware', handlePauseRansomware);
+      triggerEventBus.off('ransomwareCleanupComplete', handleCleanupComplete);
+    };
+  }, []);
+
   const dismissDisconnectionNotices = () => {
     setDisconnectionNotices([]);
     if (disconnectionTimerRef.current) {
@@ -129,16 +195,18 @@ const TopBar = () => {
 
   // Map software IDs to app launcher entries (only show installed software)
   const appMap = {
-    mail: { id: 'mail', name: 'SNet Mail' },
-    banking: { id: 'banking', name: 'SNet Banking App' },
-    portal: { id: 'portal', name: 'OSNet Portal' },
-    'mission-board': { id: 'missionBoard', name: 'SourceNet Mission Board' },
-    'vpn-client': { id: 'vpnClient', name: 'SourceNet VPN Client' },
-    'network-scanner': { id: 'networkScanner', name: 'Network Scanner' },
-    'network-address-register': { id: 'networkAddressRegister', name: 'Network Address Register' },
-    'file-manager': { id: 'fileManager', name: 'File Manager' },
-    'log-viewer': { id: 'logViewer', name: 'Log Viewer' },
-    'data-recovery-tool': { id: 'dataRecoveryTool', name: 'Data Recovery Tool' },
+    mail: { id: 'mail', name: 'SNet Mail', softwareId: 'mail' },
+    banking: { id: 'banking', name: 'SNet Banking App', softwareId: 'banking' },
+    portal: { id: 'portal', name: 'OSNet Portal', softwareId: 'portal' },
+    'mission-board': { id: 'missionBoard', name: 'SourceNet Mission Board', softwareId: 'mission-board' },
+    'vpn-client': { id: 'vpnClient', name: 'SourceNet VPN Client', softwareId: 'vpn-client' },
+    'network-scanner': { id: 'networkScanner', name: 'Network Scanner', softwareId: 'network-scanner' },
+    'network-address-register': { id: 'networkAddressRegister', name: 'Network Address Register', softwareId: 'network-address-register' },
+    'file-manager': { id: 'fileManager', name: 'File Manager', softwareId: 'file-manager' },
+    'log-viewer': { id: 'logViewer', name: 'Log Viewer', softwareId: 'log-viewer' },
+    'data-recovery-tool': { id: 'dataRecoveryTool', name: 'Data Recovery Tool', softwareId: 'data-recovery-tool' },
+    'decryption-tool': { id: 'decryptionTool', name: 'Decryption Tool', softwareId: 'decryption-tool' },
+    'advanced-firewall-av': { id: 'advancedFirewallAv', name: 'Advanced Firewall & Antivirus', softwareId: 'advanced-firewall-av' },
   };
 
   const apps = (software || [])
@@ -242,12 +310,20 @@ const TopBar = () => {
               )}
               <button
                 onClick={handleSave}
-                disabled={activeConnections?.length > 0}
-                title={activeConnections?.length > 0 ? 'Disconnect from all networks to save your game' : undefined}
+                disabled={activeConnections?.length > 0 || ransomwareThreat}
+                title={ransomwareThreat ? 'Cannot save during ransomware attack' : activeConnections?.length > 0 ? 'Disconnect from all networks to save your game' : undefined}
               >Save</button>
               <button onClick={handleLoad}>Load</button>
-              <button onClick={handleReboot}>Reboot</button>
-              <button onClick={handleSleep}>Sleep</button>
+              <button
+                onClick={handleReboot}
+                disabled={ransomwareThreat}
+                title={ransomwareThreat ? 'Cannot reboot during ransomware attack' : undefined}
+              >Reboot</button>
+              <button
+                onClick={handleSleep}
+                disabled={ransomwareThreat}
+                title={ransomwareThreat ? 'Cannot sleep during ransomware attack' : undefined}
+              >Sleep</button>
             </div>
           )}
         </div>
@@ -394,6 +470,15 @@ const TopBar = () => {
           </div>
         )}
 
+        {/* Security Indicator */}
+        {activePassiveSoftware?.includes('advanced-firewall-av') && (
+          <SecurityIndicator
+            processing={ransomwareCleaning}
+            cleanupProgress={ransomwareCleanupProgress}
+            threatCount={ransomwareThreat ? 1 : 0}
+          />
+        )}
+
         {/* Bandwidth Indicator */}
         {getBandwidthInfo && (() => {
           const bandwidthInfo = getBandwidthInfo();
@@ -411,36 +496,42 @@ const TopBar = () => {
                   {bandwidthInfo.transferSpeedMBps.toFixed(1)}
                 </span>
               )}
-              {showBandwidthPreview && (
-                <div className="notification-preview bandwidth-preview">
-                  <div className="preview-header">Bandwidth</div>
-                  <div className="preview-item">
-                    Adapter: {bandwidthInfo.adapterSpeed} Mbps
-                  </div>
-                  <div className="preview-item">
-                    Max: {(bandwidthInfo.maxBandwidth / 8).toFixed(1)} MB/s
-                  </div>
-                  <div className="preview-item">
-                    Current: {bandwidthInfo.transferSpeedMBps.toFixed(1)} MB/s
-                  </div>
-                  <div className="preview-item">
-                    Active Operations: {bandwidthInfo.activeOperations}
-                  </div>
-                  {bandwidthInfo.limitedBy === 'adapter' && activeConnections?.length > 0 && (
-                    <div className="preview-item-small bandwidth-limited">
-                      ⚠️ Limited by network adapter
+              {showBandwidthPreview && (() => {
+                const totalMBps = bandwidthInfo.adapterSpeed / 8;
+                const inUseMBps = hasActivity ? bandwidthInfo.maxBandwidth / 8 : 0;
+                const availableMBps = totalMBps - inUseMBps;
+                const usagePercent = totalMBps > 0 ? (inUseMBps / totalMBps) * 100 : 0;
+                return (
+                  <div className="notification-preview bandwidth-preview">
+                    <div className="preview-header">Bandwidth</div>
+                    <div className="preview-item">
+                      Total: {totalMBps.toFixed(1)} MB/s
                     </div>
-                  )}
-                  {bandwidthInfo.usagePercent > 0 && (
-                    <div className="bandwidth-usage-bar">
-                      <div
-                        className="bandwidth-usage-fill"
-                        style={{ width: `${bandwidthInfo.usagePercent}%` }}
-                      />
+                    <div className="preview-item">
+                      In Use: {inUseMBps.toFixed(1)} MB/s
                     </div>
-                  )}
-                </div>
-              )}
+                    <div className="preview-item">
+                      Available: {availableMBps.toFixed(1)} MB/s
+                    </div>
+                    <div className="preview-item">
+                      Active Operations: {bandwidthInfo.activeOperations}
+                    </div>
+                    {bandwidthInfo.limitedBy === 'adapter' && activeConnections?.length > 0 && (
+                      <div className="preview-item-small bandwidth-limited">
+                        Limited by network adapter
+                      </div>
+                    )}
+                    {usagePercent > 0 && (
+                      <div className="bandwidth-usage-bar">
+                        <div
+                          className="bandwidth-usage-fill"
+                          style={{ width: `${usagePercent}%` }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           );
         })()}
@@ -525,20 +616,36 @@ const TopBar = () => {
                 }, 100);
               }}
             >
-              {apps.map((app) => (
-                <button
-                  key={app.id}
-                  onClick={() => {
-                    openWindow(app.id);
-                    setShowAppLauncher(false);
-                  }}
-                  className={MULTI_INSTANCE_APPS.includes(app.id) ? 'multi-instance-app' : ''}
-                  title={MULTI_INSTANCE_APPS.includes(app.id) ? `${app.name} (can open multiple)` : app.name}
-                >
-                  {app.name}
-                  {MULTI_INSTANCE_APPS.includes(app.id) && <span className="multi-instance-badge">⊞</span>}
-                </button>
-              ))}
+              {apps.map((app) => {
+                // Check if this is passive software
+                const catalogEntry = SOFTWARE_CATALOG.find(s => s.id === app.softwareId);
+                const isPassive = catalogEntry?.passive === true;
+                const isPassiveRunning = isPassive && activePassiveSoftware?.includes(app.softwareId);
+
+                return (
+                  <button
+                    key={app.id}
+                    onClick={() => {
+                      if (isPassive) {
+                        if (!isPassiveRunning && startPassiveSoftware) {
+                          startPassiveSoftware(app.softwareId);
+                        }
+                      } else {
+                        openWindow(app.id);
+                      }
+                      setShowAppLauncher(false);
+                    }}
+                    className={MULTI_INSTANCE_APPS.includes(app.id) ? 'multi-instance-app' : ''}
+                    title={isPassive
+                      ? (isPassiveRunning ? `${app.name} (running)` : `${app.name} (click to start)`)
+                      : (MULTI_INSTANCE_APPS.includes(app.id) ? `${app.name} (can open multiple)` : app.name)}
+                  >
+                    {app.name}
+                    {MULTI_INSTANCE_APPS.includes(app.id) && <span className="multi-instance-badge">⊞</span>}
+                    {isPassiveRunning && <span className="multi-instance-badge">✓</span>}
+                  </button>
+                );
+              })}
               <div className="app-launcher-storage">
                 {formatStorage(calculateStorageUsed(software || []), calculateLocalFilesSize(localSSDFiles || []), 90)}
               </div>

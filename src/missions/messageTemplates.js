@@ -508,21 +508,117 @@ The mission will be available again shortly. Don't make the same mistake twice.
 - {managerName}`,
   },
 
-  // Placeholder message for decryption tools tease (triggered at +10k credits)
+  // Decryption tools unlock message (triggered at +10k credits after investigation missions)
   'decryption-tease': {
     from: 'SourceNet Manager',
     fromId: 'SNET-MGR-{random}',
     fromName: 'SourceNet Manager {managerName}',
-    subject: 'Decryption Work Available',
+    subject: 'Decryption Work - Ready to Go',
     body: `{username},
 
 Good news. You've built up enough credits for me to get you access to the decryption tools I mentioned.
 
-There's a growing demand for decryption work - clients with encrypted files they've lost access to, locked-out systems that need cracking, data recovery jobs where the files are encrypted. The pay is solid but the work requires patience and the right software.
+The Decryption Tool is now available in the Portal. It's 500 credits - handles AES-128 and AES-256 encrypted files out of the box. The workflow is straightforward: download encrypted files from the remote system to your local SSD, decrypt them locally, then upload the clean files back.
 
-I'm sorting out the details now. Expect to hear from me again soon with everything you need to get started.
+I already have a client lined up. MetroLink Transit Authority - they run the regional train network. Got hit by a ransomware attack last week and their ticketing systems are down. Thousands of commuters affected. They need someone to decrypt their databases and get everything back online.
+
+Install the Decryption Tool from the Portal and check the Mission Board. The MetroLink job should appear shortly.
+
+This is bigger money than the investigation work. Don't let me down.
 
 - {managerName}`,
+  },
+
+  // ===== RANSOMWARE RECOVERY MISSION TEMPLATES =====
+
+  // Urgent manager message when player's terminal is under ransomware attack
+  'ransomware-rescue': {
+    from: 'SourceNet Manager',
+    fromId: 'SNET-MGR-{random}',
+    fromName: 'SourceNet Manager {managerName}',
+    subject: 'EMERGENCY - Your Terminal Is Under Attack!',
+    body: `{username},
+
+YOUR TERMINAL IS BEING ENCRYPTED! One of those files you decrypted was a planted virus disguised as passenger data!
+
+I'm attaching an emergency license for our Advanced Firewall & Antivirus suite. Install it from the Portal RIGHT NOW and activate it - it should halt the encryption and clean the threat.
+
+DO NOT WAIT. Every second counts. Install the software and run it IMMEDIATELY.
+
+- {managerName}`,
+    attachments: [
+      {
+        type: 'softwareLicense',
+        softwareId: 'advanced-firewall-av',
+        softwareName: 'Advanced Firewall & Antivirus',
+        price: 2000,
+        size: 50,
+      }
+    ],
+  },
+
+  // Resolution message after antivirus saves the terminal
+  'ransomware-resolution': {
+    from: 'SourceNet Manager',
+    fromId: 'SNET-MGR-{random}',
+    fromName: 'SourceNet Manager {managerName}',
+    subject: 'Crisis Averted - Mission Update',
+    body: `{username},
+
+The antivirus caught it in time. Your terminal is clean.
+
+Here's what happened: that "passenger-data.dat" file was a planted trap - a ransomware payload disguised as encrypted data. The attackers who hit MetroLink must have planted it as a secondary weapon, hoping whoever tried to clean up would get infected too.
+
+The good news is the ticketing database and crew roster you decrypted earlier are fine - the MetroLink systems are coming back online. The client is grateful for the work you did before things went sideways.
+
+Given the circumstances, I'm marking this mission as complete. You did the decryption work, and the ransomware trap wasn't something anyone could have predicted. MetroLink's payment will come through shortly.
+
+The Advanced Firewall & Antivirus will keep running in the background - you'll see it in your top bar. It'll protect you from similar attacks going forward.
+
+Stay sharp out there.
+
+- {managerName}`,
+  },
+
+  // Resolution message after player enters decryption key on lock screen
+  'ransomware-decrypted-resolution': {
+    from: 'SourceNet Manager',
+    fromId: 'SNET-MGR-{random}',
+    fromName: 'SourceNet Manager {managerName}',
+    subject: 'How Are You Back Online?',
+    body: `{username},
+
+Wait — your terminal is back online? I was told your workstation was completely locked down by ransomware. Our monitoring showed full encryption. How did you get back in?
+
+Never mind, I don't need to know the details right now. What matters is you're operational again.
+
+The good news is the work you did before the attack still stands. The ticketing database and crew roster you decrypted for MetroLink are fine — their systems are coming back online. The client is satisfied with the recovery work.
+
+I'm marking this mission as complete. MetroLink's payment will come through shortly. Consider yourself lucky — that could have gone a lot worse.
+
+The Advanced Firewall & Antivirus license I sent earlier is still valid if you want to install it. Might be worth having for future jobs.
+
+Stay sharp.
+
+- {managerName}`,
+  },
+
+  // Client thanks for ransomware recovery (payment handled by standard client-payment template)
+  'ransomware-recovery-success': {
+    from: 'MetroLink Transit Authority',
+    fromId: 'CLIENT-{random}',
+    fromName: 'MetroLink Transit Authority',
+    subject: 'Thank You - Systems Coming Back Online',
+    body: `Dear {username},
+
+Thank you for your work recovering our ticketing and scheduling databases. Our systems are coming back online and service disruptions are being resolved.
+
+We understand you encountered a secondary attack during the recovery process. We sincerely apologise - we had no idea the attackers had planted additional payloads on our systems. We're conducting a full security audit to ensure no other traps remain.
+
+Payment has been sent separately. We've included a bonus for the additional risk you faced.
+
+Sincerely,
+MetroLink Transit Authority`,
   },
 };
 

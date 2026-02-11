@@ -1,0 +1,313 @@
+.decryption-tool {
+  font-family: 'Courier New', Courier, monospace;
+  color: #222;
+  padding: 15px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.decryption-header {
+  border-bottom: 2px solid var(--osnet-border);
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.decryption-header h2 {
+  margin: 0 0 5px 0;
+}
+
+.decryption-subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: #666;
+}
+
+.decryption-disconnection-message {
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  color: #856404;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.decryption-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.decryption-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+}
+
+.decryption-controls select {
+  padding: 8px;
+  font-family: inherit;
+}
+
+.decryption-no-networks {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  color: #6c757d;
+  padding: 15px;
+  text-align: center;
+  font-size: 13px;
+  border-radius: 4px;
+}
+
+/* Main content area: split into file list and grid */
+.decryption-main {
+  flex: 1;
+  display: flex;
+  gap: 10px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Left panel: file list */
+.decryption-file-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.decryption-file-list {
+  flex: 1;
+  border: 2px solid var(--osnet-border);
+  overflow-y: auto;
+  background: #FAFAFA;
+}
+
+.decryption-file-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid #EEE;
+  cursor: pointer;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.decryption-file-item:last-child {
+  border-bottom: none;
+}
+
+.decryption-file-item:hover {
+  background: #f0f0f0;
+}
+
+.decryption-file-item.selected {
+  background: #d0e8ff;
+}
+
+.decryption-file-item .file-icon {
+  font-size: 14px;
+  min-width: 20px;
+}
+
+.decryption-file-item .file-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.decryption-file-item .file-size {
+  color: #888;
+  font-size: 11px;
+  min-width: 60px;
+  text-align: right;
+}
+
+.decryption-file-item .file-algorithm {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: #e8eaf6;
+  color: #283593;
+}
+
+.decryption-file-item .file-phase {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  min-width: 70px;
+  text-align: center;
+}
+
+.file-phase.remote { background: #e0e0e0; color: #555; }
+.file-phase.downloading { background: #fff3e0; color: #e65100; }
+.file-phase.local { background: #e8f5e9; color: #2e7d32; }
+.file-phase.decrypting { background: #e3f2fd; color: #1565c0; }
+.file-phase.decrypted { background: #c8e6c9; color: #1b5e20; }
+.file-phase.uploading { background: #fce4ec; color: #880e4f; }
+.file-phase.uploaded { background: #a5d6a7; color: #1b5e20; }
+
+/* Progress bar within file item */
+.decryption-file-progress {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.decryption-progress-bar {
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.decryption-progress-fill {
+  height: 100%;
+  transition: width 0.1s linear;
+}
+
+.decryption-progress-fill.downloading { background: #ff9800; }
+.decryption-progress-fill.decrypting { background: #2196f3; }
+.decryption-progress-fill.uploading { background: #e91e63; }
+
+.decryption-progress-text {
+  font-size: 10px;
+  color: #666;
+}
+
+/* Right panel: binary grid */
+.decryption-grid-panel {
+  width: 360px;
+  display: flex;
+  flex-direction: column;
+}
+
+.decryption-grid-label {
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+.decryption-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(36, 1fr);
+  gap: 0;
+  background: #111;
+  border: 2px solid #333;
+  border-radius: 4px;
+  padding: 4px;
+  overflow: hidden;
+}
+
+.decryption-grid-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier New', monospace;
+  font-size: 8px;
+  font-weight: bold;
+}
+
+.decryption-grid-cell.pending {
+  color: #ff0000;
+  opacity: 0.6;
+}
+
+.decryption-grid-cell.filled {
+  color: #00ff00;
+  text-shadow: 0 0 4px #00ff00;
+}
+
+/* Action buttons */
+.decryption-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #ddd;
+}
+
+.decryption-actions button {
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: bold;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.decryption-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.decryption-actions button.download-btn {
+  background: #ff9800;
+  color: white;
+  border-color: #ff9800;
+}
+
+.decryption-actions button.download-btn:hover:not(:disabled) {
+  background: #f57c00;
+}
+
+.decryption-actions button.decrypt-btn {
+  background: #2196f3;
+  color: white;
+  border-color: #2196f3;
+}
+
+.decryption-actions button.decrypt-btn:hover:not(:disabled) {
+  background: #1976d2;
+}
+
+.decryption-actions button.upload-btn {
+  background: #4caf50;
+  color: white;
+  border-color: #4caf50;
+}
+
+.decryption-actions button.upload-btn:hover:not(:disabled) {
+  background: #388e3c;
+}
+
+/* Algorithm mismatch warning */
+.algorithm-warning {
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  color: #856404;
+  padding: 8px 12px;
+  font-size: 12px;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+/* Empty state */
+.decryption-empty {
+  text-align: center;
+  padding: 30px;
+  color: #999;
+  font-style: italic;
+}
+
+.decryption-no-encrypted {
+  background-color: #e3f2fd;
+  border: 1px solid #90caf9;
+  color: #1565c0;
+  padding: 15px;
+  text-align: center;
+  font-size: 13px;
+  border-radius: 4px;
+  margin-top: 15px;
+}

@@ -1,0 +1,110 @@
+.ransomware-lock-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  z-index: 10000;
+  padding: 40px;
+}
+
+.lock-screen-content {
+  font-family: 'Courier New', monospace;
+  color: #ff0000;
+  font-size: 14px;
+  line-height: 1.4;
+  white-space: pre;
+  max-width: 60%;
+  position: relative;
+  z-index: 10002;
+}
+
+.lock-screen-line {
+  min-height: 1.4em;
+}
+
+/* Terminal input */
+.lock-screen-terminal {
+  margin-top: 16px;
+}
+
+.terminal-input-row {
+  display: flex;
+  align-items: center;
+}
+
+.terminal-prompt {
+  color: #ff0000;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.terminal-input {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid #ff0000;
+  color: #ff0000;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  outline: none;
+  padding: 2px 4px;
+  width: 300px;
+  caret-color: #ff0000;
+  position: relative;
+  z-index: 10003;
+}
+
+.terminal-input::placeholder {
+  color: #660000;
+}
+
+.terminal-error {
+  color: #ff4444;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  margin-top: 8px;
+  animation: errorFlash 0.3s ease-in-out 2;
+}
+
+/* Shake animation */
+.shake {
+  animation: shakeAnim 0.5s ease-in-out;
+}
+
+@keyframes shakeAnim {
+  0%, 100% { transform: translateX(0); }
+  10%, 50%, 90% { transform: translateX(-4px); }
+  30%, 70% { transform: translateX(4px); }
+}
+
+@keyframes errorFlash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Game over overlay - pointer-events: none so terminal input remains clickable */
+.ransomware-game-over-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 60px;
+  z-index: 10001;
+  pointer-events: none;
+}
+
+/* Override shared game-over-modal styles for positioning within the ransomware screen */
+.ransomware-game-over-modal {
+  pointer-events: auto;
+  max-width: 420px;
+}

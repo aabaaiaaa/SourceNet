@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useGame } from '../../contexts/useGame';
 import { canAcceptMission, calculateMissionPayout } from '../../systems/MissionSystem';
 import { getReputationTier, canAccessClientType } from '../../systems/ReputationSystem';
-import { getFileOperationProgress, getFileOperationDetails, areAllRequiredObjectivesComplete, hasIncompleteOptionalObjectives } from '../../missions/ObjectiveTracker';
+import { getFileOperationProgress, getFileOperationDetails, getFileDecryptionProgress, getFileUploadProgress, areAllRequiredObjectivesComplete, hasIncompleteOptionalObjectives } from '../../missions/ObjectiveTracker';
 import './MissionBoard.css';
 
 /**
@@ -83,6 +83,8 @@ const MissionBoard = () => {
     submitMissionForCompletion,
     missionSubmitting,
     missionFileOperations,
+    missionDecryptionOperations,
+    missionUploadOperations,
     // Procedural mission state
     proceduralMissionsEnabled,
     missionPool,
@@ -351,6 +353,10 @@ const MissionBoard = () => {
             {activeMission.objectives?.map((objective, index) => {
               const progress = objective.type === 'fileOperation'
                 ? getFileOperationProgress(objective, missionFileOperations)
+                : objective.type === 'fileDecryption'
+                ? getFileDecryptionProgress(objective, missionDecryptionOperations)
+                : objective.type === 'fileUpload'
+                ? getFileUploadProgress(objective, missionUploadOperations)
                 : null;
               const fileDetails = objective.type === 'fileOperation' && objective.status !== 'complete'
                 ? getFileOperationDetails(objective, missionFileOperations)

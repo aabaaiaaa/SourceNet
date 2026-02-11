@@ -614,7 +614,99 @@ class StoryMissionManager {
 
         this.addUnsubscriber(missionDef.missionId, unsubscribe);
       }
+
+      // Handle afterEvent trigger - fires after another scripted event starts
+      if (type === 'afterEvent') {
+        const { eventId: targetEventId } = scriptedEvent.trigger;
+        const unsubscribe = triggerEventBus.on('scriptedEventStart', (data) => {
+          console.log(`🎭 scriptedEventStart: eventId=${data.eventId}, looking for: ${targetEventId}`);
+
+          if (data.eventId === targetEventId && data.missionId === missionDef.missionId) {
+            if (!this.isMissionStillActive(missionDef.missionId)) {
+              console.log(`⚠️ Mission ${missionDef.missionId} no longer active, skipping ${scriptedEvent.id}`);
+              return;
+            }
+            console.log(`✅ afterEvent trigger matched: ${scriptedEvent.id} after ${targetEventId}`);
+            const payload = { missionId: missionDef.missionId, eventId: scriptedEvent.id, scriptedEvent };
+            this.schedulePendingEvent('scriptedEvent', payload, delay || 0, () => {
+              this.executeScriptedEvent(missionDef.missionId, scriptedEvent);
+            });
+          }
+        });
+
+        this.addUnsubscriber(missionDef.missionId, unsubscribe);
+      }
+
+      // Handle softwareActivation trigger - fires when specific passive software starts
+      if (type === 'softwareActivation') {
+        const { softwareId: targetSoftwareId } = scriptedEvent.trigger;
+        const unsubscribe = triggerEventBus.on('passiveSoftwareStarted', (data) => {
+          console.log(`🛡️ passiveSoftwareStarted: softwareId=${data.softwareId}, looking for: ${targetSoftwareId}`);
+
+          if (data.softwareId === targetSoftwareId) {
+            if (!this.isMissionStillActive(missionDef.missionId)) {
+              console.log(`⚠️ Mission ${missionDef.missionId} no longer active, skipping ${scriptedEvent.id}`);
+              return;
+            }
+            console.log(`✅ softwareActivation trigger matched: ${scriptedEvent.id}`);
+            const payload = { missionId: missionDef.missionId, eventId: scriptedEvent.id, scriptedEvent };
+            this.schedulePendingEvent('scriptedEvent', payload, delay || 0, () => {
+              this.executeScriptedEvent(missionDef.missionId, scriptedEvent);
+            });
+          }
+        });
+
+        this.addUnsubscriber(missionDef.missionId, unsubscribe);
+      }
+
+      // Handle messageRead trigger - fires when a specific message is read
+      if (type === 'messageRead') {
+        const { messageId: targetMessageId } = scriptedEvent.trigger;
+        const unsubscribe = triggerEventBus.on('messageRead', (data) => {
+          console.log(`📧 messageRead: messageId=${data.messageId}, looking for: ${targetMessageId}`);
+
+          if (data.messageId === targetMessageId) {
+            console.log(`✅ messageRead trigger matched: ${scriptedEvent.id}`);
+            const payload = { missionId: missionDef.missionId, eventId: scriptedEvent.id, scriptedEvent };
+            this.schedulePendingEvent('scriptedEvent', payload, delay || 0, () => {
+              this.executeScriptedEvent(missionDef.missionId, scriptedEvent);
+            });
+          }
+        });
+
+        this.addUnsubscriber(missionDef.missionId, unsubscribe);
+      }
+
+      // Handle eventBusEvent trigger - fires when a specific event bus event is emitted
+      if (type === 'eventBusEvent') {
+        const { eventName } = scriptedEvent.trigger;
+        const unsubscribe = triggerEventBus.on(eventName, () => {
+          console.log(`📡 eventBusEvent: ${eventName} received for ${scriptedEvent.id}`);
+
+          if (!this.isMissionStillActive(missionDef.missionId)) {
+            console.log(`⚠️ Mission ${missionDef.missionId} no longer active, skipping ${scriptedEvent.id}`);
+            return;
+          }
+
+          console.log(`✅ eventBusEvent trigger matched: ${scriptedEvent.id}`);
+          const payload = { missionId: missionDef.missionId, eventId: scriptedEvent.id, scriptedEvent };
+          this.schedulePendingEvent('scriptedEvent', payload, delay || 0, () => {
+            this.executeScriptedEvent(missionDef.missionId, scriptedEvent);
+          });
+        });
+
+        this.addUnsubscriber(missionDef.missionId, unsubscribe);
+      }
     });
+  }
+
+  /**
+   * Check if a mission is still the active mission
+   * @param {string} missionId - Mission ID to check
+   * @returns {boolean} Whether the mission is still active
+   */
+  isMissionStillActive(missionId) {
+    return this.gameStateGetter()?.activeMission?.missionId === missionId;
   }
 
   /**
@@ -733,6 +825,31 @@ class StoryMissionManager {
    */
   getMission(missionId) {
     return this.missions.get(missionId) || null;
+  }
+
+  /**
+   * Re-subscribe scripted event triggers for an active mission (e.g., after loading a save).
+   * Checks if subscriptions already exist to avoid duplicates.
+   * @param {string} missionId - Mission ID to re-subscribe
+   */
+  ensureScriptedEventSubscriptions(missionId) {
+    const missionDef = this.missions.get(missionId);
+    if (!missionDef) {
+      console.log(`⚠️ Cannot re-subscribe: mission ${missionId} not found`);
+      return;
+    }
+
+    // Check if subscriptions already exist for this mission
+    const existingUnsubs = this.unsubscribers.get(missionId) || [];
+    if (existingUnsubs.length > 0) {
+      console.log(`⚠️ Subscriptions already exist for ${missionId}, skipping`);
+      return;
+    }
+
+    if (missionDef.scriptedEvents && Array.isArray(missionDef.scriptedEvents) && missionDef.scriptedEvents.length > 0) {
+      console.log(`🔄 Re-subscribing scripted events for loaded mission: ${missionId}`);
+      this.subscribeScriptedEventTriggers(missionDef);
+    }
   }
 
   /**

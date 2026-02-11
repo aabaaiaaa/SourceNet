@@ -52,6 +52,7 @@ export const GameProvider = ({ children }) => {
   const [timeSpeed, setTimeSpeed] = useState(TIME_SPEEDS.NORMAL);
   const [isPaused, setIsPaused] = useState(false);
   const [isRebooting, setIsRebooting] = useState(false);
+  const [ransomwareLockout, setRansomwareLockout] = useState(false);
 
   // Hardware/Software
   const [hardware, setHardware] = useState(STARTING_HARDWARE);
@@ -175,6 +176,14 @@ export const GameProvider = ({ children }) => {
   // ===== FUTURE CONTENT TEASE SYSTEM =====
   const [creditThresholdForDecryption, setCreditThresholdForDecryption] = useState(null); // Credit threshold for decryption tease message
   const [decryptionMessageSent, setDecryptionMessageSent] = useState(false); // Track if decryption tease message was sent
+
+  // ===== DECRYPTION SYSTEM =====
+  const [decryptionAlgorithms, setDecryptionAlgorithms] = useState(['aes-128', 'aes-256']); // Available decryption algorithms
+  const [missionDecryptionOperations, setMissionDecryptionOperations] = useState({ decrypted: new Set() }); // Track decrypted files for mission objectives
+  const [missionUploadOperations, setMissionUploadOperations] = useState({ uploaded: new Set(), uploadDestinations: new Map() }); // Track uploaded files for mission objectives
+
+  // ===== PASSIVE SOFTWARE SYSTEM =====
+  const [activePassiveSoftware, setActivePassiveSoftware] = useState([]); // Array of active passive software IDs
 
   // ===== BANKING HELPERS =====
   // Helper function to update bank balance and emit creditsChanged event
@@ -305,6 +314,8 @@ export const GameProvider = ({ children }) => {
   useEffect(() => {
     console.log('🔄 Mission changed, resetting missionFileOperations');
     setMissionFileOperations({});
+    setMissionDecryptionOperations({ decrypted: new Set() });
+    setMissionUploadOperations({ uploaded: new Set(), uploadDestinations: new Map() });
   }, [activeMission?.missionId]);
 
   // Initialize procedural missions when "Better" message is read (after tutorial-part-2)
@@ -999,11 +1010,14 @@ export const GameProvider = ({ children }) => {
     // Skip if no threshold set or message already sent
     if (creditThresholdForDecryption === null || decryptionMessageSent) return;
 
+    let sent = false;
     const handleCreditsChanged = (data) => {
+      if (sent) return;
       const { newBalance } = data;
 
       // Trigger when player reaches the threshold
       if (newBalance >= creditThresholdForDecryption) {
+        sent = true;
         console.log('💰 Decryption tease trigger met (credits:', newBalance, '>= threshold:', creditThresholdForDecryption, ')');
 
         // Mark as sent to prevent duplicate
@@ -1017,6 +1031,8 @@ export const GameProvider = ({ children }) => {
           });
 
           if (message) {
+            // Use a fixed ID so the ransomware-recovery mission can trigger on messageRead
+            message.id = 'msg-decryption-work';
             console.log('📧 Sending "decryption-tease" message');
             addMessage(message);
           }
@@ -1027,6 +1043,24 @@ export const GameProvider = ({ children }) => {
     const unsubscribe = triggerEventBus.on('creditsChanged', handleCreditsChanged);
     return () => unsubscribe();
   }, [creditThresholdForDecryption, decryptionMessageSent, username, managerName, timeSpeed, addMessage]);
+
+  // Decryption tooling unlock: when the decryption message is read
+  useEffect(() => {
+    const handleMessageRead = (data) => {
+      const message = messages.find(m => m.id === data.messageId);
+      if (message && message.subject && message.subject.includes('Decryption Work')) {
+        console.log('🔓 Decryption message read! Unlocking decryption-tooling...');
+        setUnlockedFeatures(prev => {
+          const newFeatures = new Set(prev);
+          newFeatures.add('decryption-tooling');
+          return Array.from(newFeatures);
+        });
+      }
+    };
+
+    const unsubscribe = triggerEventBus.on('messageRead', handleMessageRead);
+    return () => unsubscribe();
+  }, [messages]);
 
   // Add discovered devices from network scan
   const addDiscoveredDevices = useCallback((networkId, ips) => {
@@ -1215,6 +1249,38 @@ export const GameProvider = ({ children }) => {
       if (prev.includes(softwareId)) return prev;
       return [...prev, softwareId];
     });
+  }, []);
+
+  // Start a passive software (runs in background, no window)
+  const startPassiveSoftware = useCallback((softwareId) => {
+    let emitted = false;
+    setActivePassiveSoftware((prev) => {
+      if (prev.includes(softwareId)) return prev;
+      const updated = [...prev, softwareId];
+      // Emit event after state update via microtask (guard against React Strict Mode double invocation)
+      if (!emitted) {
+        emitted = true;
+        queueMicrotask(() => {
+          triggerEventBus.emit('passiveSoftwareStarted', { softwareId });
+        });
+      }
+      return updated;
+    });
+  }, []);
+
+  // Add file to local SSD (for decryption download step)
+  const addFileToLocalSSD = useCallback((file) => {
+    setLocalSSDFiles((prev) => [...prev, file]);
+  }, []);
+
+  // Remove file from local SSD by name
+  const removeFileFromLocalSSD = useCallback((fileName) => {
+    setLocalSSDFiles((prev) => prev.filter(f => f.name !== fileName));
+  }, []);
+
+  // Replace a file on local SSD (for decryption: replace .enc with decrypted version)
+  const replaceFileOnLocalSSD = useCallback((oldName, newFile) => {
+    setLocalSSDFiles((prev) => prev.map(f => f.name === oldName ? newFile : f));
   }, []);
 
   const closeWindow = useCallback((windowId) => {
@@ -2468,6 +2534,13 @@ export const GameProvider = ({ children }) => {
       const { status, failureReason } = data;
       console.log(`📋 Mission status changed to: ${status}`);
 
+      if (status === 'success' && activeMission) {
+        // Complete obj-verify to trigger normal mission completion flow
+        console.log('✅ Mission marked as success via scripted event - completing obj-verify');
+        completeMissionObjective('obj-verify');
+        return;
+      }
+
       if (status === 'failed' && activeMission) {
         const missionId = activeMission.missionId || activeMission.id;
 
@@ -2492,6 +2565,73 @@ export const GameProvider = ({ children }) => {
 
     return () => {
       triggerEventBus.off('missionStatusChanged', handleMissionStatusChanged);
+    };
+  }, [activeMission, completeMissionObjective]);
+
+  // Listen for ransomware completion (encryption reached 100%) - forced reboot + lockout
+  useEffect(() => {
+    if (!activeMission) return;
+
+    const handleRansomwareComplete = () => {
+      console.log('💀 Ransomware encryption complete - forced reboot with lockout');
+      // Close all windows and disconnect all connections
+      setWindows([]);
+      setActiveConnections([]);
+      // Set ransomware lockout (lock screen after reboot)
+      setRansomwareLockout(true);
+      // Trigger reboot sequence (mission stays active - NOT failed)
+      setIsRebooting(true);
+      setIsPaused(true);
+      setTimeSpeed(TIME_SPEEDS.NORMAL);
+      setGamePhase('rebooting');
+    };
+
+    triggerEventBus.on('ransomwareComplete', handleRansomwareComplete);
+
+    return () => {
+      triggerEventBus.off('ransomwareComplete', handleRansomwareComplete);
+    };
+  }, [activeMission]);
+
+  // Listen for mission extension events (adds new objectives and files mid-mission)
+  useEffect(() => {
+    if (!activeMission) return;
+
+    const handleAddMissionExtension = (data) => {
+      const { objectives, files } = data;
+
+      console.log('📋 Adding mission extension:', objectives?.length, 'objectives,', files?.length || 0, 'files');
+
+      // Add new objectives to active mission
+      if (objectives && objectives.length > 0) {
+        setActiveMission(prev => {
+          if (!prev) return prev;
+          const newObjectives = objectives.map(obj => ({ ...obj, status: obj.status || 'pending' }));
+          const verifyIndex = prev.objectives.findIndex(obj => obj.id === 'obj-verify');
+          const before = verifyIndex >= 0 ? prev.objectives.slice(0, verifyIndex) : prev.objectives;
+          const after = verifyIndex >= 0 ? prev.objectives.slice(verifyIndex) : [];
+          return {
+            ...prev,
+            objectives: [...before, ...newObjectives, ...after],
+          };
+        });
+      }
+
+      // Add files to file systems
+      if (files && files.length > 0) {
+        files.forEach(fileConfig => {
+          const { fileSystemId, file } = fileConfig;
+          if (fileSystemId && file) {
+            networkRegistry.addFilesToFileSystem(fileSystemId, [file]);
+          }
+        });
+      }
+    };
+
+    triggerEventBus.on('addMissionExtension', handleAddMissionExtension);
+
+    return () => {
+      triggerEventBus.off('addMissionExtension', handleAddMissionExtension);
     };
   }, [activeMission]);
 
@@ -2698,6 +2838,15 @@ export const GameProvider = ({ children }) => {
       // Future content tease system
       creditThresholdForDecryption,
       decryptionMessageSent,
+      // Decryption system
+      decryptionAlgorithms,
+      missionDecryptionOperations: { decrypted: Array.from(missionDecryptionOperations.decrypted || []) },
+      missionUploadOperations: {
+        uploaded: Array.from(missionUploadOperations.uploaded || []),
+        uploadDestinations: Array.from((missionUploadOperations.uploadDestinations || new Map()).entries()),
+      },
+      // Passive software system
+      activePassiveSoftware,
       // Global Network System
       networkRegistry: networkRegistry.getSnapshot(),
     };
@@ -2708,7 +2857,8 @@ export const GameProvider = ({ children }) => {
     activeConnections, lastScanResults, discoveredDevices, fileManagerConnections, lastFileOperation,
     downloadQueue, transactions, licensedSoftware, bankruptcyCountdown, lastInterestTime, bankingMessagesSent, reputationMessagesSent,
     proceduralMissionsEnabled, missionPool, pendingChainMissions, activeClientIds, clientStandings, extensionOffers, localSSDFiles,
-    betterMessageRead, hardwareUnlockMessageSent, unlockedFeatures, pendingHardwareUpgrades, creditThresholdForDecryption, decryptionMessageSent]);
+    betterMessageRead, hardwareUnlockMessageSent, unlockedFeatures, pendingHardwareUpgrades, creditThresholdForDecryption, decryptionMessageSent,
+    decryptionAlgorithms, missionDecryptionOperations, missionUploadOperations, activePassiveSoftware]);
 
   // Reboot system - also applies any pending hardware upgrades
   const rebootSystem = useCallback(() => {
@@ -2802,6 +2952,14 @@ export const GameProvider = ({ children }) => {
     // Reset future content tease system
     setCreditThresholdForDecryption(null);
     setDecryptionMessageSent(false);
+    // Reset decryption system
+    setDecryptionAlgorithms(['aes-128', 'aes-256']);
+    setMissionDecryptionOperations({ decrypted: new Set() });
+    setMissionUploadOperations({ uploaded: new Set(), uploadDestinations: new Map() });
+    // Reset passive software
+    setActivePassiveSoftware([]);
+    // Reset ransomware lockout
+    setRansomwareLockout(false);
     // Reset global network registry
     networkRegistry.clear();
 
@@ -2910,6 +3068,19 @@ export const GameProvider = ({ children }) => {
     setCreditThresholdForDecryption(gameState.creditThresholdForDecryption ?? null);
     setDecryptionMessageSent(gameState.decryptionMessageSent ?? false);
 
+    // Restore decryption system
+    setDecryptionAlgorithms(gameState.decryptionAlgorithms ?? ['aes-128', 'aes-256']);
+    setMissionDecryptionOperations({
+      decrypted: new Set(gameState.missionDecryptionOperations?.decrypted ?? []),
+    });
+    setMissionUploadOperations({
+      uploaded: new Set(gameState.missionUploadOperations?.uploaded ?? []),
+      uploadDestinations: new Map(gameState.missionUploadOperations?.uploadDestinations ?? []),
+    });
+
+    // Restore passive software
+    setActivePassiveSoftware(gameState.activePassiveSoftware ?? []);
+
     // Restore global network registry
     if (gameState.networkRegistry) {
       networkRegistry.loadSnapshot(gameState.networkRegistry);
@@ -2991,6 +3162,8 @@ export const GameProvider = ({ children }) => {
     setIsPaused,
     isRebooting,
     setIsRebooting,
+    ransomwareLockout,
+    setRansomwareLockout,
     hardware,
     setHardware,
     software,
@@ -3064,6 +3237,21 @@ export const GameProvider = ({ children }) => {
     // Local SSD
     localSSDFiles,
     setLocalSSDFiles,
+    addFileToLocalSSD,
+    removeFileFromLocalSSD,
+    replaceFileOnLocalSSD,
+
+    // Decryption System
+    decryptionAlgorithms,
+    setDecryptionAlgorithms,
+    missionDecryptionOperations,
+    setMissionDecryptionOperations,
+    missionUploadOperations,
+    setMissionUploadOperations,
+
+    // Passive Software
+    activePassiveSoftware,
+    startPassiveSoftware,
 
     // Procedural Mission System
     proceduralMissionsEnabled,

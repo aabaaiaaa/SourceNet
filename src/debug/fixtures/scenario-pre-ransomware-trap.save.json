@@ -1,7 +1,7 @@
 {
   "username": "scenario_user",
   "playerMailId": "SNET-AJ5-1XB-GQQ",
-  "currentTime": "2020-03-25T09:33:19.000Z",
+  "currentTime": "2020-03-25T09:48:05.000Z",
   "hardware": {
     "cpu": {
       "id": "cpu-1ghz-single",
@@ -83,13 +83,14 @@
     "network-scanner",
     "file-manager",
     "log-viewer",
-    "data-recovery-tool"
+    "data-recovery-tool",
+    "decryption-tool"
   ],
   "bankAccounts": [
     {
       "id": "account-first-bank",
       "bankName": "First Bank Ltd",
-      "balance": 7025
+      "balance": 49025
     }
   ],
   "messages": [
@@ -409,6 +410,54 @@
       "subject": "Excellent Work - Investigation Missions Unlocked",
       "body": "scenario_user,\n\nOutstanding work on the Westbrook Library case. You've proven you can handle investigative work - using the logs to track down the culprit and recovering those deleted files was exactly what I needed to see.\n\nI'm now opening up investigation missions for you. These contracts require the skills you just demonstrated:\n- Analyzing system logs to identify suspicious activity\n- Recovering deleted files that clients need restored\n- Secure deletion when sensitive data needs to be permanently removed\n\nThe pay is better than basic file work, but the stakes are higher too. Clients expect results, and some of these cases are time-sensitive.\n\nCheck the Mission Board - you'll start seeing investigation contracts mixed in with the regular work.\n\nOne more thing - I'm looking into getting you access to some advanced decryption tools. They're not cheap though. Keep taking contracts and building up your credits. Once you've earned another 10,000 or so, I should be able to sort something out.\n\nKeep it up.\n\n- Morgan",
       "timestamp": "2020-03-25T09:24:18.000Z",
+      "read": true,
+      "archived": true,
+      "attachments": []
+    },
+    {
+      "id": "msg-decryption-work",
+      "from": "SourceNet Manager",
+      "fromId": "SNET-MGR-3NT",
+      "fromName": "SourceNet Manager Morgan",
+      "subject": "Decryption Work - Ready to Go",
+      "body": "scenario_user,\n\nGood news. You've built up enough credits for me to get you access to the decryption tools I mentioned.\n\nThe Decryption Tool is now available in the Portal. It's 500 credits - handles AES-128 and AES-256 encrypted files out of the box. The workflow is straightforward: download encrypted files from the remote system to your local SSD, decrypt them locally, then upload the clean files back.\n\nI already have a client lined up. MetroLink Transit Authority - they run the regional train network. Got hit by a ransomware attack last week and their ticketing systems are down. Thousands of commuters affected. They need someone to decrypt their databases and get everything back online.\n\nInstall the Decryption Tool from the Portal and check the Mission Board. The MetroLink job should appear shortly.\n\nThis is bigger money than the investigation work. Don't let me down.\n\n- Morgan",
+      "timestamp": "2020-03-25T09:33:19.000Z",
+      "read": true,
+      "archived": true,
+      "attachments": []
+    },
+    {
+      "id": "msg-briefing-ransomware-recovery-1770830203718",
+      "from": "MetroLink Transit Authority",
+      "fromId": "METRO-OPS-001",
+      "fromName": "MetroLink Transit Authority",
+      "subject": "URGENT: Ransomware Attack - Ticketing Systems Down",
+      "body": "Dear SourceNet Contractor,\n\nWe are MetroLink Transit Authority — we operate the regional train network serving 2 million daily commuters. Last week we suffered a severe ransomware attack that has crippled our ticketing infrastructure.\n\nOur ticketing database on the ticketing-db server has been locked up by the attackers. Without it, our automated fare collection is completely offline. We've had to resort to paper tickets and honour-based fares, which is costing us tens of thousands of credits per day.\n\nOur crew scheduling system on scheduling-srv was also hit — the crew roster database is inaccessible. Crew coordinators are managing shifts by hand, leading to delays and cancellations across the network.\n\nWe've preserved the servers exactly as we found them. Our IT team identified some suspicious executables on the ticketing server that weren't there before the attack — we suspect they're part of the malware payload. We need those cleaned up as well.\n\nPlease connect to our operations network, investigate the damage, recover our databases, and get us back online. We also need the malware removed.\n\nNetwork credentials are attached. Time is critical.\n\nSincerely,\nOperations Director\nMetroLink Transit Authority",
+      "timestamp": "2020-03-25T09:34:45.000Z",
+      "read": true,
+      "archived": false,
+      "attachments": [
+        {
+          "type": "networkAddress",
+          "networkId": "metrolink-primary",
+          "networkName": "MetroLink-Operations",
+          "address": "10.50.0.0/24",
+          "deviceIps": [
+            "10.50.0.10",
+            "10.50.0.20"
+          ],
+          "activated": true
+        }
+      ]
+    },
+    {
+      "id": "msg-metro-extension",
+      "from": "MetroLink Transit Authority",
+      "fromId": "METRO-OPS-002",
+      "fromName": "MetroLink Transit Authority",
+      "subject": "One More File - Passenger Data",
+      "body": "Dear SourceNet Contractor,\n\nExcellent work so far! Our ticketing system is coming back online and the crew scheduling is being restored.\n\nHowever, we've found one more encrypted file on the ticketing server — passenger-data.dat.enc. It's a small file (2 MB) containing passenger journey data that our analytics team needs for their monthly report.\n\nCould you decrypt this as well? It should be straightforward given what you've already done. The file has been flagged on the ticketing-db server.\n\nThank you,\nMetroLink Transit Authority",
+      "timestamp": "2020-03-25T09:47:48.000Z",
       "read": false,
       "archived": false,
       "attachments": []
@@ -418,7 +467,463 @@
   "windows": [],
   "reputation": 4,
   "reputationCountdown": null,
-  "activeMission": null,
+  "activeMission": {
+    "missionId": "ransomware-recovery",
+    "title": "Ransomware Recovery",
+    "description": "MetroLink Transit Authority has been hit by a ransomware attack. Their ticketing database and crew scheduling system are encrypted. Decrypt the files, clean up the malware, and get their systems back online.",
+    "client": "MetroLink Transit Authority",
+    "difficulty": "Hard",
+    "basePayout": 6000,
+    "oneTime": true,
+    "category": "decryption",
+    "triggers": {
+      "start": {
+        "type": "timeSinceEvent",
+        "event": "messageRead",
+        "condition": {
+          "messageId": "msg-decryption-work"
+        },
+        "delay": 3000
+      }
+    },
+    "requirements": {
+      "software": [
+        "decryption-tool",
+        "vpn-client",
+        "network-scanner",
+        "data-recovery-tool",
+        "log-viewer"
+      ]
+    },
+    "briefingMessage": {
+      "from": "MetroLink Transit Authority",
+      "fromId": "METRO-OPS-001",
+      "fromName": "MetroLink Transit Authority",
+      "subject": "URGENT: Ransomware Attack - Ticketing Systems Down",
+      "body": "Dear SourceNet Contractor,\n\nWe are MetroLink Transit Authority — we operate the regional train network serving 2 million daily commuters. Last week we suffered a severe ransomware attack that has crippled our ticketing infrastructure.\n\nOur ticketing database on the ticketing-db server has been locked up by the attackers. Without it, our automated fare collection is completely offline. We've had to resort to paper tickets and honour-based fares, which is costing us tens of thousands of credits per day.\n\nOur crew scheduling system on scheduling-srv was also hit — the crew roster database is inaccessible. Crew coordinators are managing shifts by hand, leading to delays and cancellations across the network.\n\nWe've preserved the servers exactly as we found them. Our IT team identified some suspicious executables on the ticketing server that weren't there before the attack — we suspect they're part of the malware payload. We need those cleaned up as well.\n\nPlease connect to our operations network, investigate the damage, recover our databases, and get us back online. We also need the malware removed.\n\nNetwork credentials are attached. Time is critical.\n\nSincerely,\nOperations Director\nMetroLink Transit Authority",
+      "attachments": [
+        {
+          "type": "networkAddress",
+          "networkId": "metrolink-primary",
+          "networkName": "MetroLink-Operations",
+          "address": "10.50.0.0/24",
+          "deviceIps": [
+            "10.50.0.10",
+            "10.50.0.20"
+          ]
+        }
+      ]
+    },
+    "networks": [
+      {
+        "networkId": "metrolink-primary",
+        "networkName": "MetroLink-Operations",
+        "address": "10.50.0.0/24",
+        "bandwidth": 75,
+        "revokeOnComplete": true,
+        "revokeReason": "Recovery complete - temporary access revoked",
+        "fileSystems": [
+          {
+            "id": "fs-metro-ticketing",
+            "name": "ticketing-db",
+            "ip": "10.50.0.10",
+            "description": "Ticketing Database Server",
+            "files": [
+              {
+                "name": "ticketing-database.db.enc",
+                "size": "450 MB",
+                "encrypted": true,
+                "algorithm": "aes-256"
+              },
+              {
+                "name": "fare-tables.json",
+                "size": "2.5 MB"
+              },
+              {
+                "name": "route-schedules.csv",
+                "size": "8.1 MB"
+              },
+              {
+                "name": "station-config.xml",
+                "size": "1.2 MB"
+              },
+              {
+                "name": "svchost32.exe",
+                "size": "45 KB",
+                "malware": true
+              },
+              {
+                "name": "winupdate.dll",
+                "size": "32 KB",
+                "malware": true
+              }
+            ],
+            "logs": [
+              {
+                "timestamp": -720,
+                "type": "remote",
+                "user": "unknown_0x4F2A",
+                "action": "login",
+                "fileSystemId": "fs-metro-ticketing",
+                "note": "Unauthorized remote session from 185.243.115.42"
+              },
+              {
+                "timestamp": -715,
+                "type": "file",
+                "user": "unknown_0x4F2A",
+                "action": "upload",
+                "fileName": "svchost32.exe",
+                "fileSystemId": "fs-metro-ticketing",
+                "sizeBytes": 46080
+              },
+              {
+                "timestamp": -710,
+                "type": "file",
+                "user": "unknown_0x4F2A",
+                "action": "upload",
+                "fileName": "winupdate.dll",
+                "fileSystemId": "fs-metro-ticketing",
+                "sizeBytes": 32768
+              },
+              {
+                "timestamp": -705,
+                "type": "file",
+                "user": "unknown_0x4F2A",
+                "action": "execute",
+                "fileName": "svchost32.exe",
+                "fileSystemId": "fs-metro-ticketing",
+                "note": "Process spawned: PID 4092"
+              },
+              {
+                "timestamp": -700,
+                "type": "file",
+                "user": "SYSTEM",
+                "action": "encrypt",
+                "fileName": "ticketing-database.db",
+                "fileSystemId": "fs-metro-ticketing",
+                "note": "File encrypted with AES-256 → ticketing-database.db.enc"
+              },
+              {
+                "timestamp": -695,
+                "type": "remote",
+                "user": "unknown_0x4F2A",
+                "action": "logout",
+                "fileSystemId": "fs-metro-ticketing",
+                "note": "Session terminated"
+              }
+            ]
+          },
+          {
+            "id": "fs-metro-scheduling",
+            "name": "scheduling-srv",
+            "ip": "10.50.0.20",
+            "description": "Crew Scheduling Server",
+            "files": [
+              {
+                "name": "crew-roster.db.enc",
+                "size": "120 MB",
+                "encrypted": true,
+                "algorithm": "aes-256"
+              },
+              {
+                "name": "shift-patterns.json",
+                "size": "3.4 MB"
+              },
+              {
+                "name": "overtime-log.csv",
+                "size": "1.8 MB"
+              },
+              {
+                "name": "training-records.pdf",
+                "size": "12.5 MB"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "objectives": [
+      {
+        "id": "obj-nar",
+        "description": "Add MetroLink-Operations credentials to your NAR",
+        "type": "narEntryAdded",
+        "target": "metrolink-primary",
+        "status": "complete",
+        "preCompleted": false
+      },
+      {
+        "id": "obj-connect",
+        "description": "Connect to MetroLink-Operations network",
+        "type": "networkConnection",
+        "target": "metrolink-primary",
+        "status": "complete",
+        "preCompleted": false
+      },
+      {
+        "id": "obj-scan",
+        "description": "Scan the network and locate both servers",
+        "type": "networkScan",
+        "target": "metrolink-primary",
+        "expectedResults": [
+          "ticketing-db",
+          "scheduling-srv"
+        ],
+        "status": "complete",
+        "preCompleted": false
+      },
+      {
+        "id": "obj-investigate",
+        "description": "View ticketing-db logs to investigate the attack",
+        "type": "investigation",
+        "correctFileSystemId": "fs-metro-ticketing",
+        "status": "complete",
+        "preCompleted": false
+      },
+      {
+        "id": "obj-delete-malware",
+        "description": "Securely delete the malware (svchost32.exe, winupdate.dll)",
+        "type": "secureDelete",
+        "targetFiles": [
+          "svchost32.exe",
+          "winupdate.dll"
+        ],
+        "status": "complete",
+        "preCompleted": false
+      },
+      {
+        "id": "obj-decrypt-ticketing",
+        "description": "Decrypt the ticketing database",
+        "type": "fileDecryption",
+        "targetFiles": [
+          "ticketing-database.db.enc"
+        ],
+        "status": "complete",
+        "preCompleted": false
+      },
+      {
+        "id": "obj-upload-ticketing",
+        "description": "Upload decrypted ticketing database to ticketing-db",
+        "type": "fileUpload",
+        "targetFiles": [
+          "ticketing-database.db"
+        ],
+        "destination": "10.50.0.10",
+        "status": "complete",
+        "preCompleted": false
+      },
+      {
+        "id": "obj-decrypt-scheduling",
+        "description": "Decrypt the crew roster database",
+        "type": "fileDecryption",
+        "targetFiles": [
+          "crew-roster.db.enc"
+        ],
+        "status": "complete",
+        "preCompleted": false
+      },
+      {
+        "id": "obj-upload-scheduling",
+        "description": "Upload decrypted crew roster to scheduling-srv",
+        "type": "fileUpload",
+        "targetFiles": [
+          "crew-roster.db"
+        ],
+        "destination": "10.50.0.20",
+        "status": "complete",
+        "preCompleted": false
+      },
+      {
+        "id": "obj-decrypt-trap",
+        "description": "Decrypt passenger data file",
+        "type": "fileDecryption",
+        "targetFiles": [
+          "passenger-data.dat.enc"
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "obj-verify",
+        "description": "Verify mission completion",
+        "type": "verification",
+        "autoComplete": false,
+        "status": "pending"
+      }
+    ],
+    "scriptedEvents": [
+      {
+        "id": "evt-extension-request",
+        "trigger": {
+          "type": "afterObjectiveComplete",
+          "objectiveId": "obj-upload-scheduling",
+          "delay": 8000
+        },
+        "actions": [
+          {
+            "type": "sendMessage",
+            "eventId": "msg-metro-extension",
+            "message": {
+              "id": "msg-metro-extension",
+              "from": "MetroLink Transit Authority",
+              "fromId": "METRO-OPS-002",
+              "fromName": "MetroLink Transit Authority",
+              "subject": "One More File - Passenger Data",
+              "body": "Dear SourceNet Contractor,\n\nExcellent work so far! Our ticketing system is coming back online and the crew scheduling is being restored.\n\nHowever, we've found one more encrypted file on the ticketing server — passenger-data.dat.enc. It's a small file (2 MB) containing passenger journey data that our analytics team needs for their monthly report.\n\nCould you decrypt this as well? It should be straightforward given what you've already done. The file has been flagged on the ticketing-db server.\n\nThank you,\nMetroLink Transit Authority"
+            }
+          },
+          {
+            "type": "addExtensionObjectives",
+            "objectives": [
+              {
+                "id": "obj-decrypt-trap",
+                "description": "Decrypt passenger data file",
+                "type": "fileDecryption",
+                "targetFiles": [
+                  "passenger-data.dat.enc"
+                ]
+              }
+            ],
+            "files": [
+              {
+                "fileSystemId": "fs-metro-ticketing",
+                "file": {
+                  "name": "passenger-data.dat.enc",
+                  "size": "2 MB",
+                  "encrypted": true,
+                  "algorithm": "aes-256"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "evt-ransomware-attack",
+        "trigger": {
+          "type": "afterObjectiveComplete",
+          "objectiveId": "obj-decrypt-trap",
+          "delay": 2000
+        },
+        "actions": [
+          {
+            "type": "triggerRansomwareOverlay",
+            "duration": 60000,
+            "capacity": 90
+          }
+        ]
+      },
+      {
+        "id": "evt-manager-rescue",
+        "trigger": {
+          "type": "afterEvent",
+          "eventId": "evt-ransomware-attack",
+          "delay": 5000
+        },
+        "actions": [
+          {
+            "type": "sendMessage",
+            "eventId": "msg-ransomware-rescue",
+            "templateId": "ransomware-rescue",
+            "message": {
+              "id": "msg-ransomware-rescue",
+              "templateId": "ransomware-rescue"
+            }
+          }
+        ]
+      },
+      {
+        "id": "evt-antivirus-response",
+        "trigger": {
+          "type": "softwareActivation",
+          "softwareId": "advanced-firewall-av",
+          "delay": 0
+        },
+        "actions": [
+          {
+            "type": "pauseRansomware"
+          },
+          {
+            "type": "sendMessage",
+            "eventId": "msg-ransomware-resolution",
+            "templateId": "ransomware-resolution",
+            "message": {
+              "id": "msg-ransomware-resolution",
+              "templateId": "ransomware-resolution"
+            }
+          }
+        ]
+      },
+      {
+        "id": "evt-mission-complete",
+        "trigger": {
+          "type": "messageRead",
+          "messageId": "msg-ransomware-resolution",
+          "delay": 0
+        },
+        "actions": [
+          {
+            "type": "setMissionStatus",
+            "status": "success"
+          }
+        ]
+      },
+      {
+        "id": "evt-ransomware-decrypted",
+        "trigger": {
+          "type": "eventBusEvent",
+          "eventName": "ransomwareDecrypted",
+          "delay": 3000
+        },
+        "actions": [
+          {
+            "type": "sendMessage",
+            "eventId": "msg-ransomware-decrypted-resolution",
+            "templateId": "ransomware-decrypted-resolution",
+            "message": {
+              "id": "msg-ransomware-decrypted-resolution",
+              "templateId": "ransomware-decrypted-resolution"
+            }
+          }
+        ]
+      },
+      {
+        "id": "evt-mission-complete-via-decryption",
+        "trigger": {
+          "type": "messageRead",
+          "messageId": "msg-ransomware-decrypted-resolution",
+          "delay": 0
+        },
+        "actions": [
+          {
+            "type": "setMissionStatus",
+            "status": "success"
+          }
+        ]
+      }
+    ],
+    "consequences": {
+      "success": {
+        "credits": 6000,
+        "reputation": 2,
+        "messages": [
+          {
+            "id": "msg-ransomware-payment",
+            "templateId": "ransomware-recovery-success",
+            "delay": 8000
+          }
+        ]
+      },
+      "failure": {
+        "credits": -5000,
+        "reputation": -3,
+        "retryable": false,
+        "messages": []
+      }
+    },
+    "status": "active",
+    "startTime": "2020-03-25T09:34:45.000Z",
+    "acceptedTime": "2020-03-25T09:34:45.000Z",
+    "deadlineTime": null
+  },
   "completedMissions": [
     {
       "id": "tutorial-part-1",
@@ -465,87 +970,67 @@
   },
   "activeConnections": [],
   "lastScanResults": {
-    "network": "westbrook-library",
+    "network": "metrolink-primary",
     "machines": [
       {
-        "ip": "172.20.0.10",
-        "hostname": "main-catalog",
-        "id": "fs-lib-main-catalog",
-        "type": "fileserver",
+        "ip": "10.50.0.10",
+        "hostname": "ticketing-db",
+        "id": "fs-metro-ticketing",
+        "type": "database",
         "fileSystems": [
-          "/main-catalog/"
+          "/ticketing-db/"
         ],
         "required": true
       },
       {
-        "ip": "172.20.0.11",
-        "hostname": "circulation",
-        "id": "fs-lib-circulation",
+        "ip": "10.50.0.20",
+        "hostname": "scheduling-srv",
+        "id": "fs-metro-scheduling",
         "type": "fileserver",
         "fileSystems": [
-          "/circulation/"
+          "/scheduling-srv/"
         ],
         "required": true
       },
       {
-        "ip": "172.20.0.12",
-        "hostname": "periodicals",
-        "id": "fs-lib-periodicals",
-        "type": "fileserver",
-        "fileSystems": [
-          "/periodicals/"
-        ],
-        "required": true
+        "ip": "10.50.0.64",
+        "hostname": "printer-floor2",
+        "id": "printer-1",
+        "type": "printer",
+        "fileSystems": [],
+        "required": false
       },
       {
-        "ip": "172.20.0.13",
-        "hostname": "reference",
-        "id": "fs-lib-reference",
-        "type": "fileserver",
-        "fileSystems": [
-          "/reference/"
-        ],
-        "required": true
+        "ip": "10.50.0.38",
+        "hostname": "printer-floor3",
+        "id": "printer-2",
+        "type": "printer",
+        "fileSystems": [],
+        "required": false
       },
       {
-        "ip": "172.20.0.20",
-        "hostname": "archives-general",
-        "id": "fs-lib-archives-general",
-        "type": "fileserver",
-        "fileSystems": [
-          "/archives-general/"
-        ],
-        "required": true
+        "ip": "10.50.0.22",
+        "hostname": "sensor-03",
+        "id": "iot-3",
+        "type": "iot",
+        "fileSystems": [],
+        "required": false
       },
       {
-        "ip": "172.20.0.21",
-        "hostname": "archives-special",
-        "id": "fs-lib-archives-special",
-        "type": "fileserver",
-        "fileSystems": [
-          "/archives-special/"
-        ],
-        "required": true
+        "ip": "10.50.0.101",
+        "hostname": "printer-floor1",
+        "id": "printer-4",
+        "type": "printer",
+        "fileSystems": [],
+        "required": false
       },
       {
-        "ip": "172.20.0.30",
-        "hostname": "media-server",
-        "id": "fs-lib-media",
-        "type": "fileserver",
-        "fileSystems": [
-          "/media-server/"
-        ],
-        "required": true
-      },
-      {
-        "ip": "172.20.0.50",
-        "hostname": "admin-server",
-        "id": "fs-lib-admin",
-        "type": "fileserver",
-        "fileSystems": [
-          "/admin-server/"
-        ],
-        "required": true
+        "ip": "10.50.0.156",
+        "hostname": "ws-136",
+        "id": "workstation-5",
+        "type": "workstation",
+        "fileSystems": [],
+        "required": false
       }
     ]
   },
@@ -567,6 +1052,15 @@
       "172.20.0.21",
       "172.20.0.30",
       "172.20.0.50"
+    ],
+    "metrolink-primary": [
+      "10.50.0.10",
+      "10.50.0.20",
+      "10.50.0.64",
+      "10.50.0.38",
+      "10.50.0.22",
+      "10.50.0.101",
+      "10.50.0.156"
     ]
   },
   "fileManagerConnections": [
@@ -704,6 +1198,14 @@
       "amount": 2975,
       "description": "Payment for The Missing Archives",
       "balanceAfter": 7025
+    },
+    {
+      "id": "txn-purchase-1770830202367",
+      "date": "2020-03-25T09:34:08.000Z",
+      "type": "expense",
+      "amount": -8000,
+      "description": "Software Purchase: Decryption Tool",
+      "balanceAfter": 49025
     }
   ],
   "licensedSoftware": [
@@ -1028,305 +1530,6 @@
       "arcTotal": null,
       "requiresCompletedMission": null,
       "expiresAt": "2020-03-25T10:09:11.000Z"
-    },
-    {
-      "missionId": "repair-emerg-volunteer-fire-1770830149805-5",
-      "title": "Data Recovery Escalation (1/3): File Repair for Volunteer Fire Department #7",
-      "client": "Volunteer Fire Department #7",
-      "clientId": "emerg-volunteer-fire",
-      "clientType": "emerg-volunteer",
-      "industry": "emergency",
-      "difficulty": "Easy",
-      "missionType": "repair",
-      "basePayout": 771,
-      "category": "procedural-arc",
-      "networks": [
-        {
-          "networkId": "emerg-volunteer-fire-network-1770830149805",
-          "networkName": "VolunteerFire-Network",
-          "address": "10.101.247.0/24",
-          "bandwidth": 500,
-          "revokeOnComplete": true,
-          "revokeReason": "Mission access expired",
-          "fileSystems": [
-            {
-              "id": "fs-emerg-volunteer-fire-1770830149805-d0-fs0",
-              "ip": "10.101.247.10",
-              "name": "volunteerfire-fileserver-01/data",
-              "fileSystemName": "/data",
-              "files": [
-                {
-                  "name": "incident_reports_2023_Q4.dat",
-                  "size": "11.7 MB",
-                  "sizeBytes": 12235024,
-                  "corrupted": true,
-                  "targetFile": true
-                },
-                {
-                  "name": "personnel_2024_03.enc",
-                  "size": "16.7 MB",
-                  "sizeBytes": 17534952,
-                  "corrupted": true,
-                  "targetFile": true
-                },
-                {
-                  "name": "system_status_2024_03.log",
-                  "size": "420.6 KB",
-                  "sizeBytes": 430718,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "incident_reports_2024_02.dat",
-                  "size": "5.8 MB",
-                  "sizeBytes": 6084834,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "system_status_2024_04.log",
-                  "size": "403.6 KB",
-                  "sizeBytes": 413330,
-                  "corrupted": false,
-                  "targetFile": false
-                }
-              ],
-              "accessible": true
-            },
-            {
-              "id": "fs-emerg-volunteer-fire-1770830149805-d0-fs1",
-              "ip": "10.101.247.10",
-              "name": "volunteerfire-fileserver-01/logs",
-              "fileSystemName": "/logs",
-              "files": [
-                {
-                  "name": "personnel_2023_Q4.enc",
-                  "size": "29.2 MB",
-                  "sizeBytes": 30651452,
-                  "corrupted": true,
-                  "targetFile": true
-                },
-                {
-                  "name": "incident_reports_2023_Q4.dat",
-                  "size": "44.5 MB",
-                  "sizeBytes": 46682278,
-                  "corrupted": true,
-                  "targetFile": true
-                },
-                {
-                  "name": "system_status_2024_02.log",
-                  "size": "175.0 KB",
-                  "sizeBytes": 179172,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "personnel_2024_01.enc",
-                  "size": "46.0 MB",
-                  "sizeBytes": 48286098,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "dispatch_logs_2024_Q1.db",
-                  "size": "22.6 MB",
-                  "sizeBytes": 23741627,
-                  "corrupted": false,
-                  "targetFile": false
-                }
-              ],
-              "accessible": true
-            },
-            {
-              "id": "fs-emerg-volunteer-fire-1770830149805-d0-fs2",
-              "ip": "10.101.247.10",
-              "name": "volunteerfire-fileserver-01/backups",
-              "fileSystemName": "/backups",
-              "files": [
-                {
-                  "name": "radio_config_2024_Q2.cfg",
-                  "size": "46.1 KB",
-                  "sizeBytes": 47164,
-                  "corrupted": true,
-                  "targetFile": true
-                },
-                {
-                  "name": "personnel_2023_12.enc",
-                  "size": "74.5 MB",
-                  "sizeBytes": 78113778,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "personnel_2023_Q4.enc",
-                  "size": "97.5 MB",
-                  "sizeBytes": 102196930,
-                  "corrupted": false,
-                  "targetFile": false
-                }
-              ],
-              "accessible": true
-            }
-          ]
-        }
-      ],
-      "objectives": [
-        {
-          "id": "obj-1",
-          "description": "Connect to VolunteerFire-Network network",
-          "type": "networkConnection",
-          "target": "emerg-volunteer-fire-network-1770830149805"
-        },
-        {
-          "id": "obj-2",
-          "description": "Use Network Scanner to locate the file server",
-          "type": "networkScan",
-          "target": "emerg-volunteer-fire-network-1770830149805",
-          "expectedResults": [
-            "10.101.247.10"
-          ]
-        },
-        {
-          "id": "obj-3",
-          "description": "Repair 5 corrupted files across 3 file systems",
-          "type": "fileOperation",
-          "operation": "repair",
-          "targetFiles": [
-            "incident_reports_2023_Q4.dat",
-            "personnel_2024_03.enc",
-            "personnel_2023_Q4.enc",
-            "incident_reports_2023_Q4.dat",
-            "radio_config_2024_Q2.cfg"
-          ]
-        },
-        {
-          "id": "obj-verify",
-          "description": "Verify mission completion",
-          "type": "verification",
-          "autoComplete": false
-        }
-      ],
-      "targetFiles": [
-        "incident_reports_2023_Q4.dat",
-        "personnel_2024_03.enc",
-        "personnel_2023_Q4.enc",
-        "incident_reports_2023_Q4.dat",
-        "radio_config_2024_Q2.cfg"
-      ],
-      "totalDataBytes": 107150870,
-      "requirements": {
-        "software": [
-          "vpn-client",
-          "network-address-register",
-          "network-scanner",
-          "file-manager"
-        ],
-        "minReputation": 3
-      },
-      "consequences": {
-        "success": {
-          "credits": 771,
-          "reputation": 1,
-          "messages": [
-            {
-              "id": "msg-success-1770830149805",
-              "from": "Volunteer Fire Department #7",
-              "fromId": "emerg-volunteer-fire",
-              "fromName": "Volunteer Fire Department #7",
-              "subject": "Mission Complete - Payment Enclosed",
-              "body": "Dear {username},\n\nGreat job on completing the mission. Your professionalism is appreciated. Payment attached.\n\nSincerely,\n{clientName}",
-              "attachments": [
-                {
-                  "type": "cheque",
-                  "amount": 771,
-                  "description": "Payment for completed mission"
-                }
-              ],
-              "delay": 3000
-            }
-          ]
-        },
-        "failure": {
-          "credits": -192,
-          "reputation": -1,
-          "messages": [
-            {
-              "id": "msg-failure-incomplete-1770830149805",
-              "from": "Volunteer Fire Department #7",
-              "fromId": "emerg-volunteer-fire",
-              "fromName": "Volunteer Fire Department #7",
-              "subject": "Mission Failed",
-              "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
-              "attachments": [],
-              "delay": 2000
-            }
-          ],
-          "messageVariants": {
-            "deadline": {
-              "id": "msg-failure-deadline-1770830149805",
-              "from": "Volunteer Fire Department #7",
-              "fromId": "emerg-volunteer-fire",
-              "fromName": "Volunteer Fire Department #7",
-              "subject": "Mission Failed",
-              "body": "Dear {username},\n\nTime ran out before the work was completed. We expected better from someone with your reputation.\n\nSincerely,\n{clientName}",
-              "attachments": [],
-              "delay": 2000
-            },
-            "incomplete": {
-              "id": "msg-failure-incomplete-1770830149805",
-              "from": "Volunteer Fire Department #7",
-              "fromId": "emerg-volunteer-fire",
-              "fromName": "Volunteer Fire Department #7",
-              "subject": "Mission Failed",
-              "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
-              "attachments": [],
-              "delay": 2000
-            },
-            "filesDeleted": {
-              "id": "msg-failure-filesDeleted-1770830149805",
-              "from": "Volunteer Fire Department #7",
-              "fromId": "emerg-volunteer-fire",
-              "fromName": "Volunteer Fire Department #7",
-              "subject": "Mission Failed",
-              "body": "Dear {username},\n\nCritical files required for this task have been deleted. We cannot proceed and must terminate this engagement immediately.\n\nSincerely,\n{clientName}",
-              "attachments": [],
-              "delay": 2000
-            }
-          }
-        }
-      },
-      "timeLimitMinutes": null,
-      "briefingMessage": {
-        "id": "msg-briefing-repair-emerg-volunteer-fire-1770830149805-ggsghwxmy",
-        "from": "Volunteer Fire Department #7",
-        "fromId": "emerg-volunteer-fire",
-        "fromName": "Volunteer Fire Department #7",
-        "subject": "Mission Briefing: Repair Request",
-        "body": "Dear {username},\n\nOur IT team discovered corruption in our database files. We need these repaired urgently to resume operations.\n\n📁 Files to repair:\n• incident_reports_2023_Q4.dat\n• personnel_2024_03.enc\n• personnel_2023_Q4.enc\n• incident_reports_2023_Q4.dat\n• radio_config_2024_Q2.cfg\n\nTotal data: 102 MB\n\nAttached are the network credentials you'll need to access our systems.\n\n[Mission 1 of 3]\n\nSincerely,\n{clientName}",
-        "attachments": [
-          {
-            "type": "networkAddress",
-            "networkId": "emerg-volunteer-fire-network-1770830149805",
-            "networkName": "VolunteerFire-Network",
-            "address": "10.101.247.0/24",
-            "deviceIps": [
-              "10.101.247.10",
-              "10.101.247.10",
-              "10.101.247.10"
-            ]
-          }
-        ],
-        "read": false,
-        "timestamp": "2026-02-11T17:15:49.805Z"
-      },
-      "isProcedurallyGenerated": true,
-      "generatedAt": "2026-02-11T17:15:49.805Z",
-      "arcId": "arc-1770830149805-nj8mcpdx8",
-      "arcSequence": 1,
-      "arcTotal": 3,
-      "requiresCompletedMission": null,
-      "arcName": "Data Recovery Escalation",
-      "expiresAt": "2020-03-25T09:38:11.000Z"
     },
     {
       "missionId": "repair-bank-coastal-regional-1770830149806-8",
@@ -1715,417 +1918,6 @@
       "requiresCompletedMission": null,
       "arcName": "Ransomware Aftermath",
       "expiresAt": "2020-03-25T09:51:11.000Z"
-    },
-    {
-      "missionId": "transfer-ship-continental-freight-1770830149806-11",
-      "title": "Data Transfer for Continental Freight Lines",
-      "client": "Continental Freight Lines",
-      "clientId": "ship-continental-freight",
-      "clientType": "ship-logistics",
-      "industry": "shipping",
-      "difficulty": "Hard",
-      "missionType": "transfer",
-      "basePayout": 2101,
-      "category": "procedural",
-      "networks": [
-        {
-          "networkId": "ship-continental-freight-network-1770830149806",
-          "networkName": "Continental-Network",
-          "address": "10.187.173.0/24",
-          "bandwidth": 500,
-          "revokeOnComplete": true,
-          "revokeReason": "Mission access expired",
-          "fileSystems": [
-            {
-              "id": "fs-ship-continental-freight-1770830149806-d0-fs0",
-              "ip": "10.187.173.10",
-              "name": "continental-fileserver01-01/data",
-              "fileSystemName": "/data",
-              "files": [
-                {
-                  "name": "inventory_2023_11.db",
-                  "size": "376.8 MB",
-                  "sizeBytes": 395104178,
-                  "corrupted": false,
-                  "targetFile": true
-                },
-                {
-                  "name": "inventory_2024_05.db",
-                  "size": "324.1 MB",
-                  "sizeBytes": 339846667,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "transfer_receipt_2024_Q1.pdf",
-                  "size": "7.0 MB",
-                  "sizeBytes": 7359752,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "fleet_data_2024_05.zip",
-                  "size": "363.4 MB",
-                  "sizeBytes": 381070432,
-                  "corrupted": false,
-                  "targetFile": false
-                }
-              ],
-              "accessible": true
-            },
-            {
-              "id": "fs-ship-continental-freight-1770830149806-d0-fs1",
-              "ip": "10.187.173.10",
-              "name": "continental-fileserver01-01/logs",
-              "fileSystemName": "/logs",
-              "files": [
-                {
-                  "name": "transfer_receipt_2024_Q2.pdf",
-                  "size": "4.6 MB",
-                  "sizeBytes": 4848117,
-                  "corrupted": false,
-                  "targetFile": true
-                },
-                {
-                  "name": "warehouse_2024_Q1.tar",
-                  "size": "181.3 MB",
-                  "sizeBytes": 190066360,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "fleet_data_2024_04.zip",
-                  "size": "231.2 MB",
-                  "sizeBytes": 242385118,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "transfer_receipt_2024_Q1.pdf",
-                  "size": "5.0 MB",
-                  "sizeBytes": 5241302,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "transfer_receipt_2023_11.pdf",
-                  "size": "4.1 MB",
-                  "sizeBytes": 4321963,
-                  "corrupted": false,
-                  "targetFile": false
-                }
-              ],
-              "accessible": true
-            },
-            {
-              "id": "fs-ship-continental-freight-1770830149806-d1-fs0",
-              "ip": "10.187.173.11",
-              "name": "continental-fileserver02-01/data",
-              "fileSystemName": "/data",
-              "files": [
-                {
-                  "name": "inventory_2024_04.db",
-                  "size": "181.5 MB",
-                  "sizeBytes": 190283911,
-                  "corrupted": false,
-                  "targetFile": true
-                },
-                {
-                  "name": "inventory_2024_Q2.db",
-                  "size": "456.9 MB",
-                  "sizeBytes": 479101186,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "fleet_data_2024_03.zip",
-                  "size": "174.7 MB",
-                  "sizeBytes": 183169744,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "warehouse_2023_Q4.tar",
-                  "size": "189.1 MB",
-                  "sizeBytes": 198268982,
-                  "corrupted": false,
-                  "targetFile": false
-                }
-              ],
-              "accessible": true
-            },
-            {
-              "id": "fs-ship-continental-freight-1770830149806-d1-fs1",
-              "ip": "10.187.173.11",
-              "name": "continental-fileserver02-01/logs",
-              "fileSystemName": "/logs",
-              "files": [
-                {
-                  "name": "sync_log_2023_12.txt",
-                  "size": "64.4 KB",
-                  "sizeBytes": 65964,
-                  "corrupted": false,
-                  "targetFile": true
-                },
-                {
-                  "name": "inventory_2024_Q2.db",
-                  "size": "266.3 MB",
-                  "sizeBytes": 279201540,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "transfer_receipt_2023_12.pdf",
-                  "size": "9.3 MB",
-                  "sizeBytes": 9791152,
-                  "corrupted": false,
-                  "targetFile": false
-                }
-              ],
-              "accessible": true
-            },
-            {
-              "id": "fs-ship-continental-freight-1770830149806-d2-fs0",
-              "ip": "10.187.173.12",
-              "name": "continental-fileserver03-01",
-              "files": [
-                {
-                  "name": "warehouse_2023_Q4.tar",
-                  "size": "491.8 MB",
-                  "sizeBytes": 515713682,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "warehouse_2024_03.tar",
-                  "size": "170.3 MB",
-                  "sizeBytes": 178573489,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "fleet_data_2024_05.zip",
-                  "size": "227.7 MB",
-                  "sizeBytes": 238726081,
-                  "corrupted": false,
-                  "targetFile": false
-                }
-              ],
-              "accessible": true
-            }
-          ]
-        },
-        {
-          "networkId": "ship-continental-freight-dest-1770830149806",
-          "networkName": "Continental-Backup",
-          "address": "10.122.90.0/24",
-          "bandwidth": 500,
-          "revokeOnComplete": true,
-          "revokeReason": "Mission access expired",
-          "fileSystems": [
-            {
-              "id": "fs-ship-continental-freight-1770830149806-dest",
-              "ip": "10.122.90.10",
-              "name": "continental-backup-01",
-              "files": [],
-              "accessible": true
-            }
-          ]
-        }
-      ],
-      "objectives": [
-        {
-          "id": "obj-1",
-          "description": "Connect to Continental-Network network",
-          "type": "networkConnection",
-          "target": "ship-continental-freight-network-1770830149806"
-        },
-        {
-          "id": "obj-2",
-          "description": "Use Network Scanner to locate 3 file servers",
-          "type": "networkScan",
-          "target": "ship-continental-freight-network-1770830149806",
-          "expectedResults": [
-            "10.187.173.10",
-            "10.187.173.11",
-            "10.187.173.12"
-          ]
-        },
-        {
-          "id": "obj-3",
-          "description": "Copy 4 files from 5 file systems",
-          "type": "fileOperation",
-          "operation": "copy",
-          "targetFiles": [
-            "inventory_2023_11.db",
-            "transfer_receipt_2024_Q2.pdf",
-            "inventory_2024_04.db",
-            "sync_log_2023_12.txt"
-          ]
-        },
-        {
-          "id": "obj-4",
-          "description": "Connect to Continental-Backup network",
-          "type": "networkConnection",
-          "target": "ship-continental-freight-dest-1770830149806"
-        },
-        {
-          "id": "obj-5",
-          "description": "Use Network Scanner to find continental-backup-01",
-          "type": "networkScan",
-          "target": "ship-continental-freight-dest-1770830149806",
-          "expectedResult": "continental-backup-01"
-        },
-        {
-          "id": "obj-6",
-          "description": "Paste 4 files to destination",
-          "type": "fileOperation",
-          "operation": "paste",
-          "targetFiles": [
-            "inventory_2023_11.db",
-            "transfer_receipt_2024_Q2.pdf",
-            "inventory_2024_04.db",
-            "sync_log_2023_12.txt"
-          ],
-          "destination": "10.122.90.10"
-        },
-        {
-          "id": "obj-verify",
-          "description": "Verify mission completion",
-          "type": "verification",
-          "autoComplete": false
-        }
-      ],
-      "targetFiles": [
-        "inventory_2023_11.db",
-        "transfer_receipt_2024_Q2.pdf",
-        "inventory_2024_04.db",
-        "sync_log_2023_12.txt"
-      ],
-      "totalDataBytes": 590302170,
-      "requirements": {
-        "software": [
-          "vpn-client",
-          "network-address-register",
-          "network-scanner",
-          "file-manager"
-        ],
-        "minReputation": 5
-      },
-      "consequences": {
-        "success": {
-          "credits": 2101,
-          "reputation": 1,
-          "messages": [
-            {
-              "id": "msg-success-1770830149806",
-              "from": "Continental Freight Lines",
-              "fromId": "ship-continental-freight",
-              "fromName": "Continental Freight Lines",
-              "subject": "Mission Complete - Payment Enclosed",
-              "body": "Dear {username},\n\nGreat job on completing the mission. Your professionalism is appreciated. Payment attached.\n\nSincerely,\n{clientName}",
-              "attachments": [
-                {
-                  "type": "cheque",
-                  "amount": 2101,
-                  "description": "Payment for completed mission"
-                }
-              ],
-              "delay": 3000
-            }
-          ]
-        },
-        "failure": {
-          "credits": -525,
-          "reputation": -1,
-          "messages": [
-            {
-              "id": "msg-failure-incomplete-1770830149806",
-              "from": "Continental Freight Lines",
-              "fromId": "ship-continental-freight",
-              "fromName": "Continental Freight Lines",
-              "subject": "Mission Failed",
-              "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
-              "attachments": [],
-              "delay": 2000
-            }
-          ],
-          "messageVariants": {
-            "deadline": {
-              "id": "msg-failure-deadline-1770830149806",
-              "from": "Continental Freight Lines",
-              "fromId": "ship-continental-freight",
-              "fromName": "Continental Freight Lines",
-              "subject": "Mission Failed",
-              "body": "Dear {username},\n\nThe deadline has passed and we can no longer use your services for this task. This is very disappointing.\n\nSincerely,\n{clientName}",
-              "attachments": [],
-              "delay": 2000
-            },
-            "incomplete": {
-              "id": "msg-failure-incomplete-1770830149806",
-              "from": "Continental Freight Lines",
-              "fromId": "ship-continental-freight",
-              "fromName": "Continental Freight Lines",
-              "subject": "Mission Failed",
-              "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
-              "attachments": [],
-              "delay": 2000
-            },
-            "filesDeleted": {
-              "id": "msg-failure-filesDeleted-1770830149806",
-              "from": "Continental Freight Lines",
-              "fromId": "ship-continental-freight",
-              "fromName": "Continental Freight Lines",
-              "subject": "Mission Failed",
-              "body": "Dear {username},\n\nThe files we needed you to work with no longer exist. Your access has been revoked effective immediately.\n\nSincerely,\n{clientName}",
-              "attachments": [],
-              "delay": 2000
-            }
-          }
-        }
-      },
-      "timeLimitMinutes": null,
-      "briefingMessage": {
-        "id": "msg-briefing-transfer-ship-continental-freight-1770830149806-9tikopxyd",
-        "from": "Continental Freight Lines",
-        "fromId": "ship-continental-freight",
-        "fromName": "Continental Freight Lines",
-        "subject": "Mission Briefing: Transfer Request",
-        "body": "Dear {username},\n\nOur infrastructure upgrade requires moving critical files from the old server to the new one.\n\n📁 Files to transfer:\n• inventory_2023_11.db\n• transfer_receipt_2024_Q2.pdf\n• inventory_2024_04.db\n• sync_log_2023_12.txt\n\nTotal data: 563 MB\n\nAttached are the network credentials you'll need to access our systems.\n\nSincerely,\n{clientName}",
-        "attachments": [
-          {
-            "type": "networkAddress",
-            "networkId": "ship-continental-freight-network-1770830149806",
-            "networkName": "Continental-Network",
-            "address": "10.187.173.0/24",
-            "deviceIps": [
-              "10.187.173.10",
-              "10.187.173.10",
-              "10.187.173.11",
-              "10.187.173.11",
-              "10.187.173.12"
-            ]
-          },
-          {
-            "type": "networkAddress",
-            "networkId": "ship-continental-freight-dest-1770830149806",
-            "networkName": "Continental-Backup",
-            "address": "10.122.90.0/24",
-            "deviceIps": [
-              "10.122.90.10"
-            ]
-          }
-        ],
-        "read": false,
-        "timestamp": "2026-02-11T17:15:49.806Z"
-      },
-      "isProcedurallyGenerated": true,
-      "generatedAt": "2026-02-11T17:15:49.806Z",
-      "arcId": null,
-      "arcSequence": null,
-      "arcTotal": null,
-      "requiresCompletedMission": null,
-      "expiresAt": "2020-03-25T09:39:11.000Z"
     },
     {
       "missionId": "investigation-repair-nonprofit-community-center-1770830184779-1",
@@ -4192,650 +3984,877 @@
       "fileSystemCount": 15,
       "expiresAt": "2020-03-25T10:08:12.000Z",
       "visibleAt": "2020-03-25T09:29:12.000Z"
+    },
+    {
+      "missionId": "backup-ship-meridian-cruises-1770830214081-1",
+      "title": "Whistleblower Protection (1/2): Data Backup for Meridian Cruise Lines",
+      "client": "Meridian Cruise Lines",
+      "clientId": "ship-meridian-cruises",
+      "clientType": "ship-global",
+      "industry": "shipping",
+      "difficulty": "Hard",
+      "missionType": "backup",
+      "basePayout": 3508,
+      "category": "procedural-arc",
+      "networks": [
+        {
+          "networkId": "ship-meridian-cruises-network-1770830214079",
+          "networkName": "MeridianCruise-CaribbeanSea-Network",
+          "address": "10.173.129.0/24",
+          "bandwidth": 750,
+          "revokeOnComplete": true,
+          "revokeReason": "Mission access expired",
+          "fileSystems": [
+            {
+              "id": "fs-ship-meridian-cruises-1770830214080-d0-fs0",
+              "ip": "10.173.129.10",
+              "name": "meridiancruise-fileserver01-01",
+              "files": [
+                {
+                  "name": "backup_config_2024_Q2.cfg",
+                  "size": "29.4 KB",
+                  "sizeBytes": 30086,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "customs_2024_02.dat",
+                  "size": "14.3 MB",
+                  "sizeBytes": 14974340,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "backup_config_2024_03.cfg",
+                  "size": "42.2 KB",
+                  "sizeBytes": 43211,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "fleet_status_2023_12.xlsx",
+                  "size": "2.0 MB",
+                  "sizeBytes": 2057606,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "shipment_records_2023_12.db",
+                  "size": "1.7 GB",
+                  "sizeBytes": 1872922080,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            },
+            {
+              "id": "fs-ship-meridian-cruises-1770830214080-d1-fs0",
+              "ip": "10.173.129.11",
+              "name": "meridiancruise-fileserver02-01",
+              "files": [
+                {
+                  "name": "shipment_records_2024_01.db",
+                  "size": "479.2 MB",
+                  "sizeBytes": 502431399,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "routes_2024_05.enc",
+                  "size": "15.7 MB",
+                  "sizeBytes": 16421098,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "backup_config_2023_Q4.cfg",
+                  "size": "27.1 KB",
+                  "sizeBytes": 27777,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "shipment_records_2024_02.db",
+                  "size": "181.0 MB",
+                  "sizeBytes": 189841529,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "routes_2024_04.enc",
+                  "size": "75.4 MB",
+                  "sizeBytes": 79085018,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            },
+            {
+              "id": "fs-ship-meridian-cruises-1770830214080-d2-fs0",
+              "ip": "10.173.129.12",
+              "name": "meridiancruise-fileserver03-01/data",
+              "fileSystemName": "/data",
+              "files": [
+                {
+                  "name": "routes_2024_04.enc",
+                  "size": "27.3 MB",
+                  "sizeBytes": 28595507,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "customs_2024_05.dat",
+                  "size": "19.4 MB",
+                  "sizeBytes": 20326938,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "backup_config_2024_Q2.cfg",
+                  "size": "33.9 KB",
+                  "sizeBytes": 34723,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "fleet_status_2024_04.xlsx",
+                  "size": "5.4 MB",
+                  "sizeBytes": 5683370,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            },
+            {
+              "id": "fs-ship-meridian-cruises-1770830214080-d2-fs1",
+              "ip": "10.173.129.12",
+              "name": "meridiancruise-fileserver03-01/logs",
+              "fileSystemName": "/logs",
+              "files": [
+                {
+                  "name": "backup_config_2023_12.cfg",
+                  "size": "5.2 KB",
+                  "sizeBytes": 5302,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "backup_config_2024_Q1.cfg",
+                  "size": "2.1 KB",
+                  "sizeBytes": 2194,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "fleet_status_2023_12.xlsx",
+                  "size": "1.4 MB",
+                  "sizeBytes": 1513173,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "fleet_status_2024_01.xlsx",
+                  "size": "6.5 MB",
+                  "sizeBytes": 6825142,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "backup_config_2024_04.cfg",
+                  "size": "16.9 KB",
+                  "sizeBytes": 17290,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            }
+          ]
+        },
+        {
+          "networkId": "ship-meridian-cruises-dest-1770830214080",
+          "networkName": "MeridianCruise-CaribbeanSea-Backup",
+          "address": "10.127.62.0/24",
+          "bandwidth": 1000,
+          "revokeOnComplete": true,
+          "revokeReason": "Mission access expired",
+          "fileSystems": [
+            {
+              "id": "fs-ship-meridian-cruises-1770830214081-dest",
+              "ip": "10.127.62.10",
+              "name": "meridiancruise-backup-01",
+              "files": [],
+              "accessible": true
+            }
+          ]
+        }
+      ],
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Connect to MeridianCruise-CaribbeanSea-Network network",
+          "type": "networkConnection",
+          "target": "ship-meridian-cruises-network-1770830214079"
+        },
+        {
+          "id": "obj-2",
+          "description": "Use Network Scanner to locate 3 file servers",
+          "type": "networkScan",
+          "target": "ship-meridian-cruises-network-1770830214079",
+          "expectedResults": [
+            "10.173.129.10",
+            "10.173.129.11",
+            "10.173.129.12"
+          ]
+        },
+        {
+          "id": "obj-3",
+          "description": "Copy 8 files from 4 file systems",
+          "type": "fileOperation",
+          "operation": "copy",
+          "targetFiles": [
+            "backup_config_2024_Q2.cfg",
+            "customs_2024_02.dat",
+            "shipment_records_2024_01.db",
+            "routes_2024_05.enc",
+            "routes_2024_04.enc",
+            "customs_2024_05.dat",
+            "backup_config_2023_12.cfg",
+            "backup_config_2024_Q1.cfg"
+          ]
+        },
+        {
+          "id": "obj-4",
+          "description": "Connect to MeridianCruise-CaribbeanSea-Backup network",
+          "type": "networkConnection",
+          "target": "ship-meridian-cruises-dest-1770830214080"
+        },
+        {
+          "id": "obj-5",
+          "description": "Use Network Scanner to find meridiancruise-backup-01",
+          "type": "networkScan",
+          "target": "ship-meridian-cruises-dest-1770830214080",
+          "expectedResult": "meridiancruise-backup-01"
+        },
+        {
+          "id": "obj-6",
+          "description": "Paste 8 files to backup server",
+          "type": "fileOperation",
+          "operation": "paste",
+          "targetFiles": [
+            "backup_config_2024_Q2.cfg",
+            "customs_2024_02.dat",
+            "shipment_records_2024_01.db",
+            "routes_2024_05.enc",
+            "routes_2024_04.enc",
+            "customs_2024_05.dat",
+            "backup_config_2023_12.cfg",
+            "backup_config_2024_Q1.cfg"
+          ],
+          "destination": "10.127.62.10"
+        },
+        {
+          "id": "obj-verify",
+          "description": "Verify mission completion",
+          "type": "verification",
+          "autoComplete": false
+        }
+      ],
+      "targetFiles": [
+        "backup_config_2024_Q2.cfg",
+        "customs_2024_02.dat",
+        "shipment_records_2024_01.db",
+        "routes_2024_05.enc",
+        "routes_2024_04.enc",
+        "customs_2024_05.dat",
+        "backup_config_2023_12.cfg",
+        "backup_config_2024_Q1.cfg"
+      ],
+      "totalDataBytes": 582786864,
+      "requirements": {
+        "software": [
+          "vpn-client",
+          "network-address-register",
+          "network-scanner",
+          "file-manager"
+        ],
+        "minReputation": 7
+      },
+      "consequences": {
+        "success": {
+          "credits": 3508,
+          "reputation": 1,
+          "messages": [
+            {
+              "id": "msg-success-1770830214081",
+              "from": "Meridian Cruise Lines",
+              "fromId": "ship-meridian-cruises",
+              "fromName": "Meridian Cruise Lines",
+              "subject": "Mission Complete - Payment Enclosed",
+              "body": "Dear {username},\n\nGreat job on completing the mission. Your professionalism is appreciated. Payment attached.\n\nSincerely,\n{clientName}",
+              "attachments": [
+                {
+                  "type": "cheque",
+                  "amount": 3508,
+                  "description": "Payment for completed mission"
+                }
+              ],
+              "delay": 3000
+            }
+          ]
+        },
+        "failure": {
+          "credits": -877,
+          "reputation": -1,
+          "messages": [
+            {
+              "id": "msg-failure-incomplete-1770830214081",
+              "from": "Meridian Cruise Lines",
+              "fromId": "ship-meridian-cruises",
+              "fromName": "Meridian Cruise Lines",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            }
+          ],
+          "messageVariants": {
+            "deadline": {
+              "id": "msg-failure-deadline-1770830214081",
+              "from": "Meridian Cruise Lines",
+              "fromId": "ship-meridian-cruises",
+              "fromName": "Meridian Cruise Lines",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nTime ran out before the work was completed. We expected better from someone with your reputation.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            },
+            "incomplete": {
+              "id": "msg-failure-incomplete-1770830214081",
+              "from": "Meridian Cruise Lines",
+              "fromId": "ship-meridian-cruises",
+              "fromName": "Meridian Cruise Lines",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            },
+            "filesDeleted": {
+              "id": "msg-failure-filesDeleted-1770830214081",
+              "from": "Meridian Cruise Lines",
+              "fromId": "ship-meridian-cruises",
+              "fromName": "Meridian Cruise Lines",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nCritical files required for this task have been deleted. We cannot proceed and must terminate this engagement immediately.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            }
+          }
+        }
+      },
+      "timeLimitMinutes": 8,
+      "briefingMessage": {
+        "id": "msg-briefing-backup-ship-meridian-cruises-1770830214081-h074d61op",
+        "from": "Meridian Cruise Lines",
+        "fromId": "ship-meridian-cruises",
+        "fromName": "Meridian Cruise Lines",
+        "subject": "Mission Briefing: Backup Request",
+        "body": "Dear {username},\n\nOur ship's IT infrastructure needs immediate attention. Our compliance team has requested an emergency backup of sensitive records. Time is of the essence.\n\n📍 Location: Caribbean Sea\n\n📁 Files to back up:\n• backup_config_2024_Q2.cfg\n• customs_2024_02.dat\n• shipment_records_2024_01.db\n• routes_2024_05.enc\n• routes_2024_04.enc\n• customs_2024_05.dat\n• backup_config_2023_12.cfg\n• backup_config_2024_Q1.cfg\n\nTotal data: 556 MB\n\n⚠️ TIME SENSITIVE: This task must be completed within 8 minutes of acceptance.\n\nAttached are the network credentials you'll need to access our systems.\n\n[Mission 1 of 2]\n\nSincerely,\n{clientName}",
+        "attachments": [
+          {
+            "type": "networkAddress",
+            "networkId": "ship-meridian-cruises-network-1770830214079",
+            "networkName": "MeridianCruise-CaribbeanSea-Network",
+            "address": "10.173.129.0/24",
+            "deviceIps": [
+              "10.173.129.10",
+              "10.173.129.11",
+              "10.173.129.12",
+              "10.173.129.12"
+            ]
+          },
+          {
+            "type": "networkAddress",
+            "networkId": "ship-meridian-cruises-dest-1770830214080",
+            "networkName": "MeridianCruise-CaribbeanSea-Backup",
+            "address": "10.127.62.0/24",
+            "deviceIps": [
+              "10.127.62.10"
+            ]
+          }
+        ],
+        "read": false,
+        "timestamp": "2026-02-11T17:16:54.081Z"
+      },
+      "isProcedurallyGenerated": true,
+      "generatedAt": "2026-02-11T17:16:54.081Z",
+      "arcId": "arc-1770830214079-uxd0qrs02",
+      "arcSequence": 1,
+      "arcTotal": 2,
+      "requiresCompletedMission": null,
+      "arcName": "Whistleblower Protection",
+      "expiresAt": "2020-03-25T09:53:12.000Z",
+      "visibleAt": "2020-03-25T09:39:12.000Z"
+    },
+    {
+      "missionId": "repair-ship-continental-freight-1770830214828-3",
+      "title": "Compliance Audit Preparation (1/3): File Repair for Continental Freight Lines",
+      "client": "Continental Freight Lines",
+      "clientId": "ship-continental-freight",
+      "clientType": "ship-logistics",
+      "industry": "shipping",
+      "difficulty": "Hard",
+      "missionType": "repair",
+      "basePayout": 1603,
+      "category": "procedural-arc",
+      "networks": [
+        {
+          "networkId": "ship-continental-freight-network-1770830214828",
+          "networkName": "Continental-Network",
+          "address": "10.230.60.0/24",
+          "bandwidth": 500,
+          "revokeOnComplete": true,
+          "revokeReason": "Mission access expired",
+          "fileSystems": [
+            {
+              "id": "fs-ship-continental-freight-1770830214828-d0-fs0",
+              "ip": "10.230.60.10",
+              "name": "continental-fileserver-01/data",
+              "fileSystemName": "/data",
+              "files": [
+                {
+                  "name": "logistics_2024_01.dat",
+                  "size": "37.3 MB",
+                  "sizeBytes": 39124635,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "logistics_2023_Q4.dat",
+                  "size": "39.7 MB",
+                  "sizeBytes": 41621118,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "manifest_2024_01.enc",
+                  "size": "61.1 MB",
+                  "sizeBytes": 64021839,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "route_cache_2024_02.dat",
+                  "size": "40.5 MB",
+                  "sizeBytes": 42461063,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            },
+            {
+              "id": "fs-ship-continental-freight-1770830214828-d0-fs1",
+              "ip": "10.230.60.10",
+              "name": "continental-fileserver-01/logs",
+              "fileSystemName": "/logs",
+              "files": [
+                {
+                  "name": "tracking_system_2024_04.db",
+                  "size": "88.0 MB",
+                  "sizeBytes": 92304646,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "manifest_2023_11.enc",
+                  "size": "82.9 MB",
+                  "sizeBytes": 86957891,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "logistics_2023_11.dat",
+                  "size": "14.5 MB",
+                  "sizeBytes": 15242758,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            },
+            {
+              "id": "fs-ship-continental-freight-1770830214828-d0-fs2",
+              "ip": "10.230.60.10",
+              "name": "continental-fileserver-01/backups",
+              "fileSystemName": "/backups",
+              "files": [
+                {
+                  "name": "driver_log_2023_12.txt",
+                  "size": "209.1 KB",
+                  "sizeBytes": 214103,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "driver_log_2024_05.txt",
+                  "size": "47.3 KB",
+                  "sizeBytes": 48386,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "route_cache_2024_02.dat",
+                  "size": "31.8 MB",
+                  "sizeBytes": 33359152,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            },
+            {
+              "id": "fs-ship-continental-freight-1770830214828-d0-fs3",
+              "ip": "10.230.60.10",
+              "name": "continental-fileserver-01/archive",
+              "fileSystemName": "/archive",
+              "files": [
+                {
+                  "name": "driver_log_2024_05.txt",
+                  "size": "398.1 KB",
+                  "sizeBytes": 407695,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "manifest_2024_04.enc",
+                  "size": "55.8 MB",
+                  "sizeBytes": 58498286,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "route_cache_2023_Q4.dat",
+                  "size": "22.3 MB",
+                  "sizeBytes": 23400869,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "driver_log_2024_Q1.txt",
+                  "size": "266.1 KB",
+                  "sizeBytes": 272530,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            },
+            {
+              "id": "fs-ship-continental-freight-1770830214828-d0-fs4",
+              "ip": "10.230.60.10",
+              "name": "continental-fileserver-01/temp",
+              "fileSystemName": "/temp",
+              "files": [
+                {
+                  "name": "driver_log_2024_Q2.txt",
+                  "size": "245.7 KB",
+                  "sizeBytes": 251556,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "route_cache_2024_Q2.dat",
+                  "size": "1.1 MB",
+                  "sizeBytes": 1121064,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "manifest_2024_Q1.enc",
+                  "size": "85.0 MB",
+                  "sizeBytes": 89170832,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            },
+            {
+              "id": "fs-ship-continental-freight-1770830214828-d0-fs5",
+              "ip": "10.230.60.10",
+              "name": "continental-fileserver-01/system",
+              "fileSystemName": "/system",
+              "files": [
+                {
+                  "name": "driver_log_2024_03.txt",
+                  "size": "225.8 KB",
+                  "sizeBytes": 231177,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "logistics_2024_04.dat",
+                  "size": "1.0 MB",
+                  "sizeBytes": 1074432,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "logistics_2024_03.dat",
+                  "size": "34.4 MB",
+                  "sizeBytes": 36066895,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "route_cache_2023_12.dat",
+                  "size": "43.8 MB",
+                  "sizeBytes": 45896196,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            },
+            {
+              "id": "fs-ship-continental-freight-1770830214828-d0-fs6",
+              "ip": "10.230.60.10",
+              "name": "continental-fileserver-01/users",
+              "fileSystemName": "/users",
+              "files": [
+                {
+                  "name": "driver_log_2024_Q1.txt",
+                  "size": "259.0 KB",
+                  "sizeBytes": 265182,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "manifest_2024_05.enc",
+                  "size": "17.9 MB",
+                  "sizeBytes": 18797165,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "tracking_system_2023_Q4.db",
+                  "size": "480.8 MB",
+                  "sizeBytes": 504164986,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            },
+            {
+              "id": "fs-ship-continental-freight-1770830214828-d0-fs7",
+              "ip": "10.230.60.10",
+              "name": "continental-fileserver-01/shared",
+              "fileSystemName": "/shared",
+              "files": [
+                {
+                  "name": "driver_log_2023_12.txt",
+                  "size": "43.5 KB",
+                  "sizeBytes": 44546,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "route_cache_2024_03.dat",
+                  "size": "24.7 MB",
+                  "sizeBytes": 25914262,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "logistics_2024_02.dat",
+                  "size": "37.0 MB",
+                  "sizeBytes": 38807876,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            }
+          ]
+        }
+      ],
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Connect to Continental-Network network",
+          "type": "networkConnection",
+          "target": "ship-continental-freight-network-1770830214828"
+        },
+        {
+          "id": "obj-2",
+          "description": "Use Network Scanner to locate the file server",
+          "type": "networkScan",
+          "target": "ship-continental-freight-network-1770830214828",
+          "expectedResults": [
+            "10.230.60.10"
+          ]
+        },
+        {
+          "id": "obj-3",
+          "description": "Repair 8 corrupted files across 8 file systems",
+          "type": "fileOperation",
+          "operation": "repair",
+          "targetFiles": [
+            "logistics_2024_01.dat",
+            "tracking_system_2024_04.db",
+            "driver_log_2023_12.txt",
+            "driver_log_2024_05.txt",
+            "driver_log_2024_Q2.txt",
+            "driver_log_2024_03.txt",
+            "driver_log_2024_Q1.txt",
+            "driver_log_2023_12.txt"
+          ]
+        },
+        {
+          "id": "obj-verify",
+          "description": "Verify mission completion",
+          "type": "verification",
+          "autoComplete": false
+        }
+      ],
+      "targetFiles": [
+        "logistics_2024_01.dat",
+        "tracking_system_2024_04.db",
+        "driver_log_2023_12.txt",
+        "driver_log_2024_05.txt",
+        "driver_log_2024_Q2.txt",
+        "driver_log_2024_03.txt",
+        "driver_log_2024_Q1.txt",
+        "driver_log_2023_12.txt"
+      ],
+      "totalDataBytes": 132843540,
+      "requirements": {
+        "software": [
+          "vpn-client",
+          "network-address-register",
+          "network-scanner",
+          "file-manager"
+        ],
+        "minReputation": 5
+      },
+      "consequences": {
+        "success": {
+          "credits": 1603,
+          "reputation": 1,
+          "messages": [
+            {
+              "id": "msg-success-1770830214828",
+              "from": "Continental Freight Lines",
+              "fromId": "ship-continental-freight",
+              "fromName": "Continental Freight Lines",
+              "subject": "Mission Complete - Payment Enclosed",
+              "body": "Dear {username},\n\nThank you for your efficient work. We're pleased with the results and have processed your payment.\n\nSincerely,\n{clientName}",
+              "attachments": [
+                {
+                  "type": "cheque",
+                  "amount": 1603,
+                  "description": "Payment for completed mission"
+                }
+              ],
+              "delay": 3000
+            }
+          ]
+        },
+        "failure": {
+          "credits": -400,
+          "reputation": -1,
+          "messages": [
+            {
+              "id": "msg-failure-incomplete-1770830214828",
+              "from": "Continental Freight Lines",
+              "fromId": "ship-continental-freight",
+              "fromName": "Continental Freight Lines",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            }
+          ],
+          "messageVariants": {
+            "deadline": {
+              "id": "msg-failure-deadline-1770830214828",
+              "from": "Continental Freight Lines",
+              "fromId": "ship-continental-freight",
+              "fromName": "Continental Freight Lines",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nUnfortunately, you failed to complete the task within the required timeframe. We've had to find alternative solutions.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            },
+            "incomplete": {
+              "id": "msg-failure-incomplete-1770830214828",
+              "from": "Continental Freight Lines",
+              "fromId": "ship-continental-freight",
+              "fromName": "Continental Freight Lines",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            },
+            "filesDeleted": {
+              "id": "msg-failure-filesDeleted-1770830214828",
+              "from": "Continental Freight Lines",
+              "fromId": "ship-continental-freight",
+              "fromName": "Continental Freight Lines",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nThe files we needed you to work with no longer exist. Your access has been revoked effective immediately.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            }
+          }
+        }
+      },
+      "timeLimitMinutes": 6,
+      "briefingMessage": {
+        "id": "msg-briefing-repair-ship-continental-freight-1770830214828-55kx2dfq8",
+        "from": "Continental Freight Lines",
+        "fromId": "ship-continental-freight",
+        "fromName": "Continental Freight Lines",
+        "subject": "Mission Briefing: Repair Request",
+        "body": "Dear {username},\n\nSeveral critical files have become corrupted due to a system error. Your expertise in file repair would be greatly appreciated.\n\n📁 Files to repair:\n• logistics_2024_01.dat\n• tracking_system_2024_04.db\n• driver_log_2023_12.txt\n• driver_log_2024_05.txt\n• driver_log_2024_Q2.txt\n• driver_log_2024_03.txt\n• driver_log_2024_Q1.txt\n• driver_log_2023_12.txt\n\nTotal data: 127 MB\n\n⚠️ TIME SENSITIVE: This task must be completed within 6 minutes of acceptance.\n\nAttached are the network credentials you'll need to access our systems.\n\n[Mission 1 of 3]\n\nSincerely,\n{clientName}",
+        "attachments": [
+          {
+            "type": "networkAddress",
+            "networkId": "ship-continental-freight-network-1770830214828",
+            "networkName": "Continental-Network",
+            "address": "10.230.60.0/24",
+            "deviceIps": [
+              "10.230.60.10",
+              "10.230.60.10",
+              "10.230.60.10",
+              "10.230.60.10",
+              "10.230.60.10",
+              "10.230.60.10",
+              "10.230.60.10",
+              "10.230.60.10"
+            ]
+          }
+        ],
+        "read": false,
+        "timestamp": "2026-02-11T17:16:54.828Z"
+      },
+      "isProcedurallyGenerated": true,
+      "generatedAt": "2026-02-11T17:16:54.828Z",
+      "arcId": "arc-1770830214828-vtfpa6pij",
+      "arcSequence": 1,
+      "arcTotal": 3,
+      "requiresCompletedMission": null,
+      "arcName": "Compliance Audit Preparation",
+      "expiresAt": "2020-03-25T09:54:12.000Z",
+      "visibleAt": "2020-03-25T09:40:12.000Z"
     }
   ],
   "pendingChainMissions": {
-    "arc-1770830149805-nj8mcpdx8": [
-      {
-        "missionId": "backup-emerg-volunteer-fire-1770830149805-6",
-        "title": "Data Recovery Escalation (2/3): Data Backup for Volunteer Fire Department #7",
-        "client": "Volunteer Fire Department #7",
-        "clientId": "emerg-volunteer-fire",
-        "clientType": "emerg-volunteer",
-        "industry": "emergency",
-        "difficulty": "Easy",
-        "missionType": "backup",
-        "basePayout": 2482,
-        "category": "procedural-arc",
-        "networks": [
-          {
-            "networkId": "emerg-volunteer-fire-network-1770830149805",
-            "networkName": "VolunteerFire-Network",
-            "address": "10.136.62.0/24",
-            "bandwidth": 2000,
-            "revokeOnComplete": true,
-            "revokeReason": "Mission access expired",
-            "fileSystems": [
-              {
-                "id": "fs-emerg-volunteer-fire-1770830149805-d0-fs0",
-                "ip": "10.136.62.10",
-                "name": "volunteerfire-fileserver01-01",
-                "files": [
-                  {
-                    "name": "call_records_2024_04.db",
-                    "size": "1.7 GB",
-                    "sizeBytes": 1839463082,
-                    "corrupted": false,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "schedule_2023_12.xlsx",
-                    "size": "3.0 MB",
-                    "sizeBytes": 3187843,
-                    "corrupted": false,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "training_docs_2023_Q4.pdf",
-                    "size": "147.7 KB",
-                    "sizeBytes": 151221,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "schedule_2024_Q1.xlsx",
-                    "size": "2.8 MB",
-                    "sizeBytes": 2920118,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "training_docs_2024_01.pdf",
-                    "size": "6.6 MB",
-                    "sizeBytes": 6923593,
-                    "corrupted": false,
-                    "targetFile": false
-                  }
-                ],
-                "accessible": true
-              },
-              {
-                "id": "fs-emerg-volunteer-fire-1770830149805-d1-fs0",
-                "ip": "10.136.62.11",
-                "name": "volunteerfire-fileserver02-01/data",
-                "fileSystemName": "/data",
-                "files": [
-                  {
-                    "name": "response_times_2024_05.dat",
-                    "size": "18.2 MB",
-                    "sizeBytes": 19102067,
-                    "corrupted": false,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "call_records_2023_11.db",
-                    "size": "1.1 GB",
-                    "sizeBytes": 1196092548,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "equipment_2024_Q1.enc",
-                    "size": "78.9 MB",
-                    "sizeBytes": 82718420,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "call_records_2024_02.db",
-                    "size": "1.5 GB",
-                    "sizeBytes": 1647951377,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "training_docs_2023_Q4.pdf",
-                    "size": "7.0 MB",
-                    "sizeBytes": 7354105,
-                    "corrupted": false,
-                    "targetFile": false
-                  }
-                ],
-                "accessible": true
-              },
-              {
-                "id": "fs-emerg-volunteer-fire-1770830149805-d1-fs1",
-                "ip": "10.136.62.11",
-                "name": "volunteerfire-fileserver02-01/logs",
-                "fileSystemName": "/logs",
-                "files": [
-                  {
-                    "name": "call_records_2024_03.db",
-                    "size": "534.0 MB",
-                    "sizeBytes": 559965336,
-                    "corrupted": false,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "schedule_2024_04.xlsx",
-                    "size": "9.9 MB",
-                    "sizeBytes": 10419400,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "response_times_2024_Q1.dat",
-                    "size": "36.8 MB",
-                    "sizeBytes": 38611956,
-                    "corrupted": false,
-                    "targetFile": false
-                  }
-                ],
-                "accessible": true
-              },
-              {
-                "id": "fs-emerg-volunteer-fire-1770830149805-backup",
-                "ip": "10.136.62.20",
-                "name": "volunteerfire-backup-01",
-                "files": [],
-                "accessible": true
-              }
-            ]
-          }
-        ],
-        "objectives": [
-          {
-            "id": "obj-1",
-            "description": "Connect to VolunteerFire-Network network",
-            "type": "networkConnection",
-            "target": "emerg-volunteer-fire-network-1770830149805"
-          },
-          {
-            "id": "obj-2",
-            "description": "Use Network Scanner to locate 2 file servers",
-            "type": "networkScan",
-            "target": "emerg-volunteer-fire-network-1770830149805",
-            "expectedResults": [
-              "10.136.62.10",
-              "10.136.62.11"
-            ]
-          },
-          {
-            "id": "obj-3",
-            "description": "Copy 4 files from 3 file systems to backup server",
-            "type": "fileOperation",
-            "operation": "copy",
-            "targetFiles": [
-              "call_records_2024_04.db",
-              "schedule_2023_12.xlsx",
-              "response_times_2024_05.dat",
-              "call_records_2024_03.db"
-            ]
-          },
-          {
-            "id": "obj-4",
-            "description": "Paste 4 files to volunteerfire-backup-01",
-            "type": "fileOperation",
-            "operation": "paste",
-            "targetFiles": [
-              "call_records_2024_04.db",
-              "schedule_2023_12.xlsx",
-              "response_times_2024_05.dat",
-              "call_records_2024_03.db"
-            ],
-            "destination": "10.136.62.20"
-          },
-          {
-            "id": "obj-verify",
-            "description": "Verify mission completion",
-            "type": "verification",
-            "autoComplete": false
-          }
-        ],
-        "targetFiles": [
-          "call_records_2024_04.db",
-          "schedule_2023_12.xlsx",
-          "response_times_2024_05.dat",
-          "call_records_2024_03.db"
-        ],
-        "totalDataBytes": 2421718328,
-        "requirements": {
-          "software": [
-            "vpn-client",
-            "network-address-register",
-            "network-scanner",
-            "file-manager"
-          ],
-          "minReputation": 3
-        },
-        "consequences": {
-          "success": {
-            "credits": 2482,
-            "reputation": 1,
-            "messages": [
-              {
-                "id": "msg-success-1770830149805",
-                "from": "Volunteer Fire Department #7",
-                "fromId": "emerg-volunteer-fire",
-                "fromName": "Volunteer Fire Department #7",
-                "subject": "Mission Complete - Payment Enclosed",
-                "body": "Dear {username},\n\nThank you for your efficient work. We're pleased with the results and have processed your payment.\n\nSincerely,\n{clientName}",
-                "attachments": [
-                  {
-                    "type": "cheque",
-                    "amount": 2482,
-                    "description": "Payment for completed mission"
-                  }
-                ],
-                "delay": 3000
-              }
-            ]
-          },
-          "failure": {
-            "credits": -620,
-            "reputation": -1,
-            "messages": [
-              {
-                "id": "msg-failure-incomplete-1770830149805",
-                "from": "Volunteer Fire Department #7",
-                "fromId": "emerg-volunteer-fire",
-                "fromName": "Volunteer Fire Department #7",
-                "subject": "Mission Failed",
-                "body": "Dear {username},\n\nThe mission was not completed as requested. This has caused significant inconvenience to our operations.\n\nSincerely,\n{clientName}",
-                "attachments": [],
-                "delay": 2000
-              }
-            ],
-            "messageVariants": {
-              "deadline": {
-                "id": "msg-failure-deadline-1770830149805",
-                "from": "Volunteer Fire Department #7",
-                "fromId": "emerg-volunteer-fire",
-                "fromName": "Volunteer Fire Department #7",
-                "subject": "Mission Failed",
-                "body": "Dear {username},\n\nTime ran out before the work was completed. We expected better from someone with your reputation.\n\nSincerely,\n{clientName}",
-                "attachments": [],
-                "delay": 2000
-              },
-              "incomplete": {
-                "id": "msg-failure-incomplete-1770830149805",
-                "from": "Volunteer Fire Department #7",
-                "fromId": "emerg-volunteer-fire",
-                "fromName": "Volunteer Fire Department #7",
-                "subject": "Mission Failed",
-                "body": "Dear {username},\n\nThe mission was not completed as requested. This has caused significant inconvenience to our operations.\n\nSincerely,\n{clientName}",
-                "attachments": [],
-                "delay": 2000
-              },
-              "filesDeleted": {
-                "id": "msg-failure-filesDeleted-1770830149805",
-                "from": "Volunteer Fire Department #7",
-                "fromId": "emerg-volunteer-fire",
-                "fromName": "Volunteer Fire Department #7",
-                "subject": "Mission Failed",
-                "body": "Dear {username},\n\nCritical files required for this task have been deleted. We cannot proceed and must terminate this engagement immediately.\n\nSincerely,\n{clientName}",
-                "attachments": [],
-                "delay": 2000
-              }
-            }
-          }
-        },
-        "timeLimitMinutes": 7,
-        "briefingMessage": {
-          "id": "msg-briefing-backup-emerg-volunteer-fire-1770830149805-1gjk4euye",
-          "from": "Volunteer Fire Department #7",
-          "fromId": "emerg-volunteer-fire",
-          "fromName": "Volunteer Fire Department #7",
-          "subject": "Mission Briefing: Backup Request",
-          "body": "Dear {username},\n\nThank you for the previous repair. We've discovered more issues and need immediate backup.\n\nAs part of our disaster recovery plan, we require immediate backup of essential data files.\n\n📁 Files to back up:\n• call_records_2024_04.db\n• schedule_2023_12.xlsx\n• response_times_2024_05.dat\n• call_records_2024_03.db\n\nTotal data: 2.3 GB\n\n⚠️ TIME SENSITIVE: This task must be completed within 7 minutes of acceptance.\n\nAttached are the network credentials you'll need to access our systems.\n\n[Mission 2 of 3]\n\nSincerely,\n{clientName}",
-          "attachments": [
-            {
-              "type": "networkAddress",
-              "networkId": "emerg-volunteer-fire-network-1770830149805",
-              "networkName": "VolunteerFire-Network",
-              "address": "10.136.62.0/24",
-              "deviceIps": [
-                "10.136.62.10",
-                "10.136.62.11",
-                "10.136.62.11",
-                "10.136.62.20"
-              ]
-            }
-          ],
-          "read": false,
-          "timestamp": "2026-02-11T17:15:49.805Z"
-        },
-        "isProcedurallyGenerated": true,
-        "generatedAt": "2026-02-11T17:15:49.805Z",
-        "arcId": "arc-1770830149805-nj8mcpdx8",
-        "arcSequence": 2,
-        "arcTotal": 3,
-        "requiresCompletedMission": "repair-emerg-volunteer-fire-1770830149805-5",
-        "arcName": "Data Recovery Escalation"
-      },
-      {
-        "missionId": "repair-emerg-volunteer-fire-1770830149805-7",
-        "title": "Data Recovery Escalation (3/3): File Repair for Volunteer Fire Department #7",
-        "client": "Volunteer Fire Department #7",
-        "clientId": "emerg-volunteer-fire",
-        "clientType": "emerg-volunteer",
-        "industry": "emergency",
-        "difficulty": "Medium",
-        "missionType": "repair",
-        "basePayout": 853,
-        "category": "procedural-arc",
-        "networks": [
-          {
-            "networkId": "emerg-volunteer-fire-network-1770830149805",
-            "networkName": "VolunteerFire-Network",
-            "address": "10.29.94.0/24",
-            "bandwidth": 750,
-            "revokeOnComplete": true,
-            "revokeReason": "Mission access expired",
-            "fileSystems": [
-              {
-                "id": "fs-emerg-volunteer-fire-1770830149805-d0-fs0",
-                "ip": "10.29.94.10",
-                "name": "volunteerfire-fileserver01-01",
-                "files": [
-                  {
-                    "name": "radio_config_2024_01.cfg",
-                    "size": "27.1 KB",
-                    "sizeBytes": 27733,
-                    "corrupted": true,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "dispatch_logs_2024_02.db",
-                    "size": "160.4 MB",
-                    "sizeBytes": 168220146,
-                    "corrupted": true,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "radio_config_2024_05.cfg",
-                    "size": "9.7 KB",
-                    "sizeBytes": 9967,
-                    "corrupted": true,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "dispatch_logs_2024_03.db",
-                    "size": "313.1 MB",
-                    "sizeBytes": 328276475,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "system_status_2024_01.log",
-                    "size": "138.5 KB",
-                    "sizeBytes": 141856,
-                    "corrupted": false,
-                    "targetFile": false
-                  }
-                ],
-                "accessible": true
-              },
-              {
-                "id": "fs-emerg-volunteer-fire-1770830149805-d1-fs0",
-                "ip": "10.29.94.11",
-                "name": "volunteerfire-fileserver02-01",
-                "files": [
-                  {
-                    "name": "system_status_2024_Q2.log",
-                    "size": "25.4 KB",
-                    "sizeBytes": 26000,
-                    "corrupted": true,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "personnel_2024_Q2.enc",
-                    "size": "83.3 MB",
-                    "sizeBytes": 87362219,
-                    "corrupted": true,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "incident_reports_2024_03.dat",
-                    "size": "42.5 MB",
-                    "sizeBytes": 44545293,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "dispatch_logs_2024_01.db",
-                    "size": "358.5 MB",
-                    "sizeBytes": 375956652,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "personnel_2023_11.enc",
-                    "size": "48.7 MB",
-                    "sizeBytes": 51110296,
-                    "corrupted": false,
-                    "targetFile": false
-                  }
-                ],
-                "accessible": true
-              },
-              {
-                "id": "fs-emerg-volunteer-fire-1770830149805-d2-fs0",
-                "ip": "10.29.94.12",
-                "name": "volunteerfire-fileserver03-01",
-                "files": [
-                  {
-                    "name": "system_status_2024_03.log",
-                    "size": "110.1 KB",
-                    "sizeBytes": 112793,
-                    "corrupted": true,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "personnel_2023_11.enc",
-                    "size": "23.8 MB",
-                    "sizeBytes": 24929801,
-                    "corrupted": true,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "dispatch_logs_2023_12.db",
-                    "size": "64.1 MB",
-                    "sizeBytes": 67219955,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "dispatch_logs_2023_11.db",
-                    "size": "118.5 MB",
-                    "sizeBytes": 124230357,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "dispatch_logs_2024_02.db",
-                    "size": "111.3 MB",
-                    "sizeBytes": 116676548,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "personnel_2024_05.enc",
-                    "size": "67.8 MB",
-                    "sizeBytes": 71059001,
-                    "corrupted": false,
-                    "targetFile": false
-                  }
-                ],
-                "accessible": true
-              }
-            ]
-          }
-        ],
-        "objectives": [
-          {
-            "id": "obj-1",
-            "description": "Connect to VolunteerFire-Network network",
-            "type": "networkConnection",
-            "target": "emerg-volunteer-fire-network-1770830149805"
-          },
-          {
-            "id": "obj-2",
-            "description": "Use Network Scanner to locate 3 file servers",
-            "type": "networkScan",
-            "target": "emerg-volunteer-fire-network-1770830149805",
-            "expectedResults": [
-              "10.29.94.10",
-              "10.29.94.11",
-              "10.29.94.12"
-            ]
-          },
-          {
-            "id": "obj-3",
-            "description": "Repair 7 corrupted files across 3 file systems",
-            "type": "fileOperation",
-            "operation": "repair",
-            "targetFiles": [
-              "radio_config_2024_01.cfg",
-              "dispatch_logs_2024_02.db",
-              "radio_config_2024_05.cfg",
-              "system_status_2024_Q2.log",
-              "personnel_2024_Q2.enc",
-              "system_status_2024_03.log",
-              "personnel_2023_11.enc"
-            ]
-          },
-          {
-            "id": "obj-verify",
-            "description": "Verify mission completion",
-            "type": "verification",
-            "autoComplete": false
-          }
-        ],
-        "targetFiles": [
-          "radio_config_2024_01.cfg",
-          "dispatch_logs_2024_02.db",
-          "radio_config_2024_05.cfg",
-          "system_status_2024_Q2.log",
-          "personnel_2024_Q2.enc",
-          "system_status_2024_03.log",
-          "personnel_2023_11.enc"
-        ],
-        "totalDataBytes": 280688659,
-        "requirements": {
-          "software": [
-            "vpn-client",
-            "network-address-register",
-            "network-scanner",
-            "file-manager"
-          ],
-          "minReputation": 3
-        },
-        "consequences": {
-          "success": {
-            "credits": 853,
-            "reputation": 1,
-            "messages": [
-              {
-                "id": "msg-success-1770830149805",
-                "from": "Volunteer Fire Department #7",
-                "fromId": "emerg-volunteer-fire",
-                "fromName": "Volunteer Fire Department #7",
-                "subject": "Mission Complete - Payment Enclosed",
-                "body": "Dear {username},\n\nGreat job on completing the mission. Your professionalism is appreciated. Payment attached.\n\nSincerely,\n{clientName}",
-                "attachments": [
-                  {
-                    "type": "cheque",
-                    "amount": 853,
-                    "description": "Payment for completed mission"
-                  }
-                ],
-                "delay": 3000
-              }
-            ]
-          },
-          "failure": {
-            "credits": -213,
-            "reputation": -1,
-            "messages": [
-              {
-                "id": "msg-failure-incomplete-1770830149805",
-                "from": "Volunteer Fire Department #7",
-                "fromId": "emerg-volunteer-fire",
-                "fromName": "Volunteer Fire Department #7",
-                "subject": "Mission Failed",
-                "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
-                "attachments": [],
-                "delay": 2000
-              }
-            ],
-            "messageVariants": {
-              "deadline": {
-                "id": "msg-failure-deadline-1770830149805",
-                "from": "Volunteer Fire Department #7",
-                "fromId": "emerg-volunteer-fire",
-                "fromName": "Volunteer Fire Department #7",
-                "subject": "Mission Failed",
-                "body": "Dear {username},\n\nThe deadline has passed and we can no longer use your services for this task. This is very disappointing.\n\nSincerely,\n{clientName}",
-                "attachments": [],
-                "delay": 2000
-              },
-              "incomplete": {
-                "id": "msg-failure-incomplete-1770830149805",
-                "from": "Volunteer Fire Department #7",
-                "fromId": "emerg-volunteer-fire",
-                "fromName": "Volunteer Fire Department #7",
-                "subject": "Mission Failed",
-                "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
-                "attachments": [],
-                "delay": 2000
-              },
-              "filesDeleted": {
-                "id": "msg-failure-filesDeleted-1770830149805",
-                "from": "Volunteer Fire Department #7",
-                "fromId": "emerg-volunteer-fire",
-                "fromName": "Volunteer Fire Department #7",
-                "subject": "Mission Failed",
-                "body": "Dear {username},\n\nCritical files required for this task have been deleted. We cannot proceed and must terminate this engagement immediately.\n\nSincerely,\n{clientName}",
-                "attachments": [],
-                "delay": 2000
-              }
-            }
-          }
-        },
-        "timeLimitMinutes": null,
-        "briefingMessage": {
-          "id": "msg-briefing-repair-emerg-volunteer-fire-1770830149805-qruob1y5z",
-          "from": "Volunteer Fire Department #7",
-          "fromId": "emerg-volunteer-fire",
-          "fromName": "Volunteer Fire Department #7",
-          "subject": "Mission Briefing: Repair Request",
-          "body": "Dear {username},\n\nThe backup was successful. Now we need the recovered files repaired.\n\nOur IT team discovered corruption in our database files. We need these repaired urgently to resume operations.\n\n📁 Files to repair:\n• radio_config_2024_01.cfg\n• dispatch_logs_2024_02.db\n• radio_config_2024_05.cfg\n• system_status_2024_Q2.log\n• personnel_2024_Q2.enc\n• system_status_2024_03.log\n• personnel_2023_11.enc\n\nTotal data: 268 MB\n\nAttached are the network credentials you'll need to access our systems.\n\n[Mission 3 of 3]\n\nSincerely,\n{clientName}",
-          "attachments": [
-            {
-              "type": "networkAddress",
-              "networkId": "emerg-volunteer-fire-network-1770830149805",
-              "networkName": "VolunteerFire-Network",
-              "address": "10.29.94.0/24",
-              "deviceIps": [
-                "10.29.94.10",
-                "10.29.94.11",
-                "10.29.94.12"
-              ]
-            }
-          ],
-          "read": false,
-          "timestamp": "2026-02-11T17:15:49.805Z"
-        },
-        "isProcedurallyGenerated": true,
-        "generatedAt": "2026-02-11T17:15:49.805Z",
-        "arcId": "arc-1770830149805-nj8mcpdx8",
-        "arcSequence": 3,
-        "arcTotal": 3,
-        "requiresCompletedMission": "backup-emerg-volunteer-fire-1770830149805-6",
-        "arcName": "Data Recovery Escalation"
-      }
-    ],
     "arc-1770830149805-9sq00p2ep": [
       {
         "missionId": "backup-bank-coastal-regional-1770830149806-9",
@@ -5502,17 +5521,1074 @@
         "requiresCompletedMission": "backup-bank-coastal-regional-1770830149806-9",
         "arcName": "Ransomware Aftermath"
       }
+    ],
+    "arc-1770830214079-uxd0qrs02": [
+      {
+        "missionId": "transfer-nonprofit-food-bank-1770830214081-2",
+        "title": "Whistleblower Protection (2/2): Data Transfer for Regional Food Bank Network",
+        "client": "Regional Food Bank Network",
+        "clientId": "nonprofit-food-bank",
+        "clientType": "nonprofit-community",
+        "industry": "nonprofit",
+        "difficulty": "Medium",
+        "missionType": "transfer",
+        "basePayout": 2073,
+        "category": "procedural-arc",
+        "networks": [
+          {
+            "networkId": "nonprofit-food-bank-network-1770830214081",
+            "networkName": "RegionalFood-Network",
+            "address": "10.41.74.0/24",
+            "bandwidth": 500,
+            "revokeOnComplete": true,
+            "revokeReason": "Mission access expired",
+            "fileSystems": [
+              {
+                "id": "fs-nonprofit-food-bank-1770830214081-d0-fs0",
+                "ip": "10.41.74.10",
+                "name": "regionalfood-fileserver-01/data",
+                "fileSystemName": "/data",
+                "files": [
+                  {
+                    "name": "financial_2024_03.zip",
+                    "size": "152.6 MB",
+                    "sizeBytes": 160037080,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "readme_2024_Q1.txt",
+                    "size": "441.7 KB",
+                    "sizeBytes": 452271,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "membership_2024_03.db",
+                    "size": "350.9 MB",
+                    "sizeBytes": 367923694,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "media_assets_2024_04.tar",
+                    "size": "216.3 MB",
+                    "sizeBytes": 226817600,
+                    "corrupted": false,
+                    "targetFile": false
+                  }
+                ],
+                "accessible": true
+              },
+              {
+                "id": "fs-nonprofit-food-bank-1770830214081-d0-fs1",
+                "ip": "10.41.74.10",
+                "name": "regionalfood-fileserver-01/logs",
+                "fileSystemName": "/logs",
+                "files": [
+                  {
+                    "name": "membership_2024_Q2.db",
+                    "size": "74.0 MB",
+                    "sizeBytes": 77602765,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "financial_2023_Q4.zip",
+                    "size": "370.8 MB",
+                    "sizeBytes": 388843366,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "readme_2024_02.txt",
+                    "size": "130.9 KB",
+                    "sizeBytes": 134004,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "financial_2024_Q2.zip",
+                    "size": "34.0 MB",
+                    "sizeBytes": 35669196,
+                    "corrupted": false,
+                    "targetFile": false
+                  }
+                ],
+                "accessible": true
+              },
+              {
+                "id": "fs-nonprofit-food-bank-1770830214081-d0-fs2",
+                "ip": "10.41.74.10",
+                "name": "regionalfood-fileserver-01/backups",
+                "fileSystemName": "/backups",
+                "files": [
+                  {
+                    "name": "readme_2024_03.txt",
+                    "size": "14.6 KB",
+                    "sizeBytes": 14997,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "membership_2024_Q1.db",
+                    "size": "186.4 MB",
+                    "sizeBytes": 195404119,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "annual_report_2024_05.tar",
+                    "size": "394.5 MB",
+                    "sizeBytes": 413687660,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "membership_2024_Q2.db",
+                    "size": "415.7 MB",
+                    "sizeBytes": 435844767,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "media_assets_2023_Q4.tar",
+                    "size": "313.6 MB",
+                    "sizeBytes": 328851743,
+                    "corrupted": false,
+                    "targetFile": false
+                  }
+                ],
+                "accessible": true
+              }
+            ]
+          },
+          {
+            "networkId": "nonprofit-food-bank-dest-1770830214081",
+            "networkName": "RegionalFood-Backup",
+            "address": "10.12.63.0/24",
+            "bandwidth": 500,
+            "revokeOnComplete": true,
+            "revokeReason": "Mission access expired",
+            "fileSystems": [
+              {
+                "id": "fs-nonprofit-food-bank-1770830214081-dest",
+                "ip": "10.12.63.10",
+                "name": "regionalfood-backup-01",
+                "files": [],
+                "accessible": true
+              }
+            ]
+          }
+        ],
+        "objectives": [
+          {
+            "id": "obj-1",
+            "description": "Connect to RegionalFood-Network network",
+            "type": "networkConnection",
+            "target": "nonprofit-food-bank-network-1770830214081"
+          },
+          {
+            "id": "obj-2",
+            "description": "Use Network Scanner to locate file server",
+            "type": "networkScan",
+            "target": "nonprofit-food-bank-network-1770830214081",
+            "expectedResults": [
+              "10.41.74.10"
+            ]
+          },
+          {
+            "id": "obj-3",
+            "description": "Copy 5 files from 3 file systems",
+            "type": "fileOperation",
+            "operation": "copy",
+            "targetFiles": [
+              "financial_2024_03.zip",
+              "readme_2024_Q1.txt",
+              "membership_2024_Q2.db",
+              "financial_2023_Q4.zip",
+              "readme_2024_03.txt"
+            ]
+          },
+          {
+            "id": "obj-4",
+            "description": "Connect to RegionalFood-Backup network",
+            "type": "networkConnection",
+            "target": "nonprofit-food-bank-dest-1770830214081"
+          },
+          {
+            "id": "obj-5",
+            "description": "Use Network Scanner to find regionalfood-backup-01",
+            "type": "networkScan",
+            "target": "nonprofit-food-bank-dest-1770830214081",
+            "expectedResult": "regionalfood-backup-01"
+          },
+          {
+            "id": "obj-6",
+            "description": "Paste 5 files to destination",
+            "type": "fileOperation",
+            "operation": "paste",
+            "targetFiles": [
+              "financial_2024_03.zip",
+              "readme_2024_Q1.txt",
+              "membership_2024_Q2.db",
+              "financial_2023_Q4.zip",
+              "readme_2024_03.txt"
+            ],
+            "destination": "10.12.63.10"
+          },
+          {
+            "id": "obj-verify",
+            "description": "Verify mission completion",
+            "type": "verification",
+            "autoComplete": false
+          }
+        ],
+        "targetFiles": [
+          "financial_2024_03.zip",
+          "readme_2024_Q1.txt",
+          "membership_2024_Q2.db",
+          "financial_2023_Q4.zip",
+          "readme_2024_03.txt"
+        ],
+        "totalDataBytes": 626950479,
+        "requirements": {
+          "software": [
+            "vpn-client",
+            "network-address-register",
+            "network-scanner",
+            "file-manager"
+          ],
+          "minReputation": 1
+        },
+        "consequences": {
+          "success": {
+            "credits": 2073,
+            "reputation": 1,
+            "messages": [
+              {
+                "id": "msg-success-1770830214081",
+                "from": "Regional Food Bank Network",
+                "fromId": "nonprofit-food-bank",
+                "fromName": "Regional Food Bank Network",
+                "subject": "Mission Complete - Payment Enclosed",
+                "body": "Dear {username},\n\nThank you for your efficient work. We're pleased with the results and have processed your payment.\n\nSincerely,\n{clientName}",
+                "attachments": [
+                  {
+                    "type": "cheque",
+                    "amount": 2073,
+                    "description": "Payment for completed mission"
+                  }
+                ],
+                "delay": 3000
+              }
+            ]
+          },
+          "failure": {
+            "credits": -518,
+            "reputation": -1,
+            "messages": [
+              {
+                "id": "msg-failure-incomplete-1770830214081",
+                "from": "Regional Food Bank Network",
+                "fromId": "nonprofit-food-bank",
+                "fromName": "Regional Food Bank Network",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              }
+            ],
+            "messageVariants": {
+              "deadline": {
+                "id": "msg-failure-deadline-1770830214081",
+                "from": "Regional Food Bank Network",
+                "fromId": "nonprofit-food-bank",
+                "fromName": "Regional Food Bank Network",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nTime ran out before the work was completed. We expected better from someone with your reputation.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              },
+              "incomplete": {
+                "id": "msg-failure-incomplete-1770830214081",
+                "from": "Regional Food Bank Network",
+                "fromId": "nonprofit-food-bank",
+                "fromName": "Regional Food Bank Network",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              },
+              "filesDeleted": {
+                "id": "msg-failure-filesDeleted-1770830214081",
+                "from": "Regional Food Bank Network",
+                "fromId": "nonprofit-food-bank",
+                "fromName": "Regional Food Bank Network",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nWe've detected that essential mission files have been removed from our systems. This mission cannot be completed.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              }
+            }
+          }
+        },
+        "timeLimitMinutes": 8,
+        "briefingMessage": {
+          "id": "msg-briefing-transfer-nonprofit-food-bank-1770830214081-22ko1ycyc",
+          "from": "Regional Food Bank Network",
+          "fromId": "nonprofit-food-bank",
+          "fromName": "Regional Food Bank Network",
+          "subject": "Mission Briefing: Transfer Request",
+          "body": "Dear {username},\n\nA concerned party has arranged for you to help us secure important documents.\n\nWe need to consolidate files from our primary server to our backup facility for redundancy.\n\n📁 Files to transfer:\n• financial_2024_03.zip\n• readme_2024_Q1.txt\n• membership_2024_Q2.db\n• financial_2023_Q4.zip\n• readme_2024_03.txt\n\nTotal data: 598 MB\n\n⚠️ TIME SENSITIVE: This task must be completed within 8 minutes of acceptance.\n\nAttached are the network credentials you'll need to access our systems.\n\n[Mission 2 of 2]\n\nSincerely,\n{clientName}",
+          "attachments": [
+            {
+              "type": "networkAddress",
+              "networkId": "nonprofit-food-bank-network-1770830214081",
+              "networkName": "RegionalFood-Network",
+              "address": "10.41.74.0/24",
+              "deviceIps": [
+                "10.41.74.10",
+                "10.41.74.10",
+                "10.41.74.10"
+              ]
+            },
+            {
+              "type": "networkAddress",
+              "networkId": "nonprofit-food-bank-dest-1770830214081",
+              "networkName": "RegionalFood-Backup",
+              "address": "10.12.63.0/24",
+              "deviceIps": [
+                "10.12.63.10"
+              ]
+            }
+          ],
+          "read": false,
+          "timestamp": "2026-02-11T17:16:54.081Z"
+        },
+        "isProcedurallyGenerated": true,
+        "generatedAt": "2026-02-11T17:16:54.081Z",
+        "arcId": "arc-1770830214079-uxd0qrs02",
+        "arcSequence": 2,
+        "arcTotal": 2,
+        "requiresCompletedMission": "backup-ship-meridian-cruises-1770830214081-1",
+        "arcName": "Whistleblower Protection"
+      }
+    ],
+    "arc-1770830214828-vtfpa6pij": [
+      {
+        "missionId": "backup-ship-continental-freight-1770830214828-4",
+        "title": "Compliance Audit Preparation (2/3): Data Backup for Continental Freight Lines",
+        "client": "Continental Freight Lines",
+        "clientId": "ship-continental-freight",
+        "clientType": "ship-logistics",
+        "industry": "shipping",
+        "difficulty": "Easy",
+        "missionType": "backup",
+        "basePayout": 1354,
+        "category": "procedural-arc",
+        "networks": [
+          {
+            "networkId": "ship-continental-freight-network-1770830214828",
+            "networkName": "Continental-Network",
+            "address": "10.59.239.0/24",
+            "bandwidth": 500,
+            "revokeOnComplete": true,
+            "revokeReason": "Mission access expired",
+            "fileSystems": [
+              {
+                "id": "fs-ship-continental-freight-1770830214828-d0-fs0",
+                "ip": "10.59.239.10",
+                "name": "continental-fileserver-01/data",
+                "fileSystemName": "/data",
+                "files": [
+                  {
+                    "name": "routes_2023_12.enc",
+                    "size": "57.3 MB",
+                    "sizeBytes": 60055854,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "customs_2023_12.dat",
+                    "size": "43.6 MB",
+                    "sizeBytes": 45742948,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "customs_2024_03.dat",
+                    "size": "24.1 MB",
+                    "sizeBytes": 25284943,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "routes_2024_01.enc",
+                    "size": "44.7 MB",
+                    "sizeBytes": 46854971,
+                    "corrupted": false,
+                    "targetFile": false
+                  }
+                ],
+                "accessible": true
+              },
+              {
+                "id": "fs-ship-continental-freight-1770830214828-d0-fs1",
+                "ip": "10.59.239.10",
+                "name": "continental-fileserver-01/logs",
+                "fileSystemName": "/logs",
+                "files": [
+                  {
+                    "name": "customs_2024_04.dat",
+                    "size": "31.4 MB",
+                    "sizeBytes": 32964085,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "routes_2023_Q4.enc",
+                    "size": "11.8 MB",
+                    "sizeBytes": 12369677,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "customs_2023_Q4.dat",
+                    "size": "47.9 MB",
+                    "sizeBytes": 50209076,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "fleet_status_2024_Q1.xlsx",
+                    "size": "3.8 MB",
+                    "sizeBytes": 3974166,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "backup_config_2024_05.cfg",
+                    "size": "38.5 KB",
+                    "sizeBytes": 39418,
+                    "corrupted": false,
+                    "targetFile": false
+                  }
+                ],
+                "accessible": true
+              },
+              {
+                "id": "fs-ship-continental-freight-1770830214828-d0-fs2",
+                "ip": "10.59.239.10",
+                "name": "continental-fileserver-01/backups",
+                "fileSystemName": "/backups",
+                "files": [
+                  {
+                    "name": "customs_2023_12.dat",
+                    "size": "20.9 MB",
+                    "sizeBytes": 21951116,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "customs_2023_11.dat",
+                    "size": "11.2 MB",
+                    "sizeBytes": 11734450,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "backup_config_2023_12.cfg",
+                    "size": "23.7 KB",
+                    "sizeBytes": 24229,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "shipment_records_2024_04.db",
+                    "size": "1.4 GB",
+                    "sizeBytes": 1476279140,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "shipment_records_2024_Q1.db",
+                    "size": "1.5 GB",
+                    "sizeBytes": 1569502904,
+                    "corrupted": false,
+                    "targetFile": false
+                  }
+                ],
+                "accessible": true
+              },
+              {
+                "id": "fs-ship-continental-freight-1770830214828-d0-fs3",
+                "ip": "10.59.239.10",
+                "name": "continental-fileserver-01/archive",
+                "fileSystemName": "/archive",
+                "files": [
+                  {
+                    "name": "routes_2024_Q2.enc",
+                    "size": "5.3 MB",
+                    "sizeBytes": 5546303,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "shipment_records_2024_04.db",
+                    "size": "1.2 GB",
+                    "sizeBytes": 1336598182,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "backup_config_2024_03.cfg",
+                    "size": "19.1 KB",
+                    "sizeBytes": 19545,
+                    "corrupted": false,
+                    "targetFile": false
+                  }
+                ],
+                "accessible": true
+              },
+              {
+                "id": "fs-ship-continental-freight-1770830214828-backup",
+                "ip": "10.59.239.20",
+                "name": "continental-backup-01",
+                "files": [],
+                "accessible": true
+              }
+            ]
+          }
+        ],
+        "objectives": [
+          {
+            "id": "obj-1",
+            "description": "Connect to Continental-Network network",
+            "type": "networkConnection",
+            "target": "ship-continental-freight-network-1770830214828"
+          },
+          {
+            "id": "obj-2",
+            "description": "Use Network Scanner to locate file server",
+            "type": "networkScan",
+            "target": "ship-continental-freight-network-1770830214828",
+            "expectedResults": [
+              "10.59.239.10"
+            ]
+          },
+          {
+            "id": "obj-3",
+            "description": "Copy 3 files from 4 file systems to backup server",
+            "type": "fileOperation",
+            "operation": "copy",
+            "targetFiles": [
+              "routes_2023_12.enc",
+              "customs_2024_04.dat",
+              "customs_2023_12.dat"
+            ]
+          },
+          {
+            "id": "obj-4",
+            "description": "Paste 3 files to continental-backup-01",
+            "type": "fileOperation",
+            "operation": "paste",
+            "targetFiles": [
+              "routes_2023_12.enc",
+              "customs_2024_04.dat",
+              "customs_2023_12.dat"
+            ],
+            "destination": "10.59.239.20"
+          },
+          {
+            "id": "obj-verify",
+            "description": "Verify mission completion",
+            "type": "verification",
+            "autoComplete": false
+          }
+        ],
+        "targetFiles": [
+          "routes_2023_12.enc",
+          "customs_2024_04.dat",
+          "customs_2023_12.dat"
+        ],
+        "totalDataBytes": 114971055,
+        "requirements": {
+          "software": [
+            "vpn-client",
+            "network-address-register",
+            "network-scanner",
+            "file-manager"
+          ],
+          "minReputation": 5
+        },
+        "consequences": {
+          "success": {
+            "credits": 1354,
+            "reputation": 1,
+            "messages": [
+              {
+                "id": "msg-success-1770830214828",
+                "from": "Continental Freight Lines",
+                "fromId": "ship-continental-freight",
+                "fromName": "Continental Freight Lines",
+                "subject": "Mission Complete - Payment Enclosed",
+                "body": "Dear {username},\n\nExcellent work! The task has been completed to our satisfaction. Payment has been authorized.\n\nSincerely,\n{clientName}",
+                "attachments": [
+                  {
+                    "type": "cheque",
+                    "amount": 1354,
+                    "description": "Payment for completed mission"
+                  }
+                ],
+                "delay": 3000
+              }
+            ]
+          },
+          "failure": {
+            "credits": -338,
+            "reputation": -1,
+            "messages": [
+              {
+                "id": "msg-failure-incomplete-1770830214828",
+                "from": "Continental Freight Lines",
+                "fromId": "ship-continental-freight",
+                "fromName": "Continental Freight Lines",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nThe mission was not completed as requested. This has caused significant inconvenience to our operations.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              }
+            ],
+            "messageVariants": {
+              "deadline": {
+                "id": "msg-failure-deadline-1770830214828",
+                "from": "Continental Freight Lines",
+                "fromId": "ship-continental-freight",
+                "fromName": "Continental Freight Lines",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nThe deadline has passed and we can no longer use your services for this task. This is very disappointing.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              },
+              "incomplete": {
+                "id": "msg-failure-incomplete-1770830214828",
+                "from": "Continental Freight Lines",
+                "fromId": "ship-continental-freight",
+                "fromName": "Continental Freight Lines",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nThe mission was not completed as requested. This has caused significant inconvenience to our operations.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              },
+              "filesDeleted": {
+                "id": "msg-failure-filesDeleted-1770830214828",
+                "from": "Continental Freight Lines",
+                "fromId": "ship-continental-freight",
+                "fromName": "Continental Freight Lines",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nWe've detected that essential mission files have been removed from our systems. This mission cannot be completed.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              }
+            }
+          }
+        },
+        "timeLimitMinutes": null,
+        "briefingMessage": {
+          "id": "msg-briefing-backup-ship-continental-freight-1770830214828-zu9ebgyt3",
+          "from": "Continental Freight Lines",
+          "fromId": "ship-continental-freight",
+          "fromName": "Continental Freight Lines",
+          "subject": "Mission Briefing: Backup Request",
+          "body": "Dear {username},\n\nThe repairs are complete. Now we need certified backups for the auditors.\n\nAs part of our disaster recovery plan, we require immediate backup of essential data files.\n\n📁 Files to back up:\n• routes_2023_12.enc\n• customs_2024_04.dat\n• customs_2023_12.dat\n\nTotal data: 110 MB\n\nAttached are the network credentials you'll need to access our systems.\n\n[Mission 2 of 3]\n\nSincerely,\n{clientName}",
+          "attachments": [
+            {
+              "type": "networkAddress",
+              "networkId": "ship-continental-freight-network-1770830214828",
+              "networkName": "Continental-Network",
+              "address": "10.59.239.0/24",
+              "deviceIps": [
+                "10.59.239.10",
+                "10.59.239.10",
+                "10.59.239.10",
+                "10.59.239.10",
+                "10.59.239.20"
+              ]
+            }
+          ],
+          "read": false,
+          "timestamp": "2026-02-11T17:16:54.828Z"
+        },
+        "isProcedurallyGenerated": true,
+        "generatedAt": "2026-02-11T17:16:54.828Z",
+        "arcId": "arc-1770830214828-vtfpa6pij",
+        "arcSequence": 2,
+        "arcTotal": 3,
+        "requiresCompletedMission": "repair-ship-continental-freight-1770830214828-3",
+        "arcName": "Compliance Audit Preparation"
+      },
+      {
+        "missionId": "transfer-ship-continental-freight-1770830214828-5",
+        "title": "Compliance Audit Preparation (3/3): Data Transfer for Continental Freight Lines",
+        "client": "Continental Freight Lines",
+        "clientId": "ship-continental-freight",
+        "clientType": "ship-logistics",
+        "industry": "shipping",
+        "difficulty": "Hard",
+        "missionType": "transfer",
+        "basePayout": 2438,
+        "category": "procedural-arc",
+        "networks": [
+          {
+            "networkId": "ship-continental-freight-network-1770830214828",
+            "networkName": "Continental-Network",
+            "address": "10.7.190.0/24",
+            "bandwidth": 500,
+            "revokeOnComplete": true,
+            "revokeReason": "Mission access expired",
+            "fileSystems": [
+              {
+                "id": "fs-ship-continental-freight-1770830214828-d0-fs0",
+                "ip": "10.7.190.10",
+                "name": "continental-fileserver01-01/data",
+                "fileSystemName": "/data",
+                "files": [
+                  {
+                    "name": "sync_log_2024_02.txt",
+                    "size": "436.4 KB",
+                    "sizeBytes": 446923,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "warehouse_2023_11.tar",
+                    "size": "175.6 MB",
+                    "sizeBytes": 184142914,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "inventory_2024_03.db",
+                    "size": "472.0 MB",
+                    "sizeBytes": 494927980,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "warehouse_2023_12.tar",
+                    "size": "112.3 MB",
+                    "sizeBytes": 117775039,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "fleet_data_2024_Q1.zip",
+                    "size": "391.2 MB",
+                    "sizeBytes": 410216658,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "sync_log_2024_04.txt",
+                    "size": "260.9 KB",
+                    "sizeBytes": 267169,
+                    "corrupted": false,
+                    "targetFile": false
+                  }
+                ],
+                "accessible": true
+              },
+              {
+                "id": "fs-ship-continental-freight-1770830214828-d0-fs1",
+                "ip": "10.7.190.10",
+                "name": "continental-fileserver01-01/logs",
+                "fileSystemName": "/logs",
+                "files": [
+                  {
+                    "name": "warehouse_2024_Q1.tar",
+                    "size": "44.6 MB",
+                    "sizeBytes": 46804828,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "warehouse_2023_11.tar",
+                    "size": "168.8 MB",
+                    "sizeBytes": 177014402,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "fleet_data_2024_04.zip",
+                    "size": "231.8 MB",
+                    "sizeBytes": 243112246,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "transfer_receipt_2024_Q2.pdf",
+                    "size": "5.0 MB",
+                    "sizeBytes": 5244645,
+                    "corrupted": false,
+                    "targetFile": false
+                  }
+                ],
+                "accessible": true
+              },
+              {
+                "id": "fs-ship-continental-freight-1770830214828-d1-fs0",
+                "ip": "10.7.190.11",
+                "name": "continental-fileserver02-01",
+                "files": [
+                  {
+                    "name": "fleet_data_2024_03.zip",
+                    "size": "96.7 MB",
+                    "sizeBytes": 101390324,
+                    "corrupted": false,
+                    "targetFile": true
+                  },
+                  {
+                    "name": "inventory_2023_Q4.db",
+                    "size": "177.9 MB",
+                    "sizeBytes": 186555692,
+                    "corrupted": false,
+                    "targetFile": false
+                  },
+                  {
+                    "name": "warehouse_2024_Q2.tar",
+                    "size": "247.1 MB",
+                    "sizeBytes": 259054868,
+                    "corrupted": false,
+                    "targetFile": false
+                  }
+                ],
+                "accessible": true
+              }
+            ]
+          },
+          {
+            "networkId": "ship-continental-freight-dest-1770830214828",
+            "networkName": "Continental-Backup",
+            "address": "10.65.33.0/24",
+            "bandwidth": 500,
+            "revokeOnComplete": true,
+            "revokeReason": "Mission access expired",
+            "fileSystems": [
+              {
+                "id": "fs-ship-continental-freight-1770830214828-dest",
+                "ip": "10.65.33.10",
+                "name": "continental-backup-01",
+                "files": [],
+                "accessible": true
+              }
+            ]
+          }
+        ],
+        "objectives": [
+          {
+            "id": "obj-1",
+            "description": "Connect to Continental-Network network",
+            "type": "networkConnection",
+            "target": "ship-continental-freight-network-1770830214828"
+          },
+          {
+            "id": "obj-2",
+            "description": "Use Network Scanner to locate 2 file servers",
+            "type": "networkScan",
+            "target": "ship-continental-freight-network-1770830214828",
+            "expectedResults": [
+              "10.7.190.10",
+              "10.7.190.11"
+            ]
+          },
+          {
+            "id": "obj-3",
+            "description": "Copy 5 files from 3 file systems",
+            "type": "fileOperation",
+            "operation": "copy",
+            "targetFiles": [
+              "sync_log_2024_02.txt",
+              "warehouse_2023_11.tar",
+              "warehouse_2024_Q1.tar",
+              "warehouse_2023_11.tar",
+              "fleet_data_2024_03.zip"
+            ]
+          },
+          {
+            "id": "obj-4",
+            "description": "Connect to Continental-Backup network",
+            "type": "networkConnection",
+            "target": "ship-continental-freight-dest-1770830214828"
+          },
+          {
+            "id": "obj-5",
+            "description": "Use Network Scanner to find continental-backup-01",
+            "type": "networkScan",
+            "target": "ship-continental-freight-dest-1770830214828",
+            "expectedResult": "continental-backup-01"
+          },
+          {
+            "id": "obj-6",
+            "description": "Paste 5 files to destination",
+            "type": "fileOperation",
+            "operation": "paste",
+            "targetFiles": [
+              "sync_log_2024_02.txt",
+              "warehouse_2023_11.tar",
+              "warehouse_2024_Q1.tar",
+              "warehouse_2023_11.tar",
+              "fleet_data_2024_03.zip"
+            ],
+            "destination": "10.65.33.10"
+          },
+          {
+            "id": "obj-verify",
+            "description": "Verify mission completion",
+            "type": "verification",
+            "autoComplete": false
+          }
+        ],
+        "targetFiles": [
+          "sync_log_2024_02.txt",
+          "warehouse_2023_11.tar",
+          "warehouse_2024_Q1.tar",
+          "warehouse_2023_11.tar",
+          "fleet_data_2024_03.zip"
+        ],
+        "totalDataBytes": 509799391,
+        "requirements": {
+          "software": [
+            "vpn-client",
+            "network-address-register",
+            "network-scanner",
+            "file-manager"
+          ],
+          "minReputation": 5
+        },
+        "consequences": {
+          "success": {
+            "credits": 2438,
+            "reputation": 1,
+            "messages": [
+              {
+                "id": "msg-success-1770830214828",
+                "from": "Continental Freight Lines",
+                "fromId": "ship-continental-freight",
+                "fromName": "Continental Freight Lines",
+                "subject": "Mission Complete - Payment Enclosed",
+                "body": "Dear {username},\n\nThank you for your efficient work. We're pleased with the results and have processed your payment.\n\nSincerely,\n{clientName}",
+                "attachments": [
+                  {
+                    "type": "cheque",
+                    "amount": 2438,
+                    "description": "Payment for completed mission"
+                  }
+                ],
+                "delay": 3000
+              }
+            ]
+          },
+          "failure": {
+            "credits": -609,
+            "reputation": -1,
+            "messages": [
+              {
+                "id": "msg-failure-incomplete-1770830214828",
+                "from": "Continental Freight Lines",
+                "fromId": "ship-continental-freight",
+                "fromName": "Continental Freight Lines",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              }
+            ],
+            "messageVariants": {
+              "deadline": {
+                "id": "msg-failure-deadline-1770830214828",
+                "from": "Continental Freight Lines",
+                "fromId": "ship-continental-freight",
+                "fromName": "Continental Freight Lines",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nTime ran out before the work was completed. We expected better from someone with your reputation.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              },
+              "incomplete": {
+                "id": "msg-failure-incomplete-1770830214828",
+                "from": "Continental Freight Lines",
+                "fromId": "ship-continental-freight",
+                "fromName": "Continental Freight Lines",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              },
+              "filesDeleted": {
+                "id": "msg-failure-filesDeleted-1770830214828",
+                "from": "Continental Freight Lines",
+                "fromId": "ship-continental-freight",
+                "fromName": "Continental Freight Lines",
+                "subject": "Mission Failed",
+                "body": "Dear {username},\n\nCritical files required for this task have been deleted. We cannot proceed and must terminate this engagement immediately.\n\nSincerely,\n{clientName}",
+                "attachments": [],
+                "delay": 2000
+              }
+            }
+          }
+        },
+        "timeLimitMinutes": 8,
+        "briefingMessage": {
+          "id": "msg-briefing-transfer-ship-continental-freight-1770830214828-cbgcbo51y",
+          "from": "Continental Freight Lines",
+          "fromId": "ship-continental-freight",
+          "fromName": "Continental Freight Lines",
+          "subject": "Mission Briefing: Transfer Request",
+          "body": "Dear {username},\n\nFinal step - transfer the backup copies to the auditor's system.\n\nWe need to consolidate files from our primary server to our backup facility for redundancy.\n\n📁 Files to transfer:\n• sync_log_2024_02.txt\n• warehouse_2023_11.tar\n• warehouse_2024_Q1.tar\n• warehouse_2023_11.tar\n• fleet_data_2024_03.zip\n\nTotal data: 486 MB\n\n⚠️ TIME SENSITIVE: This task must be completed within 8 minutes of acceptance.\n\nAttached are the network credentials you'll need to access our systems.\n\n[Mission 3 of 3]\n\nSincerely,\n{clientName}",
+          "attachments": [
+            {
+              "type": "networkAddress",
+              "networkId": "ship-continental-freight-network-1770830214828",
+              "networkName": "Continental-Network",
+              "address": "10.7.190.0/24",
+              "deviceIps": [
+                "10.7.190.10",
+                "10.7.190.10",
+                "10.7.190.11"
+              ]
+            },
+            {
+              "type": "networkAddress",
+              "networkId": "ship-continental-freight-dest-1770830214828",
+              "networkName": "Continental-Backup",
+              "address": "10.65.33.0/24",
+              "deviceIps": [
+                "10.65.33.10"
+              ]
+            }
+          ],
+          "read": false,
+          "timestamp": "2026-02-11T17:16:54.828Z"
+        },
+        "isProcedurallyGenerated": true,
+        "generatedAt": "2026-02-11T17:16:54.828Z",
+        "arcId": "arc-1770830214828-vtfpa6pij",
+        "arcSequence": 3,
+        "arcTotal": 3,
+        "requiresCompletedMission": "backup-ship-continental-freight-1770830214828-4",
+        "arcName": "Compliance Audit Preparation"
+      }
     ]
   },
   "activeClientIds": [
     "util-county-electric",
-    "emerg-volunteer-fire",
     "bank-coastal-regional",
-    "ship-continental-freight",
     "nonprofit-community-center",
     "cultural-arts-center",
     "gov-dept-defense",
-    "corp-ascension-relay"
+    "corp-ascension-relay",
+    "ship-meridian-cruises"
   ],
   "clientStandings": {},
   "extensionOffers": {},
@@ -5522,7 +6598,8 @@
   "unlockedFeatures": [
     "network-adapters",
     "investigation-tooling",
-    "investigation-missions"
+    "investigation-missions",
+    "decryption-tooling"
   ],
   "pendingHardwareUpgrades": {
     "network": {
@@ -5533,8 +6610,8 @@
       "power": 6
     }
   },
-  "creditThresholdForDecryption": null,
-  "decryptionMessageSent": false,
+  "creditThresholdForDecryption": 17025,
+  "decryptionMessageSent": true,
   "decryptionAlgorithms": [
     "aes-128",
     "aes-256"
@@ -5684,6 +6761,33 @@
           }
         ],
         "revokedReason": "Investigation complete - access revoked"
+      },
+      {
+        "networkId": "metrolink-primary",
+        "networkName": "MetroLink-Operations",
+        "address": "10.50.0.0/24",
+        "bandwidth": 75,
+        "accessible": true,
+        "discovered": true,
+        "accessGrantedDate": "2026-02-11T17:16:44.783Z",
+        "logs": [
+          {
+            "id": "log-1770830207628-shnqpvwsd",
+            "timestamp": "2020-03-25T09:35:19.000Z",
+            "type": "remote",
+            "action": "connect",
+            "user": "scenario_user",
+            "note": "Connected via VPN"
+          },
+          {
+            "id": "log-1770830207628-y05tvidu6",
+            "timestamp": "2020-03-25T09:35:19.000Z",
+            "type": "remote",
+            "action": "connect",
+            "user": "scenario_user",
+            "note": "Connected via VPN"
+          }
+        ]
       }
     ],
     "devices": [
@@ -6135,6 +7239,87 @@
         "fileSystemId": "fs-lib-admin",
         "accessible": false,
         "logs": []
+      },
+      {
+        "ip": "10.50.0.10",
+        "hostname": "ticketing-db",
+        "networkId": "metrolink-primary",
+        "fileSystemIds": [
+          "fs-metro-ticketing"
+        ],
+        "fileSystemId": "fs-metro-ticketing",
+        "accessible": true,
+        "logs": [
+          {
+            "timestamp": "2020-03-25T09:22:45.000Z",
+            "type": "remote",
+            "user": "unknown_0x4F2A",
+            "action": "login",
+            "fileSystemId": "fs-metro-ticketing",
+            "note": "Unauthorized remote session from 185.243.115.42",
+            "id": "mission-log-fs-metro-ticketing-0"
+          },
+          {
+            "timestamp": "2020-03-25T09:22:50.000Z",
+            "type": "file",
+            "user": "unknown_0x4F2A",
+            "action": "upload",
+            "fileName": "svchost32.exe",
+            "fileSystemId": "fs-metro-ticketing",
+            "sizeBytes": 46080,
+            "id": "mission-log-fs-metro-ticketing-1"
+          },
+          {
+            "timestamp": "2020-03-25T09:22:55.000Z",
+            "type": "file",
+            "user": "unknown_0x4F2A",
+            "action": "upload",
+            "fileName": "winupdate.dll",
+            "fileSystemId": "fs-metro-ticketing",
+            "sizeBytes": 32768,
+            "id": "mission-log-fs-metro-ticketing-2"
+          },
+          {
+            "timestamp": "2020-03-25T09:23:00.000Z",
+            "type": "file",
+            "user": "unknown_0x4F2A",
+            "action": "execute",
+            "fileName": "svchost32.exe",
+            "fileSystemId": "fs-metro-ticketing",
+            "note": "Process spawned: PID 4092",
+            "id": "mission-log-fs-metro-ticketing-3"
+          },
+          {
+            "timestamp": "2020-03-25T09:23:05.000Z",
+            "type": "file",
+            "user": "SYSTEM",
+            "action": "encrypt",
+            "fileName": "ticketing-database.db",
+            "fileSystemId": "fs-metro-ticketing",
+            "note": "File encrypted with AES-256 → ticketing-database.db.enc",
+            "id": "mission-log-fs-metro-ticketing-4"
+          },
+          {
+            "timestamp": "2020-03-25T09:23:10.000Z",
+            "type": "remote",
+            "user": "unknown_0x4F2A",
+            "action": "logout",
+            "fileSystemId": "fs-metro-ticketing",
+            "note": "Session terminated",
+            "id": "mission-log-fs-metro-ticketing-5"
+          }
+        ]
+      },
+      {
+        "ip": "10.50.0.20",
+        "hostname": "scheduling-srv",
+        "networkId": "metrolink-primary",
+        "fileSystemIds": [
+          "fs-metro-scheduling"
+        ],
+        "fileSystemId": "fs-metro-scheduling",
+        "accessible": true,
+        "logs": []
       }
     ],
     "fileSystems": [
@@ -6456,9 +7641,75 @@
             "size": "340 KB"
           }
         ]
+      },
+      {
+        "id": "fs-metro-ticketing",
+        "files": [
+          {
+            "name": "ticketing-database.db.enc",
+            "size": "450 MB",
+            "encrypted": true,
+            "algorithm": "aes-256"
+          },
+          {
+            "name": "fare-tables.json",
+            "size": "2.5 MB"
+          },
+          {
+            "name": "route-schedules.csv",
+            "size": "8.1 MB"
+          },
+          {
+            "name": "station-config.xml",
+            "size": "1.2 MB"
+          },
+          {
+            "name": "ticketing-database.db",
+            "size": "450 MB",
+            "encrypted": false,
+            "algorithm": "aes-256",
+            "decrypted": true
+          },
+          {
+            "name": "passenger-data.dat.enc",
+            "size": "2 MB",
+            "encrypted": true,
+            "algorithm": "aes-256"
+          }
+        ]
+      },
+      {
+        "id": "fs-metro-scheduling",
+        "files": [
+          {
+            "name": "crew-roster.db.enc",
+            "size": "120 MB",
+            "encrypted": true,
+            "algorithm": "aes-256"
+          },
+          {
+            "name": "shift-patterns.json",
+            "size": "3.4 MB"
+          },
+          {
+            "name": "overtime-log.csv",
+            "size": "1.8 MB"
+          },
+          {
+            "name": "training-records.pdf",
+            "size": "12.5 MB"
+          },
+          {
+            "name": "crew-roster.db",
+            "size": "120 MB",
+            "encrypted": false,
+            "algorithm": "aes-256",
+            "decrypted": true
+          }
+        ]
       }
     ]
   },
-  "savedAt": "2026-02-11T17:16:36.684Z",
-  "saveName": "25/03/2020 09:33:19"
+  "savedAt": "2026-02-11T17:17:03.394Z",
+  "saveName": "25/03/2020 09:48:05"
 }

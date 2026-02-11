@@ -142,7 +142,7 @@ test.describe('Bandwidth Display - Downloads', () => {
 });
 
 test.describe('Bandwidth Display - Preview Values', () => {
-  test('should show adapter speed in Mbps in preview', async ({ page }) => {
+  test('should show total bandwidth in MB/s in preview', async ({ page }) => {
     await completeBoot(page, 'bw_preview_adapter');
 
     const bandwidthIndicator = page.locator('.topbar-bandwidth');
@@ -151,13 +151,13 @@ test.describe('Bandwidth Display - Preview Values', () => {
     const preview = page.locator('.bandwidth-preview');
     await expect(preview).toBeVisible();
 
-    // Should show adapter speed in Mbps
-    await expect(preview).toContainText('Adapter: 250 Mbps');
+    // Should show total bandwidth (adapter speed / 8) in MB/s
+    await expect(preview).toContainText('Total: 31.3 MB/s');
 
-    console.log('Adapter speed displayed in Mbps');
+    console.log('Total bandwidth displayed in MB/s');
   });
 
-  test('should show correct max bandwidth for current adapter in MB/s', async ({ page }) => {
+  test('should show available bandwidth for current adapter in MB/s', async ({ page }) => {
     await completeBoot(page, 'bw_preview_max');
 
     const bandwidthIndicator = page.locator('.topbar-bandwidth');
@@ -166,13 +166,13 @@ test.describe('Bandwidth Display - Preview Values', () => {
     const preview = page.locator('.bandwidth-preview');
     await expect(preview).toBeVisible();
 
-    // 250 Mbps = 31.25 MB/s, displayed as 31.3
-    await expect(preview).toContainText('Max: 31.3 MB/s');
+    // 250 Mbps / 8 = 31.3 MB/s, all available when idle
+    await expect(preview).toContainText('Available: 31.3 MB/s');
 
-    console.log('Max bandwidth displayed in MB/s');
+    console.log('Available bandwidth displayed in MB/s');
   });
 
-  test('should show current speed during operation', async ({ page }) => {
+  test('should show in-use speed during operation', async ({ page }) => {
     await completeBoot(page, 'bw_preview_current');
     await setCreditsViaDebug(page, 1000);
     await openPortalSoftware(page);
@@ -187,10 +187,10 @@ test.describe('Bandwidth Display - Preview Values', () => {
     const preview = page.locator('.bandwidth-preview');
     await expect(preview).toBeVisible();
 
-    // Should show current speed matching single operation speed
-    await expect(preview).toContainText('Current: 31.3 MB/s');
+    // Should show in-use speed matching single operation speed
+    await expect(preview).toContainText('In Use: 31.3 MB/s');
 
-    console.log('Current speed displayed during operation');
+    console.log('In-use speed displayed during operation');
   });
 
   test('should show accurate active operation count', async ({ page }) => {
@@ -214,7 +214,7 @@ test.describe('Bandwidth Display - Preview Values', () => {
     console.log('Active operation count displayed correctly');
   });
 
-  test('should show both Mbps and MB/s to help player understand conversion', async ({ page }) => {
+  test('should show Total, In Use, and Available in preview', async ({ page }) => {
     await completeBoot(page, 'bw_preview_both');
 
     const bandwidthIndicator = page.locator('.topbar-bandwidth');
@@ -223,9 +223,10 @@ test.describe('Bandwidth Display - Preview Values', () => {
     const preview = page.locator('.bandwidth-preview');
     await expect(preview).toBeVisible();
 
-    // Both Mbps (adapter) and MB/s (max/current) should be visible
-    await expect(preview).toContainText('Mbps');
-    await expect(preview).toContainText('MB/s');
+    // All three bandwidth fields should be visible in MB/s
+    await expect(preview).toContainText('Total:');
+    await expect(preview).toContainText('In Use:');
+    await expect(preview).toContainText('Available:');
 
     console.log('Both Mbps and MB/s shown in preview');
   });

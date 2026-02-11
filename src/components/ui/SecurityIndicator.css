@@ -1,0 +1,76 @@
+.security-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  position: relative;
+}
+
+.security-indicator.active {
+  color: #32CD32;
+}
+
+.security-indicator.processing {
+  color: #FFD700;
+}
+
+.security-icon {
+  font-size: 14px;
+  position: relative;
+}
+
+.security-spinner {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid #FFD700;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: security-spin 1s linear infinite;
+}
+
+@keyframes security-spin {
+  to { transform: rotate(360deg); }
+}
+
+.security-progress {
+  font-size: 10px;
+  font-weight: bold;
+  color: #FFD700;
+}
+
+.security-preview {
+  min-width: 200px;
+}
+
+.security-section {
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px solid #eee;
+}
+
+.security-section:first-of-type {
+  border-top: none;
+  margin-top: 4px;
+}
+
+.security-section-title {
+  font-weight: bold;
+  font-size: 11px;
+  color: #444;
+  margin-bottom: 2px;
+}
+
+.security-status-active {
+  color: #32CD32;
+  font-weight: bold;
+}
+
+.security-status-cleaning {
+  color: #FFD700;
+  font-weight: bold;
+}

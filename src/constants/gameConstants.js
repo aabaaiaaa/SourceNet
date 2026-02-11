@@ -222,6 +222,25 @@ export const SOFTWARE_CATALOG = [
     available: true,
     requiresUnlock: 'investigation-tooling',
   },
+  {
+    id: 'decryption-tool',
+    name: 'Decryption Tool',
+    description: 'Decrypt encrypted files using cryptographic algorithms. Includes AES-128 and AES-256 decryption modules. Additional algorithm packs available separately.',
+    price: 8000,
+    sizeInMB: 350,
+    available: true,
+    requiresUnlock: 'decryption-tooling',
+  },
+  {
+    id: 'advanced-firewall-av',
+    name: 'Advanced Firewall & Antivirus',
+    description: 'Real-time threat protection and malware removal',
+    price: 2000,
+    sizeInMB: 50,
+    available: true,
+    requiresUnlock: 'security-tooling',
+    passive: true,
+  },
 ];
 
 // Initial messages
@@ -281,6 +300,7 @@ export const WINDOW_SIZES = {
   fileManager: { width: 700, height: 550 },
   logViewer: { width: 650, height: 500 },
   dataRecoveryTool: { width: 700, height: 550 },
+  decryptionTool: { width: 750, height: 600 },
 };
 
 // Boot sequence timing

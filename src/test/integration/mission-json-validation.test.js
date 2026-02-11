@@ -183,6 +183,9 @@ describe('Mission JSON Validation', () => {
         'file-manager',
         'network-address-register',
         'mission-board',
+        'log-viewer',
+        'data-recovery-tool',
+        'decryption-tool',
       ];
 
       allMissions.forEach((mission) => {

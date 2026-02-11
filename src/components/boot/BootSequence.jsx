@@ -3,7 +3,7 @@ import { useGame } from '../../contexts/useGame';
 import './BootSequence.css';
 
 const BootSequence = () => {
-  const { setGamePhase, hardware, username, isRebooting, setIsRebooting, setIsPaused, lastAppliedHardware, setLastAppliedHardware } = useGame();
+  const { setGamePhase, hardware, username, isRebooting, setIsRebooting, setIsPaused, lastAppliedHardware, setLastAppliedHardware, ransomwareLockout } = useGame();
   const [bootLines, setBootLines] = useState([]);
   const [bootComplete, setBootComplete] = useState(false);
   const [showLogo, setShowLogo] = useState(false);
@@ -165,12 +165,19 @@ const BootSequence = () => {
         // Unpause the game when boot completes
         setIsPaused(false);
 
-        // If username already exists (loading a save), go to desktop
-        // Otherwise go to username selection (new game)
-        setGamePhase(username ? 'desktop' : 'username');
+        // If ransomware lockout, go to lock screen instead of desktop
+        if (ransomwareLockout) {
+          setGamePhase('gameOver-ransomware');
+        } else if (username) {
+          // If username already exists (loading a save), go to desktop
+          setGamePhase('desktop');
+        } else {
+          // Otherwise go to username selection (new game)
+          setGamePhase('username');
+        }
       }, 2000);
     }
-  }, [bootComplete, setGamePhase, username, setIsPaused]);
+  }, [bootComplete, setGamePhase, username, setIsPaused, ransomwareLockout]);
 
   return (
     <div className="boot-screen">

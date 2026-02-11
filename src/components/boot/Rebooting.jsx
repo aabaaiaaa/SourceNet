@@ -3,7 +3,7 @@ import { useGame } from '../../contexts/useGame';
 import './Rebooting.css';
 
 const Rebooting = () => {
-  const { setGamePhase } = useGame();
+  const { setGamePhase, ransomwareLockout } = useGame();
 
   useEffect(() => {
     // Check for skipBoot parameter or scenario (E2E tests)
@@ -12,8 +12,12 @@ const Rebooting = () => {
     const hasScenario = urlParams.get('scenario');
 
     if (skipBoot || hasScenario) {
-      // Skip straight to desktop on reboot (E2E tests)
-      setGamePhase('desktop');
+      // If ransomware lockout, go to lock screen instead of desktop
+      if (ransomwareLockout) {
+        setGamePhase('gameOver-ransomware');
+      } else {
+        setGamePhase('desktop');
+      }
       return;
     }
 
@@ -24,7 +28,7 @@ const Rebooting = () => {
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [setGamePhase]);
+  }, [setGamePhase, ransomwareLockout]);
 
   return (
     <div className="rebooting-screen">

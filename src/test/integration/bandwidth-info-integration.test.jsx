@@ -31,29 +31,29 @@ describe('Bandwidth Info Integration', () => {
   });
 
   describe('Adapter Speed Display', () => {
-    it('should show "Adapter: 250 Mbps" for default adapter', async () => {
+    it('should show "Total: 31.3 MB/s" for default adapter', async () => {
       renderWithProvider();
 
       const indicator = document.querySelector('.topbar-bandwidth');
       fireEvent.mouseEnter(indicator);
 
       await waitFor(() => {
-        expect(screen.getByText(/Adapter: 250 Mbps/)).toBeInTheDocument();
+        expect(screen.getByText(/Total: 31.3 MB\/s/)).toBeInTheDocument();
       });
     });
 
-    it('should show max 31.3 MB/s for default 250Mb adapter', async () => {
+    it('should show total 31.3 MB/s for default 250Mb adapter', async () => {
       renderWithProvider();
 
       const indicator = document.querySelector('.topbar-bandwidth');
       fireEvent.mouseEnter(indicator);
 
       await waitFor(() => {
-        expect(screen.getByText(/Max: 31.3 MB\/s/)).toBeInTheDocument();
+        expect(screen.getByText(/Total: 31.3 MB\/s/)).toBeInTheDocument();
       });
     });
 
-    it('should show "Adapter: 500 Mbps" and max 62.5 MB/s after upgrade', async () => {
+    it('should show "Total: 62.5 MB/s" after 500Mbps upgrade', async () => {
       let setHardware;
       renderWithProvider((game) => {
         setHardware = game.setHardware;
@@ -76,12 +76,11 @@ describe('Bandwidth Info Integration', () => {
       fireEvent.mouseEnter(indicator);
 
       await waitFor(() => {
-        expect(screen.getByText(/Adapter: 500 Mbps/)).toBeInTheDocument();
-        expect(screen.getByText(/Max: 62.5 MB\/s/)).toBeInTheDocument();
+        expect(screen.getByText(/Total: 62.5 MB\/s/)).toBeInTheDocument();
       });
     });
 
-    it('should show "Adapter: 1000 Mbps" and max 125 MB/s for 1Gb adapter', async () => {
+    it('should show "Total: 125.0 MB/s" for 1Gb adapter', async () => {
       let setHardware;
       renderWithProvider((game) => {
         setHardware = game.setHardware;
@@ -104,12 +103,11 @@ describe('Bandwidth Info Integration', () => {
       fireEvent.mouseEnter(indicator);
 
       await waitFor(() => {
-        expect(screen.getByText(/Adapter: 1000 Mbps/)).toBeInTheDocument();
-        expect(screen.getByText(/Max: 125.0 MB\/s/)).toBeInTheDocument();
+        expect(screen.getByText(/Total: 125.0 MB\/s/)).toBeInTheDocument();
       });
     });
 
-    it('should show "Adapter: 5000 Mbps" and max 625 MB/s for 5Gb adapter', async () => {
+    it('should show "Total: 625.0 MB/s" for 5Gb adapter', async () => {
       let setHardware;
       renderWithProvider((game) => {
         setHardware = game.setHardware;
@@ -132,12 +130,11 @@ describe('Bandwidth Info Integration', () => {
       fireEvent.mouseEnter(indicator);
 
       await waitFor(() => {
-        expect(screen.getByText(/Adapter: 5000 Mbps/)).toBeInTheDocument();
-        expect(screen.getByText(/Max: 625.0 MB\/s/)).toBeInTheDocument();
+        expect(screen.getByText(/Total: 625.0 MB\/s/)).toBeInTheDocument();
       });
     });
 
-    it('should show "Adapter: 10000 Mbps" and max 1250 MB/s for 10Gb adapter', async () => {
+    it('should show "Total: 1250.0 MB/s" for 10Gb adapter', async () => {
       let setHardware;
       renderWithProvider((game) => {
         setHardware = game.setHardware;
@@ -160,8 +157,7 @@ describe('Bandwidth Info Integration', () => {
       fireEvent.mouseEnter(indicator);
 
       await waitFor(() => {
-        expect(screen.getByText(/Adapter: 10000 Mbps/)).toBeInTheDocument();
-        expect(screen.getByText(/Max: 1250.0 MB\/s/)).toBeInTheDocument();
+        expect(screen.getByText(/Total: 1250.0 MB\/s/)).toBeInTheDocument();
       });
     });
 
@@ -203,16 +199,16 @@ describe('Bandwidth Info Integration', () => {
       expect(getBandwidthInfo().adapterSpeed).toBe(250);
     });
 
-    it('should show both Mbps (adapter) and MB/s (max) in preview', async () => {
+    it('should show Total, In Use, and Available in preview', async () => {
       renderWithProvider();
 
       const indicator = document.querySelector('.topbar-bandwidth');
       fireEvent.mouseEnter(indicator);
 
       await waitFor(() => {
-        // Both should be visible to help player understand the conversion
-        expect(screen.getByText(/Adapter: 250 Mbps/)).toBeInTheDocument();
-        expect(screen.getByText(/Max: 31.3 MB\/s/)).toBeInTheDocument();
+        expect(screen.getByText(/Total: 31.3 MB\/s/)).toBeInTheDocument();
+        expect(screen.getByText(/In Use:/)).toBeInTheDocument();
+        expect(screen.getByText(/Available:/)).toBeInTheDocument();
       });
     });
 
@@ -227,7 +223,7 @@ describe('Bandwidth Info Integration', () => {
 
       // Initial state
       await waitFor(() => {
-        expect(screen.getByText(/Adapter: 250 Mbps/)).toBeInTheDocument();
+        expect(screen.getByText(/Total: 31.3 MB\/s/)).toBeInTheDocument();
       });
 
       // Upgrade adapter
@@ -240,7 +236,7 @@ describe('Bandwidth Info Integration', () => {
 
       // Should update immediately
       await waitFor(() => {
-        expect(screen.getByText(/Adapter: 1000 Mbps/)).toBeInTheDocument();
+        expect(screen.getByText(/Total: 125.0 MB\/s/)).toBeInTheDocument();
       });
     });
   });
@@ -652,7 +648,6 @@ describe('Bandwidth Info Integration', () => {
     });
   });
 
-  // Original test - kept for backward compatibility
   it('should update bandwidth info popup when network adapter is upgraded', async () => {
     let setHardware;
     renderWithProvider((game) => {
@@ -663,8 +658,7 @@ describe('Bandwidth Info Integration', () => {
     const indicator = document.querySelector('.topbar-bandwidth');
     fireEvent.mouseEnter(indicator);
     await waitFor(() => {
-      expect(screen.getByText(/Max: 31.3 MB\/s/)).toBeInTheDocument();
-      expect(screen.getByText(/Current: 31.3 MB\/s/)).toBeInTheDocument();
+      expect(screen.getByText(/Total: 31.3 MB\/s/)).toBeInTheDocument();
     });
 
     // Upgrade to 500Mbps
@@ -681,8 +675,7 @@ describe('Bandwidth Info Integration', () => {
     // Hover again to update
     fireEvent.mouseEnter(indicator);
     await waitFor(() => {
-      expect(screen.getByText(/Max: 62.5 MB\/s/)).toBeInTheDocument();
-      expect(screen.getByText(/Current: 62.5 MB\/s/)).toBeInTheDocument();
+      expect(screen.getByText(/Total: 62.5 MB\/s/)).toBeInTheDocument();
     });
   });
 });

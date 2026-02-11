@@ -1,0 +1,138 @@
+.ransomware-overlay {
+  position: fixed;
+  width: 500px;
+  background: #1a0000;
+  border: 3px solid #ff0000;
+  border-radius: 8px;
+  color: #ff3333;
+  font-family: 'Courier New', monospace;
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+  z-index: 15000;
+  user-select: none;
+}
+
+.ransomware-overlay.paused {
+  background: #1a1a1a;
+  border-color: #666;
+  color: #999;
+  box-shadow: 0 0 10px rgba(100, 100, 100, 0.3);
+}
+
+.ransomware-overlay.fading {
+  opacity: 0;
+  transition: opacity 1s ease-out;
+}
+
+.ransomware-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 20px;
+  background: #330000;
+  border-bottom: 2px solid #ff0000;
+  border-radius: 5px 5px 0 0;
+  cursor: grab;
+}
+
+.ransomware-overlay.paused .ransomware-header {
+  background: #2a2a2a;
+  border-bottom-color: #666;
+}
+
+.ransomware-header:active {
+  cursor: grabbing;
+}
+
+.ransomware-title {
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.ransomware-skull {
+  font-size: 32px;
+}
+
+.ransomware-body {
+  padding: 20px;
+}
+
+.ransomware-status {
+  text-align: center;
+  font-size: 14px;
+  margin-bottom: 15px;
+  letter-spacing: 1px;
+}
+
+.ransomware-progress-container {
+  margin: 15px 0;
+}
+
+.ransomware-progress-bar {
+  height: 24px;
+  background: #330000;
+  border: 2px solid #ff0000;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.ransomware-overlay.paused .ransomware-progress-bar {
+  border-color: #666;
+}
+
+.ransomware-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff0000, #ff3300, #ff0000);
+  background-size: 200% 100%;
+  animation: ransomware-progress-pulse 2s ease-in-out infinite;
+  transition: width 0.1s linear;
+}
+
+.ransomware-overlay.paused .ransomware-progress-fill {
+  background: #666;
+  animation: none;
+}
+
+@keyframes ransomware-progress-pulse {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.ransomware-progress-text {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.ransomware-percentage {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin: 10px 0;
+}
+
+.ransomware-counter {
+  text-align: center;
+  font-size: 13px;
+  margin-top: 10px;
+  color: #ff6666;
+}
+
+.ransomware-overlay.paused .ransomware-counter {
+  color: #888;
+}
+
+.ransomware-halted-text {
+  text-align: center;
+  font-size: 14px;
+  color: #FFD700;
+  margin-top: 15px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.ransomware-overlay.paused .ransomware-halted-text {
+  color: #999;
+}

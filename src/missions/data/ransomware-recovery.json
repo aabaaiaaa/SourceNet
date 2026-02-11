@@ -1,0 +1,349 @@
+{
+  "missionId": "ransomware-recovery",
+  "title": "Ransomware Recovery",
+  "description": "MetroLink Transit Authority has been hit by a ransomware attack. Their ticketing database and crew scheduling system are encrypted. Decrypt the files, clean up the malware, and get their systems back online.",
+  "client": "MetroLink Transit Authority",
+  "difficulty": "Hard",
+  "basePayout": 6000,
+  "oneTime": true,
+  "category": "decryption",
+
+  "triggers": {
+    "start": {
+      "type": "timeSinceEvent",
+      "event": "messageRead",
+      "condition": { "messageId": "msg-decryption-work" },
+      "delay": 3000
+    }
+  },
+
+  "requirements": {
+    "software": ["decryption-tool", "vpn-client", "network-scanner", "data-recovery-tool", "log-viewer"]
+  },
+
+  "briefingMessage": {
+    "from": "MetroLink Transit Authority",
+    "fromId": "METRO-OPS-001",
+    "fromName": "MetroLink Transit Authority",
+    "subject": "URGENT: Ransomware Attack - Ticketing Systems Down",
+    "body": "Dear SourceNet Contractor,\n\nWe are MetroLink Transit Authority — we operate the regional train network serving 2 million daily commuters. Last week we suffered a severe ransomware attack that has crippled our ticketing infrastructure.\n\nOur ticketing database on the ticketing-db server has been locked up by the attackers. Without it, our automated fare collection is completely offline. We've had to resort to paper tickets and honour-based fares, which is costing us tens of thousands of credits per day.\n\nOur crew scheduling system on scheduling-srv was also hit — the crew roster database is inaccessible. Crew coordinators are managing shifts by hand, leading to delays and cancellations across the network.\n\nWe've preserved the servers exactly as we found them. Our IT team identified some suspicious executables on the ticketing server that weren't there before the attack — we suspect they're part of the malware payload. We need those cleaned up as well.\n\nPlease connect to our operations network, investigate the damage, recover our databases, and get us back online. We also need the malware removed.\n\nNetwork credentials are attached. Time is critical.\n\nSincerely,\nOperations Director\nMetroLink Transit Authority"
+  },
+
+  "networks": [
+    {
+      "networkId": "metrolink-primary",
+      "networkName": "MetroLink-Operations",
+      "address": "10.50.0.0/24",
+      "bandwidth": 75,
+      "revokeOnComplete": true,
+      "revokeReason": "Recovery complete - temporary access revoked",
+      "fileSystems": [
+        {
+          "id": "fs-metro-ticketing",
+          "name": "ticketing-db",
+          "ip": "10.50.0.10",
+          "description": "Ticketing Database Server",
+          "files": [
+            { "name": "ticketing-database.db.enc", "size": "450 MB", "encrypted": true, "algorithm": "aes-256" },
+            { "name": "fare-tables.json", "size": "2.5 MB" },
+            { "name": "route-schedules.csv", "size": "8.1 MB" },
+            { "name": "station-config.xml", "size": "1.2 MB" },
+            { "name": "svchost32.exe", "size": "45 KB", "malware": true },
+            { "name": "winupdate.dll", "size": "32 KB", "malware": true }
+          ],
+          "logs": [
+            {
+              "timestamp": -720,
+              "type": "remote",
+              "user": "unknown_0x4F2A",
+              "action": "login",
+              "fileSystemId": "fs-metro-ticketing",
+              "note": "Unauthorized remote session from 185.243.115.42"
+            },
+            {
+              "timestamp": -715,
+              "type": "file",
+              "user": "unknown_0x4F2A",
+              "action": "upload",
+              "fileName": "svchost32.exe",
+              "fileSystemId": "fs-metro-ticketing",
+              "sizeBytes": 46080
+            },
+            {
+              "timestamp": -710,
+              "type": "file",
+              "user": "unknown_0x4F2A",
+              "action": "upload",
+              "fileName": "winupdate.dll",
+              "fileSystemId": "fs-metro-ticketing",
+              "sizeBytes": 32768
+            },
+            {
+              "timestamp": -705,
+              "type": "file",
+              "user": "unknown_0x4F2A",
+              "action": "execute",
+              "fileName": "svchost32.exe",
+              "fileSystemId": "fs-metro-ticketing",
+              "note": "Process spawned: PID 4092"
+            },
+            {
+              "timestamp": -700,
+              "type": "file",
+              "user": "SYSTEM",
+              "action": "encrypt",
+              "fileName": "ticketing-database.db",
+              "fileSystemId": "fs-metro-ticketing",
+              "note": "File encrypted with AES-256 → ticketing-database.db.enc"
+            },
+            {
+              "timestamp": -695,
+              "type": "remote",
+              "user": "unknown_0x4F2A",
+              "action": "logout",
+              "fileSystemId": "fs-metro-ticketing",
+              "note": "Session terminated"
+            }
+          ]
+        },
+        {
+          "id": "fs-metro-scheduling",
+          "name": "scheduling-srv",
+          "ip": "10.50.0.20",
+          "description": "Crew Scheduling Server",
+          "files": [
+            { "name": "crew-roster.db.enc", "size": "120 MB", "encrypted": true, "algorithm": "aes-256" },
+            { "name": "shift-patterns.json", "size": "3.4 MB" },
+            { "name": "overtime-log.csv", "size": "1.8 MB" },
+            { "name": "training-records.pdf", "size": "12.5 MB" }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "objectives": [
+    {
+      "id": "obj-nar",
+      "description": "Add MetroLink-Operations credentials to your NAR",
+      "type": "narEntryAdded",
+      "target": "metrolink-primary"
+    },
+    {
+      "id": "obj-connect",
+      "description": "Connect to MetroLink-Operations network",
+      "type": "networkConnection",
+      "target": "metrolink-primary"
+    },
+    {
+      "id": "obj-scan",
+      "description": "Scan the network and locate both servers",
+      "type": "networkScan",
+      "target": "metrolink-primary",
+      "expectedResults": ["ticketing-db", "scheduling-srv"]
+    },
+    {
+      "id": "obj-investigate",
+      "description": "View ticketing-db logs to investigate the attack",
+      "type": "investigation",
+      "correctFileSystemId": "fs-metro-ticketing"
+    },
+    {
+      "id": "obj-delete-malware",
+      "description": "Securely delete the malware (svchost32.exe, winupdate.dll)",
+      "type": "secureDelete",
+      "targetFiles": ["svchost32.exe", "winupdate.dll"]
+    },
+    {
+      "id": "obj-decrypt-ticketing",
+      "description": "Decrypt the ticketing database",
+      "type": "fileDecryption",
+      "targetFiles": ["ticketing-database.db.enc"]
+    },
+    {
+      "id": "obj-upload-ticketing",
+      "description": "Upload decrypted ticketing database to ticketing-db",
+      "type": "fileUpload",
+      "targetFiles": ["ticketing-database.db"],
+      "destination": "10.50.0.10"
+    },
+    {
+      "id": "obj-decrypt-scheduling",
+      "description": "Decrypt the crew roster database",
+      "type": "fileDecryption",
+      "targetFiles": ["crew-roster.db.enc"]
+    },
+    {
+      "id": "obj-upload-scheduling",
+      "description": "Upload decrypted crew roster to scheduling-srv",
+      "type": "fileUpload",
+      "targetFiles": ["crew-roster.db"],
+      "destination": "10.50.0.20"
+    }
+  ],
+
+  "scriptedEvents": [
+    {
+      "id": "evt-extension-request",
+      "trigger": {
+        "type": "afterObjectiveComplete",
+        "objectiveId": "obj-upload-scheduling",
+        "delay": 8000
+      },
+      "actions": [
+        {
+          "type": "sendMessage",
+          "eventId": "msg-metro-extension",
+          "message": {
+            "id": "msg-metro-extension",
+            "from": "MetroLink Transit Authority",
+            "fromId": "METRO-OPS-002",
+            "fromName": "MetroLink Transit Authority",
+            "subject": "One More File - Passenger Data",
+            "body": "Dear SourceNet Contractor,\n\nExcellent work so far! Our ticketing system is coming back online and the crew scheduling is being restored.\n\nHowever, we've found one more encrypted file on the ticketing server — passenger-data.dat.enc. It's a small file (2 MB) containing passenger journey data that our analytics team needs for their monthly report.\n\nCould you decrypt this as well? It should be straightforward given what you've already done. The file has been flagged on the ticketing-db server.\n\nThank you,\nMetroLink Transit Authority"
+          }
+        },
+        {
+          "type": "addExtensionObjectives",
+          "objectives": [
+            {
+              "id": "obj-decrypt-trap",
+              "description": "Decrypt passenger data file",
+              "type": "fileDecryption",
+              "targetFiles": ["passenger-data.dat.enc"]
+            }
+          ],
+          "files": [
+            {
+              "fileSystemId": "fs-metro-ticketing",
+              "file": { "name": "passenger-data.dat.enc", "size": "2 MB", "encrypted": true, "algorithm": "aes-256" }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt-ransomware-attack",
+      "trigger": {
+        "type": "afterObjectiveComplete",
+        "objectiveId": "obj-decrypt-trap",
+        "delay": 2000
+      },
+      "actions": [
+        {
+          "type": "triggerRansomwareOverlay",
+          "duration": 60000,
+          "capacity": 90
+        }
+      ]
+    },
+    {
+      "id": "evt-manager-rescue",
+      "trigger": {
+        "type": "afterEvent",
+        "eventId": "evt-ransomware-attack",
+        "delay": 5000
+      },
+      "actions": [
+        {
+          "type": "sendMessage",
+          "eventId": "msg-ransomware-rescue",
+          "templateId": "ransomware-rescue",
+          "message": {
+            "id": "msg-ransomware-rescue",
+            "templateId": "ransomware-rescue"
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt-antivirus-response",
+      "trigger": {
+        "type": "softwareActivation",
+        "softwareId": "advanced-firewall-av",
+        "delay": 0
+      },
+      "actions": [
+        {
+          "type": "pauseRansomware"
+        },
+        {
+          "type": "sendMessage",
+          "eventId": "msg-ransomware-resolution",
+          "templateId": "ransomware-resolution",
+          "message": {
+            "id": "msg-ransomware-resolution",
+            "templateId": "ransomware-resolution"
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt-mission-complete",
+      "trigger": {
+        "type": "messageRead",
+        "messageId": "msg-ransomware-resolution",
+        "delay": 0
+      },
+      "actions": [
+        {
+          "type": "setMissionStatus",
+          "status": "success"
+        }
+      ]
+    },
+    {
+      "id": "evt-ransomware-decrypted",
+      "trigger": {
+        "type": "eventBusEvent",
+        "eventName": "ransomwareDecrypted",
+        "delay": 3000
+      },
+      "actions": [
+        {
+          "type": "sendMessage",
+          "eventId": "msg-ransomware-decrypted-resolution",
+          "templateId": "ransomware-decrypted-resolution",
+          "message": {
+            "id": "msg-ransomware-decrypted-resolution",
+            "templateId": "ransomware-decrypted-resolution"
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt-mission-complete-via-decryption",
+      "trigger": {
+        "type": "messageRead",
+        "messageId": "msg-ransomware-decrypted-resolution",
+        "delay": 0
+      },
+      "actions": [
+        {
+          "type": "setMissionStatus",
+          "status": "success"
+        }
+      ]
+    }
+  ],
+
+  "consequences": {
+    "success": {
+      "credits": 6000,
+      "reputation": 2,
+      "messages": [
+        {
+          "id": "msg-ransomware-payment",
+          "templateId": "ransomware-recovery-success",
+          "delay": 8000
+        }
+      ]
+    },
+    "failure": {
+      "credits": -5000,
+      "reputation": -3,
+      "retryable": false,
+      "messages": []
+    }
+  }
+}

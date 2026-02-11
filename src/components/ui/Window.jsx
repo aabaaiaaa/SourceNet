@@ -11,6 +11,7 @@ import NetworkAddressRegister from '../apps/NetworkAddressRegister';
 import FileManager from '../apps/FileManager';
 import LogViewer from '../apps/LogViewer';
 import DataRecoveryTool from '../apps/DataRecoveryTool';
+import DecryptionTool from '../apps/DecryptionTool';
 import './Window.css';
 
 const Window = ({ window }) => {
@@ -102,6 +103,8 @@ const Window = ({ window }) => {
         return <LogViewer />;
       case 'dataRecoveryTool':
         return <DataRecoveryTool />;
+      case 'decryptionTool':
+        return <DecryptionTool />;
       default:
         return <div>App not found: {window.appId}</div>;
     }
@@ -129,6 +132,8 @@ const Window = ({ window }) => {
         return 'Log Viewer';
       case 'dataRecoveryTool':
         return 'Data Recovery Tool';
+      case 'decryptionTool':
+        return 'Decryption Tool';
       default:
         return 'Unknown App';
     }

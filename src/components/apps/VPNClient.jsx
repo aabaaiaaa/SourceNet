@@ -253,7 +253,7 @@ const VPNClient = () => {
             >
               <option value="">Select Network</option>
               {availableNetworks.map((entry) => (
-                <option key={entry.id} value={entry.networkId}>
+                <option key={entry.networkId} value={entry.networkId}>
                   {entry.networkName || entry.networkId}
                 </option>
               ))}

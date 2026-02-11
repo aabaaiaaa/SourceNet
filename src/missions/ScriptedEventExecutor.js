@@ -134,6 +134,78 @@ export const executeRevokeNAREntryAction = (action, onComplete) => {
 };
 
 /**
+ * Execute send message action (sends a story message during a scripted event)
+ * @param {object} action - Action definition with message or templateId
+ * @param {function} onComplete - Completion callback
+ */
+export const executeSendMessageAction = (action, onComplete) => {
+  const { message, templateId, eventId } = action;
+
+  console.log('📧 Sending scripted event message:', templateId || message?.subject);
+  triggerEventBus.emit('storyEventTriggered', {
+    storyEventId: eventId || 'scripted-event',
+    eventId: message?.id || eventId || `msg-scripted-${Date.now()}`,
+    message: templateId ? { ...message, templateId } : message,
+  });
+
+  if (onComplete) {
+    onComplete();
+  }
+};
+
+/**
+ * Execute ransomware overlay trigger
+ * @param {object} action - Action definition with duration and capacity
+ * @param {function} onComplete - Completion callback
+ */
+export const executeTriggerRansomwareAction = (action, onComplete) => {
+  const { duration, capacity } = action;
+
+  console.log('🦠 Triggering ransomware overlay:', { duration, capacity });
+  triggerEventBus.emit('triggerRansomware', {
+    duration: duration || 60000,
+    capacity: capacity || 90,
+  });
+
+  if (onComplete) {
+    onComplete();
+  }
+};
+
+/**
+ * Execute ransomware pause (antivirus response)
+ * @param {object} action - Action definition
+ * @param {function} onComplete - Completion callback
+ */
+export const executePauseRansomwareAction = (action, onComplete) => {
+  console.log('🛡️ Pausing ransomware via antivirus');
+  triggerEventBus.emit('pauseRansomware', {});
+
+  if (onComplete) {
+    onComplete();
+  }
+};
+
+/**
+ * Execute adding extension objectives to the active mission
+ * @param {object} action - Action definition with objectives and optional files
+ * @param {function} onComplete - Completion callback
+ */
+export const executeAddExtensionObjectivesAction = (action, onComplete) => {
+  const { objectives, files } = action;
+
+  console.log('📋 Adding extension objectives:', objectives?.length, 'objectives,', files?.length || 0, 'files');
+  triggerEventBus.emit('addMissionExtension', {
+    objectives: objectives || [],
+    files: files || [],
+  });
+
+  if (onComplete) {
+    onComplete();
+  }
+};
+
+/**
  * Execute scripted event sequence
  * @param {object} scriptedEvent - Scripted event from mission definition
  * @param {object} callbacks - Callback functions {onProgress, onComplete, timeSpeed}
@@ -181,6 +253,22 @@ export const executeScriptedEvent = async (scriptedEvent, callbacks = {}) => {
 
       case 'setMissionStatus':
         executeSetMissionStatusAction(action, null);
+        break;
+
+      case 'triggerRansomwareOverlay':
+        executeTriggerRansomwareAction(action, null);
+        break;
+
+      case 'pauseRansomware':
+        executePauseRansomwareAction(action, null);
+        break;
+
+      case 'addExtensionObjectives':
+        executeAddExtensionObjectivesAction(action, null);
+        break;
+
+      case 'sendMessage':
+        executeSendMessageAction(action, null);
         break;
 
       default:

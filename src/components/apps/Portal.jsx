@@ -157,7 +157,7 @@ const Portal = () => {
 
             // Check unlock status for hardware categories and software
             const isHardwareLocked = activeSection === 'hardware' && !isHardwareCategoryUnlocked(unlockedFeatures, activeCategory);
-            const isSoftwareLocked = activeSection === 'software' && !isSoftwareUnlocked(unlockedFeatures, item);
+            const isSoftwareLocked = activeSection === 'software' && !isSoftwareUnlocked(unlockedFeatures, item) && !isLicensed;
             const isLocked = isHardwareLocked || isSoftwareLocked;
             const lockHint = isLocked ? getUnlockHint(activeSection === 'hardware' ? activeCategory : item.requiresUnlock) : null;
 

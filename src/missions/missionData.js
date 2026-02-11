@@ -15,6 +15,7 @@ import tutorialPart1 from './data/tutorial-part-1.json';
 import tutorialPart2 from './data/tutorial-part-2.json';
 import investigationIntro from './data/investigation-intro.json';
 import dataDetective from './data/data-detective.json';
+import ransomwareRecovery from './data/ransomware-recovery.json';
 
 /**
  * All story event definitions (initial welcome messages)
@@ -38,6 +39,7 @@ export const tutorialMissions = [
  */
 export const storyMissions = [
   dataDetective,
+  ransomwareRecovery,
 ];
 
 /**

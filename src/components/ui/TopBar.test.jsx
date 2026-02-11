@@ -216,7 +216,7 @@ describe('TopBar Component', () => {
       expect(speedElement).not.toBeInTheDocument();
     });
 
-    it('should show preview with Adapter, Max, Current, Active Operations on hover', async () => {
+    it('should show preview with Total, In Use, Available, Active Operations on hover', async () => {
       renderWithProvider(<TopBar />);
 
       const bandwidthIndicator = document.querySelector('.topbar-bandwidth');
@@ -226,21 +226,21 @@ describe('TopBar Component', () => {
         // Preview header
         expect(screen.getByText('Bandwidth')).toBeInTheDocument();
         // All preview items
-        expect(screen.getByText(/Adapter:/)).toBeInTheDocument();
-        expect(screen.getByText(/Max:/)).toBeInTheDocument();
-        expect(screen.getByText(/Current:/)).toBeInTheDocument();
+        expect(screen.getByText(/Total:/)).toBeInTheDocument();
+        expect(screen.getByText(/In Use:/)).toBeInTheDocument();
+        expect(screen.getByText(/Available:/)).toBeInTheDocument();
         expect(screen.getByText(/Active Operations:/)).toBeInTheDocument();
       });
     });
 
-    it('should show adapter speed in Mbps format', async () => {
+    it('should show total bandwidth in MB/s format', async () => {
       renderWithProvider(<TopBar />);
 
       const bandwidthIndicator = document.querySelector('.topbar-bandwidth');
       fireEvent.mouseEnter(bandwidthIndicator);
 
       await waitFor(() => {
-        expect(screen.getByText(/Adapter: 250 Mbps/)).toBeInTheDocument();
+        expect(screen.getByText(/Total: 31.3 MB\/s/)).toBeInTheDocument();
       });
     });
 
