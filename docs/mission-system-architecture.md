@@ -56,6 +56,11 @@ This document maps out every subsystem involved in SourceNet's mission lifecycle
 | `src/contexts/GameContext.jsx` | Central game state -- holds activeMission, completedMissions, all mission methods |
 | `src/components/apps/MissionBoard.jsx` | UI -- displays available/active/completed/failed missions |
 | `src/systems/MissionSystem.js` | Payout calculation with reputation multipliers |
+| `src/systems/DecryptionSystem.js` | Core decryption/encryption logic and algorithm support |
+| `src/components/apps/DecryptionTool.jsx` | Decryption Tool UI -- file decryption and upload workflow |
+| `src/components/ui/RansomwareOverlay.jsx` | Ransomware attack encryption animation overlay |
+| `src/components/boot/RansomwareLockScreen.jsx` | Ransomware lock screen shown at boot (manual unlock) |
+| `src/components/ui/SecurityIndicator.jsx` | Top-bar security status indicator (firewall/antivirus) |
 
 ---
 
@@ -168,7 +173,7 @@ Failed missions with `retryable: true` become available again after `retryDelay`
   "missionId": "unique-id",           // Required. Unique identifier.
   "title": "Display Title",           // Mission name shown in MissionBoard.
   "description": "Full description",  // Detailed description.
-  "category": "story-tutorial",       // "story-tutorial" | "investigation" | "onboarding" | "tutorial-intro"
+  "category": "story-tutorial",       // "story-tutorial" | "investigation" | "onboarding" | "tutorial-intro" | "decryption"
   "client": "Client Org Name",        // Client organization.
   "difficulty": "Beginner",           // "Beginner" | "Medium" | "Hard"
   "basePayout": 2000,                 // Base credit reward (modified by reputation).
@@ -217,6 +222,8 @@ Failed missions with `retryable: true` become available again after `retryDelay`
 | `afterMissionComplete` | Specific mission completing | `missionId`, `delay`, `introMessage` |
 | `afterObjectiveComplete` | Specific objective completing | `objectiveId`, `delay` |
 | `secureDelete` | Player secure-deleting critical files | `targetFiles` |
+| `softwareActivation` | Passive software starting | `softwareId`, `delay` |
+| `eventBusEvent` | Any event bus event | `eventName`, `delay` |
 
 ### Briefing Message
 
@@ -261,7 +268,9 @@ Failed missions with `retryable: true` become available again after `retryDelay`
           "accessible": true,
           "files": [
             { "name": "catalog-database.db", "size": "45 MB", "corrupted": false },
-            { "name": "lost-document.pdf", "size": "2 MB", "status": "deleted" }
+            { "name": "lost-document.pdf", "size": "2 MB", "status": "deleted" },
+            { "name": "secret-data.db.enc", "size": "12 MB", "encrypted": true, "algorithm": "aes-256" },  // Requires DecryptionTool
+            { "name": "svchost32.exe", "size": "1 MB", "malware": true }   // For secureDelete objectives
           ],
           "logs": [
             {
@@ -309,6 +318,9 @@ Every objective has these common fields:
 | `dataRecoveryScan` | Scan for deleted files | `target` (fsId) | Binary | `dataRecoveryScans` |
 | `fileRecovery` | Restore deleted files | `targetFiles[]` | Count (X/Y) | `missionRecoveryOperations.restored` |
 | `secureDelete` | Permanently destroy files | `targetFiles[]` | Count (X/Y) | `missionRecoveryOperations.secureDeleted` |
+| `fileDecryption` | Decrypt encrypted files | `targetFiles[]` | Count (X/Y) | `missionDecryptionOperations.decrypted` |
+| `fileUpload` | Upload files to remote server | `targetFiles[]`, `destination` (IP) | Count (X/Y) | `missionUploadOperations.uploaded` + `uploadDestinations` |
+| `softwareActivation` | Start a passive software | `target` (softwareId) | Binary | `activePassiveSoftware` |
 | `verification` | Auto-added by system. Never auto-completes -- resolved externally when all others are done. | (none) | Binary | Manual |
 
 **Objective examples:**
@@ -331,6 +343,31 @@ Every objective has these common fields:
   "operation": "paste",
   "targetFiles": ["report-q1.pdf", "report-q2.pdf"],
   "destination": "192.168.50.20"
+}
+
+// Decrypt encrypted files
+{
+  "id": "obj-decrypt",
+  "description": "Decrypt the ticketing database",
+  "type": "fileDecryption",
+  "targetFiles": ["ticketing-database.db.enc"]
+}
+
+// Upload files to a specific destination
+{
+  "id": "obj-upload",
+  "description": "Upload restored database to ticketing server",
+  "type": "fileUpload",
+  "targetFiles": ["ticketing-database.db"],
+  "destination": "10.50.0.10"
+}
+
+// Activate passive software
+{
+  "id": "obj-activate-av",
+  "description": "Start the Advanced Firewall & Antivirus",
+  "type": "softwareActivation",
+  "target": "advanced-firewall-av"
 }
 
 // Optional bonus objective
@@ -395,6 +432,10 @@ Every objective has these common fields:
 | `forceDisconnect` | Shows dramatic overlay then disconnects VPN | `network`, `reason`, `administratorMessage` |
 | `revokeNAREntry` | Revokes network credentials from NAR | `network`, `reason` |
 | `setMissionStatus` | Immediately fails or succeeds the mission | `status`, `failureReason` |
+| `sendMessage` | Sends a story message mid-mission | `message`, `templateId`, `eventId` |
+| `triggerRansomwareOverlay` | Triggers ransomware attack animation on player's terminal | `duration`, `capacity` |
+| `pauseRansomware` | Stops ongoing ransomware attack (e.g., antivirus response) | (none) |
+| `addExtensionObjectives` | Dynamically adds new objectives + files mid-mission | `objectives[]`, `files[]` |
 
 ### Consequences
 
@@ -507,6 +548,8 @@ Every event type emitted through `triggerEventBus`, where it originates, and wha
 | `fileRecoveryComplete` | DataRecoveryTool | `{ fileName }` | Objective tracking |
 | `secureDeleteComplete` | DataRecoveryTool | `{ fileName }` | Objective tracking |
 | `deviceLogsViewed` | LogViewer | `{ fileSystemId, deviceIp }` | Objective tracking |
+| `fileDecryptionComplete` | DecryptionTool | `{ fileName, decryptedFileName, fileSystemId }` | Objective tracking |
+| `fileUploadComplete` | DecryptionTool | `{ fileName, sourceFileName, destinationIp, fileSystemId }` | Objective tracking |
 
 ### Mission System
 
@@ -528,6 +571,7 @@ Every event type emitted through `triggerEventBus`, where it originates, and wha
 | `creditsChanged` | GameContext, DebugPanel | `{ newBalance }` | Hardware unlock, mission triggers |
 | `narEntryAdded` | SNetMail | `{ networkId, networkName }` | Objective tracking |
 | `softwareInstalled` | useDownloadManager | `{ softwareId }` | Mission triggers, hardware unlock |
+| `passiveSoftwareStarted` | GameContext | `{ softwareId }` | Scripted event triggers |
 | `messageRead` | GameContext | `{ messageId }` | Mission triggers, reputation system |
 
 ### Scripted Events
@@ -543,6 +587,12 @@ Every event type emitted through `triggerEventBus`, where it originates, and wha
 | `forcedDisconnection` | ScriptedEventExecutor | `{ networkId, reason, administratorMessage }` | Desktop overlay |
 | `forceNetworkDisconnect` | ScriptedEventExecutor | `{ networkId, reason }` | GameContext |
 | `revokeNAREntry` | ScriptedEventExecutor | `{ networkId, reason }` | GameContext |
+| `triggerRansomware` | ScriptedEventExecutor | `{ duration, capacity }` | Desktop (overlay) |
+| `pauseRansomware` | ScriptedEventExecutor | `{}` | Desktop (overlay) |
+| `addMissionExtension` | ScriptedEventExecutor | `{ objectives, files }` | useStoryMissions |
+| `ransomwareComplete` | Desktop | `{}` | Mission system |
+| `ransomwareCleanupComplete` | Desktop | `{}` | Mission system |
+| `ransomwareDecrypted` | RansomwareLockScreen | `{}` | Scripted event triggers |
 
 ---
 
@@ -564,6 +614,10 @@ Defined in `src/missions/messageTemplates.js`. Templates are referenced from mis
 | `investigation-intro-success` | Investigation | Unlocks investigation-type missions |
 | `investigation-failure-retry` | Investigation | Second chance after failed investigation |
 | `decryption-tease` | Teaser | Hints at future encryption features |
+| `ransomware-rescue` | Ransomware | Manager warns player about ransomware attack on their terminal |
+| `ransomware-resolution` | Ransomware | Resolution after antivirus stops the attack |
+| `ransomware-decrypted-resolution` | Ransomware | Resolution after player manually decrypts lock screen |
+| `ransomware-recovery-success` | Ransomware | Client thanks for recovery work |
 
 ### Extension Templates
 
@@ -637,6 +691,12 @@ availableMissions          // Array of available story missions
 // Tracking state (accumulated during mission)
 missionFileOperations      // { copy: Set, paste: Set, repair: Set, delete: Set, pasteDestinations: Map }
 missionRecoveryOperations  // { restored: Set, secureDeleted: Set }
+missionDecryptionOperations // { decrypted: Set } - tracks decrypted files
+missionUploadOperations    // { uploaded: Set, uploadDestinations: Map } - tracks uploads + destinations
+dataRecoveryScans          // Array of scanned file system IDs
+viewedDeviceLogs           // Array of viewed device file system IDs
+dataRecoveryToolConnections // Active DRT connections (separate from fileManagerConnections)
+activePassiveSoftware      // Array of running passive software IDs
 
 // Context methods
 acceptMission(mission)
@@ -805,6 +865,53 @@ Use `logs` on file systems and `investigation` objectives:
   ]
 }
 ```
+
+### Extension Objectives (Mid-Mission Expansion)
+
+Use `addExtensionObjectives` scripted events to dynamically add new objectives and files after the player reaches a certain point. This enables multi-phase missions where later stages are revealed during gameplay.
+
+```jsonc
+{
+  "scriptedEvents": [
+    {
+      "id": "evt-extension",
+      "trigger": {
+        "type": "afterObjectiveComplete",
+        "objectiveId": "obj-upload-scheduling",
+        "delay": 5000
+      },
+      "actions": [
+        {
+          "type": "sendMessage",
+          "templateId": "extension-additionalServer",
+          "eventId": "msg-extension"
+        },
+        {
+          "type": "addExtensionObjectives",
+          "objectives": [
+            {
+              "id": "obj-decrypt-trap",
+              "description": "Decrypt the suspicious file",
+              "type": "fileDecryption",
+              "targetFiles": ["suspicious-file.db.enc"]
+            }
+          ],
+          "files": [
+            {
+              "fileSystemId": "fs-target-server",
+              "files": [
+                { "name": "suspicious-file.db.enc", "size": "8 MB", "encrypted": true, "algorithm": "aes-256" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+The `addExtensionObjectives` action emits `addMissionExtension` on the event bus, which `useStoryMissions` catches to merge new objectives and files into the active mission. Pair with a `sendMessage` action to give the player narrative context for the new objectives.
 
 ### Registering a New Mission
 
