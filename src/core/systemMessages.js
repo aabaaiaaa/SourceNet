@@ -165,6 +165,106 @@ performance improvement plan. Continue to demonstrate competence.
 };
 
 /**
+ * Post-ransomware progression message templates
+ */
+
+/**
+ * Create CPU unlock message (sent after ransomware-recovery completion)
+ * Reading this message unlocks cpu-upgrades feature
+ * @param {string} username - Player username
+ * @param {string} managerName - Manager name
+ * @returns {object} Complete message object
+ */
+export const createCpuUnlockMessage = (username, managerName) => ({
+  id: 'msg-cpu-unlock',
+  from: 'SourceNet Manager',
+  fromId: 'SNET-MGR-CPU',
+  fromName: `SourceNet Manager ${managerName}`,
+  subject: 'Hardware Upgrade - CPU Priority',
+  body: `${username},
+
+One more thing about the decryption work - your current processor is going to be a bottleneck.
+
+Decryption is CPU-intensive. The faster your processor, the quicker you can decrypt files. With a better CPU, those AES jobs will fly by, and when you get into Blowfish and RSA-2048 territory, you'll really feel the difference.
+
+I've flagged your account for CPU upgrade priority. Check the Portal - you should see some better processor options available now.
+
+The math is simple: faster decryption = more jobs per hour = more credits. It's worth the investment.
+
+- ${managerName}`,
+  timestamp: null,
+  read: false,
+  archived: false,
+});
+
+/**
+ * Create algorithm info message (sent after ransomware-recovery completion, delayed)
+ * Informational only - explains the algorithm pack system
+ * @param {string} username - Player username
+ * @param {string} managerName - Manager name
+ * @returns {object} Complete message object
+ */
+export const createAlgorithmInfoMessage = (username, managerName) => ({
+  id: 'msg-algorithm-info',
+  from: 'SourceNet Manager',
+  fromId: 'SNET-MGR-ALG',
+  fromName: `SourceNet Manager ${managerName}`,
+  subject: 'Algorithm Modules - How It Works',
+  body: `${username},
+
+Quick rundown on the decryption module system:
+
+Your Decryption Tool comes with AES-128 and AES-256 algorithms built in. These handle the most common encryption you'll encounter.
+
+Two advanced modules are available in the Portal:
+
+BLOWFISH DECRYPTION MODULE (15,000 credits)
+- Symmetric cipher used heavily in financial and corporate systems
+- Blowfish contracts pay roughly 2.5x what AES jobs pay
+- Good stepping stone to the serious work
+
+RSA-2048 DECRYPTION MODULE (35,000 credits)
+- Asymmetric encryption used in government and military-grade systems
+- RSA contracts pay about 4x the base rate
+- The most lucrative decryption work available
+
+You'll only see contracts for algorithms you can actually decrypt, so buying the modules opens up better-paying work immediately.
+
+Start with Blowfish, save up for RSA. That's the path.
+
+- ${managerName}`,
+  timestamp: null,
+  read: false,
+  archived: false,
+});
+
+/**
+ * Create placeholder story teaser message (sent when both algorithm packs are installed)
+ * @param {string} username - Player username
+ * @param {string} managerName - Manager name
+ * @returns {object} Complete message object
+ */
+export const createPlaceholderStoryMessage = (username, managerName) => ({
+  id: 'msg-story-teaser-post-decryption',
+  from: 'SourceNet Manager',
+  fromId: 'SNET-MGR-STORY',
+  fromName: `SourceNet Manager ${managerName}`,
+  subject: 'Something Big',
+  body: `${username},
+
+I've been watching your progress. Full algorithm suite, solid track record, handling complex multi-layer jobs without breaking a sweat.
+
+I've got something big lined up for you. Can't say more right now - I need to verify some things first. But this is different from the contract work. This is the kind of job that changes things.
+
+Stay sharp. I'll be in touch soon.
+
+- ${managerName}`,
+  timestamp: null,
+  read: false,
+  archived: false,
+});
+
+/**
  * Create a system message from template
  * @param {object} template - Message template
  * @param {string} username - Player username

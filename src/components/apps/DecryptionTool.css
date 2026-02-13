@@ -24,6 +24,28 @@
   color: #666;
 }
 
+.decryption-algorithms-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.algorithms-label {
+  font-size: 11px;
+  color: #888;
+}
+
+.algorithm-tag {
+  font-size: 11px;
+  padding: 1px 6px;
+  background: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  border-radius: 3px;
+  color: #2e7d32;
+}
+
 .decryption-disconnection-message {
   background-color: #fff3cd;
   border: 1px solid #ffc107;

@@ -349,6 +349,100 @@ When the player's balance reaches the threshold:
 
 ---
 
+### Phase 6: Decryption Economy
+
+After ransomware recovery completes (either path), the player enters a new economy phase built around decryption missions with purchasable algorithm upgrades.
+
+#### Post-Ransomware Unlocks
+
+When `ransomware-recovery` completes with status `success`:
+
+1. Two features unlock immediately: `decryption-algorithms` (algorithm packs appear in Portal) and `decryption-missions` (procedural decryption missions begin generating)
+2. **CPU unlock message** (`msg-cpu-unlock`) — arrives 15 seconds (game time) after mission completes
+   - From: SourceNet Manager
+   - Subject: "Hardware Upgrade - CPU Priority"
+   - Reading this message unlocks `cpu-upgrades` in the Portal
+3. **Algorithm info message** (`msg-algorithm-info`) — arrives 25 seconds (game time) after mission completes
+   - From: SourceNet Manager
+   - Subject: "Algorithm Modules - How It Works"
+   - Explains the decryption economy: algorithm packs unlock higher-paying missions
+   - Informational only — no feature gate
+
+**Source files:** `src/core/systemMessages.js` (`createCpuUnlockMessage`, `createAlgorithmInfoMessage`), `GameContext.jsx` (ransomware-recovery completion handler)
+
+#### Algorithm Packs
+
+Two purchasable software items appear in the Portal once `decryption-algorithms` is unlocked:
+
+| Pack | Price | Unlocks | Narrative Fit |
+|------|-------|---------|---------------|
+| Blowfish Decryption Module | 15,000 credits | `blowfish` algorithm | Financial/corporate encryption |
+| RSA-2048 Decryption Module | 35,000 credits | `rsa-2048` algorithm | Government/military-grade encryption |
+
+The player starts with AES-128 and AES-256 (from the base Decryption Tool). Decryption missions scale payout by algorithm tier:
+
+| Algorithm | Payout Multiplier |
+|-----------|------------------|
+| AES-128/256 | 1.0x (base) |
+| Blowfish | 2.5x |
+| RSA-2048 | 4.0x |
+
+Installing a pack emits `softwareInstalled`, which adds the algorithm to `decryptionAlgorithms` state. Higher-tier missions only generate when the player has the corresponding algorithm installed.
+
+**Source files:** `src/constants/gameConstants.js` (software items), `GameContext.jsx` (algorithm pack installation handler)
+
+#### Decryption Mission Types
+
+The procedural pool gains 7 new mission types, managed by `MissionPoolManager.js` at the `lateGame` progression level (pool size: 8-12 missions, guaranteed to include at least 1 decryption mission):
+
+| Type | Description | Requirements |
+|------|-------------|-------------|
+| `decryption` | Connect → find server → decrypt files → upload clean versions | Base |
+| `decryption-repair` | Decrypt files that are also corrupted — repair first, then decrypt | Base |
+| `decryption-backup` | Decrypt files, then backup decrypted versions to a second server | Base |
+| `investigation-decryption` | Use Log Viewer to discover which devices have encrypted files, then decrypt | Base |
+| `multi-layer-decryption` | Files encrypted with multiple algorithms — peel layers one at a time | 3+ algorithms installed |
+| `decryption-malware` | Decrypt files, some are malware — AV detects, player secure-deletes originals | AV + Data Recovery Tool |
+| `virus-hunt` | Copy suspect files to local SSD, AV detects malware, secure-delete from remote | AV running |
+
+Briefings use narrative variants: "honest mistake" (lost keys, migration, accidental) or "malicious" (ransomware, breach, disgruntled employee).
+
+**Source files:** `src/missions/MissionGenerator.js` (all `generateDecryption*` functions), `src/missions/MissionPoolManager.js` (lateGame config)
+
+#### Active Antivirus Scanner
+
+When the Advanced Firewall & Antivirus is running as passive software, it actively monitors `localSSDFiles` for files with `malware: true`. Detection flow:
+
+1. New malware file appears on local SSD
+2. CPU-dependent scan delay: `max(3000, 8000 / (ghz × cores))` ms game time
+3. File quarantined (removed from local SSD)
+4. Alert message sent from "Advanced Firewall & Antivirus"
+5. `avThreatDetected` event emitted for mission objective tracking
+
+**Source files:** `src/systems/useAntivirusScanner.js`
+
+#### Multi-Layer Encryption
+
+Files can have an `encryptionLayers` array (e.g., `["blowfish", "aes-256"]`). When decrypted:
+- If multiple layers remain: first layer is removed, `algorithm` updates to the next layer, file stays `.enc`
+- If last layer: file decrypts normally (strip `.enc`, `encrypted: false`)
+
+The UI does NOT reveal upcoming layers. The player discovers the next layer when the file remains `.enc` after decryption.
+
+#### Placeholder Story Trigger
+
+When both algorithm packs are installed, a teaser message arrives after 10 seconds (game time):
+- **Message ID:** `msg-story-teaser-post-decryption`
+- **Subject:** "Something Big"
+- **From:** SourceNet Manager
+- Content: "I've got something big lined up for you... Can't say more right now."
+
+This is a placeholder for the next story mission.
+
+**Source files:** `src/core/systemMessages.js` (`createPlaceholderStoryMessage`)
+
+---
+
 ## 3. Character Voice Guide
 
 ### The Manager
@@ -367,6 +461,9 @@ The manager's tone shifts across phases, reflecting their evolving relationship 
 | Ransomware emergency | Panicked, urgent | "YOUR TERMINAL IS BEING ENCRYPTED!" / "DO NOT WAIT. Every second counts." |
 | Post-antivirus rescue | Relieved, professional | "The antivirus caught it in time. Your terminal is clean." |
 | Post-manual-decrypt | Surprised, wary | "Wait — your terminal is back online? ... How did you get back in?" |
+| Post-ransomware CPU msg | Practical, forward-looking | "I've been thinking about your setup... time to upgrade your processing power" |
+| Post-ransomware algorithm msg | Instructive, encouraging | "The more algorithms you have, the wider the range of jobs you can take" |
+| Both packs installed | Excited, mysterious | "I've got something big lined up for you. Can't say more right now." |
 
 **Key traits:**
 - Always signs off with `- {managerName}`
@@ -412,6 +509,10 @@ Bureaucratic warmth — friendly but clearly templated.
 | Decryption threshold | Message read | "Investigation Missions Unlocked" read | Sets threshold = current balance + 10,000 |
 | Decryption tease | Credits | Balance >= threshold + 5s | Decryption Tool in Portal, MetroLink teaser |
 | Ransomware Recovery | Message read | Decryption tease (`msg-decryption-work`) read + 3s | `ransomware-recovery` mission |
+| Decryption economy | Mission complete | `ransomware-recovery` success | `decryption-algorithms` + `decryption-missions` features, lateGame pool |
+| CPU upgrades | Message read | CPU unlock message (`msg-cpu-unlock`) read | `cpu-upgrades` in Portal |
+| Algorithm packs | Software installed | Blowfish and/or RSA-2048 installed | Higher-tier decryption missions |
+| Story teaser | Software installed | Both Blowfish AND RSA-2048 installed + 10s | "Something Big" teaser message |
 
 ---
 
@@ -433,6 +534,9 @@ Track the player's credit balance through the story:
 | Continue grinding to reach threshold | varies | threshold reached |
 | Purchase Decryption Tool | -500 | varies |
 | Ransomware Recovery success | +6,000 | varies |
+| Purchase Blowfish Decryption Module | -15,000 | varies |
+| Purchase RSA-2048 Decryption Module | -35,000 | varies |
+| Decryption missions (ongoing) | +1,500 to +12,000 each | varies (scaled by algorithm tier) |
 
 **Key financial pressure points:**
 - After tutorial failure: -9,000 credits, 5-minute bankruptcy timer threatened
@@ -532,3 +636,4 @@ These threads are established in the current story but not yet resolved:
 - **The tutorial sabotage.** Tutorial Part 1's failure is scripted, but within the fiction, someone (or something) caused those files to be deleted instead of repaired. The manager blames the player, but was it really their fault?
 - **SourceNet's larger mission.** HR's welcome mentions "securing the global internet space from dark actors and criminals." The player has only seen small client jobs — what is SourceNet actually doing at scale?
 - **The manager's backstory.** The manager is always present but reveals very little about themselves. They have authority to send emergency software licenses, negotiate with clients, and access the player's financial data. What's their role in the larger organisation?
+- **"Something Big."** After both algorithm packs are purchased, the manager sends a cryptic teaser: "I've got something big lined up for you... This is the kind of job that changes things." What is this job? Is it connected to the MetroLink attacker?

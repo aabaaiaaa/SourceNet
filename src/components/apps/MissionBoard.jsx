@@ -382,7 +382,9 @@ const MissionBoard = () => {
                   <span className="objective-description">
                     {objective.description}
                     {objective.required === false && (
-                      <span className="optional-label">(Optional)</span>
+                      <span className="optional-label">
+                        (Optional{objective.bonusPayout ? ` +${objective.bonusPayout} credits` : ''})
+                      </span>
                     )}
                     {progress && objective.status !== 'complete' && (
                       <span className="objective-progress"> ({progress.current}/{progress.total})</span>

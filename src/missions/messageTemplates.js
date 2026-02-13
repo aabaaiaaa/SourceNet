@@ -575,7 +575,11 @@ Given the circumstances, I'm marking this mission as complete. You did the decry
 
 The Advanced Firewall & Antivirus will keep running in the background - you'll see it in your top bar. It'll protect you from similar attacks going forward.
 
-Stay sharp out there.
+I have to say, your decryption work impressed me. There's growing demand for specialists who can handle encrypted data recovery - ransomware attacks are on the rise and organisations are desperate for help.
+
+I'm going to start sending you decryption contracts. You've got the basics down with AES, but the serious money is in advanced algorithms. I'll be making Blowfish and RSA-2048 decryption modules available in the Portal soon. The higher the encryption complexity, the better the payout.
+
+Focus on building up your credits. Those advanced modules aren't cheap, but they'll pay for themselves quickly.
 
 - {managerName}`,
   },
@@ -598,7 +602,11 @@ I'm marking this mission as complete. MetroLink's payment will come through shor
 
 The Advanced Firewall & Antivirus license I sent earlier is still valid if you want to install it. Might be worth having for future jobs.
 
-Stay sharp.
+Regardless of how you got back online, your decryption skills clearly go beyond what I expected. There's a lot of demand for this kind of work right now.
+
+I'm opening up decryption contracts for you. You already have AES capability, but I'm also making advanced algorithm modules available - Blowfish and RSA-2048. They're not cheap, but the contracts that need them pay significantly more.
+
+Earn credits, buy the modules, and take on bigger jobs. Simple as that.
 
 - {managerName}`,
   },
@@ -616,6 +624,8 @@ Thank you for your work recovering our ticketing and scheduling databases. Our s
 We understand you encountered a secondary attack during the recovery process. We sincerely apologise - we had no idea the attackers had planted additional payloads on our systems. We're conducting a full security audit to ensure no other traps remain.
 
 Payment has been sent separately. We've included a bonus for the additional risk you faced.
+
+On a separate note - the sophistication of this attack was unusual. Our security consultants tell us this wasn't a standard ransomware kit. Someone specifically targeted our systems. We're not sure why a transit authority would attract this level of attention, but we're taking it seriously.
 
 Sincerely,
 MetroLink Transit Authority`,

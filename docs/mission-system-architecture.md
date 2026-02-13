@@ -57,6 +57,8 @@ This document maps out every subsystem involved in SourceNet's mission lifecycle
 | `src/components/apps/MissionBoard.jsx` | UI -- displays available/active/completed/failed missions |
 | `src/systems/MissionSystem.js` | Payout calculation with reputation multipliers |
 | `src/systems/DecryptionSystem.js` | Core decryption/encryption logic and algorithm support |
+| `src/systems/useAntivirusScanner.js` | Active AV scanning hook -- monitors local SSD for malware files |
+| `src/core/systemMessages.js` | System message templates (CPU unlock, algorithm info, story teaser) |
 | `src/components/apps/DecryptionTool.jsx` | Decryption Tool UI -- file decryption and upload workflow |
 | `src/components/ui/RansomwareOverlay.jsx` | Ransomware attack encryption animation overlay |
 | `src/components/boot/RansomwareLockScreen.jsx` | Ransomware lock screen shown at boot (manual unlock) |
@@ -321,6 +323,7 @@ Every objective has these common fields:
 | `fileDecryption` | Decrypt encrypted files | `targetFiles[]` | Count (X/Y) | `missionDecryptionOperations.decrypted` |
 | `fileUpload` | Upload files to remote server | `targetFiles[]`, `destination` (IP) | Count (X/Y) | `missionUploadOperations.uploaded` + `uploadDestinations` |
 | `softwareActivation` | Start a passive software | `target` (softwareId) | Binary | `activePassiveSoftware` |
+| `avThreatDetected` | AV detects malware in files | `targetFiles[]` | Count (X/Y) | `missionAvDetections` |
 | `verification` | Auto-added by system. Never auto-completes -- resolved externally when all others are done. | (none) | Binary | Manual |
 
 **Objective examples:**
@@ -368,6 +371,14 @@ Every objective has these common fields:
   "description": "Start the Advanced Firewall & Antivirus",
   "type": "softwareActivation",
   "target": "advanced-firewall-av"
+}
+
+// AV threat detection
+{
+  "id": "obj-av-detect",
+  "description": "Antivirus detects malware in decrypted files",
+  "type": "avThreatDetected",
+  "targetFiles": ["trojan-payload.dat.enc"]
 }
 
 // Optional bonus objective
@@ -550,6 +561,7 @@ Every event type emitted through `triggerEventBus`, where it originates, and wha
 | `deviceLogsViewed` | LogViewer | `{ fileSystemId, deviceIp }` | Objective tracking |
 | `fileDecryptionComplete` | DecryptionTool | `{ fileName, decryptedFileName, fileSystemId }` | Objective tracking |
 | `fileUploadComplete` | DecryptionTool | `{ fileName, sourceFileName, destinationIp, fileSystemId }` | Objective tracking |
+| `avThreatDetected` | useAntivirusScanner | `{ fileName, fileSystemId }` | Objective tracking |
 
 ### Mission System
 
@@ -693,6 +705,7 @@ missionFileOperations      // { copy: Set, paste: Set, repair: Set, delete: Set,
 missionRecoveryOperations  // { restored: Set, secureDeleted: Set }
 missionDecryptionOperations // { decrypted: Set } - tracks decrypted files
 missionUploadOperations    // { uploaded: Set, uploadDestinations: Map } - tracks uploads + destinations
+missionAvDetections        // Set of file names detected as malware by AV
 dataRecoveryScans          // Array of scanned file system IDs
 viewedDeviceLogs           // Array of viewed device file system IDs
 dataRecoveryToolConnections // Active DRT connections (separate from fileManagerConnections)
@@ -933,18 +946,36 @@ The `addExtensionObjectives` action emits `addMissionExtension` on the event bus
 
 ---
 
-## Procedural Mission System (Templates)
+## Procedural Mission System
 
-`src/missions/data/mission-templates.json` defines templates for procedurally generated missions:
+`src/missions/MissionGenerator.js` generates complete procedural missions with network infrastructure, file systems, objectives, and briefing messages. `src/missions/MissionPoolManager.js` manages the pool lifecycle.
 
-**Server types**: banking, government, healthcare, corporate, utilities, shipping, emergency, nonprofit, cultural -- each with address patterns, file patterns, and corruption flavor text.
+### Progression Levels
 
-**Mission types**: file-backup, file-repair, file-restoration, combined-tasks, data-extraction.
+| Level | Trigger | Pool Size | Mission Types |
+|-------|---------|-----------|---------------|
+| `early` | Tutorial complete | 4-6 | repair, backup, transfer |
+| `midGame` | `investigation-missions` unlocked | 6-10 | + investigation-repair, investigation-recovery, secure-deletion |
+| `lateGame` | `decryption-missions` unlocked | 8-12 | + decryption, decryption-repair, decryption-backup, investigation-decryption, multi-layer-decryption, decryption-malware, virus-hunt |
 
-**Chain templates** (multi-mission arcs):
+Each level guarantees at least one mission of its new type category exists in the pool.
+
+### Industries
+
+banking, government, healthcare, corporate, utilities, shipping, emergency, nonprofit, cultural -- each with industry-specific file templates for repair, backup, transfer, and decryption mission types.
+
+### Chain Templates (Multi-Mission Arcs)
+
 - `escalation` -- Problem reveals deeper issues (3 parts)
 - `discovery` -- Routine work uncovers problems (2 parts)
 - `migration` -- System migration project (3 parts)
 - `audit` -- Compliance audit preparation (2 parts)
 
-These are combined by `MissionSystem.js` to generate procedural missions with variety.
+### Key Files
+
+| File | Responsibility |
+|------|---------------|
+| `src/missions/MissionGenerator.js` | All procedural mission generators, network infrastructure, file generation |
+| `src/missions/MissionPoolManager.js` | Pool lifecycle, progression levels, refresh logic |
+| `src/missions/MissionExtensionGenerator.js` | Mid-mission extension objectives |
+| `src/data/clientRegistry.js` | Client definitions with industry, reputation requirements |

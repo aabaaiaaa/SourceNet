@@ -17,7 +17,15 @@ import {
     generateInvestigationRepairMission,
     generateInvestigationRecoveryMission,
     generateSecureDeletionMission,
-    getMissionTypesForPlayer
+    generateDecryptionMission,
+    generateDecryptionRepairMission,
+    generateDecryptionBackupMission,
+    generateInvestigationDecryptionMission,
+    generateMultiLayerDecryptionMission,
+    generateDecryptionMalwareMission,
+    generateVirusHuntMission,
+    getMissionTypesForPlayer,
+    getPlayerAlgorithms,
 } from './MissionGenerator';
 import { getRandomStoryline } from './arcStorylines';
 import { canAccessClientType } from '../systems/ReputationSystem';
@@ -40,17 +48,21 @@ export const poolConfigByProgression = {
     early: {
         min: 4, max: 6,
         minAccessible: 2,
-        investigationChance: 0 // No investigation missions yet
+        investigationChance: 0, // No investigation missions yet
+        decryptionChance: 0,
     },
     midGame: {
         min: 5, max: 8,
         minAccessible: 3,
-        investigationChance: 0.50 // 50% chance for investigation missions
+        investigationChance: 0.50, // 50% chance for investigation missions
+        decryptionChance: 0,
     },
     lateGame: {
-        min: 6, max: 10,
-        minAccessible: 4,
-        investigationChance: 0.60 // 60% chance for investigation missions
+        min: 8, max: 12,
+        minAccessible: 5,
+        investigationChance: 0.30, // Reduced to make room for decryption
+        decryptionChance: 0.50, // 50% chance for decryption missions
+        guaranteeDecryption: true, // Ensure at least 1 decryption mission in pool
     }
 };
 
@@ -66,16 +78,14 @@ export const poolConfigByProgression = {
  * @returns {string} Progression level: 'early', 'midGame', or 'lateGame'
  */
 export function getProgressionLevel(unlockedSoftware = []) {
+    // Decryption missions unlock marks late game
+    const hasDecryptionMissions = unlockedSoftware.includes('decryption-missions');
+
     // Investigation missions unlock marks mid-game
-    // This is unlocked by completing the data-detective story mission
     const hasInvestigationMissions = unlockedSoftware.includes('investigation-missions');
 
-    // Additional tool unlocks mark late game (future expansion)
-    // const hasAdvancedTools = unlockedSoftware.includes('decryption-tools');
-
-    if (hasInvestigationMissions) {
-        return 'midGame';
-    }
+    if (hasDecryptionMissions) return 'lateGame';
+    if (hasInvestigationMissions) return 'midGame';
 
     return 'early';
 }
@@ -94,7 +104,9 @@ export function getPoolConfigForProgression(unlockedSoftware = []) {
         min: config.min,
         max: config.max,
         minAccessible: config.minAccessible,
-        investigationChance: config.investigationChance
+        investigationChance: config.investigationChance,
+        decryptionChance: config.decryptionChance || 0,
+        guaranteeDecryption: config.guaranteeDecryption || false,
     };
 }
 
@@ -147,8 +159,11 @@ export function initializePool(reputation, currentTime, options = {}) {
 
     // Check if we need investigation missions based on progression
     const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
+    const decryptionTypes = ['decryption', 'decryption-repair', 'decryption-backup', 'investigation-decryption', 'multi-layer-decryption', 'decryption-malware', 'virus-hunt'];
     const needsInvestigationMissions = config.investigationChance > 0;
+    const needsDecryptionMissions = config.guaranteeDecryption;
     let investigationAdded = false;
+    let decryptionAdded = false;
 
     // Generate initial missions
     while (pool.length < targetSize) {
@@ -161,19 +176,15 @@ export function initializePool(reputation, currentTime, options = {}) {
                 pool.push(firstMission);
                 activeClientIds.add(firstMission.clientId);
                 pendingArcMissions[result.arcId] = result.missions.slice(1);
-                // Track if investigation mission was added
-                if (investigationTypes.includes(firstMission.missionType)) {
-                    investigationAdded = true;
-                }
+                if (investigationTypes.includes(firstMission.missionType)) investigationAdded = true;
+                if (decryptionTypes.includes(firstMission.missionType)) decryptionAdded = true;
             } else {
                 // Single mission - add expiration
                 const mission = addExpirationToMission(result, currentTime);
                 pool.push(mission);
                 activeClientIds.add(mission.clientId);
-                // Track if investigation mission was added
-                if (investigationTypes.includes(mission.missionType)) {
-                    investigationAdded = true;
-                }
+                if (investigationTypes.includes(mission.missionType)) investigationAdded = true;
+                if (decryptionTypes.includes(mission.missionType)) decryptionAdded = true;
             }
         } else {
             // Couldn't generate mission - break to avoid infinite loop
@@ -198,6 +209,23 @@ export function initializePool(reputation, currentTime, options = {}) {
         }
     }
 
+    // GUARANTEE decryption mission if needed but not added during initial generation
+    if (needsDecryptionMissions && !decryptionAdded) {
+        for (let attempt = 0; attempt < 10 && !decryptionAdded; attempt++) {
+            const result = generatePoolMission(reputation, currentTime, activeClientIds, false, {
+                unlockedSoftware,
+                guaranteeDecryption: true
+            });
+
+            if (result && !result.arcId && decryptionTypes.includes(result.missionType)) {
+                const mission = addExpirationToMission(result, currentTime);
+                pool.push(mission);
+                activeClientIds.add(mission.clientId);
+                decryptionAdded = true;
+            }
+        }
+    }
+
     return {
         missions: pool,
         pendingArcMissions,
@@ -217,7 +245,7 @@ export function initializePool(reputation, currentTime, options = {}) {
  * @returns {Object|null} Generated mission or arc
  */
 export function generatePoolMission(reputation, currentTime, excludeClientIds, mustBeAccessible, options = {}) {
-    const { unlockedSoftware = [], guaranteeInvestigation = false } = options;
+    const { unlockedSoftware = [], guaranteeInvestigation = false, guaranteeDecryption = false } = options;
 
     // Get available clients
     let client;
@@ -253,9 +281,9 @@ export function generatePoolMission(reputation, currentTime, excludeClientIds, m
         return null;
     }
 
-    // Decide if this should be an arc (but NOT when we must guarantee an investigation type)
-    // Arc generation would bypass investigation generation, so skip arcs when guaranteeing
-    if (!guaranteeInvestigation && Math.random() < poolConfig.arcChance) {
+    // Decide if this should be an arc (but NOT when we must guarantee a specific type)
+    // Arc generation would bypass specific type generation, so skip arcs when guaranteeing
+    if (!guaranteeInvestigation && !guaranteeDecryption && Math.random() < poolConfig.arcChance) {
         const storyline = getRandomStoryline();
         if (storyline) {
             // Get clients for each mission in the arc
@@ -278,7 +306,7 @@ export function generatePoolMission(reputation, currentTime, excludeClientIds, m
 
     if (shouldGenerateInvestigation) {
         const investigationTypes = availableTypes.filter(t =>
-            t.startsWith('investigation-') || t === 'secure-deletion'
+            (t.startsWith('investigation-') && t !== 'investigation-decryption') || t === 'secure-deletion'
         );
 
         if (investigationTypes.length > 0) {
@@ -292,6 +320,45 @@ export function generatePoolMission(reputation, currentTime, excludeClientIds, m
                     return generateInvestigationRecoveryMission(client, { hasTimed });
                 case 'secure-deletion':
                     return generateSecureDeletionMission(client, { hasTimed });
+            }
+        }
+    }
+
+    // Check if we should generate a decryption mission
+    const shouldGenerateDecryption = guaranteeDecryption ||
+        (config.decryptionChance > 0 && Math.random() < config.decryptionChance);
+
+    if (shouldGenerateDecryption) {
+        const decryptionTypes = availableTypes.filter(t =>
+            t === 'decryption' || t === 'decryption-repair' || t === 'decryption-backup' ||
+            t === 'investigation-decryption' || t === 'multi-layer-decryption' ||
+            t === 'decryption-malware' || t === 'virus-hunt'
+        );
+
+        if (decryptionTypes.length > 0) {
+            const selectedType = decryptionTypes[Math.floor(Math.random() * decryptionTypes.length)];
+            const hasTimed = Math.random() < 0.5;
+            const playerAlgorithms = getPlayerAlgorithms(unlockedSoftware);
+
+            switch (selectedType) {
+                case 'decryption':
+                    return generateDecryptionMission(client, { hasTimed, playerAlgorithms });
+                case 'decryption-repair':
+                    return generateDecryptionRepairMission(client, { hasTimed, playerAlgorithms });
+                case 'decryption-backup':
+                    return generateDecryptionBackupMission(client, { hasTimed, playerAlgorithms });
+                case 'investigation-decryption':
+                    return generateInvestigationDecryptionMission(client, { hasTimed, playerAlgorithms });
+                case 'multi-layer-decryption': {
+                    const result = generateMultiLayerDecryptionMission(client, { hasTimed, playerAlgorithms });
+                    if (result) return result;
+                    // Fall through to basic decryption if not enough algorithms
+                    return generateDecryptionMission(client, { hasTimed, playerAlgorithms });
+                }
+                case 'decryption-malware':
+                    return generateDecryptionMalwareMission(client, { hasTimed, playerAlgorithms });
+                case 'virus-hunt':
+                    return generateVirusHuntMission(client, { hasTimed });
             }
         }
     }
@@ -404,48 +471,47 @@ export function refreshPool(poolState, reputation, currentTime, activeMissionId 
     // Check if we need investigation missions - if investigation tooling is unlocked but
     // no investigation missions exist, we MUST add at least one
     const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
+    const decryptionTypes = ['decryption', 'decryption-repair', 'decryption-backup', 'investigation-decryption', 'multi-layer-decryption', 'decryption-malware', 'virus-hunt'];
     const hasInvestigationMissions = validMissions.some(m => investigationTypes.includes(m.missionType));
     const needsInvestigationMissions = config.investigationChance > 0 && !hasInvestigationMissions;
+    const hasDecryptionMissions = validMissions.some(m => decryptionTypes.includes(m.missionType));
+    const needsDecryptionMissions = config.guaranteeDecryption && !hasDecryptionMissions;
 
-    // When investigation missions are needed, ensure we add at least 1 even if pool is at max
-    const minToAddForInvestigation = needsInvestigationMissions ? 1 : 0;
-    const missionsToAdd = Math.max(needAccessible, targetSize - currentSize, minToAddForInvestigation);
+    // When specific mission types are needed, ensure we add at least 1 even if pool is at max
+    const minToAddForSpecialTypes = (needsInvestigationMissions ? 1 : 0) + (needsDecryptionMissions ? 1 : 0);
+    const missionsToAdd = Math.max(needAccessible, targetSize - currentSize, minToAddForSpecialTypes);
 
     // Generate new missions
     const newMissions = [...validMissions];
     const newPendingArcMissions = { ...pendingArcMissions };
     let accessibleAdded = 0;
     let investigationAdded = false;
+    let decryptionAdded = false;
 
     for (let i = 0; i < missionsToAdd; i++) {
         const mustBeAccessible = accessibleAdded < needAccessible;
-        // Guarantee investigation mission when pool cap increased for new types and we haven't added one yet
         const guaranteeInvestigation = needsInvestigationMissions && !investigationAdded;
+        const guaranteeDecryptionFlag = needsDecryptionMissions && !decryptionAdded;
         const result = generatePoolMission(reputation, currentTime, activeClients, mustBeAccessible, {
             unlockedSoftware,
-            guaranteeInvestigation
+            guaranteeInvestigation,
+            guaranteeDecryption: guaranteeDecryptionFlag
         });
 
         if (result) {
             if (result.arcId) {
-                // Arc - add first mission to pool with expiration, store rest in pending (no expiration yet)
                 const firstMission = addExpirationToMission(result.missions[0], currentTime);
                 newMissions.push(firstMission);
                 activeClients.add(firstMission.clientId);
                 newPendingArcMissions[result.arcId] = result.missions.slice(1);
-                // Track if we added an investigation mission
-                if (investigationTypes.includes(firstMission.missionType)) {
-                    investigationAdded = true;
-                }
+                if (investigationTypes.includes(firstMission.missionType)) investigationAdded = true;
+                if (decryptionTypes.includes(firstMission.missionType)) decryptionAdded = true;
             } else {
-                // Single mission - add expiration
                 const mission = addExpirationToMission(result, currentTime);
                 newMissions.push(mission);
                 activeClients.add(mission.clientId);
-                // Track if we added an investigation mission
-                if (investigationTypes.includes(mission.missionType)) {
-                    investigationAdded = true;
-                }
+                if (investigationTypes.includes(mission.missionType)) investigationAdded = true;
+                if (decryptionTypes.includes(mission.missionType)) decryptionAdded = true;
             }
 
             if (mustBeAccessible) {
@@ -455,7 +521,6 @@ export function refreshPool(poolState, reputation, currentTime, activeMissionId 
     }
 
     // GUARANTEE investigation mission if still needed after main loop
-    // This handles cases where arc generation or random chance prevented adding one
     if (needsInvestigationMissions && !investigationAdded) {
         for (let attempt = 0; attempt < 10 && !investigationAdded; attempt++) {
             const result = generatePoolMission(reputation, currentTime, activeClients, false, {
@@ -468,6 +533,23 @@ export function refreshPool(poolState, reputation, currentTime, activeMissionId 
                 newMissions.push(mission);
                 activeClients.add(mission.clientId);
                 investigationAdded = true;
+            }
+        }
+    }
+
+    // GUARANTEE decryption mission if still needed after main loop
+    if (needsDecryptionMissions && !decryptionAdded) {
+        for (let attempt = 0; attempt < 10 && !decryptionAdded; attempt++) {
+            const result = generatePoolMission(reputation, currentTime, activeClients, false, {
+                unlockedSoftware,
+                guaranteeDecryption: true
+            });
+
+            if (result && !result.arcId && decryptionTypes.includes(result.missionType)) {
+                const mission = addExpirationToMission(result, currentTime);
+                newMissions.push(mission);
+                activeClients.add(mission.clientId);
+                decryptionAdded = true;
             }
         }
     }
@@ -712,6 +794,16 @@ export function shouldRefreshPool(poolState, reputation, options = {}) {
         const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
         const hasInvestigationMissions = missions.some(m => investigationTypes.includes(m.missionType));
         if (!hasInvestigationMissions) {
+            return true;
+        }
+    }
+
+    // Refresh if decryption missions are unlocked but none exist in the pool
+    if (config.guaranteeDecryption) {
+        const decryptionTypes = ['decryption', 'decryption-repair', 'decryption-backup',
+            'investigation-decryption', 'multi-layer-decryption', 'decryption-malware', 'virus-hunt'];
+        const hasDecryptionMissions = missions.some(m => decryptionTypes.includes(m.missionType));
+        if (!hasDecryptionMissions) {
             return true;
         }
     }

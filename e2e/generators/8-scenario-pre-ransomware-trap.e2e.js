@@ -30,7 +30,6 @@ import {
     openMail,
     waitForMessage,
     readMessage,
-    depositCheque,
     getObjectiveStatus,
 } from '../helpers/common-actions.js';
 
@@ -133,8 +132,8 @@ test.describe('Scenario Generator', () => {
         await portal.locator('.section-btn:has-text("Software")').click();
         await page.waitForTimeout(300);
 
-        // Find and click Purchase on Decryption Tool
-        const decryptionItem = portal.locator('.portal-item:has-text("Decryption Tool")');
+        // Find and click Purchase on Decryption Tool (use .item-name to avoid matching algorithm pack descriptions)
+        const decryptionItem = portal.locator('.portal-item').filter({ has: page.locator('.item-name', { hasText: 'Decryption Tool' }) });
         await expect(decryptionItem).toBeVisible({ timeout: 5000 });
         await decryptionItem.locator('.purchase-btn').click();
 

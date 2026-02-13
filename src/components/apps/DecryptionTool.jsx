@@ -3,6 +3,7 @@ import { useGame } from '../../contexts/useGame';
 import triggerEventBus from '../../core/triggerEventBus';
 import networkRegistry from '../../systems/NetworkRegistry';
 import {
+  DECRYPTION_ALGORITHMS,
   calculateDownloadDurationFromString,
   calculateDecryptionDurationFromString,
   calculateUploadDurationFromString,
@@ -10,7 +11,7 @@ import {
   hasRequiredAlgorithm,
   getAlgorithmName,
   isEncryptedFile,
-  getDecryptedFileName,
+  getDecryptedFile,
 } from '../../systems/DecryptionSystem';
 import { parseFileSizeToMB } from '../../systems/DataRecoverySystem';
 import './DecryptionTool.css';
@@ -324,30 +325,38 @@ const DecryptionTool = () => {
     setDecryptionProgress(0);
 
     runProgressAnimation(duration, setDecryptionProgress, () => {
-      const decryptedName = getDecryptedFileName(selectedFileObj.name);
+      // Use getDecryptedFile for multi-layer support
+      const result = getDecryptedFile(selectedFileObj);
+      const isFullyDecrypted = !result.encrypted;
 
-      // Replace encrypted file on local SSD with decrypted version
-      const decryptedFile = {
-        ...selectedFileObj,
-        name: decryptedName,
-        encrypted: false,
-        decrypted: true,
+      // Replace file on local SSD with result
+      const updatedFile = {
+        ...result,
+        decrypted: isFullyDecrypted ? true : undefined,
       };
-      replaceFileOnLocalSSD(selectedFileObj.name, decryptedFile);
+      replaceFileOnLocalSSD(selectedFileObj.name, updatedFile);
 
-      // Track this decryption
-      setLocalDecryptedFiles(prev => {
-        const next = new Map(prev);
-        next.set(selectedFileObj.name, decryptedName);
-        return next;
-      });
+      if (isFullyDecrypted) {
+        // Fully decrypted - track for upload
+        setLocalDecryptedFiles(prev => {
+          const next = new Map(prev);
+          next.set(selectedFileObj.name, result.name);
+          return next;
+        });
 
-      // Emit event for objective tracking
-      triggerEventBus.emit('fileDecryptionComplete', {
-        fileName: selectedFileObj.name,
-        decryptedFileName: decryptedName,
-        fileSystemId: selectedFileSystem,
-      });
+        // Emit event for objective tracking
+        triggerEventBus.emit('fileDecryptionComplete', {
+          fileName: selectedFileObj.name,
+          decryptedFileName: result.name,
+          fileSystemId: selectedFileSystem,
+        });
+      } else {
+        // Multi-layer: still encrypted with next algorithm
+        // Update allFiles so the UI shows the new algorithm requirement
+        setAllFiles(prev => prev.map(f =>
+          f.name === selectedFileObj.name ? updatedFile : f
+        ));
+      }
 
       setPhase('idle');
     });
@@ -446,6 +455,14 @@ const DecryptionTool = () => {
       <div className="decryption-header">
         <h2>Decryption Tool</h2>
         <p className="decryption-subtitle">File Decryption & Upload</p>
+        <div className="decryption-algorithms-bar">
+          <span className="algorithms-label">Algorithms:</span>
+          {decryptionAlgorithms.map(algId => (
+            <span key={algId} className="algorithm-tag">
+              {DECRYPTION_ALGORITHMS[algId]?.name || algId}
+            </span>
+          ))}
+        </div>
       </div>
 
       {disconnectionMessage && (

@@ -215,6 +215,19 @@ export const checkSoftwareActivationObjective = (objective, activePassiveSoftwar
 };
 
 /**
+ * Check if AV threat detection objective is complete
+ * Tracks when antivirus detects malware in specific files
+ * @param {object} objective - Objective definition with targetFiles
+ * @param {Set} avDetections - Set of file names detected as threats
+ * @returns {boolean} Objective complete
+ */
+export const checkAvThreatDetectedObjective = (objective, avDetections = new Set()) => {
+  const { targetFiles } = objective;
+  if (!targetFiles || targetFiles.length === 0) return false;
+  return targetFiles.every(file => avDetections.has(file));
+};
+
+/**
  * Get progress for file decryption objective
  * @param {object} objective - Objective definition with targetFiles
  * @param {object} decryptionOperations - Cumulative decryption operations
@@ -571,6 +584,12 @@ const isObjectiveComplete = (objective, gameState) => {
         gameState.activePassiveSoftware || []
       );
 
+    case 'avThreatDetected':
+      return checkAvThreatDetectedObjective(
+        objective,
+        gameState.missionAvDetections || new Set()
+      );
+
     case 'verification':
       // Verification objectives never auto-complete
       return false;
@@ -634,6 +653,7 @@ export const initializeObjectiveTracking = (mission, onObjectiveComplete) => {
     'fileDecryptionComplete', // Decryption Tool decrypt
     'fileUploadComplete',     // Decryption Tool upload
     'passiveSoftwareStarted', // Passive software activation
+    'avThreatDetected',       // Antivirus malware detection
   ];
 
   events.forEach((eventType) => {

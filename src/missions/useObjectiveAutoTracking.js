@@ -70,6 +70,9 @@ export const useObjectiveAutoTracking = (
   // Track upload operations from Decryption Tool
   const missionUploadOperationsRef = useRef({ uploaded: new Set(), uploadDestinations: new Map() });
 
+  // Track AV threat detections for avThreatDetected objectives
+  const missionAvDetectionsRef = useRef(new Set());
+
   // Track active passive software
   const activePassiveSoftwareRef = useRef([]);
 
@@ -112,6 +115,7 @@ export const useObjectiveAutoTracking = (
       missionDecryptionOperations: missionDecryptionOperationsRef.current,
       missionUploadOperations: missionUploadOperationsRef.current,
       activePassiveSoftware: activePassiveSoftwareRef.current,
+      missionAvDetections: missionAvDetectionsRef.current,
       ...(lastFileOperationRef.current ? { lastFileOperation: lastFileOperationRef.current } : {}),
       ...(lastScanResultsRef.current ? { lastScanResults: lastScanResultsRef.current } : {}),
     };
@@ -172,8 +176,14 @@ export const useObjectiveAutoTracking = (
           const payout = calculateMissionPayout(basePayout, reputation);
           const reputationChange = currentMission.consequences?.success?.reputation ?? 1;
 
+          // Add bonus payout from completed optional objectives
+          const bonusPayout = updatedObjectives
+            .filter(obj => obj.required === false && obj.status === 'complete' && obj.bonusPayout)
+            .reduce((sum, obj) => sum + obj.bonusPayout, 0);
+          const totalPayout = payout + bonusPayout;
+
           // Small delay to allow state to settle before completing mission
-          setTimeout(() => completeMission('success', payout, reputationChange), 100);
+          setTimeout(() => completeMission('success', totalPayout, reputationChange), 100);
         }
       }
     } finally {
@@ -315,6 +325,17 @@ export const useObjectiveAutoTracking = (
           setTimeout(checkAndCompleteObjectives, 50);
         }
       },
+      {
+        event: 'avThreatDetected',
+        handler: (data) => {
+          if (data.fileName) {
+            const newDetections = new Set(missionAvDetectionsRef.current);
+            newDetections.add(data.fileName);
+            missionAvDetectionsRef.current = newDetections;
+          }
+          setTimeout(checkAndCompleteObjectives, 50);
+        }
+      },
     ];
 
     const unsubscribers = eventHandlers.map(({ event, handler }) =>
@@ -339,6 +360,7 @@ export const useObjectiveAutoTracking = (
       missionDecryptionOperationsRef.current = { decrypted: new Set() };
       missionUploadOperationsRef.current = { uploaded: new Set(), uploadDestinations: new Map() };
       activePassiveSoftwareRef.current = [];
+      missionAvDetectionsRef.current = new Set();
       // Only reset missionCompletedRef if it's a different mission
       if (missionCompletedRef.current !== missionId) {
         missionCompletedRef.current = null;
@@ -376,8 +398,14 @@ export const useObjectiveAutoTracking = (
       const payout = calculateMissionPayout(basePayout, reputation);
       const reputationChange = activeMission.consequences?.success?.reputation ?? 1;
 
+      // Add bonus payout from completed optional objectives
+      const bonusPayout = activeMission.objectives
+        .filter(obj => obj.required === false && obj.status === 'complete' && obj.bonusPayout)
+        .reduce((sum, obj) => sum + obj.bonusPayout, 0);
+      const totalPayout = payout + bonusPayout;
+
       // Small delay to allow state to settle before completing mission
-      setTimeout(() => completeMission('success', payout, reputationChange), 100);
+      setTimeout(() => completeMission('success', totalPayout, reputationChange), 100);
     }
   }, [enabled, activeMission, activeMission?.objectives, reputation, completeMission]);
 };

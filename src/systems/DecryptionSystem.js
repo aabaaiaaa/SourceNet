@@ -16,8 +16,6 @@ export const DECRYPTION_ALGORITHMS = {
   'aes-256': { name: 'AES-256', base: true },
   'rsa-2048': { name: 'RSA-2048', base: false },
   'blowfish': { name: 'Blowfish', base: false },
-  'serpent': { name: 'Serpent', base: false },
-  'twofish': { name: 'Twofish', base: false },
 };
 
 /**
@@ -192,4 +190,36 @@ export const calculateDecryptionDurationFromString = (fileSizeStr, cpuSpecStr) =
 export const calculateUploadDurationFromString = (fileSizeStr, networkBandwidthMbps) => {
   const sizeInMB = parseFileSizeToMB(fileSizeStr);
   return calculateUploadDuration(sizeInMB, networkBandwidthMbps);
+};
+
+/**
+ * Process a decrypted file, handling multi-layer encryption.
+ * If the file has encryptionLayers with more than one layer, pops the first layer
+ * and updates the algorithm to the next layer (file stays encrypted).
+ * If single-layer or last layer, strips .enc extension and marks as decrypted.
+ * @param {object} file - File object with name, encrypted, algorithm, encryptionLayers
+ * @returns {object} Updated file object after decryption of one layer
+ */
+export const getDecryptedFile = (file) => {
+  const layers = file.encryptionLayers;
+
+  // Multi-layer: more than 1 layer remaining
+  if (layers && layers.length > 1) {
+    const remainingLayers = layers.slice(1);
+    return {
+      ...file,
+      algorithm: remainingLayers[0],
+      encryptionLayers: remainingLayers,
+      // Keep encrypted: true and .enc extension
+    };
+  }
+
+  // Single layer or last layer: fully decrypt
+  return {
+    ...file,
+    name: getDecryptedFileName(file.name),
+    encrypted: false,
+    algorithm: undefined,
+    encryptionLayers: undefined,
+  };
 };

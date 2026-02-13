@@ -241,6 +241,24 @@ export const SOFTWARE_CATALOG = [
     requiresUnlock: 'security-tooling',
     passive: true,
   },
+  {
+    id: 'algorithm-pack-blowfish',
+    name: 'Blowfish Decryption Module',
+    description: 'Advanced symmetric cipher module for Decryption Tool. Enables decryption of Blowfish-encrypted files commonly found in financial and corporate systems.',
+    price: 15000,
+    sizeInMB: 1800,
+    available: true,
+    requiresUnlock: 'decryption-algorithms',
+  },
+  {
+    id: 'algorithm-pack-rsa',
+    name: 'RSA-2048 Decryption Module',
+    description: 'Asymmetric encryption module for Decryption Tool. Enables decryption of RSA-2048 encrypted files used in government and military-grade security systems.',
+    price: 35000,
+    sizeInMB: 3200,
+    available: true,
+    requiresUnlock: 'decryption-algorithms',
+  },
 ];
 
 // Initial messages

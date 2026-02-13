@@ -247,7 +247,7 @@ function generateFileSize(filename, missionType) {
 /**
  * Generate file names based on industry and mission type
  * @param {string} industry - Client industry
- * @param {string} missionType - Type of mission (repair, backup, transfer)
+ * @param {string} missionType - Type of mission (repair, backup, transfer, decryption)
  * @param {number} targetCount - Number of TARGET files needed (actual files generated will be more)
  * @param {boolean} corrupted - Whether TARGET files should be marked corrupted
  * @returns {object} { files: Array, targetFiles: Array<string> }
@@ -257,51 +257,60 @@ function generateFiles(industry, missionType, targetCount, corrupted = false) {
         banking: {
             repair: ['ledger_{date}.db', 'transactions_{date}.dat', 'accounts_{date}.enc', 'audit_log_{date}.txt', 'system_config_{date}.cfg', 'backup_index_{date}.log'],
             backup: ['customer_data_{date}.db', 'loan_records_{date}.dat', 'compliance_{date}.enc', 'daily_report_{date}.pdf', 'branch_config_{date}.cfg', 'audit_trail_{date}.log'],
-            transfer: ['quarterly_report_{date}.xlsx', 'financial_summary_{date}.pdf', 'archive_{date}.tar', 'temp_cache_{date}.dat', 'sync_log_{date}.txt']
+            transfer: ['quarterly_report_{date}.xlsx', 'financial_summary_{date}.pdf', 'archive_{date}.tar', 'temp_cache_{date}.dat', 'sync_log_{date}.txt'],
+            decryption: ['vault_keys_{date}.bak', 'wire_transfers_{date}.log', 'auth_tokens_{date}.dat', 'rate_tables_{date}.cfg', 'settlement_{date}.db', 'card_hashes_{date}.bin']
         },
         government: {
             repair: ['citizen_records_{date}.db', 'permit_system_{date}.dat', 'case_files_{date}.enc', 'index_{date}.log', 'system_state_{date}.cfg'],
             backup: ['registry_{date}.db', 'tax_filings_{date}.dat', 'license_data_{date}.enc', 'form_templates_{date}.pdf', 'process_log_{date}.txt'],
-            transfer: ['archive_records_{date}.tar', 'historical_data_{date}.zip', 'backup_{date}.db', 'readme_{date}.txt', 'manifest_{date}.log']
+            transfer: ['archive_records_{date}.tar', 'historical_data_{date}.zip', 'backup_{date}.db', 'readme_{date}.txt', 'manifest_{date}.log'],
+            decryption: ['clearance_records_{date}.dat', 'sealed_filings_{date}.db', 'classified_index_{date}.log', 'inter_agency_{date}.cfg', 'audit_chain_{date}.bin']
         },
         healthcare: {
             repair: ['patient_records_{date}.enc', 'ehr_system_{date}.db', 'lab_results_{date}.dat', 'scheduler_config_{date}.cfg', 'error_log_{date}.txt'],
             backup: ['medical_imaging_{date}.dat', 'prescriptions_{date}.db', 'appointments_{date}.enc', 'staff_schedule_{date}.xlsx', 'backup_status_{date}.log'],
-            transfer: ['hipaa_archive_{date}.enc', 'patient_history_{date}.tar', 'compliance_{date}.zip', 'transfer_log_{date}.txt', 'checksum_{date}.dat']
+            transfer: ['hipaa_archive_{date}.enc', 'patient_history_{date}.tar', 'compliance_{date}.zip', 'transfer_log_{date}.txt', 'checksum_{date}.dat'],
+            decryption: ['clinical_trials_{date}.db', 'pharmacy_keys_{date}.dat', 'hipaa_tokens_{date}.bin', 'radiology_{date}.dcm', 'insurance_claims_{date}.log']
         },
         corporate: {
             repair: ['crm_database_{date}.db', 'erp_system_{date}.dat', 'hr_records_{date}.enc', 'email_archive_{date}.tar', 'config_{date}.cfg', 'error_{date}.log'],
             backup: ['sales_data_{date}.db', 'inventory_{date}.dat', 'project_files_{date}.zip', 'meeting_notes_{date}.pdf', 'system_{date}.cfg'],
-            transfer: ['quarterly_backup_{date}.tar', 'financial_records_{date}.enc', 'contracts_{date}.zip', 'index_{date}.db', 'manifest_{date}.txt']
+            transfer: ['quarterly_backup_{date}.tar', 'financial_records_{date}.enc', 'contracts_{date}.zip', 'index_{date}.db', 'manifest_{date}.txt'],
+            decryption: ['trade_secrets_{date}.dat', 'api_keys_{date}.cfg', 'payroll_hashes_{date}.bin', 'board_minutes_{date}.db', 'nda_archive_{date}.log', 'vpn_certs_{date}.pem']
         },
         utilities: {
             repair: ['scada_config_{date}.db', 'grid_telemetry_{date}.dat', 'meter_data_{date}.enc', 'sensor_calibration_{date}.cfg', 'event_log_{date}.txt'],
             backup: ['outage_logs_{date}.dat', 'maintenance_{date}.db', 'sensor_data_{date}.enc', 'grid_map_{date}.pdf', 'backup_schedule_{date}.cfg'],
-            transfer: ['infrastructure_{date}.tar', 'network_config_{date}.zip', 'system_backup_{date}.db', 'migration_log_{date}.txt', 'readme_{date}.pdf']
+            transfer: ['infrastructure_{date}.tar', 'network_config_{date}.zip', 'system_backup_{date}.db', 'migration_log_{date}.txt', 'readme_{date}.pdf'],
+            decryption: ['plc_firmware_{date}.bin', 'grid_auth_{date}.dat', 'scada_certs_{date}.pem', 'relay_config_{date}.db', 'substation_{date}.log']
         },
         shipping: {
             repair: ['tracking_system_{date}.db', 'logistics_{date}.dat', 'manifest_{date}.enc', 'route_cache_{date}.dat', 'driver_log_{date}.txt'],
             backup: ['shipment_records_{date}.db', 'customs_{date}.dat', 'routes_{date}.enc', 'fleet_status_{date}.xlsx', 'backup_config_{date}.cfg'],
-            transfer: ['warehouse_{date}.tar', 'fleet_data_{date}.zip', 'inventory_{date}.db', 'transfer_receipt_{date}.pdf', 'sync_log_{date}.txt']
+            transfer: ['warehouse_{date}.tar', 'fleet_data_{date}.zip', 'inventory_{date}.db', 'transfer_receipt_{date}.pdf', 'sync_log_{date}.txt'],
+            decryption: ['customs_seals_{date}.bin', 'container_manifest_{date}.dat', 'gps_keys_{date}.cfg', 'cargo_insurance_{date}.db', 'port_clearance_{date}.log']
         },
         emergency: {
             repair: ['dispatch_logs_{date}.db', 'incident_reports_{date}.dat', 'personnel_{date}.enc', 'radio_config_{date}.cfg', 'system_status_{date}.log'],
             backup: ['call_records_{date}.db', 'response_times_{date}.dat', 'equipment_{date}.enc', 'training_docs_{date}.pdf', 'schedule_{date}.xlsx'],
-            transfer: ['emergency_archive_{date}.tar', 'training_{date}.zip', 'protocols_{date}.db', 'handover_notes_{date}.txt', 'audit_{date}.log']
+            transfer: ['emergency_archive_{date}.tar', 'training_{date}.zip', 'protocols_{date}.db', 'handover_notes_{date}.txt', 'audit_{date}.log'],
+            decryption: ['radio_ciphers_{date}.bin', 'dispatch_keys_{date}.dat', 'incident_sealed_{date}.db', 'mutual_aid_{date}.cfg', 'responder_certs_{date}.pem']
         },
         nonprofit: {
             repair: ['donor_database_{date}.db', 'volunteer_{date}.dat', 'programs_{date}.enc', 'newsletter_draft_{date}.pdf', 'config_{date}.cfg'],
             backup: ['fundraising_{date}.db', 'grants_{date}.dat', 'events_{date}.enc', 'annual_summary_{date}.xlsx', 'email_templates_{date}.zip'],
-            transfer: ['annual_report_{date}.tar', 'financial_{date}.zip', 'membership_{date}.db', 'media_assets_{date}.tar', 'readme_{date}.txt']
+            transfer: ['annual_report_{date}.tar', 'financial_{date}.zip', 'membership_{date}.db', 'media_assets_{date}.tar', 'readme_{date}.txt'],
+            decryption: ['beneficiary_keys_{date}.dat', 'grant_tokens_{date}.bin', 'donor_privacy_{date}.db', 'board_sealed_{date}.log', 'fund_audit_{date}.cfg']
         },
         cultural: {
             repair: ['catalog_{date}.db', 'collections_{date}.dat', 'exhibitions_{date}.enc', 'visitor_log_{date}.csv', 'settings_{date}.cfg'],
             backup: ['archives_{date}.db', 'digitization_{date}.dat', 'metadata_{date}.enc', 'restoration_notes_{date}.pdf', 'index_{date}.log'],
-            transfer: ['preservation_{date}.tar', 'restoration_{date}.zip', 'inventory_{date}.db', 'accession_log_{date}.csv', 'readme_{date}.txt']
+            transfer: ['preservation_{date}.tar', 'restoration_{date}.zip', 'inventory_{date}.db', 'accession_log_{date}.csv', 'readme_{date}.txt'],
+            decryption: ['provenance_keys_{date}.dat', 'acquisition_sealed_{date}.db', 'digital_rights_{date}.bin', 'archive_certs_{date}.pem', 'loan_agreements_{date}.log']
         }
     };
 
-    const templates = fileTemplates[industry]?.[missionType] || fileTemplates.corporate[missionType];
+    const templates = fileTemplates[industry]?.[missionType] || fileTemplates.corporate[missionType] || fileTemplates.corporate.repair;
     const dateFormats = ['2024_01', '2024_02', '2024_03', '2024_Q1', '2024_Q2', '2023_12', '2023_11', '2024_04', '2024_05', '2023_Q4'];
 
     const files = [];
@@ -2743,9 +2752,811 @@ function generateSecureDeletionBriefing(client, variant, networks, timeLimitMinu
     };
 }
 
+// ===== DECRYPTION MISSION GENERATORS =====
+
+/**
+ * Algorithm payout multipliers - higher algorithms pay more
+ */
+const ALGORITHM_PAYOUT_MULTIPLIERS = {
+    'aes-128': 1.0,
+    'aes-256': 1.0,
+    'blowfish': 2.5,
+    'rsa-2048': 4.0,
+};
+
+/**
+ * Encryption backstory patterns for device logs
+ */
+const encryptionBackstoryPatterns = {
+    ransomware: [
+        { type: 'process', action: 'execute', note: 'Suspicious process started: cryptolocker.exe', delayBefore: 300000 },
+        { type: 'file', action: 'encrypt', note: 'Files encrypted by unknown process', delayBefore: 60000 },
+        { type: 'system', action: 'alert', note: 'Encryption event detected - files locked', delayBefore: 0 }
+    ],
+    lostKeys: [
+        { type: 'system', action: 'key_rotation', note: 'Encryption key rotation scheduled', delayBefore: 600000 },
+        { type: 'system', action: 'error', note: 'Key management service unreachable - keys lost', delayBefore: 0 }
+    ],
+    migration: [
+        { type: 'system', action: 'migration_start', note: 'Data migration initiated', delayBefore: 300000 },
+        { type: 'system', action: 'error', note: 'Migration interrupted - files left in encrypted state', delayBefore: 0 }
+    ],
+    disgruntled: [
+        { type: 'remote', action: 'unauthorized_access', user: 'former-employee', note: 'Access from terminated account', delayBefore: 600000 },
+        { type: 'file', action: 'encrypt', note: 'Files encrypted by unauthorized user', delayBefore: 60000 },
+        { type: 'system', action: 'alert', note: 'Unauthorized encryption detected', delayBefore: 0 }
+    ]
+};
+
+/**
+ * Pick algorithm based on player's available algorithms, with weighting toward advanced
+ * @param {string[]} playerAlgorithms - Player's installed algorithms
+ * @returns {string} Selected algorithm ID
+ */
+function pickAlgorithm(playerAlgorithms) {
+    // Weight toward advanced algorithms when available
+    const weighted = [];
+    for (const alg of playerAlgorithms) {
+        const weight = alg === 'rsa-2048' ? 3 : alg === 'blowfish' ? 2 : 1;
+        for (let i = 0; i < weight; i++) weighted.push(alg);
+    }
+    return randomPick(weighted);
+}
+
+/**
+ * Generate encrypted files for decryption missions
+ * @param {string} industry - Client industry
+ * @param {number} targetCount - Number of target encrypted files
+ * @param {string} algorithm - Encryption algorithm for target files
+ * @param {Object} options - { malwareFiles, encryptionLayers }
+ * @returns {Object} { files, targetFiles }
+ */
+function generateEncryptedFiles(industry, targetCount, algorithm, options = {}) {
+    const { malwareFiles = 0, encryptionLayers = null } = options;
+
+    // Base file templates by industry
+    const fileTemplates = {
+        banking: ['ledger_{date}.db', 'transactions_{date}.dat', 'accounts_{date}.db', 'audit_log_{date}.txt', 'compliance_{date}.pdf'],
+        government: ['citizen_records_{date}.db', 'case_files_{date}.dat', 'permits_{date}.db', 'registry_{date}.dat'],
+        healthcare: ['patient_records_{date}.db', 'lab_results_{date}.dat', 'prescriptions_{date}.db', 'imaging_{date}.dat'],
+        corporate: ['crm_database_{date}.db', 'hr_records_{date}.dat', 'sales_data_{date}.db', 'contracts_{date}.pdf'],
+        utilities: ['scada_config_{date}.db', 'grid_telemetry_{date}.dat', 'meter_data_{date}.db', 'sensor_{date}.dat'],
+        shipping: ['tracking_system_{date}.db', 'logistics_{date}.dat', 'manifest_{date}.db', 'customs_{date}.dat'],
+        emergency: ['dispatch_logs_{date}.db', 'incident_reports_{date}.dat', 'personnel_{date}.db'],
+        nonprofit: ['donor_database_{date}.db', 'volunteer_{date}.dat', 'programs_{date}.db'],
+        cultural: ['catalog_{date}.db', 'collections_{date}.dat', 'exhibitions_{date}.db'],
+    };
+
+    const templates = fileTemplates[industry] || fileTemplates.corporate;
+    const dateFormats = ['2024_01', '2024_02', '2024_03', '2024_Q1', '2024_Q2', '2023_12'];
+
+    const files = [];
+    const usedNames = new Set();
+    const extraFiles = randomInt(1, 3);
+    const totalFiles = targetCount + extraFiles + malwareFiles;
+
+    while (files.length < totalFiles) {
+        const template = randomPick(templates);
+        const date = randomPick(dateFormats);
+        const baseName = template.replace('{date}', date);
+
+        // Encrypted files get .enc extension
+        const encName = baseName + '.enc';
+        if (!usedNames.has(encName)) {
+            usedNames.add(encName);
+            const { size, sizeBytes } = generateFileSize(encName, 'decryption');
+            const isTarget = files.length < targetCount;
+            const isMalware = files.length >= targetCount && files.length < targetCount + malwareFiles;
+
+            const file = {
+                name: encName,
+                size,
+                sizeBytes,
+                encrypted: true,
+                algorithm: isTarget || isMalware ? algorithm : randomPick(['aes-128', 'aes-256']),
+                targetFile: isTarget,
+                corrupted: false,
+            };
+
+            if (isMalware) {
+                file.malware = true;
+                file.targetFile = false;
+            }
+
+            // Apply multi-layer encryption if specified
+            if (isTarget && encryptionLayers) {
+                file.encryptionLayers = encryptionLayers;
+                file.algorithm = encryptionLayers[0];
+            }
+
+            files.push(file);
+        }
+    }
+
+    const shuffled = files.sort(() => Math.random() - 0.5);
+    const targetFileNames = shuffled.filter(f => f.targetFile).map(f => f.name);
+
+    return { files: shuffled, targetFiles: targetFileNames };
+}
+
+/**
+ * Generate a decryption briefing message
+ * @param {Object} client - Client object
+ * @param {string} variant - 'honest' or 'malicious'
+ * @param {Array} networks - Network definitions
+ * @param {number|null} timeLimitMinutes - Time limit
+ * @param {Object} context - { targetFiles, totalDataBytes, algorithm }
+ * @returns {Object} Message object
+ */
+function generateDecryptionBriefing(client, variant, networks, timeLimitMinutes, context = {}) {
+    const { targetFiles = [], totalDataBytes = 0 } = context;
+
+    const templates = {
+        honest: [
+            `We had an encryption key rotation go wrong and now we can't access some of our files. Our IT team doesn't have the tools to handle this kind of decryption. We need someone who can decrypt these files and get them back to us in a usable state.`,
+            `During a system migration, some of our files were encrypted and we lost the keys in the process. We need a specialist to decrypt these files so we can continue our operations.`,
+            `An automated backup process accidentally encrypted files with the wrong key. We can't access them now and need professional help to decrypt and restore them.`
+        ],
+        malicious: [
+            `We were hit by a ransomware attack and several critical files on our server are now encrypted. We've contained the threat but we need a specialist to decrypt the affected files. We do NOT intend to pay the ransom.`,
+            `A disgruntled former employee encrypted critical files before leaving. We've revoked their access but the damage is done. We need these files decrypted as soon as possible.`,
+            `Our systems were breached and the attackers encrypted our data before we could stop them. We need help recovering these files. Law enforcement has been notified but we need our data back NOW.`
+        ]
+    };
+
+    const subjects = {
+        honest: [
+            `Encrypted Files - Need Decryption Help`,
+            `Lost Encryption Keys - File Recovery Needed`,
+            `File Decryption Assistance Required`
+        ],
+        malicious: [
+            `URGENT - Encrypted Files After Security Incident`,
+            `Help Needed - Ransomware File Recovery`,
+            `Emergency - Encrypted Files Need Recovery`
+        ]
+    };
+
+    let body = 'Dear {username},\n\n';
+    body += randomPick(templates[variant] || templates.honest);
+
+    if (targetFiles.length > 0) {
+        body += `\n\nThe affected files include:`;
+        targetFiles.forEach(file => {
+            body += `\n- ${file}`;
+        });
+
+        if (totalDataBytes > 0) {
+            let sizeStr;
+            if (totalDataBytes >= 1024 * 1024 * 1024) {
+                sizeStr = `${(totalDataBytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+            } else if (totalDataBytes >= 1024 * 1024) {
+                sizeStr = `${(totalDataBytes / (1024 * 1024)).toFixed(0)} MB`;
+            } else {
+                sizeStr = `${(totalDataBytes / 1024).toFixed(0)} KB`;
+            }
+            body += `\n\nThat's about ${sizeStr} of data in total.`;
+        }
+    }
+
+    if (timeLimitMinutes) {
+        body += `\n\nThis is urgent — we need this resolved within ${timeLimitMinutes} minutes.`;
+    }
+
+    body += `\n\nRemote access credentials are attached. Please decrypt the files and upload the clean versions back to our server.`;
+    body += `\n\nBest regards,\n{clientName}`;
+
+    const uniqueId = `msg-briefing-decryption-${client.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    return {
+        id: uniqueId,
+        from: client.name,
+        fromId: client.id,
+        fromName: client.name,
+        subject: randomPick(subjects[variant] || subjects.honest),
+        body,
+        attachments: generateNarAttachments(networks),
+        read: false,
+        timestamp: new Date().toISOString()
+    };
+}
+
+/**
+ * Helper to get player algorithms from installed software
+ * @param {string[]} software - Array of installed software IDs
+ * @returns {string[]} Array of algorithm IDs
+ */
+export function getPlayerAlgorithms(software) {
+    const algs = ['aes-128', 'aes-256'];
+    if (software.includes('algorithm-pack-blowfish')) algs.push('blowfish');
+    if (software.includes('algorithm-pack-rsa')) algs.push('rsa-2048');
+    return algs;
+}
+
+/**
+ * Generate a basic decryption mission
+ * Connect → find server → decrypt files → upload back
+ * @param {Object} client - Client object
+ * @param {Object} options - { hasTimed, playerAlgorithms }
+ * @returns {Object} Complete mission object
+ */
+export function generateDecryptionMission(client, options = {}) {
+    const { hasTimed = false, playerAlgorithms = ['aes-128', 'aes-256'] } = options;
+
+    const algorithm = pickAlgorithm(playerAlgorithms);
+    const algorithmMultiplier = ALGORITHM_PAYOUT_MULTIPLIERS[algorithm] || 1.0;
+    const targetFileCount = randomInt(3, 5);
+    const difficulty = targetFileCount <= 3 ? 'Easy' : targetFileCount <= 4 ? 'Medium' : 'Hard';
+
+    const infra = generateNetworkInfrastructure(client, 'decryption', targetFileCount, {
+        deviceConfigs: [{ fileSystemCount: 1 }]
+    });
+
+    // Make target files encrypted
+    const { files, targetFiles } = generateEncryptedFiles(
+        client.industry, targetFileCount, algorithm
+    );
+
+    // Replace files in the file system
+    infra.networks[0].fileSystems[0].files = files;
+
+    const timeLimitMinutes = hasTimed ? Math.floor(5 + targetFileCount * 1.5) : null;
+    const objectiveCount = 4 + targetFileCount; // connect + scan + decrypt files + upload files
+    const basePayout = Math.floor(calculatePayout(objectiveCount, timeLimitMinutes, client, infra.totalDataBytes) * algorithmMultiplier);
+
+    // Decrypted file names (strip .enc)
+    const decryptedFileNames = targetFiles.map(f => f.endsWith('.enc') ? f.slice(0, -4) : f);
+
+    const objectives = [
+        { id: 'obj-connect', description: `Connect to ${infra.networks[0].networkName}`, type: 'networkConnection', target: infra.primaryNetworkId, status: 'pending' },
+        { id: 'obj-scan', description: `Scan network and locate server`, type: 'networkScan', target: infra.primaryNetworkId, expectedResult: infra.hostname, status: 'pending' },
+        { id: 'obj-decrypt', description: `Decrypt ${targetFileCount} encrypted files`, type: 'fileDecryption', targetFiles, status: 'pending' },
+        { id: 'obj-upload', description: `Upload decrypted files back to server`, type: 'fileUpload', targetFiles: decryptedFileNames, destination: infra.primaryIp, status: 'pending' },
+        { id: 'obj-verify', description: 'Verify mission completion', type: 'verification', autoComplete: false, status: 'pending' },
+    ];
+
+    const variant = Math.random() < 0.5 ? 'honest' : 'malicious';
+    const briefingMessage = generateDecryptionBriefing(client, variant, infra.networks, timeLimitMinutes, {
+        targetFiles, totalDataBytes: infra.totalDataBytes, algorithm
+    });
+
+    return {
+        missionId: generateMissionId('decrypt', client.id),
+        title: `File Decryption for ${client.name}`,
+        client: client.name,
+        clientId: client.id,
+        clientType: client.clientType,
+        industry: client.industry,
+        difficulty,
+        missionType: 'decryption',
+        basePayout,
+        networks: infra.networks,
+        objectives,
+        targetFiles,
+        totalDataBytes: infra.totalDataBytes,
+        requirements: { software: ['vpn-client', 'network-scanner', 'file-manager', 'decryption-tool'] },
+        consequences: {
+            success: generateSuccessConsequences(client, basePayout),
+            failure: generateFailureConsequences(client, basePayout)
+        },
+        timeLimitMinutes,
+        briefingMessage,
+        isProcedurallyGenerated: true,
+        generatedAt: new Date().toISOString(),
+    };
+}
+
+/**
+ * Generate a decryption + repair mission
+ * Files are encrypted AND corrupted. Repair first, then decrypt and upload.
+ * @param {Object} client - Client object
+ * @param {Object} options - { hasTimed, playerAlgorithms }
+ * @returns {Object} Complete mission object
+ */
+export function generateDecryptionRepairMission(client, options = {}) {
+    const { hasTimed = false, playerAlgorithms = ['aes-128', 'aes-256'] } = options;
+
+    const algorithm = pickAlgorithm(playerAlgorithms);
+    const algorithmMultiplier = ALGORITHM_PAYOUT_MULTIPLIERS[algorithm] || 1.0;
+    const targetFileCount = randomInt(3, 5);
+    const difficulty = 'Hard';
+
+    const infra = generateNetworkInfrastructure(client, 'decryption', targetFileCount, {
+        corrupted: true,
+        deviceConfigs: [{ fileSystemCount: 1 }]
+    });
+
+    const { files, targetFiles } = generateEncryptedFiles(
+        client.industry, targetFileCount, algorithm
+    );
+    // Mark target files as corrupted too
+    files.forEach(f => {
+        if (f.targetFile) f.corrupted = true;
+    });
+
+    infra.networks[0].fileSystems[0].files = files;
+
+    const timeLimitMinutes = hasTimed ? Math.floor(8 + targetFileCount * 2) : null;
+    const objectiveCount = 5 + targetFileCount;
+    const basePayout = Math.floor(calculatePayout(objectiveCount, timeLimitMinutes, client, infra.totalDataBytes) * algorithmMultiplier * 1.3);
+
+    const decryptedFileNames = targetFiles.map(f => f.endsWith('.enc') ? f.slice(0, -4) : f);
+
+    const objectives = [
+        { id: 'obj-connect', description: `Connect to ${infra.networks[0].networkName}`, type: 'networkConnection', target: infra.primaryNetworkId, status: 'pending' },
+        { id: 'obj-scan', description: `Scan network and locate server`, type: 'networkScan', target: infra.primaryNetworkId, expectedResult: infra.hostname, status: 'pending' },
+        { id: 'obj-repair', description: `Repair ${targetFileCount} corrupted files`, type: 'fileOperation', operation: 'repair', targetFiles, status: 'pending' },
+        { id: 'obj-decrypt', description: `Decrypt ${targetFileCount} files`, type: 'fileDecryption', targetFiles, status: 'pending' },
+        { id: 'obj-upload', description: `Upload decrypted files back to server`, type: 'fileUpload', targetFiles: decryptedFileNames, destination: infra.primaryIp, status: 'pending' },
+        { id: 'obj-verify', description: 'Verify mission completion', type: 'verification', autoComplete: false, status: 'pending' },
+    ];
+
+    const briefingMessage = generateDecryptionBriefing(client, 'malicious', infra.networks, timeLimitMinutes, {
+        targetFiles, totalDataBytes: infra.totalDataBytes, algorithm
+    });
+
+    return {
+        missionId: generateMissionId('decrypt-repair', client.id),
+        title: `Repair & Decrypt for ${client.name}`,
+        client: client.name,
+        clientId: client.id,
+        clientType: client.clientType,
+        industry: client.industry,
+        difficulty,
+        missionType: 'decryption-repair',
+        basePayout,
+        networks: infra.networks,
+        objectives,
+        targetFiles,
+        totalDataBytes: infra.totalDataBytes,
+        requirements: { software: ['vpn-client', 'network-scanner', 'file-manager', 'decryption-tool'] },
+        consequences: {
+            success: generateSuccessConsequences(client, basePayout),
+            failure: generateFailureConsequences(client, basePayout)
+        },
+        timeLimitMinutes,
+        briefingMessage,
+        isProcedurallyGenerated: true,
+        generatedAt: new Date().toISOString(),
+    };
+}
+
+/**
+ * Generate a decryption + backup mission
+ * Decrypt files, then copy decrypted versions to a second server
+ * @param {Object} client - Client object
+ * @param {Object} options - { hasTimed, playerAlgorithms }
+ * @returns {Object} Complete mission object
+ */
+export function generateDecryptionBackupMission(client, options = {}) {
+    const { hasTimed = false, playerAlgorithms = ['aes-128', 'aes-256'] } = options;
+
+    const algorithm = pickAlgorithm(playerAlgorithms);
+    const algorithmMultiplier = ALGORITHM_PAYOUT_MULTIPLIERS[algorithm] || 1.0;
+    const targetFileCount = randomInt(3, 4);
+    const difficulty = 'Medium';
+
+    const infra = generateNetworkInfrastructure(client, 'decryption', targetFileCount, {
+        sameNetworkBackup: true,
+        deviceConfigs: [{ fileSystemCount: 1 }, { fileSystemCount: 1 }]
+    });
+
+    const { files, targetFiles } = generateEncryptedFiles(
+        client.industry, targetFileCount, algorithm
+    );
+
+    infra.networks[0].fileSystems[0].files = files;
+
+    const timeLimitMinutes = hasTimed ? Math.floor(8 + targetFileCount * 2) : null;
+    const objectiveCount = 5 + targetFileCount;
+    const basePayout = Math.floor(calculatePayout(objectiveCount, timeLimitMinutes, client, infra.totalDataBytes) * algorithmMultiplier * 1.2);
+
+    const decryptedFileNames = targetFiles.map(f => f.endsWith('.enc') ? f.slice(0, -4) : f);
+    const backupIp = infra.devices && infra.devices.length > 1 ? infra.devices[1].ip : infra.primaryIp;
+
+    const objectives = [
+        { id: 'obj-connect', description: `Connect to ${infra.networks[0].networkName}`, type: 'networkConnection', target: infra.primaryNetworkId, status: 'pending' },
+        { id: 'obj-scan', description: `Scan network and locate servers`, type: 'networkScan', target: infra.primaryNetworkId, expectedResult: infra.hostname, status: 'pending' },
+        { id: 'obj-decrypt', description: `Decrypt ${targetFileCount} encrypted files`, type: 'fileDecryption', targetFiles, status: 'pending' },
+        { id: 'obj-upload', description: `Upload decrypted files to source server`, type: 'fileUpload', targetFiles: decryptedFileNames, destination: infra.primaryIp, status: 'pending' },
+        { id: 'obj-backup', description: `Copy decrypted files to backup server`, type: 'fileOperation', operation: 'paste', targetFiles: decryptedFileNames, destination: backupIp, status: 'pending' },
+        { id: 'obj-verify', description: 'Verify mission completion', type: 'verification', autoComplete: false, status: 'pending' },
+    ];
+
+    const briefingMessage = generateDecryptionBriefing(client, 'honest', infra.networks, timeLimitMinutes, {
+        targetFiles, totalDataBytes: infra.totalDataBytes, algorithm
+    });
+
+    return {
+        missionId: generateMissionId('decrypt-backup', client.id),
+        title: `Decrypt & Backup for ${client.name}`,
+        client: client.name,
+        clientId: client.id,
+        clientType: client.clientType,
+        industry: client.industry,
+        difficulty,
+        missionType: 'decryption-backup',
+        basePayout,
+        networks: infra.networks,
+        objectives,
+        targetFiles,
+        totalDataBytes: infra.totalDataBytes,
+        requirements: { software: ['vpn-client', 'network-scanner', 'file-manager', 'decryption-tool'] },
+        consequences: {
+            success: generateSuccessConsequences(client, basePayout),
+            failure: generateFailureConsequences(client, basePayout)
+        },
+        timeLimitMinutes,
+        briefingMessage,
+        isProcedurallyGenerated: true,
+        generatedAt: new Date().toISOString(),
+    };
+}
+
+/**
+ * Generate an investigation + decryption mission
+ * Use Log Viewer to discover which devices have encrypted files, then decrypt
+ * @param {Object} client - Client object
+ * @param {Object} options - { hasTimed, playerAlgorithms }
+ * @returns {Object} Complete mission object
+ */
+export function generateInvestigationDecryptionMission(client, options = {}) {
+    const { hasTimed = false, playerAlgorithms = ['aes-128', 'aes-256'] } = options;
+
+    const algorithm = pickAlgorithm(playerAlgorithms);
+    const algorithmMultiplier = ALGORITHM_PAYOUT_MULTIPLIERS[algorithm] || 1.0;
+    const targetFileCount = randomInt(3, 5);
+    const difficulty = 'Hard';
+
+    // Multiple file systems for investigation - player must find the right one
+    const deviceCount = randomInt(3, 5);
+    const deviceConfigs = Array.from({ length: deviceCount }, () => ({
+        fileSystemCount: Math.random() < 0.3 ? 2 : 1
+    }));
+
+    const infra = generateNetworkInfrastructure(client, 'decryption', targetFileCount, {
+        deviceConfigs
+    });
+
+    // Pick a random file system to be the target
+    const allFileSystems = infra.networks[0].fileSystems || [];
+    const targetFsIndex = Math.floor(Math.random() * allFileSystems.length);
+    const targetFs = allFileSystems[targetFsIndex];
+    const targetDevice = infra.devices?.[Math.floor(targetFsIndex / 2)] || infra.devices?.[0];
+
+    const { files, targetFiles } = generateEncryptedFiles(
+        client.industry, targetFileCount, algorithm
+    );
+
+    // Put encrypted files on target file system
+    targetFs.files = files;
+
+    // Add encryption backstory to target device logs
+    const backstoryKey = randomPick(Object.keys(encryptionBackstoryPatterns));
+    const backstoryPattern = encryptionBackstoryPatterns[backstoryKey];
+    const baseTime = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    targetFs.activityLog = (targetFs.activityLog || []).concat(
+        backstoryPattern.map((entry, i) => ({
+            id: `log-enc-${i}-${Date.now()}`,
+            timestamp: new Date(baseTime.getTime() + i * (entry.delayBefore || 0)).toISOString(),
+            type: entry.type,
+            action: entry.action,
+            user: entry.user || 'system',
+            note: entry.note,
+            fileSystemId: targetFs.id,
+        }))
+    );
+
+    const timeLimitMinutes = hasTimed ? Math.floor(8 + targetFileCount * 2) : null;
+    const objectiveCount = 6 + targetFileCount;
+    const basePayout = Math.floor(calculatePayout(objectiveCount, timeLimitMinutes, client, infra.totalDataBytes) * algorithmMultiplier * 1.5);
+
+    const decryptedFileNames = targetFiles.map(f => f.endsWith('.enc') ? f.slice(0, -4) : f);
+
+    const objectives = [
+        { id: 'obj-connect', description: `Connect to ${infra.networks[0].networkName}`, type: 'networkConnection', target: infra.primaryNetworkId, status: 'pending' },
+        { id: 'obj-scan', description: `Scan network to discover all devices`, type: 'networkScan', target: infra.primaryNetworkId, expectedResult: targetDevice?.ip || infra.primaryIp, status: 'pending' },
+        { id: 'obj-investigate', description: `Use Log Viewer to find the encrypted file system`, type: 'investigation', correctFileSystemId: targetFs.id, target: targetDevice?.ip || infra.primaryIp, status: 'pending' },
+        { id: 'obj-decrypt', description: `Decrypt ${targetFileCount} encrypted files`, type: 'fileDecryption', targetFiles, status: 'pending' },
+        { id: 'obj-upload', description: `Upload decrypted files back to server`, type: 'fileUpload', targetFiles: decryptedFileNames, destination: targetDevice?.ip || infra.primaryIp, status: 'pending' },
+        { id: 'obj-verify', description: 'Verify mission completion', type: 'verification', autoComplete: false, status: 'pending' },
+    ];
+
+    const briefingMessage = generateDecryptionBriefing(client, 'malicious', infra.networks, timeLimitMinutes, {
+        targetFiles, totalDataBytes: infra.totalDataBytes, algorithm
+    });
+
+    return {
+        missionId: generateMissionId('invest-decrypt', client.id),
+        title: `Investigation: Encrypted Data at ${client.name}`,
+        client: client.name,
+        clientId: client.id,
+        clientType: client.clientType,
+        industry: client.industry,
+        difficulty,
+        missionType: 'investigation-decryption',
+        basePayout,
+        networks: infra.networks,
+        objectives,
+        targetFiles,
+        totalDataBytes: infra.totalDataBytes,
+        requirements: { software: ['vpn-client', 'network-scanner', 'file-manager', 'log-viewer', 'decryption-tool'] },
+        consequences: {
+            success: generateSuccessConsequences(client, basePayout),
+            failure: generateFailureConsequences(client, basePayout)
+        },
+        timeLimitMinutes,
+        briefingMessage,
+        isProcedurallyGenerated: true,
+        isInvestigation: true,
+        targetFileSystemId: targetFs.id,
+        generatedAt: new Date().toISOString(),
+    };
+}
+
+/**
+ * Generate a multi-layer decryption mission
+ * Files have multiple encryption layers that must be peeled one at a time
+ * @param {Object} client - Client object
+ * @param {Object} options - { hasTimed, playerAlgorithms }
+ * @returns {Object} Complete mission object
+ */
+export function generateMultiLayerDecryptionMission(client, options = {}) {
+    const { hasTimed = false, playerAlgorithms = ['aes-128', 'aes-256'] } = options;
+
+    // Need at least 3 algorithms for multi-layer
+    if (playerAlgorithms.length < 3) return null;
+
+    // Pick 2 layers from available algorithms (no duplicates)
+    const shuffledAlgs = [...playerAlgorithms].sort(() => Math.random() - 0.5);
+    const layers = shuffledAlgs.slice(0, 2);
+
+    const targetFileCount = randomInt(2, 4);
+    const difficulty = 'Hard';
+
+    const infra = generateNetworkInfrastructure(client, 'decryption', targetFileCount, {
+        deviceConfigs: [{ fileSystemCount: 1 }]
+    });
+
+    const { files, targetFiles } = generateEncryptedFiles(
+        client.industry, targetFileCount, layers[0], { encryptionLayers: layers }
+    );
+
+    infra.networks[0].fileSystems[0].files = files;
+
+    // Higher payout multiplier for multi-layer
+    const avgMultiplier = layers.reduce((sum, alg) => sum + (ALGORITHM_PAYOUT_MULTIPLIERS[alg] || 1.0), 0) / layers.length;
+    const timeLimitMinutes = hasTimed ? Math.floor(10 + targetFileCount * 3) : null;
+    const objectiveCount = 4 + targetFileCount * 2; // Extra for multiple decryption passes
+    const basePayout = Math.floor(calculatePayout(objectiveCount, timeLimitMinutes, client, infra.totalDataBytes) * avgMultiplier * 2.5);
+
+    const decryptedFileNames = targetFiles.map(f => f.endsWith('.enc') ? f.slice(0, -4) : f);
+
+    const objectives = [
+        { id: 'obj-connect', description: `Connect to ${infra.networks[0].networkName}`, type: 'networkConnection', target: infra.primaryNetworkId, status: 'pending' },
+        { id: 'obj-scan', description: `Scan network and locate server`, type: 'networkScan', target: infra.primaryNetworkId, expectedResult: infra.hostname, status: 'pending' },
+        { id: 'obj-decrypt', description: `Decrypt ${targetFileCount} multi-layer encrypted files`, type: 'fileDecryption', targetFiles, status: 'pending' },
+        { id: 'obj-upload', description: `Upload decrypted files back to server`, type: 'fileUpload', targetFiles: decryptedFileNames, destination: infra.primaryIp, status: 'pending' },
+        { id: 'obj-verify', description: 'Verify mission completion', type: 'verification', autoComplete: false, status: 'pending' },
+    ];
+
+    // Add optional bonus files
+    const bonusCount = randomInt(1, 2);
+    const bonusPayout = Math.floor(basePayout * 0.3);
+    if (files.filter(f => !f.targetFile && f.encrypted).length >= bonusCount) {
+        const bonusFiles = files.filter(f => !f.targetFile && f.encrypted && !f.malware).slice(0, bonusCount);
+        const bonusFileNames = bonusFiles.map(f => f.name);
+        objectives.splice(-1, 0, {
+            id: 'obj-bonus-decrypt',
+            description: `Decrypt ${bonusCount} additional file${bonusCount > 1 ? 's' : ''}`,
+            type: 'fileDecryption',
+            targetFiles: bonusFileNames,
+            required: false,
+            bonusPayout,
+            status: 'pending'
+        });
+    }
+
+    const briefingMessage = generateDecryptionBriefing(client, 'malicious', infra.networks, timeLimitMinutes, {
+        targetFiles, totalDataBytes: infra.totalDataBytes, algorithm: layers[0]
+    });
+
+    return {
+        missionId: generateMissionId('multi-decrypt', client.id),
+        title: `Multi-Layer Decryption for ${client.name}`,
+        client: client.name,
+        clientId: client.id,
+        clientType: client.clientType,
+        industry: client.industry,
+        difficulty,
+        missionType: 'multi-layer-decryption',
+        basePayout,
+        networks: infra.networks,
+        objectives,
+        targetFiles,
+        totalDataBytes: infra.totalDataBytes,
+        requirements: { software: ['vpn-client', 'network-scanner', 'file-manager', 'decryption-tool'] },
+        consequences: {
+            success: generateSuccessConsequences(client, basePayout),
+            failure: generateFailureConsequences(client, basePayout)
+        },
+        timeLimitMinutes,
+        briefingMessage,
+        isProcedurallyGenerated: true,
+        generatedAt: new Date().toISOString(),
+    };
+}
+
+/**
+ * Generate a decryption + malware mission
+ * Decrypt files, some turn out to be malware. AV detects after decryption.
+ * Player must also secure-delete original encrypted file on remote server.
+ * @param {Object} client - Client object
+ * @param {Object} options - { hasTimed, playerAlgorithms }
+ * @returns {Object} Complete mission object
+ */
+export function generateDecryptionMalwareMission(client, options = {}) {
+    const { hasTimed = false, playerAlgorithms = ['aes-128', 'aes-256'] } = options;
+
+    const algorithm = pickAlgorithm(playerAlgorithms);
+    const algorithmMultiplier = ALGORITHM_PAYOUT_MULTIPLIERS[algorithm] || 1.0;
+    const targetFileCount = randomInt(3, 4);
+    const malwareCount = 1;
+    const difficulty = 'Hard';
+
+    const infra = generateNetworkInfrastructure(client, 'decryption', targetFileCount, {
+        deviceConfigs: [{ fileSystemCount: 1 }]
+    });
+
+    const { files, targetFiles } = generateEncryptedFiles(
+        client.industry, targetFileCount, algorithm, { malwareFiles: malwareCount }
+    );
+
+    infra.networks[0].fileSystems[0].files = files;
+
+    const malwareFileNames = files.filter(f => f.malware).map(f => f.name);
+    const timeLimitMinutes = hasTimed ? Math.floor(10 + targetFileCount * 2) : null;
+    const objectiveCount = 6 + targetFileCount;
+    const basePayout = Math.floor(calculatePayout(objectiveCount, timeLimitMinutes, client, infra.totalDataBytes) * algorithmMultiplier * 1.4);
+
+    const decryptedFileNames = targetFiles.map(f => f.endsWith('.enc') ? f.slice(0, -4) : f);
+
+    const objectives = [
+        { id: 'obj-connect', description: `Connect to ${infra.networks[0].networkName}`, type: 'networkConnection', target: infra.primaryNetworkId, status: 'pending' },
+        { id: 'obj-scan', description: `Scan network and locate server`, type: 'networkScan', target: infra.primaryNetworkId, expectedResult: infra.hostname, status: 'pending' },
+        { id: 'obj-decrypt', description: `Decrypt ${targetFileCount} encrypted files`, type: 'fileDecryption', targetFiles, status: 'pending' },
+        { id: 'obj-upload', description: `Upload decrypted files back to server`, type: 'fileUpload', targetFiles: decryptedFileNames, destination: infra.primaryIp, status: 'pending' },
+        { id: 'obj-av-detect', description: `Antivirus detects malware in decrypted files`, type: 'avThreatDetected', targetFiles: malwareFileNames, status: 'pending' },
+        { id: 'obj-secure-delete', description: `Secure-delete malware source files from server`, type: 'secureDelete', targetFiles: malwareFileNames, count: malwareCount, status: 'pending' },
+        { id: 'obj-verify', description: 'Verify mission completion', type: 'verification', autoComplete: false, status: 'pending' },
+    ];
+
+    const briefingMessage = generateDecryptionBriefing(client, 'malicious', infra.networks, timeLimitMinutes, {
+        targetFiles: [...targetFiles, ...malwareFileNames], totalDataBytes: infra.totalDataBytes, algorithm
+    });
+
+    return {
+        missionId: generateMissionId('decrypt-malware', client.id),
+        title: `Decryption & Cleanup for ${client.name}`,
+        client: client.name,
+        clientId: client.id,
+        clientType: client.clientType,
+        industry: client.industry,
+        difficulty,
+        missionType: 'decryption-malware',
+        basePayout,
+        networks: infra.networks,
+        objectives,
+        targetFiles: [...targetFiles, ...malwareFileNames],
+        totalDataBytes: infra.totalDataBytes,
+        requirements: { software: ['vpn-client', 'network-scanner', 'file-manager', 'decryption-tool', 'advanced-firewall-av', 'data-recovery-tool'] },
+        consequences: {
+            success: generateSuccessConsequences(client, basePayout),
+            failure: generateFailureConsequences(client, basePayout)
+        },
+        timeLimitMinutes,
+        briefingMessage,
+        isProcedurallyGenerated: true,
+        generatedAt: new Date().toISOString(),
+    };
+}
+
+/**
+ * Generate a virus hunt mission
+ * Copy suspect files from remote to local SSD. AV detects malware. Secure-delete from remote.
+ * @param {Object} client - Client object
+ * @param {Object} options - { hasTimed }
+ * @returns {Object} Complete mission object
+ */
+export function generateVirusHuntMission(client, options = {}) {
+    const { hasTimed = false } = options;
+
+    const targetFileCount = randomInt(2, 4);
+    const difficulty = 'Medium';
+
+    const infra = generateNetworkInfrastructure(client, 'transfer', targetFileCount, {
+        deviceConfigs: [{ fileSystemCount: 1 }]
+    });
+
+    // Generate suspect files - some are malware, some are clean
+    const malwareCount = randomInt(1, Math.min(2, targetFileCount));
+    const { files: generatedFiles } = generateFiles(client.industry, 'repair', targetFileCount + 2, false);
+
+    // Mark some as malware
+    const suspectFiles = generatedFiles.slice(0, targetFileCount);
+    suspectFiles.forEach((f, i) => {
+        if (i < malwareCount) {
+            f.malware = true;
+        }
+        f.targetFile = true;
+    });
+
+    const allFiles = [...suspectFiles, ...generatedFiles.slice(targetFileCount)];
+    infra.networks[0].fileSystems[0].files = allFiles;
+
+    const malwareFileNames = suspectFiles.filter(f => f.malware).map(f => f.name);
+    const timeLimitMinutes = hasTimed ? Math.floor(6 + targetFileCount * 2) : null;
+    const objectiveCount = 5 + malwareCount;
+    const basePayout = Math.floor(calculatePayout(objectiveCount, timeLimitMinutes, client, infra.totalDataBytes) * 1.3);
+
+    const objectives = [
+        { id: 'obj-connect', description: `Connect to ${infra.networks[0].networkName}`, type: 'networkConnection', target: infra.primaryNetworkId, status: 'pending' },
+        { id: 'obj-scan', description: `Scan network and locate server`, type: 'networkScan', target: infra.primaryNetworkId, expectedResult: infra.hostname, status: 'pending' },
+        { id: 'obj-av-detect', description: `Antivirus identifies ${malwareCount} malicious file${malwareCount > 1 ? 's' : ''}`, type: 'avThreatDetected', targetFiles: malwareFileNames, status: 'pending' },
+        { id: 'obj-secure-delete', description: `Secure-delete malware from remote server`, type: 'secureDelete', targetFiles: malwareFileNames, count: malwareCount, status: 'pending' },
+        { id: 'obj-verify', description: 'Verify mission completion', type: 'verification', autoComplete: false, status: 'pending' },
+    ];
+
+    // Optional bonus: identify all clean files
+    const cleanFiles = suspectFiles.filter(f => !f.malware).map(f => f.name);
+    if (cleanFiles.length > 0) {
+        const bonusPayout = Math.floor(basePayout * 0.25);
+        objectives.splice(-1, 0, {
+            id: 'obj-bonus-upload',
+            description: `Upload ${cleanFiles.length} clean file${cleanFiles.length > 1 ? 's' : ''} back to server`,
+            type: 'fileUpload',
+            targetFiles: cleanFiles,
+            destination: infra.primaryIp,
+            required: false,
+            bonusPayout,
+            status: 'pending'
+        });
+    }
+
+    const briefingMessage = generateDecryptionBriefing(client, 'malicious', infra.networks, timeLimitMinutes, {
+        targetFiles: suspectFiles.map(f => f.name), totalDataBytes: infra.totalDataBytes
+    });
+
+    return {
+        missionId: generateMissionId('virus-hunt', client.id),
+        title: `Virus Hunt for ${client.name}`,
+        client: client.name,
+        clientId: client.id,
+        clientType: client.clientType,
+        industry: client.industry,
+        difficulty,
+        missionType: 'virus-hunt',
+        basePayout,
+        networks: infra.networks,
+        objectives,
+        targetFiles: suspectFiles.map(f => f.name),
+        totalDataBytes: infra.totalDataBytes,
+        requirements: { software: ['vpn-client', 'network-scanner', 'file-manager', 'advanced-firewall-av', 'data-recovery-tool'] },
+        consequences: {
+            success: generateSuccessConsequences(client, basePayout),
+            failure: generateFailureConsequences(client, basePayout)
+        },
+        timeLimitMinutes,
+        briefingMessage,
+        isProcedurallyGenerated: true,
+        generatedAt: new Date().toISOString(),
+    };
+}
+
 /**
  * Get available mission types based on unlocked features
  * Investigation missions require 'investigation-missions' unlock (earned by completing data-detective)
+ * Decryption missions require 'decryption-missions' unlock (earned by completing ransomware-recovery)
  * @param {Array} unlockedSoftware - Array of unlocked software/feature IDs
  * @returns {Array} Array of available mission type strings
  */
@@ -2761,6 +3572,19 @@ export function getMissionTypesForPlayer(unlockedSoftware = []) {
         types.push('secure-deletion');         // Log Viewer -> find flagged files -> Secure Delete
     }
 
+    // Check if decryption missions are unlocked (unlocked by completing ransomware-recovery)
+    const hasDecryptionMissions = unlockedSoftware.includes('decryption-missions');
+
+    if (hasDecryptionMissions) {
+        types.push('decryption');                 // Basic decrypt + upload
+        types.push('decryption-repair');           // Repair + decrypt + upload
+        types.push('decryption-backup');           // Decrypt + backup to second server
+        types.push('investigation-decryption');    // Investigation + decrypt
+        types.push('multi-layer-decryption');      // Multi-layer encrypted files
+        types.push('decryption-malware');           // Decrypt + AV detection + cleanup
+        types.push('virus-hunt');                  // AV scan + secure delete
+    }
+
     return types;
 }
 
@@ -2774,11 +3598,19 @@ export default {
     generateInvestigationRepairMission,
     generateInvestigationRecoveryMission,
     generateSecureDeletionMission,
+    generateDecryptionMission,
+    generateDecryptionRepairMission,
+    generateDecryptionBackupMission,
+    generateInvestigationDecryptionMission,
+    generateMultiLayerDecryptionMission,
+    generateDecryptionMalwareMission,
+    generateVirusHuntMission,
     generateMissionArc,
     generateNetworkInfrastructure,
     calculateTimeLimit,
     calculatePayout,
     resetMissionIdCounter,
     getMissionTypesForPlayer,
+    getPlayerAlgorithms,
     networkComplexityConfig
 };
