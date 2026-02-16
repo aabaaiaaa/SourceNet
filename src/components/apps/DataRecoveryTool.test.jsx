@@ -175,3 +175,77 @@ describe('DataRecoveryTool Scan Progress', () => {
     expect(progress).toBeGreaterThan(0);
   });
 });
+
+describe('DataRecoveryTool Malware Indicators', () => {
+  const setupNetworkWithFiles = () => {
+    networkRegistry.registerNetwork({
+      networkId: 'test-net',
+      networkName: 'Test Network',
+      address: '10.0.0.1',
+      bandwidth: 100,
+    });
+    networkRegistry.grantNetworkAccess('test-net', []);
+    networkRegistry.addDevice('test-net', {
+      ip: '10.0.0.100',
+      name: 'test-server',
+      accessible: true,
+    });
+    networkRegistry.addFileSystem('10.0.0.100', { name: 'clean-file.txt', size: '1KB' });
+    networkRegistry.addFileSystem('10.0.0.100', { name: 'malware.db', size: '5KB' });
+  };
+
+  beforeEach(() => {
+    triggerEventBus.clear();
+    networkRegistry.reset();
+  });
+
+  afterEach(() => {
+    triggerEventBus.clear();
+    networkRegistry.reset();
+  });
+
+  it('should show malware badge for files matching knownMaliciousFiles', () => {
+    setupNetworkWithFiles();
+
+    const mockContext = {
+      activeConnections: [{ networkId: 'test-net', networkName: 'Test Network' }],
+      discoveredDevices: { 'test-net': new Set(['10.0.0.100']) },
+      currentTime: new Date('2020-03-25T09:00:00'),
+      knownMaliciousFiles: [{ fileName: 'malware.db', sourceFileSystemId: null }],
+    };
+
+    render(
+      <GameContext.Provider value={mockContext}>
+        <DataRecoveryTool />
+      </GameContext.Provider>
+    );
+
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: '10.0.0.100' } });
+
+    expect(screen.getByText('MALICIOUS')).toBeInTheDocument();
+  });
+
+  it('should show biohazard icon for malicious files instead of normal icon', () => {
+    setupNetworkWithFiles();
+
+    const mockContext = {
+      activeConnections: [{ networkId: 'test-net', networkName: 'Test Network' }],
+      discoveredDevices: { 'test-net': new Set(['10.0.0.100']) },
+      currentTime: new Date('2020-03-25T09:00:00'),
+      knownMaliciousFiles: [{ fileName: 'malware.db', sourceFileSystemId: null }],
+    };
+
+    render(
+      <GameContext.Provider value={mockContext}>
+        <DataRecoveryTool />
+      </GameContext.Provider>
+    );
+
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: '10.0.0.100' } });
+
+    // The biohazard icon should be present
+    expect(screen.getByText('☣️')).toBeInTheDocument();
+  });
+});

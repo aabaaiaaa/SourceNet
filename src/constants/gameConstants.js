@@ -310,7 +310,7 @@ export const STARTING_BANK_ACCOUNT = {
 export const WINDOW_SIZES = {
   mail: { width: 600, height: 600 },
   banking: { width: 500, height: 500 },
-  portal: { width: 700, height: 600 },
+  portal: { width: 700, height: 750 },
   missionBoard: { width: 700, height: 500 },
   vpnClient: { width: 600, height: 550 },
   networkScanner: { width: 650, height: 500 },

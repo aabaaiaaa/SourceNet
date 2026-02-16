@@ -88,6 +88,9 @@ const TopBar = () => {
   const [ransomwareCleaning, setRansomwareCleaning] = useState(false);
   const [ransomwareCleanupProgress, setRansomwareCleanupProgress] = useState(0);
 
+  // AV scan alerts for SecurityIndicator ({fileName, phase: 'scanning'|'cleared'})
+  const [avAlerts, setAvAlerts] = useState([]);
+
   // Keep a ref to currentTime for use in animation frames
   const currentTimeRef = useRef(currentTime);
   currentTimeRef.current = currentTime;
@@ -181,6 +184,42 @@ const TopBar = () => {
       triggerEventBus.off('ransomwareCleanupComplete', handleCleanupComplete);
     };
   }, []);
+
+  // AV alert dismiss timer ref
+  const avAlertTimersRef = useRef(new Map());
+
+  // Subscribe to AV scan events for SecurityIndicator
+  useEffect(() => {
+    const handleAvScanStarted = ({ fileName }) => {
+      setAvAlerts(prev => [
+        ...prev.filter(a => a.fileName !== fileName),
+        { fileName, phase: 'scanning' },
+      ]);
+    };
+
+    const handleAvThreatCleared = ({ fileName }) => {
+      setAvAlerts(prev =>
+        prev.map(a => a.fileName === fileName ? { ...a, phase: 'cleared' } : a)
+      );
+
+      // Auto-dismiss after 3s game time
+      const timerId = scheduleGameTimeCallback(() => {
+        setAvAlerts(prev => prev.filter(a => a.fileName !== fileName));
+        avAlertTimersRef.current.delete(fileName);
+      }, 3000, timeSpeed);
+      avAlertTimersRef.current.set(fileName, timerId);
+    };
+
+    triggerEventBus.on('avScanStarted', handleAvScanStarted);
+    triggerEventBus.on('avThreatCleared', handleAvThreatCleared);
+
+    return () => {
+      triggerEventBus.off('avScanStarted', handleAvScanStarted);
+      triggerEventBus.off('avThreatCleared', handleAvThreatCleared);
+      avAlertTimersRef.current.forEach(timerId => clearGameTimeCallback(timerId));
+      avAlertTimersRef.current.clear();
+    };
+  }, [timeSpeed]);
 
   const dismissDisconnectionNotices = () => {
     setDisconnectionNotices([]);
@@ -473,9 +512,10 @@ const TopBar = () => {
         {/* Security Indicator */}
         {activePassiveSoftware?.includes('advanced-firewall-av') && (
           <SecurityIndicator
-            processing={ransomwareCleaning}
+            processing={ransomwareCleaning || avAlerts.some(a => a.phase === 'scanning')}
             cleanupProgress={ransomwareCleanupProgress}
             threatCount={ransomwareThreat ? 1 : 0}
+            avAlerts={avAlerts}
           />
         )}
 

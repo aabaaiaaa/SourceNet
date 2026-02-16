@@ -95,3 +95,57 @@ export const formatStorage = (appsUsed, filesUsed, total) => {
   }
   return `Apps: ${appsUsed.toFixed(1)} GB | ${free.toFixed(1)} GB free`;
 };
+
+/**
+ * Parse a capacity string to GB (e.g., "90GB" -> 90, "1TB" -> 1024)
+ */
+const parseCapacityToGB = (capacityStr) => {
+  if (!capacityStr) return 0;
+  const match = capacityStr.match(/([0-9.]+)\s*(GB|TB)/i);
+  if (!match) return 0;
+  const value = parseFloat(match[1]);
+  const unit = match[2].toUpperCase();
+  if (unit === 'TB') return value * 1024;
+  return value;
+};
+
+/**
+ * Calculate total storage capacity from hardware storage array
+ * @param {object} hardware - Hardware configuration with storage array
+ * @returns {number} Total capacity in GB
+ */
+export const getTotalStorageCapacityGB = (hardware) => {
+  if (!hardware?.storage || !Array.isArray(hardware.storage)) return 0;
+  return hardware.storage.reduce((sum, drive) => sum + parseCapacityToGB(drive.capacity), 0);
+};
+
+/**
+ * Trim files to fit within a new capacity limit.
+ * Removes files from the end of the array until used space fits.
+ * @param {array} localSSDFiles - Current files on local SSD
+ * @param {array} software - Installed software IDs
+ * @param {number} newCapacityGB - New total capacity in GB
+ * @returns {{ trimmedFiles: array, removedFiles: array }}
+ */
+export const trimFilesToFitCapacity = (localSSDFiles, software, newCapacityGB) => {
+  const appsUsed = calculateStorageUsed(software);
+  const filesUsed = calculateLocalFilesSize(localSSDFiles);
+  const totalUsed = appsUsed + filesUsed;
+
+  if (totalUsed <= newCapacityGB) {
+    return { trimmedFiles: [...localSSDFiles], removedFiles: [] };
+  }
+
+  // Need to remove files to fit - remove from end of array
+  const trimmedFiles = [...localSSDFiles];
+  const removedFiles = [];
+  let currentUsed = totalUsed;
+
+  while (currentUsed > newCapacityGB && trimmedFiles.length > 0) {
+    const removed = trimmedFiles.pop();
+    removedFiles.push(removed);
+    currentUsed = appsUsed + calculateLocalFilesSize(trimmedFiles);
+  }
+
+  return { trimmedFiles, removedFiles };
+};

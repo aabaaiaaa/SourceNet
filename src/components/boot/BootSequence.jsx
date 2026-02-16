@@ -21,8 +21,8 @@ const BootSequence = () => {
       setIsRebooting(false);
     }
 
-    // Check if new hardware was just applied
-    const hasNewHardware = lastAppliedHardware && Object.keys(lastAppliedHardware).length > 0;
+    // Check if new hardware was just applied (lastAppliedHardware is an array of upgrade objects)
+    const hasNewHardware = lastAppliedHardware && Array.isArray(lastAppliedHardware) && lastAppliedHardware.length > 0;
 
     // Clear the last applied hardware after we've consumed it
     if (hasNewHardware) {
@@ -41,18 +41,25 @@ const BootSequence = () => {
       newHardwareLines.push('╚══════════════════════════════════════════╝');
       newHardwareLines.push('');
 
-      // List each new component by category
-      for (const [category, item] of Object.entries(lastAppliedHardware)) {
-        const categoryLabels = {
-          processors: 'CPU',
-          memory: 'Memory',
-          storage: 'Storage',
-          motherboards: 'Motherboard',
-          powerSupplies: 'Power Supply',
-          network: 'Network Adapter'
-        };
-        const label = categoryLabels[category] || category;
-        newHardwareLines.push(`  Installing: ${label} - ${item.name}`);
+      const categoryLabels = {
+        cpu: 'CPU',
+        memory: 'Memory',
+        storage: 'Storage',
+        motherboard: 'Motherboard',
+        powerSupply: 'Power Supply',
+        network: 'Network Adapter',
+      };
+
+      // lastAppliedHardware is an array of { category, item, items } objects
+      for (const upgrade of lastAppliedHardware) {
+        const label = categoryLabels[upgrade.category] || upgrade.category;
+        if (upgrade.item) {
+          newHardwareLines.push(`  Installing: ${label} - ${upgrade.item.name}`);
+        } else if (upgrade.items) {
+          for (const item of upgrade.items) {
+            newHardwareLines.push(`  Installing: ${label} - ${item.name}`);
+          }
+        }
       }
       newHardwareLines.push('');
       newHardwareLines.push('Hardware installation complete!');

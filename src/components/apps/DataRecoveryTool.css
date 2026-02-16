@@ -220,6 +220,19 @@
   text-decoration: line-through;
 }
 
+.data-recovery-file-item.malicious {
+  background: #FFE0F0;
+}
+
+.data-recovery-file-item .malware-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: #8B0000;
+  color: #fff;
+  font-weight: bold;
+}
+
 .data-recovery-file-item .status-icon {
   font-size: 14px;
   min-width: 20px;

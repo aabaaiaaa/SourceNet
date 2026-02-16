@@ -33,8 +33,9 @@ describe('Portal Component', () => {
     // Switch to Hardware tab (Software is default)
     fireEvent.click(screen.getByText('Hardware'));
 
-    // Should show starting CPU as installed
-    expect(screen.getByText('1GHz Single Core')).toBeInTheDocument();
+    // Should show starting CPU (in hardware config and/or items list)
+    const cpuElements = screen.getAllByText('1GHz Single Core');
+    expect(cpuElements.length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('✓ Installed')).toBeInTheDocument();
 
     // Should show other CPUs with prices

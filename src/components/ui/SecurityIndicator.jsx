@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import './SecurityIndicator.css';
 
-const SecurityIndicator = ({ processing, cleanupProgress, threatCount }) => {
+const SecurityIndicator = ({ processing, cleanupProgress, threatCount, avAlerts = [] }) => {
   const [showPreview, setShowPreview] = useState(false);
 
   const statusText = processing ? 'Cleaning threat...' : 'Protected';
   const statusClass = processing ? 'processing' : 'active';
+
+  // Auto-show popup when there are AV alerts
+  const hasAvAlerts = avAlerts.length > 0;
+  const isPopupVisible = showPreview || hasAvAlerts;
 
   return (
     <div
@@ -22,7 +26,7 @@ const SecurityIndicator = ({ processing, cleanupProgress, threatCount }) => {
         <span className="security-progress">{Math.floor(cleanupProgress)}%</span>
       )}
 
-      {showPreview && (
+      {isPopupVisible && (
         <div className="notification-preview security-preview">
           <div className="preview-header">Advanced Firewall & Antivirus</div>
           <div className="security-section">
@@ -49,6 +53,27 @@ const SecurityIndicator = ({ processing, cleanupProgress, threatCount }) => {
               </div>
             )}
           </div>
+
+          {hasAvAlerts && (
+            <div className="av-alerts-section">
+              <div className="security-section-title">Scan Alerts</div>
+              {avAlerts.map((alert) => (
+                <div key={alert.fileName} className={`av-alert-item ${alert.phase}`}>
+                  {alert.phase === 'scanning' ? (
+                    <>
+                      <span className="av-alert-spinner" />
+                      <span className="av-alert-text">Scanning: {alert.fileName}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="av-alert-check">✓</span>
+                      <span className="av-alert-text">Removed: {alert.fileName}</span>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

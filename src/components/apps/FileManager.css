@@ -132,6 +132,15 @@
   font-weight: bold;
 }
 
+.file-malicious {
+  background: #FFE0F0;
+}
+
+.malware-icon {
+  color: #8B0000;
+  font-weight: bold;
+}
+
 .file-name {
   flex: 1;
   min-width: 150px;

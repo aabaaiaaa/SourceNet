@@ -1,15 +1,16 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useGame } from '../../contexts/useGame';
-import { LOCAL_SSD_NETWORK_ID, LOCAL_SSD_BANDWIDTH, LOCAL_SSD_CAPACITY_GB } from '../../constants/gameConstants';
-import { calculateStorageUsed, calculateLocalFilesSize } from '../../systems/StorageSystem';
+import { LOCAL_SSD_NETWORK_ID, LOCAL_SSD_BANDWIDTH } from '../../constants/gameConstants';
+import { calculateStorageUsed, calculateLocalFilesSize, getTotalStorageCapacityGB } from '../../systems/StorageSystem';
 import triggerEventBus from '../../core/triggerEventBus';
 import networkRegistry from '../../systems/NetworkRegistry';
 import { formatTimeRemaining, formatTransferSpeed } from '../../utils/formatUtils';
+import { isKnownMalicious } from '../../systems/MalwareDetectionHelper';
 import './FileManager.css';
 
 const FileManager = () => {
   const game = useGame();
-  const { currentTime, software, username } = game;
+  const { currentTime, software, username, hardware, knownMaliciousFiles } = game;
   const setFileManagerConnections = game.setFileManagerConnections || (() => { });
   const setLastFileOperation = game.setLastFileOperation || (() => { });
   const registerBandwidthOperation = game.registerBandwidthOperation || (() => ({ operationId: null, estimatedTimeMs: 2000 }));
@@ -682,11 +683,12 @@ const FileManager = () => {
 
     // Check for sufficient space when pasting to local SSD
     if (currentNetworkId === LOCAL_SSD_NETWORK_ID) {
+      const localCapacityGB = getTotalStorageCapacityGB(hardware);
       const appsUsed = calculateStorageUsed(software);
       const filesUsed = calculateLocalFilesSize(localSSDFiles);
       const currentUsedGB = appsUsed + filesUsed;
       const pasteFileSizeGB = calculateLocalFilesSize(fileClipboard.files);
-      const freeSpaceGB = LOCAL_SSD_CAPACITY_GB - currentUsedGB;
+      const freeSpaceGB = localCapacityGB - currentUsedGB;
 
       if (pasteFileSizeGB > freeSpaceGB) {
         addLogEntry({
@@ -957,17 +959,21 @@ const FileManager = () => {
                   const stats = fileOperationStats[file.name] || {};
                   const isCrossNetworkPaste = operation === 'paste-cross';
 
+                  const isMalicious = isKnownMalicious(file.name, selectedFileSystem, knownMaliciousFiles || []);
+
                   return (
                     <div
                       key={idx}
                       className={`file-item ${file.corrupted ? 'file-corrupted' : ''
                         } ${file.selected ? 'file-selected' : ''
                         } ${isOperating ? 'file-operating' : ''
+                        } ${isMalicious ? 'file-malicious' : ''
                         }`}
                       onClick={() => !isOperating && handleFileSelect(idx)}
                       style={{ cursor: isOperating ? 'default' : 'pointer' }}
                     >
                       {file.corrupted && <span className="corruption-icon">⚠</span>}
+                      {isMalicious && <span className="malware-icon">☣</span>}
                       <span className="file-name">{file.name}</span>
                       <span className="file-size">{file.size}</span>
 

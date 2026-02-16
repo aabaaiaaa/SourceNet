@@ -180,12 +180,16 @@ const DebugPanel = ({ onClose }) => {
   // Unlock hardware and advanced tools features
   const handleUnlockHardwareFeatures = () => {
     if (gameContext.setUnlockedFeatures) {
+      const allHardwareUnlocks = [
+        'network-adapters', 'cpu-upgrades', 'memory-upgrades',
+        'storage-upgrades', 'motherboard-upgrades', 'power-upgrades',
+      ];
       gameContext.setUnlockedFeatures(prev => {
         const newFeatures = new Set(prev);
-        newFeatures.add('network-adapters');
+        allHardwareUnlocks.forEach(key => newFeatures.add(key));
         return Array.from(newFeatures);
       });
-      showStatus('✅ Unlocked: network-adapters');
+      showStatus('✅ Unlocked: all hardware categories');
     } else {
       showStatus('❌ setUnlockedFeatures not available', true);
     }

@@ -74,3 +74,50 @@
   color: #FFD700;
   font-weight: bold;
 }
+
+/* AV Scan Alerts */
+.av-alerts-section {
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px solid #eee;
+}
+
+.av-alert-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+  font-size: 11px;
+}
+
+.av-alert-item.scanning {
+  color: #FFD700;
+}
+
+.av-alert-item.cleared {
+  color: #32CD32;
+}
+
+.av-alert-spinner {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #FFD700;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: security-spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+.av-alert-check {
+  color: #32CD32;
+  font-weight: bold;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.av-alert-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

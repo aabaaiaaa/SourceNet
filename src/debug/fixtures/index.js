@@ -17,6 +17,7 @@ import scenarioPostHardwareUnlock from './scenario-post-hardware-unlock.save.jso
 import scenarioPostDataDetectiveRecovery from './scenario-post-data-detective-recovery.save.json';
 import scenarioPostDataDetectiveCompletion from './scenario-post-data-detective-completion.save.json';
 import scenarioPreRansomwareTrap from './scenario-pre-ransomware-trap.save.json';
+import scenarioPostRansomwareRecovery from './scenario-post-ransomware-recovery.save.json';
 
 // Export all available scenarios
 export const SCENARIO_FIXTURES = {
@@ -28,6 +29,7 @@ export const SCENARIO_FIXTURES = {
     'post-data-detective-recovery': scenarioPostDataDetectiveRecovery,
     'post-data-detective-completion': scenarioPostDataDetectiveCompletion,
     'pre-ransomware-trap': scenarioPreRansomwareTrap,
+    'post-ransomware-recovery': scenarioPostRansomwareRecovery,
 };
 
 /**

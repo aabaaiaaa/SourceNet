@@ -296,3 +296,191 @@
   font-weight: bold;
   margin-top: 10px;
 }
+
+.hardware-warning {
+  background-color: #fce4ec;
+  border: 1px solid #e53935;
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: #b71c1c;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+/* Hardware Configuration Section */
+.hardware-config {
+  background-color: #1a1a2e;
+  border: 1px solid #333;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: #ccc;
+}
+
+.hw-config-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.hw-config-header:hover {
+  background-color: #222244;
+  border-radius: 4px;
+}
+
+.hw-config-title {
+  font-weight: bold;
+  color: var(--osnet-primary);
+  font-size: 13px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.hw-config-chevron {
+  display: inline-block;
+  margin-right: 6px;
+  font-size: 10px;
+}
+
+.hw-config-summary {
+  color: #999;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hw-config-details {
+  padding: 0 12px 10px 12px;
+}
+
+.hw-config-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+  flex-wrap: wrap;
+}
+
+.hw-config-label {
+  color: #888;
+  min-width: 140px;
+  flex-shrink: 0;
+}
+
+.hw-installed {
+  color: #4CAF50;
+}
+
+.hw-pending {
+  color: #ff9800;
+}
+
+.hw-slot-list {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.hw-slot {
+  font-size: 11px;
+  padding: 1px 4px;
+}
+
+.hw-empty {
+  color: #555;
+}
+
+.hw-power {
+  color: #4CAF50;
+}
+
+.hw-power-over {
+  color: #e53935;
+  font-weight: bold;
+}
+
+/* Hardware sub-tabs (Shop / Spares) */
+.hardware-tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.hw-tab-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--osnet-border);
+  background-color: #f0f0f0;
+  cursor: pointer;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+
+.hw-tab-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.hw-tab-btn.active {
+  background-color: var(--osnet-primary);
+  color: white;
+  border-color: var(--osnet-primary);
+}
+
+/* Spare hardware items */
+.spare-item {
+  background-color: #f5f5f5;
+  border-color: #ccc;
+}
+
+.reinstall-btn {
+  padding: 6px 12px;
+  background: #2196F3;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: bold;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.reinstall-btn:hover {
+  background: #1976D2;
+}
+
+.reinstall-btn:disabled {
+  background: #bbb;
+  cursor: not-allowed;
+}
+
+.sell-btn {
+  padding: 6px 12px;
+  background: #ff9800;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: bold;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.sell-btn:hover {
+  background: #f57c00;
+}
+
+/* Purchase validation */
+.purchase-btn:disabled {
+  background: #bbb;
+  cursor: not-allowed;
+}
+
+.purchase-reason {
+  font-size: 11px;
+  color: #e53935;
+  font-style: italic;
+}

@@ -4,7 +4,7 @@
  * When the Advanced Firewall & Antivirus is running as active passive software,
  * this hook monitors localSSDFiles for files with malware: true.
  * After a CPU-dependent scan delay, it quarantines (removes) the file,
- * sends an alert message, and emits an avThreatDetected event.
+ * marks it as known malicious, and emits events for UI and mission tracking.
  */
 
 import { useEffect, useRef } from 'react';
@@ -31,7 +31,7 @@ const calculateScanDelay = (cpuSpecs) => {
  * @param {string} params.cpuSpecs - CPU specs string
  * @param {number} params.timeSpeed - Current game time speed
  * @param {function} params.removeFileFromLocalSSD - Function to remove a file
- * @param {function} params.addMessage - Function to add a message
+ * @param {function} params.addKnownMaliciousFile - Function to mark a file as known malicious
  */
 export const useAntivirusScanner = ({
   activePassiveSoftware,
@@ -39,7 +39,7 @@ export const useAntivirusScanner = ({
   cpuSpecs,
   timeSpeed,
   removeFileFromLocalSSD,
-  addMessage,
+  addKnownMaliciousFile,
 }) => {
   // Track files already scanned or currently being scanned (by name + source key)
   const scannedFilesRef = useRef(new Set());
@@ -73,47 +73,36 @@ export const useAntivirusScanner = ({
 
       const delay = calculateScanDelay(cpuSpecs);
 
+      // Emit scan started event for SecurityIndicator
+      triggerEventBus.emit('avScanStarted', {
+        fileName: file.name,
+        sourceFileSystemId: file.sourceFileSystemId || null,
+      });
+
       const timerId = scheduleGameTimeCallback(() => {
         activeTimersRef.current.delete(timerId);
 
+        // Mark as known malicious
+        addKnownMaliciousFile(file.name, file.sourceFileSystemId || null);
+
         // Quarantine: remove from local SSD
         removeFileFromLocalSSD(file.name);
-
-        // Send AV alert message
-        addMessage({
-          id: `av-alert-${file.name}-${Date.now()}`,
-          from: 'Advanced Firewall & Antivirus',
-          fromId: 'SNET-AV-001',
-          fromName: 'Advanced Firewall & Antivirus',
-          subject: `Threat Detected: ${file.name}`,
-          body: `THREAT ALERT
-
-A malicious file has been detected and quarantined on your local SSD.
-
-File: ${file.name}
-Size: ${file.size || 'Unknown'}
-Status: QUARANTINED (removed from local storage)
-
-The file has been securely removed from your system. No further action is required.
-
-If this file was part of a mission, check if additional cleanup is needed on remote servers.
-
-- Advanced Firewall & Antivirus`,
-          timestamp: null,
-          read: false,
-          archived: false,
-        });
 
         // Emit event for mission objective tracking
         triggerEventBus.emit('avThreatDetected', {
           fileName: file.name,
           fileSystemId: file.sourceFileSystemId || null,
         });
+
+        // Emit event for SecurityIndicator to show "cleared"
+        triggerEventBus.emit('avThreatCleared', {
+          fileName: file.name,
+        });
       }, delay, timeSpeed);
 
       activeTimersRef.current.add(timerId);
     });
-  }, [isAvActive, localSSDFiles, cpuSpecs, timeSpeed, removeFileFromLocalSSD, addMessage]);
+  }, [isAvActive, localSSDFiles, cpuSpecs, timeSpeed, removeFileFromLocalSSD, addKnownMaliciousFile]);
 
   // Cleanup on unmount
   useEffect(() => {

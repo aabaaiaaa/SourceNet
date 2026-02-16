@@ -7,10 +7,11 @@ import {
   getDiscoveredDeletedFiles,
   calculateOperationDuration,
 } from '../../systems/DataRecoverySystem';
+import { isKnownMalicious } from '../../systems/MalwareDetectionHelper';
 import './DataRecoveryTool.css';
 
 const DataRecoveryTool = () => {
-  const { activeConnections, currentTime, discoveredDevices } = useGame();
+  const { activeConnections, currentTime, discoveredDevices, knownMaliciousFiles } = useGame();
 
   // State
   const [selectedFileSystem, setSelectedFileSystem] = useState('');
@@ -533,19 +534,23 @@ const DataRecoveryTool = () => {
                     const isOperating = operatingFiles.has(file.name);
                     const progress = operationProgress[file.name] || 0;
                     const operation = operationTypes[file.name];
+                    const isMalicious = isKnownMalicious(file.name, selectedFileSystem, knownMaliciousFiles || []);
 
                     return (
                       <div
                         key={file.name}
-                        className={`data-recovery-file-item ${isDeleted ? 'deleted' : ''} ${isSelected ? 'selected' : ''} ${isOperating ? 'operating' : ''}`}
+                        className={`data-recovery-file-item ${isDeleted ? 'deleted' : ''} ${isSelected ? 'selected' : ''} ${isOperating ? 'operating' : ''} ${isMalicious ? 'malicious' : ''}`}
                         onClick={() => !isOperating && handleFileSelect(file.name)}
                         style={{ cursor: isOperating ? 'default' : 'pointer' }}
                       >
                         <span className="status-icon">
-                          {isDeleted ? '🗑️' : '📄'}
+                          {isMalicious ? '☣️' : isDeleted ? '🗑️' : '📄'}
                         </span>
                         <span className="file-name">{file.name}</span>
                         <span className="file-size">{file.size}</span>
+                        {isMalicious && (
+                          <span className="malware-badge">MALICIOUS</span>
+                        )}
                         <span className={`file-status ${isDeleted ? 'deleted' : 'normal'}`}>
                           {isDeleted ? 'DELETED' : 'NORMAL'}
                         </span>

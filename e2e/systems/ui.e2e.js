@@ -162,7 +162,7 @@ test.describe('Portal Navigation', () => {
 
         // Browse Motherboards category
         await page.click('button:has-text("Motherboards")');
-        await expect(page.locator('text=Basic Board')).toBeVisible();
+        await expect(page.locator('.item-name:has-text("Basic Board")').first()).toBeVisible();
 
         console.log('✅ E2E: Portal hardware categories browsing');
     });

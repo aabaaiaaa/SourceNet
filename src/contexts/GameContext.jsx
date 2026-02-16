@@ -40,6 +40,7 @@ import { shouldTriggerExtension, generateExtension, getObjectiveProgress } from 
 import { checkObjectiveImpossible } from '../missions/ObjectiveTracker';
 import networkRegistry from '../systems/NetworkRegistry';
 import { applyPendingHardware } from '../systems/HardwareInstallationSystem';
+import { getTotalStorageCapacityGB, trimFilesToFitCapacity } from '../systems/StorageSystem';
 import { useAntivirusScanner } from '../systems/useAntivirusScanner';
 
 export const GameContext = createContext();
@@ -150,6 +151,9 @@ export const GameProvider = ({ children }) => {
   // Local SSD files (files stored on the player's terminal)
   const [localSSDFiles, setLocalSSDFiles] = useState([]);
 
+  // Known malicious files detected by antivirus (array of {fileName, sourceFileSystemId})
+  const [knownMaliciousFiles, setKnownMaliciousFiles] = useState([]);
+
   // Auto-tracking control (can be disabled for testing)
   const [autoTrackingEnabled, setAutoTrackingEnabled] = useState(true);
 
@@ -173,6 +177,7 @@ export const GameProvider = ({ children }) => {
   const [unlockedFeatures, setUnlockedFeatures] = useState([]); // Array of unlocked feature IDs (e.g., 'network-adapters')
   const [pendingHardwareUpgrades, setPendingHardwareUpgrades] = useState({}); // Hardware queued for install on reboot
   const [lastAppliedHardware, setLastAppliedHardware] = useState([]); // Hardware applied in last reboot (for boot message)
+  const [spareHardware, setSpareHardware] = useState([]); // Removed hardware items available for re-install or sale
 
   // ===== FUTURE CONTENT TEASE SYSTEM =====
   const [creditThresholdForDecryption, setCreditThresholdForDecryption] = useState(null); // Credit threshold for decryption tease message
@@ -312,12 +317,60 @@ export const GameProvider = ({ children }) => {
     }
   }, [lastFileOperation, activeMission]);
 
+  // Sync decryption/upload operations to state when events fire (so MissionBoard can display progress)
+  useEffect(() => {
+    const handleDecryptionComplete = (data) => {
+      if (data.fileName && activeMission) {
+        setMissionDecryptionOperations(prev => {
+          const newDecrypted = new Set(prev.decrypted);
+          newDecrypted.add(data.fileName);
+          return { ...prev, decrypted: newDecrypted };
+        });
+      }
+    };
+
+    const handleUploadComplete = (data) => {
+      if (data.fileName && activeMission) {
+        setMissionUploadOperations(prev => {
+          const newUploaded = new Set(prev.uploaded);
+          newUploaded.add(data.fileName);
+          const newDestinations = new Map(prev.uploadDestinations);
+          if (data.destinationIp) {
+            newDestinations.set(data.fileName, data.destinationIp);
+          }
+          return { ...prev, uploaded: newUploaded, uploadDestinations: newDestinations };
+        });
+      }
+    };
+
+    const handleAvThreatDetected = (data) => {
+      if (data.fileName && activeMission) {
+        setMissionAvDetections(prev => {
+          const next = new Set(prev);
+          next.add(data.fileName);
+          return next;
+        });
+      }
+    };
+
+    triggerEventBus.on('fileDecryptionComplete', handleDecryptionComplete);
+    triggerEventBus.on('fileUploadComplete', handleUploadComplete);
+    triggerEventBus.on('avThreatDetected', handleAvThreatDetected);
+
+    return () => {
+      triggerEventBus.off('fileDecryptionComplete', handleDecryptionComplete);
+      triggerEventBus.off('fileUploadComplete', handleUploadComplete);
+      triggerEventBus.off('avThreatDetected', handleAvThreatDetected);
+    };
+  }, [activeMission]);
+
   // Reset cumulative file operations when mission changes
   useEffect(() => {
     console.log('🔄 Mission changed, resetting missionFileOperations');
     setMissionFileOperations({});
     setMissionDecryptionOperations({ decrypted: new Set() });
     setMissionUploadOperations({ uploaded: new Set(), uploadDestinations: new Map() });
+    setMissionAvDetections(new Set());
   }, [activeMission?.missionId]);
 
   // Initialize procedural missions when "Better" message is read (after tutorial-part-2)
@@ -1283,6 +1336,17 @@ export const GameProvider = ({ children }) => {
   // Replace a file on local SSD (for decryption: replace .enc with decrypted version)
   const replaceFileOnLocalSSD = useCallback((oldName, newFile) => {
     setLocalSSDFiles((prev) => prev.map(f => f.name === oldName ? newFile : f));
+  }, []);
+
+  // Add a known malicious file (deduplicates by fileName + sourceFileSystemId)
+  const addKnownMaliciousFile = useCallback((fileName, sourceFileSystemId) => {
+    setKnownMaliciousFiles((prev) => {
+      const exists = prev.some(
+        (f) => f.fileName === fileName && f.sourceFileSystemId === sourceFileSystemId
+      );
+      if (exists) return prev;
+      return [...prev, { fileName, sourceFileSystemId }];
+    });
   }, []);
 
   const closeWindow = useCallback((windowId) => {
@@ -2497,7 +2561,7 @@ export const GameProvider = ({ children }) => {
     cpuSpecs: hardware?.cpu?.specs || '1GHz, 1 core',
     timeSpeed,
     removeFileFromLocalSSD,
-    addMessage,
+    addKnownMaliciousFile,
   });
 
   // Scripted event execution - listen for and execute scripted events
@@ -2921,11 +2985,14 @@ export const GameProvider = ({ children }) => {
       extensionOffers,
       // Local SSD files
       localSSDFiles,
+      // Known malicious files detected by AV
+      knownMaliciousFiles,
       // Hardware unlock system
       betterMessageRead,
       hardwareUnlockMessageSent,
       unlockedFeatures,
       pendingHardwareUpgrades,
+      spareHardware,
       // Future content tease system
       creditThresholdForDecryption,
       decryptionMessageSent,
@@ -2948,18 +3015,38 @@ export const GameProvider = ({ children }) => {
     reputation, reputationCountdown, activeMission, completedMissions, availableMissions, missionCooldowns,
     activeConnections, lastScanResults, discoveredDevices, fileManagerConnections, lastFileOperation,
     downloadQueue, transactions, licensedSoftware, bankruptcyCountdown, lastInterestTime, bankingMessagesSent, reputationMessagesSent,
-    proceduralMissionsEnabled, missionPool, pendingChainMissions, activeClientIds, clientStandings, extensionOffers, localSSDFiles,
-    betterMessageRead, hardwareUnlockMessageSent, unlockedFeatures, pendingHardwareUpgrades, creditThresholdForDecryption, decryptionMessageSent,
+    proceduralMissionsEnabled, missionPool, pendingChainMissions, activeClientIds, clientStandings, extensionOffers, localSSDFiles, knownMaliciousFiles,
+    betterMessageRead, hardwareUnlockMessageSent, unlockedFeatures, pendingHardwareUpgrades, spareHardware, creditThresholdForDecryption, decryptionMessageSent,
     decryptionAlgorithms, missionDecryptionOperations, missionUploadOperations, missionAvDetections, activePassiveSoftware]);
 
   // Reboot system - also applies any pending hardware upgrades
   const rebootSystem = useCallback(() => {
     // Apply pending hardware upgrades if any
     if (Object.keys(pendingHardwareUpgrades).length > 0) {
-      const { newHardware, appliedUpgrades } = applyPendingHardware(hardware, pendingHardwareUpgrades);
+      const { newHardware, appliedUpgrades, removedHardware } = applyPendingHardware(hardware, pendingHardwareUpgrades);
       setHardware(newHardware);
       setLastAppliedHardware(appliedUpgrades);
       setPendingHardwareUpgrades({});
+
+      // Add removed hardware to spares
+      if (removedHardware.length > 0) {
+        setSpareHardware(prev => [...prev, ...removedHardware]);
+        console.log('🔧 Moved to spares:', removedHardware.map(h => h.name).join(', '));
+      }
+
+      // Check if storage capacity decreased - trim files if needed
+      const newCapacity = getTotalStorageCapacityGB(newHardware);
+      const oldCapacity = getTotalStorageCapacityGB(hardware);
+      if (newCapacity < oldCapacity) {
+        setLocalSSDFiles(prevFiles => {
+          const { trimmedFiles, removedFiles } = trimFilesToFitCapacity(prevFiles, software, newCapacity);
+          if (removedFiles.length > 0) {
+            console.log(`🗑️ Trimmed ${removedFiles.length} file(s) due to reduced storage capacity`);
+          }
+          return trimmedFiles;
+        });
+      }
+
       console.log('🔧 Applied pending hardware upgrades:', appliedUpgrades.map(u => u.item?.name || u.items?.map(i => i.name).join(', ')));
     } else {
       setLastAppliedHardware([]);
@@ -2974,7 +3061,7 @@ export const GameProvider = ({ children }) => {
     setIsPaused(true);
     // Go to reboot animation phase
     setGamePhase('rebooting');
-  }, [hardware, pendingHardwareUpgrades]);
+  }, [hardware, pendingHardwareUpgrades, software]);
 
   // Reset game state for new game
   const resetGame = useCallback(() => {
@@ -3041,6 +3128,7 @@ export const GameProvider = ({ children }) => {
     setUnlockedFeatures([]);
     setPendingHardwareUpgrades({});
     setLastAppliedHardware([]);
+    setSpareHardware([]);
     // Reset future content tease system
     setCreditThresholdForDecryption(null);
     setDecryptionMessageSent(false);
@@ -3149,12 +3237,16 @@ export const GameProvider = ({ children }) => {
     // Restore local SSD files
     setLocalSSDFiles(gameState.localSSDFiles ?? []);
 
+    // Restore known malicious files
+    setKnownMaliciousFiles(gameState.knownMaliciousFiles ?? []);
+
     // Restore hardware unlock system
     setBetterMessageRead(gameState.betterMessageRead ?? false);
     setHardwareUnlockMessageSent(gameState.hardwareUnlockMessageSent ?? false);
     setUnlockedFeatures(gameState.unlockedFeatures ?? []);
     setPendingHardwareUpgrades(gameState.pendingHardwareUpgrades ?? {});
     setLastAppliedHardware([]); // Don't restore - only set during reboot
+    setSpareHardware(gameState.spareHardware ?? []);
 
     // Restore future content tease system
     setCreditThresholdForDecryption(gameState.creditThresholdForDecryption ?? null);
@@ -3334,6 +3426,10 @@ export const GameProvider = ({ children }) => {
     removeFileFromLocalSSD,
     replaceFileOnLocalSSD,
 
+    // Known malicious files
+    knownMaliciousFiles,
+    addKnownMaliciousFile,
+
     // Decryption System
     decryptionAlgorithms,
     setDecryptionAlgorithms,
@@ -3372,6 +3468,8 @@ export const GameProvider = ({ children }) => {
     pendingHardwareUpgrades,
     setPendingHardwareUpgrades,
     lastAppliedHardware,
+    spareHardware,
+    setSpareHardware,
 
     // Actions
     initializePlayer,

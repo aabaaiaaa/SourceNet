@@ -14,6 +14,7 @@ import {
   getDecryptedFile,
 } from '../../systems/DecryptionSystem';
 import { parseFileSizeToMB } from '../../systems/DataRecoverySystem';
+import { isKnownMalicious } from '../../systems/MalwareDetectionHelper';
 import './DecryptionTool.css';
 
 const GRID_ROWS = 15;
@@ -32,6 +33,7 @@ const DecryptionTool = () => {
     replaceFileOnLocalSSD,
     registerBandwidthOperation,
     completeBandwidthOperation,
+    knownMaliciousFiles,
   } = useGame();
 
   // State
@@ -298,8 +300,8 @@ const DecryptionTool = () => {
         completeBandwidthOperation(opId);
         activeBandwidthOpRef.current = null;
       }
-      // Add encrypted file to local SSD
-      addFileToLocalSSD({ ...selectedFileObj });
+      // Add encrypted file to local SSD (with source info for AV tracking)
+      addFileToLocalSSD({ ...selectedFileObj, sourceFileSystemId: selectedFileSystem });
       setPhase('idle');
     });
   };
@@ -516,11 +518,12 @@ const DecryptionTool = () => {
                         const filePhase = getFilePhase(file);
                         const isSelected = selectedFile === file.name;
                         const isActive = phase !== 'idle' && selectedFile === file.name;
+                        const isMalicious = isKnownMalicious(file.name, selectedFileSystem, knownMaliciousFiles || []);
 
                         return (
                           <div
                             key={file.name}
-                            className={`decryption-file-item ${isSelected ? 'selected' : ''}`}
+                            className={`decryption-file-item ${isSelected ? 'selected' : ''} ${isMalicious ? 'malicious' : ''}`}
                             onClick={() => handleFileSelect(file.name)}
                             style={{ cursor: phase !== 'idle' ? 'default' : 'pointer' }}
                           >
@@ -529,6 +532,9 @@ const DecryptionTool = () => {
                             <span className="file-size">{file.size}</span>
                             {file.algorithm && (
                               <span className="file-algorithm">{getAlgorithmName(file.algorithm)}</span>
+                            )}
+                            {isMalicious && (
+                              <span className="malware-badge">☣ MALICIOUS</span>
                             )}
                             <span className={`file-phase ${filePhase}`}>
                               {filePhase.toUpperCase()}

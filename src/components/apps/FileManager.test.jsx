@@ -272,3 +272,69 @@ describe('FileManager Component - Repair UI', () => {
     expect(repairButton).toBeDisabled();
   });
 });
+
+describe('FileManager Component - Malware Indicators', () => {
+  beforeEach(() => {
+    triggerEventBus.clear();
+    networkRegistry.reset();
+
+    // Set up NetworkRegistry with file system containing files
+    networkRegistry.addNetwork('test-network', 'Test Network');
+    networkRegistry.addDevice('test-network', {
+      ip: '192.168.50.10',
+      name: 'fileserver-01',
+      accessible: true,
+    });
+    networkRegistry.addFileSystem('192.168.50.10', { name: 'clean-file.txt', size: '1 KB', corrupted: false });
+    networkRegistry.addFileSystem('192.168.50.10', { name: 'malware.db', size: '5 KB', corrupted: false });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    triggerEventBus.clear();
+    networkRegistry.reset();
+  });
+
+  it('should show malware icon for files matching knownMaliciousFiles', () => {
+    vi.spyOn(useGameModule, 'useGame').mockReturnValue({
+      activeConnections: [{ networkId: 'test-network', networkName: 'Test Network' }],
+      discoveredDevices: { 'test-network': new Set(['192.168.50.10']) },
+      fileClipboard: { files: [], sourceFileSystemId: '', sourceNetworkId: '' },
+      setFileClipboard: vi.fn(),
+      setFileManagerConnections: vi.fn(),
+      setLastFileOperation: vi.fn(),
+      registerBandwidthOperation: vi.fn(() => ({ operationId: 'test-op', estimatedTimeMs: 2000 })),
+      completeBandwidthOperation: vi.fn(),
+      knownMaliciousFiles: [{ fileName: 'malware.db', sourceFileSystemId: null }],
+    });
+
+    renderWithProvider(<FileManager />);
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: '192.168.50.10' } });
+
+    // Should render the malware icon for the malicious file
+    const malwareIcons = screen.getAllByText('☣');
+    expect(malwareIcons.length).toBe(1);
+  });
+
+  it('should NOT show malware icon for clean files', () => {
+    vi.spyOn(useGameModule, 'useGame').mockReturnValue({
+      activeConnections: [{ networkId: 'test-network', networkName: 'Test Network' }],
+      discoveredDevices: { 'test-network': new Set(['192.168.50.10']) },
+      fileClipboard: { files: [], sourceFileSystemId: '', sourceNetworkId: '' },
+      setFileClipboard: vi.fn(),
+      setFileManagerConnections: vi.fn(),
+      setLastFileOperation: vi.fn(),
+      registerBandwidthOperation: vi.fn(() => ({ operationId: 'test-op', estimatedTimeMs: 2000 })),
+      completeBandwidthOperation: vi.fn(),
+      knownMaliciousFiles: [{ fileName: 'unrelated-malware.db', sourceFileSystemId: null }],
+    });
+
+    renderWithProvider(<FileManager />);
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: '192.168.50.10' } });
+
+    // Should not render any malware icons
+    expect(screen.queryByText('☣')).not.toBeInTheDocument();
+  });
+});

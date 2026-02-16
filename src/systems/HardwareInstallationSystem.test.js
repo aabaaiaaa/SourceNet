@@ -69,12 +69,14 @@ describe('HardwareInstallationSystem', () => {
                 network: { id: 'net-1gb', name: '1Gb Network Card', bandwidth: 125 },
             };
 
-            const { newHardware, appliedUpgrades } = applyPendingHardware(hardware, pending);
+            const { newHardware, appliedUpgrades, removedHardware } = applyPendingHardware(hardware, pending);
 
             expect(newHardware.network).toEqual(pending.network);
             expect(appliedUpgrades).toHaveLength(1);
             expect(appliedUpgrades[0].category).toBe('network');
             expect(appliedUpgrades[0].item).toEqual(pending.network);
+            expect(removedHardware).toHaveLength(1);
+            expect(removedHardware[0].id).toBe('net-100mb');
         });
 
         it('should apply cpu hardware upgrade', () => {
@@ -83,34 +85,62 @@ describe('HardwareInstallationSystem', () => {
                 cpu: { id: 'cpu-8core', name: '8-Core Processor' },
             };
 
-            const { newHardware, appliedUpgrades } = applyPendingHardware(hardware, pending);
+            const { newHardware, appliedUpgrades, removedHardware } = applyPendingHardware(hardware, pending);
 
             expect(newHardware.cpu).toEqual(pending.cpu);
             expect(appliedUpgrades[0].category).toBe('cpu');
+            expect(removedHardware).toHaveLength(1);
+            expect(removedHardware[0].id).toBe('cpu-4core');
         });
 
-        it('should apply memory hardware upgrade (as array)', () => {
-            const hardware = { memory: [{ id: 'mem-8gb', name: '8GB DDR4' }] };
+        it('should merge memory (existing + pending)', () => {
+            const hardware = {
+                memory: [{ id: 'mem-8gb', name: '8GB DDR4' }],
+                motherboard: { memorySlots: 4 },
+            };
             const pending = {
                 memory: [{ id: 'mem-16gb', name: '16GB DDR5' }],
             };
 
             const { newHardware, appliedUpgrades } = applyPendingHardware(hardware, pending);
 
-            expect(newHardware.memory).toEqual(pending.memory);
+            // Merged: both old and new present
+            expect(newHardware.memory).toHaveLength(2);
+            expect(newHardware.memory[0].id).toBe('mem-8gb');
+            expect(newHardware.memory[1].id).toBe('mem-16gb');
             expect(appliedUpgrades[0].category).toBe('memory');
         });
 
-        it('should apply storage hardware upgrade (as array)', () => {
-            const hardware = { storage: [{ id: 'ssd-500gb', name: '500GB SSD' }] };
+        it('should merge storage (existing + pending)', () => {
+            const hardware = {
+                storage: [{ id: 'ssd-500gb', name: '500GB SSD' }],
+                motherboard: { storageSlots: 3 },
+            };
             const pending = {
                 storage: [{ id: 'ssd-2tb', name: '2TB SSD' }],
             };
 
             const { newHardware, appliedUpgrades } = applyPendingHardware(hardware, pending);
 
-            expect(newHardware.storage).toEqual(pending.storage);
+            expect(newHardware.storage).toHaveLength(2);
+            expect(newHardware.storage[0].id).toBe('ssd-500gb');
+            expect(newHardware.storage[1].id).toBe('ssd-2tb');
             expect(appliedUpgrades[0].category).toBe('storage');
+        });
+
+        it('should trim memory to motherboard slot limit', () => {
+            const hardware = {
+                memory: [{ id: 'mem-a', name: 'A' }, { id: 'mem-b', name: 'B' }],
+                motherboard: { memorySlots: 2 },
+            };
+            const pending = {
+                memory: [{ id: 'mem-c', name: 'C' }],
+            };
+
+            const { newHardware, removedHardware } = applyPendingHardware(hardware, pending);
+
+            expect(newHardware.memory).toHaveLength(2);
+            expect(removedHardware.some(r => r.id === 'mem-c')).toBe(true);
         });
 
         it('should apply motherboard hardware upgrade', () => {
@@ -119,10 +149,11 @@ describe('HardwareInstallationSystem', () => {
                 motherboard: { id: 'mb-gaming', name: 'Gaming Motherboard' },
             };
 
-            const { newHardware, appliedUpgrades } = applyPendingHardware(hardware, pending);
+            const { newHardware, appliedUpgrades, removedHardware } = applyPendingHardware(hardware, pending);
 
             expect(newHardware.motherboard).toEqual(pending.motherboard);
             expect(appliedUpgrades[0].category).toBe('motherboard');
+            expect(removedHardware).toHaveLength(1);
         });
 
         it('should apply power supply hardware upgrade', () => {
@@ -131,10 +162,11 @@ describe('HardwareInstallationSystem', () => {
                 powerSupply: { id: 'psu-750w', name: '750W PSU' },
             };
 
-            const { newHardware, appliedUpgrades } = applyPendingHardware(hardware, pending);
+            const { newHardware, appliedUpgrades, removedHardware } = applyPendingHardware(hardware, pending);
 
             expect(newHardware.powerSupply).toEqual(pending.powerSupply);
             expect(appliedUpgrades[0].category).toBe('powerSupply');
+            expect(removedHardware).toHaveLength(1);
         });
 
         it('should apply multiple pending upgrades at once', () => {
@@ -175,6 +207,15 @@ describe('HardwareInstallationSystem', () => {
 
             expect(hardware.network.id).toBe(originalNetworkId);
             expect(newHardware).not.toBe(hardware);
+        });
+
+        it('should not add to removedHardware when replacing same item', () => {
+            const hardware = { cpu: { id: 'cpu-same', name: 'Same CPU' } };
+            const pending = { cpu: { id: 'cpu-same', name: 'Same CPU' } };
+
+            const { removedHardware } = applyPendingHardware(hardware, pending);
+
+            expect(removedHardware).toHaveLength(0);
         });
     });
 
