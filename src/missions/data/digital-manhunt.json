@@ -1,0 +1,302 @@
+{
+  "missionId": "digital-manhunt",
+  "title": "Digital Manhunt",
+  "description": "SourceNet has enough intel to track the threat actor group back through their own infrastructure. Follow the trail, hop by hop, using every tool at your disposal.",
+  "client": "SourceNet Operations",
+  "difficulty": "Extreme",
+  "basePayout": 25000,
+  "oneTime": true,
+  "category": "investigation",
+
+  "triggers": {
+    "start": {
+      "type": "timeSinceEvent",
+      "event": "missionComplete",
+      "condition": { "missionId": "lockdown" },
+      "delay": 30000,
+      "introMessage": {
+        "delay": 0,
+        "from": "SourceNet Manager",
+        "fromId": "SNET-MGR-HUNT-CREDS",
+        "fromName": "SourceNet Manager {managerName}",
+        "subject": "DarkNode-Alpha Credentials",
+        "body": "Credentials for the first node are attached. Add them to your NAR and connect through your relay chain.\n\n- {managerName}",
+        "attachments": [
+          {
+            "type": "networkAddress",
+            "networkId": "darknode-alpha",
+            "networkName": "DarkNode-Alpha",
+            "address": "10.99.1.0/24",
+            "deviceIps": ["10.99.1.5"]
+          }
+        ]
+      }
+    }
+  },
+
+  "requirements": {
+    "software": ["vpn-client", "network-scanner", "file-manager", "password-cracker", "network-sniffer", "vpn-relay-upgrade", "trace-monitor", "log-viewer"]
+  },
+
+  "briefingMessage": {
+    "from": "SourceNet Manager",
+    "fromId": "SNET-MGR-HUNT",
+    "fromName": "SourceNet Manager {managerName}",
+    "subject": "Digital Manhunt - We Have a Lead",
+    "body": "Dear {username},\n\nThis is it. We've compiled enough intelligence from MetroLink, Coastal Power, and Pacific Freight to map the threat actor group's relay infrastructure.\n\nThey use the same techniques we do — bouncing through relay nodes to hide their origin. But they made mistakes. Left digital breadcrumbs at each hop.\n\nYour mission: follow the trail through their relay infrastructure. Each node needs to be compromised — crack credentials, decrypt data, and find the connection to the next hop. Work your way back to their origin.\n\nThis will test every tool you have:\n- Relay chains for your own protection\n- Trace Monitor to stay ahead\n- Network Sniffer for traffic analysis\n- Password Cracker for protected evidence\n- Log Viewer for investigation\n\nI've mapped their first node. Accept the mission and I'll send you the credentials.\n\nFind them.\n\n- {managerName}",
+    "attachments": []
+  },
+
+  "networks": [
+    {
+      "networkId": "darknode-alpha",
+      "networkName": "DarkNode-Alpha",
+      "address": "10.99.1.0/24",
+      "bandwidth": 40,
+      "hostile": true,
+      "revokeOnComplete": true,
+      "revokeReason": "Mission access expired",
+      "fileSystems": [
+        {
+          "id": "fs-alpha-relay",
+          "name": "relay-alpha",
+          "ip": "10.99.1.5",
+          "files": [
+            { "name": "connection-logs.db", "size": "5 MB", "passwordProtected": true, "hashType": "sha256" },
+            { "name": "routing-config.ini", "size": "0.5 MB" },
+            { "name": "next-hop-credentials.enc", "size": "1 MB", "encrypted": true, "algorithm": "aes-256" }
+          ],
+          "logs": [
+            { "type": "remote", "action": "connect", "user": "darkops", "note": "Routine check", "timestamp": "2020-03-23T14:00:00Z" },
+            { "type": "file", "action": "modify", "user": "darkops", "note": "Updated routing config", "timestamp": "2020-03-23T14:05:00Z" },
+            { "type": "remote", "action": "connect", "user": "darkops", "note": "Outbound connection to 10.99.2.0/24", "timestamp": "2020-03-24T01:30:00Z" }
+          ]
+        }
+      ]
+    },
+    {
+      "networkId": "darknode-beta",
+      "networkName": "DarkNode-Beta",
+      "address": "10.99.2.0/24",
+      "bandwidth": 30,
+      "hostile": true,
+      "revokeOnComplete": true,
+      "revokeReason": "Mission access expired",
+      "fileSystems": [
+        {
+          "id": "fs-beta-relay",
+          "name": "relay-beta",
+          "ip": "10.99.2.5",
+          "files": [
+            { "name": "traffic-captures.pcap", "size": "20 MB" },
+            { "name": "operator-notes.txt", "size": "0.2 MB", "passwordProtected": true, "hashType": "md5" },
+            { "name": "origin-address.dat", "size": "0.1 MB" }
+          ],
+          "logs": [
+            { "type": "remote", "action": "connect", "user": "darkops", "note": "C2 beacon check", "timestamp": "2020-03-24T02:00:00Z" },
+            { "type": "file", "action": "create", "user": "darkops", "note": "Stored traffic captures", "timestamp": "2020-03-24T02:10:00Z" },
+            { "type": "remote", "action": "connect", "user": "darkops", "note": "Outbound to origin: 10.99.3.0/24", "timestamp": "2020-03-24T03:00:00Z" }
+          ]
+        }
+      ]
+    },
+    {
+      "networkId": "darknode-origin",
+      "networkName": "DarkNode-Origin",
+      "address": "10.99.3.0/24",
+      "bandwidth": 20,
+      "hostile": true,
+      "revokeOnComplete": true,
+      "revokeReason": "Mission access expired",
+      "fileSystems": [
+        {
+          "id": "fs-origin-cc",
+          "name": "command-center",
+          "ip": "10.99.3.1",
+          "files": [
+            { "name": "target-list.db", "size": "10 MB", "passwordProtected": true, "hashType": "sha256" },
+            { "name": "operation-plan.pdf", "size": "3 MB" },
+            { "name": "member-identities.zip", "size": "5 MB", "passwordProtected": true, "hashType": "bcrypt" },
+            { "name": "financial-records.csv", "size": "2 MB" }
+          ],
+          "logs": [
+            { "type": "remote", "action": "connect", "user": "shadowlead", "note": "Strategic planning session", "timestamp": "2020-03-24T10:00:00Z" },
+            { "type": "file", "action": "modify", "user": "shadowlead", "note": "Updated target list", "timestamp": "2020-03-24T10:30:00Z" },
+            { "type": "file", "action": "create", "user": "shadowlead", "note": "New operation plan uploaded", "timestamp": "2020-03-24T11:00:00Z" }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "objectives": [
+    {
+      "id": "obj-connect-alpha",
+      "description": "Connect to DarkNode-Alpha through relay chain",
+      "type": "networkConnection",
+      "target": "darknode-alpha"
+    },
+    {
+      "id": "obj-crack-alpha-logs",
+      "description": "Crack the connection logs on relay-alpha",
+      "type": "passwordCrack",
+      "targetFiles": ["connection-logs.db"]
+    },
+    {
+      "id": "obj-decrypt-next-hop",
+      "description": "Decrypt the next-hop credentials file",
+      "type": "fileDecryption",
+      "targetFiles": ["next-hop-credentials.enc"]
+    }
+  ],
+
+  "scriptedEvents": [
+    {
+      "id": "evt-trace-alpha",
+      "trigger": {
+        "type": "afterObjectiveComplete",
+        "objectiveId": "obj-connect-alpha",
+        "delay": 3000
+      },
+      "actions": [
+        {
+          "type": "startTrace",
+          "totalETT": 600000
+        }
+      ]
+    },
+    {
+      "id": "evt-beta-credentials",
+      "trigger": {
+        "type": "afterObjectiveComplete",
+        "objectiveId": "obj-decrypt-next-hop",
+        "requiredObjectives": ["obj-crack-alpha-logs"],
+        "delay": 2000
+      },
+      "actions": [
+        {
+          "type": "sendMessage",
+          "eventId": "msg-beta-credentials",
+          "templateId": "manhunt-beta-discovered",
+          "message": {
+            "id": "msg-beta-credentials",
+            "templateId": "manhunt-beta-discovered",
+            "attachments": [
+              {
+                "type": "networkAddress",
+                "networkId": "darknode-beta",
+                "networkName": "DarkNode-Beta",
+                "address": "10.99.2.0/24",
+                "deviceIps": ["10.99.2.5"]
+              }
+            ]
+          }
+        },
+        {
+          "type": "addExtensionObjectives",
+          "objectives": [
+            {
+              "id": "obj-connect-beta",
+              "description": "Follow the trail to DarkNode-Beta",
+              "type": "networkConnection",
+              "target": "darknode-beta"
+            },
+            {
+              "id": "obj-crack-operator-notes",
+              "description": "Crack operator-notes.txt on relay-beta",
+              "type": "passwordCrack",
+              "targetFiles": ["operator-notes.txt"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt-origin-credentials",
+      "trigger": {
+        "type": "afterObjectiveComplete",
+        "objectiveId": "obj-crack-operator-notes",
+        "delay": 2000
+      },
+      "actions": [
+        {
+          "type": "sendMessage",
+          "eventId": "msg-origin-credentials",
+          "templateId": "manhunt-origin-discovered",
+          "message": {
+            "id": "msg-origin-credentials",
+            "templateId": "manhunt-origin-discovered",
+            "attachments": [
+              {
+                "type": "networkAddress",
+                "networkId": "darknode-origin",
+                "networkName": "DarkNode-Origin",
+                "address": "10.99.3.0/24",
+                "deviceIps": ["10.99.3.1"]
+              }
+            ]
+          }
+        },
+        {
+          "type": "addExtensionObjectives",
+          "objectives": [
+            {
+              "id": "obj-connect-origin",
+              "description": "Reach the origin: DarkNode-Origin",
+              "type": "networkConnection",
+              "target": "darknode-origin"
+            },
+            {
+              "id": "obj-crack-target-list",
+              "description": "Crack the target list database",
+              "type": "passwordCrack",
+              "targetFiles": ["target-list.db"]
+            },
+            {
+              "id": "obj-copy-evidence",
+              "description": "Copy operation-plan.pdf to your local SSD",
+              "type": "fileOperation",
+              "operation": "paste",
+              "targetFiles": ["operation-plan.pdf"],
+              "destination": "local"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evt-mission-complete-manhunt",
+      "trigger": {
+        "type": "afterObjectiveComplete",
+        "objectiveId": "obj-copy-evidence",
+        "delay": 0
+      },
+      "actions": [
+        {
+          "type": "setMissionStatus",
+          "status": "success"
+        }
+      ]
+    }
+  ],
+
+  "consequences": {
+    "success": {
+      "credits": 25000,
+      "reputation": 5,
+      "messages": [
+        {
+          "id": "msg-manhunt-aftermath",
+          "templateId": "manhunt-success",
+          "delay": 20000
+        }
+      ]
+    },
+    "failure": {
+      "credits": -10000,
+      "reputation": -3,
+      "retryable": false,
+      "messages": []
+    }
+  }
+}

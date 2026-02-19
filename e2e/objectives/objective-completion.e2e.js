@@ -353,7 +353,7 @@ test.describe('Objective Completion', () => {
     });
 
     test.describe('fileRecovery objectives', () => {
-        test.skip('completes when target files recovered', async ({ page }) => {
+        test.skip('completes when target files recovered', async ({ _page }) => {
             // TODO: Requires Data Recovery Tool implementation
             // Test will verify that using the tool to restore deleted files
             // properly completes the fileRecovery objective.
@@ -361,7 +361,7 @@ test.describe('Objective Completion', () => {
     });
 
     test.describe('secureDelete objectives', () => {
-        test.skip('completes when target files securely deleted', async ({ page }) => {
+        test.skip('completes when target files securely deleted', async ({ _page }) => {
             // TODO: Requires Data Recovery Tool secure delete implementation
             // Test will verify that using the tool to securely delete files
             // properly completes the secureDelete objective.

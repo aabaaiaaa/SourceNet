@@ -3,6 +3,8 @@ import {
   executeForceDisconnectAction,
   executeSetMissionStatusAction,
   executeRevokeNAREntryAction,
+  executeAddExtensionObjectivesAction,
+  executeScriptedEvent,
   isPlayerControlBlocked,
   initializePlayerControlTracking,
 } from './ScriptedEventExecutor';
@@ -121,6 +123,155 @@ describe('ScriptedEventExecutor', () => {
 
       triggerEventBus.emit('playerControlBlocked', { blocked: false });
       expect(isPlayerControlBlocked()).toBe(false);
+    });
+  });
+
+  describe('executeAddExtensionObjectivesAction', () => {
+    it('should emit addMissionExtension event with objectives and files', () => {
+      let eventData = null;
+      triggerEventBus.on('addMissionExtension', (data) => {
+        eventData = data;
+      });
+
+      const action = {
+        type: 'addExtensionObjectives',
+        objectives: [
+          { id: 'obj-beta', type: 'networkConnection', target: 'darknode-beta' },
+          { id: 'obj-crack', type: 'passwordCrack', targetFiles: ['notes.db'] },
+        ],
+        files: [{ name: 'notes.db', fileSystemId: 'fs-beta' }],
+      };
+
+      executeAddExtensionObjectivesAction(action);
+
+      expect(eventData).not.toBeNull();
+      expect(eventData.objectives).toHaveLength(2);
+      expect(eventData.objectives[0].id).toBe('obj-beta');
+      expect(eventData.files).toHaveLength(1);
+    });
+
+    it('should default to empty arrays when objectives/files not provided', () => {
+      let eventData = null;
+      triggerEventBus.on('addMissionExtension', (data) => {
+        eventData = data;
+      });
+
+      executeAddExtensionObjectivesAction({});
+
+      expect(eventData.objectives).toEqual([]);
+      expect(eventData.files).toEqual([]);
+    });
+
+    it('should call onComplete callback', () => {
+      const onComplete = vi.fn();
+      executeAddExtensionObjectivesAction({ objectives: [] }, onComplete);
+      expect(onComplete).toHaveBeenCalled();
+    });
+  });
+
+  describe('executeScriptedEvent - new action types via switch', () => {
+    it('should emit startTrace for startTrace action', async () => {
+      let eventData = null;
+      triggerEventBus.on('startTrace', (data) => {
+        eventData = data;
+      });
+
+      const scriptedEvent = {
+        id: 'evt-trace',
+        actions: [{ type: 'startTrace', totalETT: 360000 }],
+      };
+
+      await executeScriptedEvent(scriptedEvent);
+
+      expect(eventData).not.toBeNull();
+      expect(eventData.totalETT).toBe(360000);
+    });
+
+    it('should emit generateRelayNodes for generateRelayNodes action', async () => {
+      let eventData = null;
+      triggerEventBus.on('generateRelayNodes', (data) => {
+        eventData = data;
+      });
+
+      const scriptedEvent = {
+        id: 'evt-relay',
+        actions: [{ type: 'generateRelayNodes', count: 6 }],
+      };
+
+      await executeScriptedEvent(scriptedEvent);
+
+      expect(eventData).not.toBeNull();
+      expect(eventData.count).toBe(6);
+    });
+
+    it('should emit unlockFeature for unlockFeature action', async () => {
+      let eventData = null;
+      triggerEventBus.on('unlockFeature', (data) => {
+        eventData = data;
+      });
+
+      const scriptedEvent = {
+        id: 'evt-unlock',
+        actions: [{ type: 'unlockFeature', featureId: 'relay-service' }],
+      };
+
+      await executeScriptedEvent(scriptedEvent);
+
+      expect(eventData).not.toBeNull();
+      expect(eventData.featureId).toBe('relay-service');
+    });
+
+    it('should not emit unlockFeature when featureId is missing', async () => {
+      let emitted = false;
+      triggerEventBus.on('unlockFeature', () => {
+        emitted = true;
+      });
+
+      const scriptedEvent = {
+        id: 'evt-unlock-no-id',
+        actions: [{ type: 'unlockFeature' }],
+      };
+
+      await executeScriptedEvent(scriptedEvent);
+
+      expect(emitted).toBe(false);
+    });
+
+    it('should emit addMissionExtension for addExtensionObjectives action', async () => {
+      let eventData = null;
+      triggerEventBus.on('addMissionExtension', (data) => {
+        eventData = data;
+      });
+
+      const scriptedEvent = {
+        id: 'evt-extend',
+        actions: [{
+          type: 'addExtensionObjectives',
+          objectives: [{ id: 'obj-new', type: 'fileOperation' }],
+          files: [],
+        }],
+      };
+
+      await executeScriptedEvent(scriptedEvent);
+
+      expect(eventData).not.toBeNull();
+      expect(eventData.objectives).toHaveLength(1);
+    });
+
+    it('should call onComplete callback after all actions', async () => {
+      const onComplete = vi.fn();
+
+      const scriptedEvent = {
+        id: 'evt-multi',
+        actions: [
+          { type: 'startTrace', totalETT: 120000 },
+          { type: 'generateRelayNodes', count: 4 },
+        ],
+      };
+
+      await executeScriptedEvent(scriptedEvent, { onComplete });
+
+      expect(onComplete).toHaveBeenCalled();
     });
   });
 });

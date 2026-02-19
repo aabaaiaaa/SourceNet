@@ -76,6 +76,12 @@ export const useObjectiveAutoTracking = (
   // Track active passive software
   const activePassiveSoftwareRef = useRef([]);
 
+  // Track password cracks from Password Cracker
+  const missionPasswordCracksRef = useRef(new Set());
+
+  // Track credential extractions from Network Sniffer
+  const missionCredentialExtractionsRef = useRef([]);
+
   // Keep refs updated with latest values
   useEffect(() => {
     gameStateRef.current = gameState;
@@ -116,6 +122,8 @@ export const useObjectiveAutoTracking = (
       missionUploadOperations: missionUploadOperationsRef.current,
       activePassiveSoftware: activePassiveSoftwareRef.current,
       missionAvDetections: missionAvDetectionsRef.current,
+      missionPasswordCracks: missionPasswordCracksRef.current,
+      missionCredentialExtractions: missionCredentialExtractionsRef.current,
       ...(lastFileOperationRef.current ? { lastFileOperation: lastFileOperationRef.current } : {}),
       ...(lastScanResultsRef.current ? { lastScanResults: lastScanResultsRef.current } : {}),
     };
@@ -336,6 +344,31 @@ export const useObjectiveAutoTracking = (
           setTimeout(checkAndCompleteObjectives, 50);
         }
       },
+      {
+        event: 'passwordCracked',
+        handler: (data) => {
+          if (data.fileName) {
+            const newCracks = new Set(missionPasswordCracksRef.current);
+            newCracks.add(data.fileName);
+            missionPasswordCracksRef.current = newCracks;
+          }
+          setTimeout(checkAndCompleteObjectives, 50);
+        }
+      },
+      {
+        event: 'credentialsExtracted',
+        handler: (data) => {
+          if (data.networkId) {
+            const alreadyExtracted = missionCredentialExtractionsRef.current.some(
+              e => e.networkId === data.networkId
+            );
+            if (!alreadyExtracted) {
+              missionCredentialExtractionsRef.current = [...missionCredentialExtractionsRef.current, data];
+            }
+          }
+          setTimeout(checkAndCompleteObjectives, 50);
+        }
+      },
     ];
 
     const unsubscribers = eventHandlers.map(({ event, handler }) =>
@@ -361,6 +394,8 @@ export const useObjectiveAutoTracking = (
       missionUploadOperationsRef.current = { uploaded: new Set(), uploadDestinations: new Map() };
       activePassiveSoftwareRef.current = [];
       missionAvDetectionsRef.current = new Set();
+      missionPasswordCracksRef.current = new Set();
+      missionCredentialExtractionsRef.current = [];
       // Only reset missionCompletedRef if it's a different mission
       if (missionCompletedRef.current !== missionId) {
         missionCompletedRef.current = null;

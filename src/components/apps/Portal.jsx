@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useGame } from '../../contexts/useGame';
-import { HARDWARE_CATALOG, SOFTWARE_CATALOG } from '../../constants/gameConstants';
+import { HARDWARE_CATALOG, SOFTWARE_CATALOG, SERVICES_CATALOG } from '../../constants/gameConstants';
 import { isHardwareInstalled } from '../../utils/helpers';
 import { createDownloadItem } from '../../systems/useDownloadManager';
 import { isHardwareCategoryUnlocked, isSoftwareUnlocked, getUnlockHint } from '../../systems/UnlockSystem';
@@ -33,7 +33,8 @@ const Portal = () => {
     setPendingHardwareUpgrades,
     spareHardware,
     setSpareHardware,
-    localSSDFiles,
+    purchasedServices,
+    setPurchasedServices,
   } = useGame();
   const [activeCategory, setActiveCategory] = useState('processors');
   const [activeSection, setActiveSection] = useState('software');
@@ -68,7 +69,9 @@ const Portal = () => {
       const newBalance = bankAccounts[0].balance - price;
       const purchaseDescription = purchaseType === 'hardware'
         ? `Hardware Purchase: ${selectedItem.name}`
-        : `Software Purchase: ${selectedItem.name}`;
+        : purchaseType === 'service'
+          ? `Service Purchase: ${selectedItem.name}`
+          : `Software Purchase: ${selectedItem.name}`;
 
       updateBankBalance(primaryAccountId, -price, `${purchaseType}-purchase`);
 
@@ -87,6 +90,13 @@ const Portal = () => {
         const newPending = queueHardwareInstall(pendingHardwareUpgrades, activeCategory, selectedItem);
         setPendingHardwareUpgrades(newPending);
         console.log(`🔧 Hardware "${selectedItem.name}" queued for installation - reboot required`);
+      } else if (purchaseType === 'service') {
+        // Add service to purchased services
+        setPurchasedServices(prev => {
+          if (selectedItem.oneTimePurchase && prev.includes(selectedItem.id)) return prev;
+          return [...prev, selectedItem.id];
+        });
+        console.log(`🔗 Service "${selectedItem.name}" purchased`);
       } else {
         // Add to download queue - the download manager hook handles progress and completion
         const downloadItem = createDownloadItem(
@@ -116,6 +126,13 @@ const Portal = () => {
       const newQueue = [...prev, downloadItem];
       return newQueue;
     });
+  };
+
+  const handleServicePurchase = (service) => {
+    setSelectedItem(service);
+    setPurchaseType('service');
+    setPurchaseWarning(null);
+    setShowPurchaseModal(true);
   };
 
   const handleReinstallSpare = (item, index) => {
@@ -198,7 +215,6 @@ const Portal = () => {
     const pendingCpu = pendingHardwareUpgrades?.cpu;
     const pendingNetwork = pendingHardwareUpgrades?.network;
     const pendingMb = pendingHardwareUpgrades?.motherboard;
-    const pendingPsu = pendingHardwareUpgrades?.powerSupply;
     const pendingMemory = pendingHardwareUpgrades?.memory || [];
     const pendingStorage = pendingHardwareUpgrades?.storage || [];
 
@@ -336,6 +352,12 @@ const Portal = () => {
         >
           Software
         </button>
+        <button
+          className={`section-btn ${activeSection === 'services' ? 'active' : ''}`}
+          onClick={() => setActiveSection('services')}
+        >
+          Services
+        </button>
       </div>
 
       {activeSection === 'hardware' && (
@@ -374,9 +396,65 @@ const Portal = () => {
         </>
       )}
 
+      {activeSection === 'services' && (
+        <div className="portal-items">
+          {SERVICES_CATALOG.length === 0 ? (
+            <div className="empty-state">No services available</div>
+          ) : (
+            SERVICES_CATALOG.map((service) => {
+              const isLocked = !isSoftwareUnlocked(unlockedFeatures, service);
+              const lockHint = isLocked ? getUnlockHint(service.requiresUnlock) : null;
+              const isPurchased = service.oneTimePurchase && purchasedServices.includes(service.id);
+              const requiresPrereq = service.requiresService && !purchasedServices.includes(service.requiresService);
+              const purchaseCount = purchasedServices.filter(id => id === service.id).length;
+
+              return (
+                <div
+                  key={service.id}
+                  className={`portal-item ${isPurchased ? 'installed' : ''} ${isLocked ? 'locked' : ''}`}
+                >
+                  <div className="item-header">
+                    <div className="item-name">
+                      {isLocked && <span className="lock-icon">🔒 </span>}
+                      {service.name}
+                    </div>
+                    <div className="item-price">${service.price}</div>
+                  </div>
+                  <div className="item-specs">
+                    <div>{service.description}</div>
+                    {!service.oneTimePurchase && purchaseCount > 0 && (
+                      <div>Purchased: {purchaseCount} time{purchaseCount !== 1 ? 's' : ''}</div>
+                    )}
+                  </div>
+                  <div className="item-status">
+                    {isPurchased && <span className="status-badge installed-badge">✓ Active</span>}
+                    {isLocked && !isPurchased && (
+                      <span className="status-badge locked-badge" title={lockHint}>
+                        🔒 Locked
+                      </span>
+                    )}
+                    {!isLocked && !isPurchased && !requiresPrereq && (
+                      <button
+                        className="purchase-btn"
+                        onClick={() => handleServicePurchase(service)}
+                      >
+                        Purchase
+                      </button>
+                    )}
+                    {!isLocked && !isPurchased && requiresPrereq && (
+                      <span className="status-badge unavailable-badge">Requires {SERVICES_CATALOG.find(s => s.id === service.requiresService)?.name || 'prerequisite'}</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+
       {activeSection === 'hardware' && activeHardwareTab === 'spares' ? (
         renderSpareHardware()
-      ) : (
+      ) : activeSection !== 'services' ? (
         <div className="portal-items">
           {currentItems.length === 0 ? (
             <div className="empty-state">No items in this category</div>
@@ -482,7 +560,7 @@ const Portal = () => {
             })
           )}
         </div>
-      )}
+      ) : null}
 
       {/* Purchase Confirmation Modal */}
       {showPurchaseModal && selectedItem && (

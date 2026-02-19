@@ -43,7 +43,7 @@ class NetworkRegistry {
      * @returns {boolean} True if registered, false if already exists
      */
     registerNetwork(network) {
-        const { networkId, networkName, address, bandwidth, accessible = false, discovered = false, revokedReason = null } = network;
+        const { networkId, networkName, address, bandwidth, accessible = false, discovered = false, revokedReason = null, hostile = false } = network;
 
         if (!networkId) {
             console.warn('NetworkRegistry: Cannot register network without networkId');
@@ -62,6 +62,7 @@ class NetworkRegistry {
                 // Once discovered, stays discovered
                 discovered: discovered || existing.discovered,
                 revokedReason: revokedReason ?? existing.revokedReason,
+                hostile: hostile || existing.hostile,
             });
             return true;
         }
@@ -74,6 +75,7 @@ class NetworkRegistry {
             accessible,
             discovered,
             revokedReason,
+            hostile,
         });
 
         return true;
@@ -92,7 +94,7 @@ class NetworkRegistry {
      * @returns {boolean} True if registered, false if invalid
      */
     registerDevice(device) {
-        const { ip, hostname, networkId, fileSystemId, fileSystemIds, accessible = false, logs } = device;
+        const { ip, hostname, networkId, fileSystemId, fileSystemIds, accessible = false, logs, requiresCredentials = false } = device;
 
         if (!ip) {
             console.warn('NetworkRegistry: Cannot register device without IP');
@@ -148,6 +150,7 @@ class NetworkRegistry {
             // Keep single fileSystemId for backward compatibility (first in array)
             fileSystemId: fsIds?.[0] || fileSystemId,
             accessible,
+            requiresCredentials,
             logs: logs || [],
         });
 

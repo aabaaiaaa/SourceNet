@@ -214,6 +214,9 @@ export const executeScriptedEvent = async (scriptedEvent, callbacks = {}) => {
   const { actions, id } = scriptedEvent;
   const timeSpeed = callbacks.timeSpeed || 1;
 
+  // Reset game speed to 1x when scripted events fire (dramatic pacing)
+  triggerEventBus.emit('resetGameSpeed');
+
   // Execute file operations first (these block player control)
   for (const action of actions) {
     if (action.type === 'forceFileOperation' && action.operation === 'delete') {
@@ -269,6 +272,23 @@ export const executeScriptedEvent = async (scriptedEvent, callbacks = {}) => {
 
       case 'sendMessage':
         executeSendMessageAction(action, null);
+        break;
+
+      case 'unlockFeature':
+        // Unlock a feature gate (e.g., 'cracking-tooling', 'relay-service')
+        if (action.featureId) {
+          triggerEventBus.emit('unlockFeature', { featureId: action.featureId });
+        }
+        break;
+
+      case 'generateRelayNodes':
+        // Signal to generate relay nodes (handled by GameContext)
+        triggerEventBus.emit('generateRelayNodes', { count: action.count });
+        break;
+
+      case 'startTrace':
+        // Start a trace on the player (handled by GameContext)
+        triggerEventBus.emit('startTrace', { totalETT: action.totalETT });
         break;
 
       default:

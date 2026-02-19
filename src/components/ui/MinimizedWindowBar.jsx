@@ -28,6 +28,16 @@ const MinimizedWindowBar = () => {
         return 'Network Address Register';
       case 'fileManager':
         return 'File Manager';
+      case 'logViewer':
+        return 'Log Viewer';
+      case 'dataRecoveryTool':
+        return 'Data Recovery Tool';
+      case 'decryptionTool':
+        return 'Decryption Tool';
+      case 'passwordCracker':
+        return 'Password Cracker';
+      case 'networkSniffer':
+        return 'Network Sniffer';
       default:
         return 'Unknown App';
     }

@@ -35,6 +35,7 @@ export const STARTING_HARDWARE = {
       id: 'ram-2gb',
       name: '2GB RAM',
       capacity: '2GB',
+      capacityMB: 2048,
       price: 150,
       power: 3,
     },
@@ -101,6 +102,60 @@ export const STARTING_SOFTWARE = [
   },
 ];
 
+// RAM costs per app (in MB) - used for resource management
+export const APP_RAM_COSTS = {
+  mail: 64,
+  banking: 64,
+  portal: 128,
+  missionBoard: 96,
+  vpnClient: 128,
+  networkScanner: 128,
+  networkAddressRegister: 64,
+  fileManager: 192,
+  logViewer: 128,
+  dataRecoveryTool: 256,
+  decryptionTool: 384,
+  passwordCracker: 512,
+  networkSniffer: 384,
+  // Passive apps (consume RAM while running)
+  'advanced-firewall-av': 256,
+  'trace-monitor': 192,
+};
+
+// Password hash types and their properties
+export const PASSWORD_HASH_TYPES = {
+  md5: { name: 'MD5', difficulty: 1, baseTimeMs: 5000, dictionaryEffective: true },
+  sha1: { name: 'SHA-1', difficulty: 2, baseTimeMs: 15000, dictionaryEffective: false },
+  sha256: { name: 'SHA-256', difficulty: 3, baseTimeMs: 45000, dictionaryEffective: false },
+  bcrypt: { name: 'bcrypt', difficulty: 4, baseTimeMs: 120000, dictionaryEffective: false, bruteForceOnly: true },
+};
+
+// CPU speed multipliers for cracking (base is 1GHz single core = 1x)
+export const CPU_CRACK_MULTIPLIERS = {
+  'cpu-1ghz-single': 1,
+  'cpu-2ghz-dual': 3,
+  'cpu-3ghz-dual': 5,
+  'cpu-4ghz-quad': 12,
+  'cpu-6ghz-octa': 30,
+};
+
+// Relay node defaults
+export const RELAY_DEFAULTS = {
+  initialNodeCount: 6,
+  maxSuspicion: 100,
+  suspicionPerUse: 15,
+  frontNodeSuspicionMultiplier: 2.5,
+  baseETTMs: 120000, // 2 minutes base ETT per relay
+  replacementCost: 2000,
+};
+
+// Trace consequence thresholds
+export const TRACE_CONSEQUENCES = {
+  maxRebuilds: 2,
+  darkWebTargetChance: 0.3,
+  rebuildBaseCost: 5000,
+};
+
 // Hardware catalog
 export const HARDWARE_CATALOG = {
   processors: [
@@ -111,11 +166,11 @@ export const HARDWARE_CATALOG = {
     { id: 'cpu-6ghz-octa', name: '6GHz Octa Core', specs: '6GHz, 8 cores', price: 6000, power: 180 },
   ],
   memory: [
-    { id: 'ram-2gb', name: '2GB RAM', capacity: '2GB', price: 150, power: 3 },
-    { id: 'ram-4gb', name: '4GB RAM', capacity: '4GB', price: 300, power: 4 },
-    { id: 'ram-8gb', name: '8GB RAM', capacity: '8GB', price: 700, power: 6 },
-    { id: 'ram-16gb', name: '16GB RAM', capacity: '16GB', price: 1400, power: 8 },
-    { id: 'ram-32gb', name: '32GB RAM', capacity: '32GB', price: 3000, power: 12 },
+    { id: 'ram-2gb', name: '2GB RAM', capacity: '2GB', capacityMB: 2048, price: 150, power: 3 },
+    { id: 'ram-4gb', name: '4GB RAM', capacity: '4GB', capacityMB: 4096, price: 300, power: 4 },
+    { id: 'ram-8gb', name: '8GB RAM', capacity: '8GB', capacityMB: 8192, price: 700, power: 6 },
+    { id: 'ram-16gb', name: '16GB RAM', capacity: '16GB', capacityMB: 16384, price: 1400, power: 8 },
+    { id: 'ram-32gb', name: '32GB RAM', capacity: '32GB', capacityMB: 32768, price: 3000, power: 12 },
   ],
   storage: [
     { id: 'ssd-90gb', name: '90GB SSD', capacity: '90GB', price: 100, power: 2 },
@@ -259,6 +314,100 @@ export const SOFTWARE_CATALOG = [
     available: true,
     requiresUnlock: 'decryption-algorithms',
   },
+  {
+    id: 'password-cracker',
+    name: 'Password Cracker',
+    description: 'Crack password-protected files using dictionary attacks, brute force, or rainbow tables. Supports MD5, SHA-1, SHA-256, and bcrypt hashes. Very RAM-intensive.',
+    price: 10000,
+    sizeInMB: 500,
+    available: true,
+    requiresUnlock: 'cracking-tooling',
+  },
+  {
+    id: 'dictionary-pack-common',
+    name: 'Dictionary Pack - Common',
+    description: 'Common password dictionary for Password Cracker. Contains 10 million frequently used passwords. Effective against weak MD5 and SHA-1 hashes.',
+    price: 12000,
+    sizeInMB: 800,
+    available: true,
+    requiresUnlock: 'cracking-tooling',
+  },
+  {
+    id: 'dictionary-pack-extended',
+    name: 'Dictionary Pack - Extended',
+    description: 'Extended password dictionary for Password Cracker. Contains 100 million passwords including variations, leaked databases, and common patterns.',
+    price: 18000,
+    sizeInMB: 2500,
+    available: true,
+    requiresUnlock: 'cracking-tooling',
+  },
+  {
+    id: 'rainbow-table-md5',
+    name: 'Rainbow Table - MD5',
+    description: 'Pre-computed MD5 hash lookup table. Enables near-instant cracking of MD5-hashed passwords. Very large storage requirement.',
+    price: 15000,
+    sizeInMB: 5000,
+    available: true,
+    requiresUnlock: 'cracking-tooling',
+  },
+  {
+    id: 'rainbow-table-sha256',
+    name: 'Rainbow Table - SHA-256',
+    description: 'Pre-computed SHA-256 hash lookup table. Enables fast cracking of SHA-256 hashed passwords. Extremely large storage requirement.',
+    price: 25000,
+    sizeInMB: 12000,
+    available: true,
+    requiresUnlock: 'cracking-tooling',
+  },
+  {
+    id: 'vpn-relay-upgrade',
+    name: 'VPN Relay Module',
+    description: 'Upgrade for VPN Client. Enables connection routing through relay nodes to avoid detection by threat actors. Requires active relay service subscription.',
+    price: 3000,
+    sizeInMB: 150,
+    available: true,
+    requiresUnlock: 'relay-service',
+  },
+  {
+    id: 'trace-monitor',
+    name: 'Trace Monitor',
+    description: 'Passive monitoring tool that detects active network tracing. Provides audio and visual warnings when threat actors are tracing your connection. Consumes CPU, RAM, and bandwidth.',
+    price: 2500,
+    sizeInMB: 100,
+    available: true,
+    requiresUnlock: 'relay-service',
+    passive: true,
+  },
+  {
+    id: 'network-sniffer',
+    name: 'Network Sniffer',
+    description: 'Monitor network traffic to extract credentials and investigate suspicious activity. Capture packets, reconstruct hashes, and analyze traffic patterns.',
+    price: 50000,
+    sizeInMB: 400,
+    available: true,
+    requiresUnlock: 'sniffer-tooling',
+  },
+];
+
+// Services catalog (purchased from Portal Services tab)
+export const SERVICES_CATALOG = [
+  {
+    id: 'relay-service-standard',
+    name: 'Standard Relay Service',
+    description: 'Provides a set of 6 relay nodes for anonymous network routing. Relay nodes appear in VPN Client when the Relay Module is installed. Required for relay-based connections.',
+    price: 30000,
+    oneTimePurchase: true,
+    requiresUnlock: 'relay-service',
+  },
+  {
+    id: 'relay-node-replacement',
+    name: 'Replacement Relay Node',
+    description: 'Purchase a new relay node to replace a burned one. Each purchase adds one new relay node to your available pool.',
+    price: 2000,
+    oneTimePurchase: false,
+    requiresUnlock: 'relay-service',
+    requiresService: 'relay-service-standard',
+  },
 ];
 
 // Initial messages
@@ -312,13 +461,15 @@ export const WINDOW_SIZES = {
   banking: { width: 500, height: 500 },
   portal: { width: 700, height: 750 },
   missionBoard: { width: 700, height: 500 },
-  vpnClient: { width: 600, height: 550 },
+  vpnClient: { width: 650, height: 650 },
   networkScanner: { width: 650, height: 500 },
   networkAddressRegister: { width: 600, height: 450 },
   fileManager: { width: 700, height: 550 },
   logViewer: { width: 650, height: 500 },
   dataRecoveryTool: { width: 700, height: 550 },
   decryptionTool: { width: 750, height: 600 },
+  passwordCracker: { width: 750, height: 650 },
+  networkSniffer: { width: 800, height: 650 },
 };
 
 // Boot sequence timing

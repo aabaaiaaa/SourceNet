@@ -426,6 +426,127 @@ describe('StoryMissionManager', () => {
     });
   });
 
+  describe('Intro Message in activateMission', () => {
+    it('should emit sendMissionIntroMessage when mission has introMessage', (done) => {
+      const mission = {
+        missionId: 'intro-test',
+        title: 'Intro Test Mission',
+        triggers: {
+          start: {
+            type: 'timeSinceEvent',
+            event: 'testTrigger',
+            delay: 10,
+            introMessage: {
+              from: 'Manager',
+              subject: 'New Mission Briefing',
+              body: 'Read this first.',
+            },
+          },
+        },
+      };
+
+      storyMissionManager.registerMission(mission);
+
+      triggerEventBus.on('sendMissionIntroMessage', (data) => {
+        expect(data.missionId).toBe('intro-test');
+        expect(data.introMessage.from).toBe('Manager');
+        expect(data.introMessage.subject).toBe('New Mission Briefing');
+        expect(data.introMessage.body).toBe('Read this first.');
+        done();
+      });
+
+      // Directly call activateMission (simulates trigger firing)
+      storyMissionManager.activateMission('intro-test');
+    });
+
+    it('should not emit sendMissionIntroMessage when no introMessage', () => {
+      const mission = {
+        missionId: 'no-intro',
+        title: 'No Intro Mission',
+        triggers: {
+          start: {
+            type: 'timeSinceEvent',
+            event: 'testTrigger',
+            delay: 0,
+          },
+        },
+      };
+
+      storyMissionManager.registerMission(mission);
+
+      let emitted = false;
+      triggerEventBus.on('sendMissionIntroMessage', () => {
+        emitted = true;
+      });
+
+      storyMissionManager.activateMission('no-intro');
+      expect(emitted).toBe(false);
+    });
+
+    it('should schedule introMessage with delay when specified', (done) => {
+      const mission = {
+        missionId: 'delayed-intro',
+        title: 'Delayed Intro',
+        triggers: {
+          start: {
+            type: 'timeSinceEvent',
+            event: 'testTrigger',
+            delay: 0,
+            introMessage: {
+              delay: 50,
+              from: 'Manager',
+              subject: 'Delayed briefing',
+              body: 'Arriving later.',
+            },
+          },
+        },
+      };
+
+      storyMissionManager.registerMission(mission);
+
+      const startTime = Date.now();
+      triggerEventBus.on('sendMissionIntroMessage', (data) => {
+        const elapsed = Date.now() - startTime;
+        // Should be delayed (at least ~40ms given timing variance)
+        expect(elapsed).toBeGreaterThanOrEqual(30);
+        expect(data.introMessage.delay).toBe(50);
+        done();
+      });
+
+      storyMissionManager.activateMission('delayed-intro');
+    });
+
+    it('should emit missionAvailable alongside introMessage', () => {
+      const mission = {
+        missionId: 'both-events',
+        title: 'Both Events Mission',
+        triggers: {
+          start: {
+            type: 'timeSinceEvent',
+            event: 'testTrigger',
+            delay: 0,
+            introMessage: {
+              from: 'Manager',
+              subject: 'Intro',
+              body: 'Hello.',
+            },
+          },
+        },
+      };
+
+      storyMissionManager.registerMission(mission);
+
+      let missionAvailableEmitted = false;
+      triggerEventBus.on('missionAvailable', (data) => {
+        missionAvailableEmitted = true;
+        expect(data.missionId).toBe('both-events');
+      });
+
+      storyMissionManager.activateMission('both-events');
+      expect(missionAvailableEmitted).toBe(true);
+    });
+  });
+
   describe('File Name Resolution in Scripted Events', () => {
     it('should resolve "all-corrupted" to actual file names from mission networks', async () => {
       const mission = {

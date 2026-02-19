@@ -24,8 +24,12 @@ import {
     generateMultiLayerDecryptionMission,
     generateDecryptionMalwareMission,
     generateVirusHuntMission,
+    generatePasswordCrackMission,
+    generateInvestigationCrackMission,
+    generateCrackAndRecoverMission,
     getMissionTypesForPlayer,
     getPlayerAlgorithms,
+    getPlayerHashTypes,
 } from './MissionGenerator';
 import { getRandomStoryline } from './arcStorylines';
 import { canAccessClientType } from '../systems/ReputationSystem';
@@ -50,12 +54,16 @@ export const poolConfigByProgression = {
         minAccessible: 2,
         investigationChance: 0, // No investigation missions yet
         decryptionChance: 0,
+        crackingChance: 0,
+        snifferChance: 0,
     },
     midGame: {
         min: 5, max: 8,
         minAccessible: 3,
         investigationChance: 0.50, // 50% chance for investigation missions
         decryptionChance: 0,
+        crackingChance: 0,
+        snifferChance: 0,
     },
     lateGame: {
         min: 8, max: 12,
@@ -63,6 +71,29 @@ export const poolConfigByProgression = {
         investigationChance: 0.30, // Reduced to make room for decryption
         decryptionChance: 0.50, // 50% chance for decryption missions
         guaranteeDecryption: true, // Ensure at least 1 decryption mission in pool
+        crackingChance: 0,
+        snifferChance: 0,
+    },
+    crackingGame: {
+        min: 10, max: 14,
+        minAccessible: 6,
+        investigationChance: 0.20,
+        decryptionChance: 0.30,
+        guaranteeDecryption: true,
+        crackingChance: 0.40, // 40% chance for cracking missions
+        guaranteeCracking: true,
+        snifferChance: 0,
+    },
+    endGame: {
+        min: 12, max: 16,
+        minAccessible: 7,
+        investigationChance: 0.15,
+        decryptionChance: 0.20,
+        guaranteeDecryption: true,
+        crackingChance: 0.30,
+        guaranteeCracking: true,
+        snifferChance: 0.35, // 35% chance for sniffer missions
+        guaranteeSniffer: true,
     }
 };
 
@@ -78,12 +109,20 @@ export const poolConfigByProgression = {
  * @returns {string} Progression level: 'early', 'midGame', or 'lateGame'
  */
 export function getProgressionLevel(unlockedSoftware = []) {
+    // Sniffer tooling marks end game
+    const hasSnifferTooling = unlockedSoftware.includes('sniffer-tooling');
+
+    // Cracking tooling marks cracking game phase
+    const hasCrackingTooling = unlockedSoftware.includes('cracking-tooling');
+
     // Decryption missions unlock marks late game
     const hasDecryptionMissions = unlockedSoftware.includes('decryption-missions');
 
     // Investigation missions unlock marks mid-game
     const hasInvestigationMissions = unlockedSoftware.includes('investigation-missions');
 
+    if (hasSnifferTooling) return 'endGame';
+    if (hasCrackingTooling) return 'crackingGame';
     if (hasDecryptionMissions) return 'lateGame';
     if (hasInvestigationMissions) return 'midGame';
 
@@ -107,6 +146,10 @@ export function getPoolConfigForProgression(unlockedSoftware = []) {
         investigationChance: config.investigationChance,
         decryptionChance: config.decryptionChance || 0,
         guaranteeDecryption: config.guaranteeDecryption || false,
+        crackingChance: config.crackingChance || 0,
+        guaranteeCracking: config.guaranteeCracking || false,
+        snifferChance: config.snifferChance || 0,
+        guaranteeSniffer: config.guaranteeSniffer || false,
     };
 }
 
@@ -160,10 +203,13 @@ export function initializePool(reputation, currentTime, options = {}) {
     // Check if we need investigation missions based on progression
     const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
     const decryptionTypes = ['decryption', 'decryption-repair', 'decryption-backup', 'investigation-decryption', 'multi-layer-decryption', 'decryption-malware', 'virus-hunt'];
+    const crackingTypes = ['password-crack', 'investigation-crack', 'crack-and-recover'];
     const needsInvestigationMissions = config.investigationChance > 0;
     const needsDecryptionMissions = config.guaranteeDecryption;
+    const needsCrackingMissions = config.guaranteeCracking;
     let investigationAdded = false;
     let decryptionAdded = false;
+    let crackingAdded = false;
 
     // Generate initial missions
     while (pool.length < targetSize) {
@@ -178,6 +224,7 @@ export function initializePool(reputation, currentTime, options = {}) {
                 pendingArcMissions[result.arcId] = result.missions.slice(1);
                 if (investigationTypes.includes(firstMission.missionType)) investigationAdded = true;
                 if (decryptionTypes.includes(firstMission.missionType)) decryptionAdded = true;
+                if (crackingTypes.includes(firstMission.missionType)) crackingAdded = true;
             } else {
                 // Single mission - add expiration
                 const mission = addExpirationToMission(result, currentTime);
@@ -185,6 +232,7 @@ export function initializePool(reputation, currentTime, options = {}) {
                 activeClientIds.add(mission.clientId);
                 if (investigationTypes.includes(mission.missionType)) investigationAdded = true;
                 if (decryptionTypes.includes(mission.missionType)) decryptionAdded = true;
+                if (crackingTypes.includes(mission.missionType)) crackingAdded = true;
             }
         } else {
             // Couldn't generate mission - break to avoid infinite loop
@@ -226,6 +274,23 @@ export function initializePool(reputation, currentTime, options = {}) {
         }
     }
 
+    // GUARANTEE cracking mission if needed but not added during initial generation
+    if (needsCrackingMissions && !crackingAdded) {
+        for (let attempt = 0; attempt < 10 && !crackingAdded; attempt++) {
+            const result = generatePoolMission(reputation, currentTime, activeClientIds, false, {
+                unlockedSoftware,
+                guaranteeCracking: true
+            });
+
+            if (result && !result.arcId && crackingTypes.includes(result.missionType)) {
+                const mission = addExpirationToMission(result, currentTime);
+                pool.push(mission);
+                activeClientIds.add(mission.clientId);
+                crackingAdded = true;
+            }
+        }
+    }
+
     return {
         missions: pool,
         pendingArcMissions,
@@ -245,7 +310,7 @@ export function initializePool(reputation, currentTime, options = {}) {
  * @returns {Object|null} Generated mission or arc
  */
 export function generatePoolMission(reputation, currentTime, excludeClientIds, mustBeAccessible, options = {}) {
-    const { unlockedSoftware = [], guaranteeInvestigation = false, guaranteeDecryption = false } = options;
+    const { unlockedSoftware = [], guaranteeInvestigation = false, guaranteeDecryption = false, guaranteeCracking = false } = options;
 
     // Get available clients
     let client;
@@ -283,7 +348,7 @@ export function generatePoolMission(reputation, currentTime, excludeClientIds, m
 
     // Decide if this should be an arc (but NOT when we must guarantee a specific type)
     // Arc generation would bypass specific type generation, so skip arcs when guaranteeing
-    if (!guaranteeInvestigation && !guaranteeDecryption && Math.random() < poolConfig.arcChance) {
+    if (!guaranteeInvestigation && !guaranteeDecryption && !guaranteeCracking && Math.random() < poolConfig.arcChance) {
         const storyline = getRandomStoryline();
         if (storyline) {
             // Get clients for each mission in the arc
@@ -359,6 +424,31 @@ export function generatePoolMission(reputation, currentTime, excludeClientIds, m
                     return generateDecryptionMalwareMission(client, { hasTimed, playerAlgorithms });
                 case 'virus-hunt':
                     return generateVirusHuntMission(client, { hasTimed });
+            }
+        }
+    }
+
+    // Check if we should generate a cracking mission
+    const shouldGenerateCracking = guaranteeCracking ||
+        (config.crackingChance > 0 && Math.random() < config.crackingChance);
+
+    if (shouldGenerateCracking) {
+        const crackingTypes = availableTypes.filter(t =>
+            t === 'password-crack' || t === 'investigation-crack' || t === 'crack-and-recover'
+        );
+
+        if (crackingTypes.length > 0) {
+            const selectedType = crackingTypes[Math.floor(Math.random() * crackingTypes.length)];
+            const hasTimed = Math.random() < 0.5;
+            const playerHashTypes = getPlayerHashTypes(unlockedSoftware);
+
+            switch (selectedType) {
+                case 'password-crack':
+                    return generatePasswordCrackMission(client, { hasTimed, playerHashTypes });
+                case 'investigation-crack':
+                    return generateInvestigationCrackMission(client, { hasTimed, playerHashTypes });
+                case 'crack-and-recover':
+                    return generateCrackAndRecoverMission(client, { hasTimed, playerHashTypes });
             }
         }
     }
@@ -472,13 +562,16 @@ export function refreshPool(poolState, reputation, currentTime, activeMissionId 
     // no investigation missions exist, we MUST add at least one
     const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
     const decryptionTypes = ['decryption', 'decryption-repair', 'decryption-backup', 'investigation-decryption', 'multi-layer-decryption', 'decryption-malware', 'virus-hunt'];
+    const crackingTypes = ['password-crack', 'investigation-crack', 'crack-and-recover'];
     const hasInvestigationMissions = validMissions.some(m => investigationTypes.includes(m.missionType));
     const needsInvestigationMissions = config.investigationChance > 0 && !hasInvestigationMissions;
     const hasDecryptionMissions = validMissions.some(m => decryptionTypes.includes(m.missionType));
     const needsDecryptionMissions = config.guaranteeDecryption && !hasDecryptionMissions;
+    const hasCrackingMissions = validMissions.some(m => crackingTypes.includes(m.missionType));
+    const needsCrackingMissions = config.guaranteeCracking && !hasCrackingMissions;
 
     // When specific mission types are needed, ensure we add at least 1 even if pool is at max
-    const minToAddForSpecialTypes = (needsInvestigationMissions ? 1 : 0) + (needsDecryptionMissions ? 1 : 0);
+    const minToAddForSpecialTypes = (needsInvestigationMissions ? 1 : 0) + (needsDecryptionMissions ? 1 : 0) + (needsCrackingMissions ? 1 : 0);
     const missionsToAdd = Math.max(needAccessible, targetSize - currentSize, minToAddForSpecialTypes);
 
     // Generate new missions
@@ -487,15 +580,18 @@ export function refreshPool(poolState, reputation, currentTime, activeMissionId 
     let accessibleAdded = 0;
     let investigationAdded = false;
     let decryptionAdded = false;
+    let crackingAdded = false;
 
     for (let i = 0; i < missionsToAdd; i++) {
         const mustBeAccessible = accessibleAdded < needAccessible;
         const guaranteeInvestigation = needsInvestigationMissions && !investigationAdded;
         const guaranteeDecryptionFlag = needsDecryptionMissions && !decryptionAdded;
+        const guaranteeCrackingFlag = needsCrackingMissions && !crackingAdded;
         const result = generatePoolMission(reputation, currentTime, activeClients, mustBeAccessible, {
             unlockedSoftware,
             guaranteeInvestigation,
-            guaranteeDecryption: guaranteeDecryptionFlag
+            guaranteeDecryption: guaranteeDecryptionFlag,
+            guaranteeCracking: guaranteeCrackingFlag
         });
 
         if (result) {
@@ -506,12 +602,14 @@ export function refreshPool(poolState, reputation, currentTime, activeMissionId 
                 newPendingArcMissions[result.arcId] = result.missions.slice(1);
                 if (investigationTypes.includes(firstMission.missionType)) investigationAdded = true;
                 if (decryptionTypes.includes(firstMission.missionType)) decryptionAdded = true;
+                if (crackingTypes.includes(firstMission.missionType)) crackingAdded = true;
             } else {
                 const mission = addExpirationToMission(result, currentTime);
                 newMissions.push(mission);
                 activeClients.add(mission.clientId);
                 if (investigationTypes.includes(mission.missionType)) investigationAdded = true;
                 if (decryptionTypes.includes(mission.missionType)) decryptionAdded = true;
+                if (crackingTypes.includes(mission.missionType)) crackingAdded = true;
             }
 
             if (mustBeAccessible) {
@@ -550,6 +648,23 @@ export function refreshPool(poolState, reputation, currentTime, activeMissionId 
                 newMissions.push(mission);
                 activeClients.add(mission.clientId);
                 decryptionAdded = true;
+            }
+        }
+    }
+
+    // GUARANTEE cracking mission if still needed after main loop
+    if (needsCrackingMissions && !crackingAdded) {
+        for (let attempt = 0; attempt < 10 && !crackingAdded; attempt++) {
+            const result = generatePoolMission(reputation, currentTime, activeClients, false, {
+                unlockedSoftware,
+                guaranteeCracking: true
+            });
+
+            if (result && !result.arcId && crackingTypes.includes(result.missionType)) {
+                const mission = addExpirationToMission(result, currentTime);
+                newMissions.push(mission);
+                activeClients.add(mission.clientId);
+                crackingAdded = true;
             }
         }
     }
@@ -804,6 +919,15 @@ export function shouldRefreshPool(poolState, reputation, options = {}) {
             'investigation-decryption', 'multi-layer-decryption', 'decryption-malware', 'virus-hunt'];
         const hasDecryptionMissions = missions.some(m => decryptionTypes.includes(m.missionType));
         if (!hasDecryptionMissions) {
+            return true;
+        }
+    }
+
+    // Refresh if cracking missions are unlocked but none exist in the pool
+    if (config.guaranteeCracking) {
+        const crackingTypes = ['password-crack', 'investigation-crack', 'crack-and-recover'];
+        const hasCrackingMissions = missions.some(m => crackingTypes.includes(m.missionType));
+        if (!hasCrackingMissions) {
             return true;
         }
     }

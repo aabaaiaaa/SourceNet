@@ -1,0 +1,153 @@
+{
+  "missionId": "behind-enemy-lines",
+  "title": "Behind Enemy Lines",
+  "description": "The threat actor group that attacked your terminal has hit another target. Their network is actively monitored. Investigate using relay nodes to avoid detection.",
+  "client": "Coastal Power Authority",
+  "difficulty": "Hard",
+  "basePayout": 12000,
+  "oneTime": true,
+  "category": "investigation",
+
+  "triggers": {
+    "start": {
+      "type": "timeSinceEvent",
+      "event": "messageRead",
+      "condition": { "messageId": "msg-relay-unlock" },
+      "delay": 10000
+    }
+  },
+
+  "requirements": {
+    "software": ["vpn-client", "network-scanner", "file-manager", "log-viewer", "vpn-relay-upgrade", "trace-monitor"]
+  },
+
+  "briefingMessage": {
+    "from": "SourceNet Manager",
+    "fromId": "SNET-MGR-BEL",
+    "fromName": "SourceNet Manager {managerName}",
+    "subject": "Behind Enemy Lines - Coastal Power Authority",
+    "body": "Dear {username},\n\nThe same threat actor group that targeted you has just attacked Coastal Power Authority. Their operations network shows signs of active surveillance by the attackers — they're watching for anyone who connects.\n\nCoastal Power needs us to investigate what happened. The attackers deleted critical maintenance logs and we need to find evidence of the intrusion.\n\nThis is your first real test of the relay system. You MUST connect through relay nodes — a direct connection will get you traced immediately.\n\nObjectives:\n1. Connect to Coastal-Ops network through relay nodes\n2. Scan the network and find their systems\n3. Check the logs on ops-controller for evidence of the intrusion\n4. Recover any deleted files from the maintenance-db server\n\nKeep the Trace Monitor running at all times. When the beeping speeds up, you need to wrap up fast.\n\nNetwork credentials attached.\n\n- {managerName}"
+  },
+
+  "networks": [
+    {
+      "networkId": "coastal-ops",
+      "networkName": "Coastal-Ops",
+      "address": "172.16.50.0/24",
+      "bandwidth": 60,
+      "hostile": true,
+      "revokeOnComplete": true,
+      "revokeReason": "Mission access expired",
+      "fileSystems": [
+        {
+          "id": "fs-coastal-ops",
+          "name": "ops-controller",
+          "ip": "172.16.50.5",
+          "files": [
+            { "name": "maintenance-schedule.csv", "size": "1 MB" },
+            { "name": "system-config.ini", "size": "0.5 MB" },
+            { "name": "intrusion-evidence.log", "size": "3 MB" }
+          ],
+          "logs": [
+            { "type": "remote", "action": "connect", "user": "admin", "note": "Routine maintenance", "timestamp": "2020-03-20T08:00:00Z" },
+            { "type": "remote", "action": "connect", "user": "UNKNOWN", "note": "Unauthorized access detected", "timestamp": "2020-03-22T02:15:00Z" },
+            { "type": "file", "action": "delete", "user": "UNKNOWN", "note": "Deleted maintenance-records.db", "timestamp": "2020-03-22T02:18:00Z" },
+            { "type": "remote", "action": "disconnect", "user": "UNKNOWN", "note": "Connection terminated", "timestamp": "2020-03-22T02:20:00Z" }
+          ]
+        },
+        {
+          "id": "fs-coastal-maintenance",
+          "name": "maintenance-db",
+          "ip": "172.16.50.10",
+          "files": [
+            { "name": "equipment-inventory.csv", "size": "2 MB" }
+          ],
+          "deletedFiles": [
+            { "name": "maintenance-records.db", "size": "8 MB", "deletedBy": "UNKNOWN", "deletedAt": "2020-03-22T02:18:00Z" }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "objectives": [
+    {
+      "id": "obj-connect-coastal",
+      "description": "Connect to Coastal-Ops through relay nodes",
+      "type": "networkConnection",
+      "target": "coastal-ops"
+    },
+    {
+      "id": "obj-scan-coastal",
+      "description": "Scan network and locate ops-controller",
+      "type": "networkScan",
+      "target": "coastal-ops",
+      "expectedResult": "ops-controller"
+    },
+    {
+      "id": "obj-investigate-logs",
+      "description": "Review logs on ops-controller for intrusion evidence",
+      "type": "investigation",
+      "target": "coastal-ops",
+      "investigationType": "logReview",
+      "correctFileSystemId": "fs-coastal-ops"
+    },
+    {
+      "id": "obj-recover-maintenance",
+      "description": "Recover deleted maintenance-records.db",
+      "type": "fileRecovery",
+      "targetFiles": ["maintenance-records.db"]
+    }
+  ],
+
+  "scriptedEvents": [
+    {
+      "id": "evt-start-trace",
+      "trigger": {
+        "type": "afterObjectiveComplete",
+        "objectiveId": "obj-connect-coastal",
+        "delay": 5000
+      },
+      "actions": [
+        {
+          "type": "startTrace",
+          "totalETT": 360000
+        }
+      ]
+    },
+    {
+      "id": "evt-mission-complete",
+      "trigger": {
+        "type": "afterObjectiveComplete",
+        "objectiveId": "obj-recover-maintenance",
+        "delay": 0
+      },
+      "actions": [
+        {
+          "type": "setMissionStatus",
+          "status": "success"
+        }
+      ]
+    }
+  ],
+
+  "consequences": {
+    "success": {
+      "credits": 12000,
+      "reputation": 3,
+      "messages": [
+        {
+          "id": "msg-relay-practice-success",
+          "templateId": "relay-practice-success",
+          "delay": 15000
+        }
+      ]
+    },
+    "failure": {
+      "credits": -5000,
+      "reputation": -2,
+      "retryable": false,
+      "messages": []
+    }
+  }
+}

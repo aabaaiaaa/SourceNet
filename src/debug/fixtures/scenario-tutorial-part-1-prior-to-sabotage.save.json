@@ -1,7 +1,7 @@
 {
   "username": "scenario_user",
-  "playerMailId": "SNET-B9K-NRS-SKL",
-  "currentTime": "2020-03-25T09:04:56.000Z",
+  "playerMailId": "SNET-RNU-DBO-5SD",
+  "currentTime": "2020-03-25T09:05:02.000Z",
   "hardware": {
     "cpu": {
       "id": "cpu-1ghz-single",
@@ -15,6 +15,7 @@
         "id": "ram-2gb",
         "name": "2GB RAM",
         "capacity": "2GB",
+        "capacityMB": 2048,
         "price": 150,
         "power": 3
       }
@@ -80,8 +81,8 @@
     "mission-board",
     "network-address-register",
     "network-scanner",
-    "file-manager",
-    "vpn-client"
+    "vpn-client",
+    "file-manager"
   ],
   "bankAccounts": [
     {
@@ -106,11 +107,11 @@
     {
       "id": "msg-welcome-manager",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-ZAG-LQB",
-      "fromName": "SourceNet Manager Reese",
-      "subject": "Hi from your manager - Reese",
-      "body": "Hey scenario_user!\n\nWelcome to the team! I'm Reese, and I'll be your manager here at SourceNet. I was present during your interview process and I have to say, you really impressed us with your skills and dedication.\n\nTo help you get started, I've attached a welcome bonus cheque for 1,000 credits. Just click on the attachment to deposit it into your bank account.\n\nTake some time to get comfortable with your setup. I'll be reaching out again soon with your first assignment.\n\nLooking forward to working with you!\n\n- Reese",
-      "timestamp": "2020-03-25T09:00:19.000Z",
+      "fromId": "SNET-MGR-7W5-TE1",
+      "fromName": "SourceNet Manager Avery",
+      "subject": "Hi from your manager - Avery",
+      "body": "Hey scenario_user!\n\nWelcome to the team! I'm Avery, and I'll be your manager here at SourceNet. I was present during your interview process and I have to say, you really impressed us with your skills and dedication.\n\nTo help you get started, I've attached a welcome bonus cheque for 1,000 credits. Just click on the attachment to deposit it into your bank account.\n\nTake some time to get comfortable with your setup. I'll be reaching out again soon with your first assignment.\n\nLooking forward to working with you!\n\n- Avery",
+      "timestamp": "2020-03-25T09:00:25.000Z",
       "read": true,
       "archived": false,
       "attachments": [
@@ -124,11 +125,11 @@
     {
       "id": "msg-mission-board-license",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-MZT-E9O",
-      "fromName": "SourceNet Manager Reese",
+      "fromId": "SNET-MGR-37X-PF4",
+      "fromName": "SourceNet Manager Avery",
       "subject": "Get Ready for Your First Mission",
-      "body": "Hey scenario_user!\n\nNow that you're all set up, it's time to get you started with actual work.\n\nI've attached a license for the SourceNet Mission Board application. This is where you'll find all available missions from our clients.\n\nTo get started:\n\n1. Click the attachment above to add the Mission Board license to your account\n2. Open the OSNet Portal from your app launcher\n3. Go to Software section - you'll see \"SourceNet Mission Board\" marked as \"Licensed\"\n4. Download and install it\n5. Once installed, open the Mission Board from your app launcher\n\nI've posted your first assignment there. It's a straightforward file repair job for one of our clients - perfect for learning the ropes.\n\nOnce you install the Mission Board, I'll send you the software licenses you'll need to complete the mission.\n\n- Reese",
-      "timestamp": "2020-03-25T09:00:54.000Z",
+      "body": "Hey scenario_user!\n\nNow that you're all set up, it's time to get you started with actual work.\n\nI've attached a license for the SourceNet Mission Board application. This is where you'll find all available missions from our clients.\n\nTo get started:\n\n1. Click the attachment above to add the Mission Board license to your account\n2. Open the OSNet Portal from your app launcher\n3. Go to Software section - you'll see \"SourceNet Mission Board\" marked as \"Licensed\"\n4. Download and install it\n5. Once installed, open the Mission Board from your app launcher\n\nI've posted your first assignment there. It's a straightforward file repair job for one of our clients - perfect for learning the ropes.\n\nOnce you install the Mission Board, I'll send you the software licenses you'll need to complete the mission.\n\n- Avery",
+      "timestamp": "2020-03-25T09:01:09.000Z",
       "read": true,
       "archived": false,
       "attachments": [
@@ -145,11 +146,11 @@
     {
       "id": "msg-tutorial-software-licenses",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-FDC-2SY",
-      "fromName": "SourceNet Manager Reese",
+      "fromId": "SNET-MGR-WHX-O8Y",
+      "fromName": "SourceNet Manager Avery",
       "subject": "Mission Software",
-      "body": "Great! Now that you have the Mission Board installed, let me get you set up with the tools you'll need for your first mission.\n\nI've attached free licenses for the essential software (total value: $1,350):\n\n- SourceNet VPN Client ($500): Secure access to client networks\n- Network Address Register ($200): Manages your network connections\n- Network Scanner ($300): Finds machines and file systems on networks\n- File Manager ($350): Access and repair files on remote systems\n\nInstallation steps:\n\n1. Click all the attachments above to add them to your account\n2. Open the Portal and install all four software applications\n3. Once installed, open the Mission Board and accept the \"Log File Repair\" mission\n\nWhen you accept the mission, you'll receive the network credentials for ClientA-Corporate as an attachment. Use the Network Address Register to add them to your NAR.\n\nThe mission objectives are straightforward:\n- Connect to ClientA-Corporate network via VPN\n- Scan the network to find their file server\n- Use File Manager to detect and repair corrupted log files\n\nYour Mission Board will track each objective as you complete them.\n\nGood luck!\n\n- Reese",
-      "timestamp": "2020-03-25T09:01:31.000Z",
+      "body": "Great! Now that you have the Mission Board installed, let me get you set up with the tools you'll need for your first mission.\n\nI've attached free licenses for the essential software (total value: $1,350):\n\n- SourceNet VPN Client ($500): Secure access to client networks\n- Network Address Register ($200): Manages your network connections\n- Network Scanner ($300): Finds machines and file systems on networks\n- File Manager ($350): Access and repair files on remote systems\n\nInstallation steps:\n\n1. Click all the attachments above to add them to your account\n2. Open the Portal and install all four software applications\n3. Once installed, open the Mission Board and accept the \"Log File Repair\" mission\n\nWhen you accept the mission, you'll receive the network credentials for ClientA-Corporate as an attachment. Use the Network Address Register to add them to your NAR.\n\nThe mission objectives are straightforward:\n- Connect to ClientA-Corporate network via VPN\n- Scan the network to find their file server\n- Use File Manager to detect and repair corrupted log files\n\nYour Mission Board will track each objective as you complete them.\n\nGood luck!\n\n- Avery",
+      "timestamp": "2020-03-25T09:02:39.000Z",
       "read": true,
       "archived": false,
       "attachments": [
@@ -188,13 +189,13 @@
       ]
     },
     {
-      "id": "msg-briefing-tutorial-part-1-1770916977211",
+      "id": "msg-briefing-tutorial-part-1-1771508803945",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-3WW-JB9",
-      "fromName": "SourceNet Manager Reese",
+      "fromId": "SNET-MGR-XKP-F6Z",
+      "fromName": "SourceNet Manager Avery",
       "subject": "ClientA Network Credentials",
-      "body": "Perfect! Now that you've accepted the mission, here are the network credentials for ClientA-Corporate.\n\nClick the attachment above to add it to your Network Address Register. Then you can use your VPN Client to connect to their network.\n\nRemember the mission objectives:\n1. Connect to ClientA-Corporate network\n2. Scan the network to find file servers\n3. Use File Manager to repair corrupted log files\n\nYou've got this!\n\n- Reese",
-      "timestamp": "2020-03-25T09:04:11.000Z",
+      "body": "Perfect! Now that you've accepted the mission, here are the network credentials for ClientA-Corporate.\n\nClick the attachment above to add it to your Network Address Register. Then you can use your VPN Client to connect to their network.\n\nRemember the mission objectives:\n1. Connect to ClientA-Corporate network\n2. Scan the network to find file servers\n3. Use File Manager to repair corrupted log files\n\nYou've got this!\n\n- Avery",
+      "timestamp": "2020-03-25T09:04:26.000Z",
       "read": true,
       "archived": false,
       "attachments": [
@@ -211,7 +212,7 @@
       ]
     }
   ],
-  "managerName": "Reese",
+  "managerName": "Avery",
   "windows": [],
   "reputation": 9,
   "reputationCountdown": null,
@@ -439,6 +440,13 @@
             "from": "manager",
             "subject": "What happened?!",
             "templateId": "tutorial-1-failure"
+          },
+          {
+            "id": "tutorial-simpler",
+            "delay": 30000,
+            "from": "manager",
+            "subject": "Let's try something simpler",
+            "templateId": "tutorial-2-intro"
           }
         ],
         "note": "Bank overdraft message triggered by Banking System (not story)"
@@ -451,8 +459,8 @@
       ]
     },
     "status": "active",
-    "startTime": "2020-03-25T09:04:11.000Z",
-    "acceptedTime": "2020-03-25T09:04:11.000Z",
+    "startTime": "2020-03-25T09:04:26.000Z",
+    "acceptedTime": "2020-03-25T09:04:26.000Z",
     "deadlineTime": null
   },
   "completedMissions": [],
@@ -512,8 +520,8 @@
   "downloadQueue": [],
   "transactions": [
     {
-      "id": "txn-cheque-1770916970277",
-      "date": "2020-03-25T09:00:48.000Z",
+      "id": "txn-cheque-1771508789873",
+      "date": "2020-03-25T09:01:31.000Z",
       "type": "income",
       "amount": 1000,
       "description": "Cheque Deposit",
@@ -554,12 +562,21 @@
   "clientStandings": {},
   "extensionOffers": {},
   "localSSDFiles": [],
+  "knownMaliciousFiles": [],
   "betterMessageRead": false,
   "hardwareUnlockMessageSent": false,
   "unlockedFeatures": [],
   "pendingHardwareUpgrades": {},
+  "spareHardware": [],
+  "purchasedServices": [],
+  "relayNodes": [],
+  "activeRelayChain": [],
+  "traceState": null,
+  "rebuildCount": 0,
   "creditThresholdForDecryption": null,
   "decryptionMessageSent": false,
+  "creditThresholdForSniffer": null,
+  "snifferMessageSent": false,
   "decryptionAlgorithms": [
     "aes-128",
     "aes-256"
@@ -572,6 +589,7 @@
     "uploadDestinations": []
   },
   "missionAvDetections": [],
+  "missionPasswordCracks": [],
   "activePassiveSoftware": [],
   "networkRegistry": {
     "networks": [
@@ -582,19 +600,20 @@
         "bandwidth": 50,
         "accessible": true,
         "discovered": true,
-        "accessGrantedDate": "2026-02-12T17:22:57.591Z",
+        "hostile": false,
+        "accessGrantedDate": "2026-02-19T13:46:44.760Z",
         "logs": [
           {
-            "id": "log-1770916980371-nsckzw5r1",
-            "timestamp": "2020-03-25T09:04:24.000Z",
+            "id": "log-1771508807296-thwm2zgnk",
+            "timestamp": "2020-03-25T09:04:37.000Z",
             "type": "remote",
             "action": "connect",
             "user": "scenario_user",
             "note": "Connected via VPN"
           },
           {
-            "id": "log-1770916980371-ztgp0pov8",
-            "timestamp": "2020-03-25T09:04:24.000Z",
+            "id": "log-1771508807296-5mwsimxoa",
+            "timestamp": "2020-03-25T09:04:37.000Z",
             "type": "remote",
             "action": "connect",
             "user": "scenario_user",
@@ -613,6 +632,7 @@
         ],
         "fileSystemId": "fs-clienta-01",
         "accessible": true,
+        "requiresCredentials": false,
         "logs": []
       }
     ],
@@ -623,62 +643,73 @@
           {
             "name": "log_2024_01.txt",
             "size": "2.5 KB",
-            "corrupted": true
+            "corrupted": true,
+            "status": "normal"
           },
           {
             "name": "log_2024_02.txt",
             "size": "3.1 KB",
-            "corrupted": true
+            "corrupted": true,
+            "status": "normal"
           },
           {
             "name": "log_2024_03.txt",
             "size": "2.8 KB",
-            "corrupted": true
+            "corrupted": true,
+            "status": "normal"
           },
           {
             "name": "log_2024_04.txt",
             "size": "3.2 KB",
-            "corrupted": true
+            "corrupted": true,
+            "status": "normal"
           },
           {
             "name": "log_2024_05.txt",
             "size": "2.9 KB",
-            "corrupted": true
+            "corrupted": true,
+            "status": "normal"
           },
           {
             "name": "log_2024_06.txt",
             "size": "3.0 KB",
-            "corrupted": true
+            "corrupted": true,
+            "status": "normal"
           },
           {
             "name": "log_2024_07.txt",
             "size": "2.7 KB",
-            "corrupted": true
+            "corrupted": true,
+            "status": "normal"
           },
           {
             "name": "log_2024_08.txt",
             "size": "3.3 KB",
-            "corrupted": true
+            "corrupted": true,
+            "status": "normal"
           },
           {
             "name": "log_2023_11.txt",
             "size": "2.4 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           },
           {
             "name": "log_2023_12.txt",
             "size": "2.6 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           },
           {
             "name": "system.log",
             "size": "1.2 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           }
         ]
       }
     ]
   },
-  "savedAt": "2026-02-12T17:23:03.385Z",
-  "saveName": "25/03/2020 09:04:56"
+  "savedAt": "2026-02-19T13:46:51.012Z",
+  "saveName": "25/03/2020 09:05:02"
 }

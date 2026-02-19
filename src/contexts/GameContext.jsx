@@ -42,6 +42,7 @@ import networkRegistry from '../systems/NetworkRegistry';
 import { applyPendingHardware } from '../systems/HardwareInstallationSystem';
 import { getTotalStorageCapacityGB, trimFilesToFitCapacity } from '../systems/StorageSystem';
 import { useAntivirusScanner } from '../systems/useAntivirusScanner';
+import { generateRelayNodes as genRelayNodes } from '../systems/RelaySystem';
 
 export const GameContext = createContext();
 
@@ -174,20 +175,39 @@ export const GameProvider = ({ children }) => {
   // ===== HARDWARE & SOFTWARE UNLOCK SYSTEM =====
   const [betterMessageRead, setBetterMessageRead] = useState(false); // Track if tutorial "better" message was read
   const [hardwareUnlockMessageSent, setHardwareUnlockMessageSent] = useState(false); // Track if hardware unlock message was sent
-  const [unlockedFeatures, setUnlockedFeatures] = useState([]); // Array of unlocked feature IDs (e.g., 'network-adapters')
+  const [unlockedFeatures, _setUnlockedFeatures] = useState([]); // Array of unlocked feature IDs (e.g., 'network-adapters')
+  const unlockedFeaturesRef = useRef([]); // Ref always in sync — avoids stale closures in event handlers and saveGame
+  // Wrapper that keeps ref in sync with state on every update
+  const setUnlockedFeatures = useCallback((updater) => {
+    _setUnlockedFeatures(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      unlockedFeaturesRef.current = next;
+      return next;
+    });
+  }, []);
   const [pendingHardwareUpgrades, setPendingHardwareUpgrades] = useState({}); // Hardware queued for install on reboot
   const [lastAppliedHardware, setLastAppliedHardware] = useState([]); // Hardware applied in last reboot (for boot message)
   const [spareHardware, setSpareHardware] = useState([]); // Removed hardware items available for re-install or sale
+  const [purchasedServices, setPurchasedServices] = useState([]); // Array of purchased service IDs (e.g., 'relay-service-standard')
 
   // ===== FUTURE CONTENT TEASE SYSTEM =====
   const [creditThresholdForDecryption, setCreditThresholdForDecryption] = useState(null); // Credit threshold for decryption tease message
   const [decryptionMessageSent, setDecryptionMessageSent] = useState(false); // Track if decryption tease message was sent
+  const [creditThresholdForSniffer, setCreditThresholdForSniffer] = useState(null); // Credit threshold for sniffer intro message
+  const [snifferMessageSent, setSnifferMessageSent] = useState(false); // Track if sniffer intro message was sent
 
   // ===== DECRYPTION SYSTEM =====
   const [decryptionAlgorithms, setDecryptionAlgorithms] = useState(['aes-128', 'aes-256']); // Available decryption algorithms
   const [missionDecryptionOperations, setMissionDecryptionOperations] = useState({ decrypted: new Set() }); // Track decrypted files for mission objectives
   const [missionUploadOperations, setMissionUploadOperations] = useState({ uploaded: new Set(), uploadDestinations: new Map() }); // Track uploaded files for mission objectives
   const [missionAvDetections, setMissionAvDetections] = useState(new Set()); // Track AV-detected malware files for mission objectives
+  const [missionPasswordCracks, setMissionPasswordCracks] = useState(new Set()); // Track cracked files for mission objectives
+
+  // ===== RELAY & TRACE SYSTEM =====
+  const [relayNodes, setRelayNodes] = useState([]); // Array of relay node objects
+  const [activeRelayChain, setActiveRelayChain] = useState([]); // Ordered array of relay node IDs for current connection
+  const [traceState, setTraceState] = useState(null); // { active: boolean, ettRemaining: number, startTime: number } or null
+  const [rebuildCount, setRebuildCount] = useState(0); // Number of system rebuilds (max 2 before fired)
 
   // ===== PASSIVE SOFTWARE SYSTEM =====
   const [activePassiveSoftware, setActivePassiveSoftware] = useState([]); // Array of active passive software IDs
@@ -353,14 +373,26 @@ export const GameProvider = ({ children }) => {
       }
     };
 
+    const handlePasswordCracked = (data) => {
+      if (data.fileName && activeMission) {
+        setMissionPasswordCracks(prev => {
+          const next = new Set(prev);
+          next.add(data.fileName);
+          return next;
+        });
+      }
+    };
+
     triggerEventBus.on('fileDecryptionComplete', handleDecryptionComplete);
     triggerEventBus.on('fileUploadComplete', handleUploadComplete);
     triggerEventBus.on('avThreatDetected', handleAvThreatDetected);
+    triggerEventBus.on('passwordCracked', handlePasswordCracked);
 
     return () => {
       triggerEventBus.off('fileDecryptionComplete', handleDecryptionComplete);
       triggerEventBus.off('fileUploadComplete', handleUploadComplete);
       triggerEventBus.off('avThreatDetected', handleAvThreatDetected);
+      triggerEventBus.off('passwordCracked', handlePasswordCracked);
     };
   }, [activeMission]);
 
@@ -371,6 +403,7 @@ export const GameProvider = ({ children }) => {
     setMissionDecryptionOperations({ decrypted: new Set() });
     setMissionUploadOperations({ uploaded: new Set(), uploadDestinations: new Map() });
     setMissionAvDetections(new Set());
+    setMissionPasswordCracks(new Set());
   }, [activeMission?.missionId]);
 
   // Initialize procedural missions when "Better" message is read (after tutorial-part-2)
@@ -635,6 +668,9 @@ export const GameProvider = ({ children }) => {
       // Only handle objectives from the current active mission
       if (data.missionId !== activeMission.missionId) return;
 
+      // Story missions don't get extensions
+      if (activeMission.oneTime) return;
+
       // Get objective progress (excluding verification)
       const { completed, total, isAllRealComplete } = getObjectiveProgress(activeMission.objectives);
 
@@ -740,9 +776,12 @@ export const GameProvider = ({ children }) => {
               });
               deviceIps.push(fs.ip);
 
+              // Merge deletedFiles into files array with status: 'deleted'
+              const normalFiles = (fs.files || []).map(f => ({ ...f, status: f.status || 'normal' }));
+              const deletedFileEntries = (fs.deletedFiles || []).map(f => ({ ...f, status: 'deleted' }));
               networkRegistry.registerFileSystem({
                 id: fs.id,
-                files: fs.files || [],
+                files: [...normalFiles, ...deletedFileEntries],
               });
             });
           }
@@ -1099,6 +1138,35 @@ export const GameProvider = ({ children }) => {
     return () => unsubscribe();
   }, [creditThresholdForDecryption, decryptionMessageSent, username, managerName, timeSpeed, addMessage]);
 
+  // Sniffer intro message trigger: when credits reach threshold after behind-enemy-lines completion
+  useEffect(() => {
+    if (creditThresholdForSniffer === null || snifferMessageSent) return;
+
+    let sent = false;
+    const handleCreditsChanged = (data) => {
+      if (sent) return;
+      const { newBalance } = data;
+
+      if (newBalance >= creditThresholdForSniffer) {
+        sent = true;
+        console.log('💰 Sniffer intro trigger met (credits:', newBalance, '>= threshold:', creditThresholdForSniffer, ')');
+        setSnifferMessageSent(true);
+
+        scheduleGameTimeCallback(() => {
+          setUnlockedFeatures(prev => prev.includes('sniffer-tooling') ? prev : [...prev, 'sniffer-tooling']);
+          triggerEventBus.emit('storyEventTriggered', {
+            storyEventId: 'evt-sniffer-intro',
+            eventId: 'msg-sniffer-intro',
+            message: { id: 'msg-sniffer-intro', templateId: 'sniffer-intro' },
+          });
+        }, 5000, timeSpeed);
+      }
+    };
+
+    const unsubscribe = triggerEventBus.on('creditsChanged', handleCreditsChanged);
+    return () => unsubscribe();
+  }, [creditThresholdForSniffer, snifferMessageSent, timeSpeed]);
+
   // Decryption tooling unlock: when the decryption message is read
   useEffect(() => {
     const handleMessageRead = (data) => {
@@ -1319,6 +1387,18 @@ export const GameProvider = ({ children }) => {
           triggerEventBus.emit('passiveSoftwareStarted', { softwareId });
         });
       }
+      return updated;
+    });
+  }, []);
+
+  // Stop a passive software (frees RAM/resources)
+  const stopPassiveSoftware = useCallback((softwareId) => {
+    setActivePassiveSoftware((prev) => {
+      if (!prev.includes(softwareId)) return prev;
+      const updated = prev.filter(id => id !== softwareId);
+      queueMicrotask(() => {
+        triggerEventBus.emit('passiveSoftwareStopped', { softwareId });
+      });
       return updated;
     });
   }, []);
@@ -1578,6 +1658,7 @@ export const GameProvider = ({ children }) => {
           bandwidth: network.bandwidth,
           accessible: false,
           discovered: true,
+          hostile: network.hostile || false,
         });
 
         // Register devices and file systems
@@ -1591,8 +1672,14 @@ export const GameProvider = ({ children }) => {
                 ip: fs.ip,
                 hostname: fs.name.split('/')[0],  // Base hostname without file system suffix
                 fileSystemIds: [],
+                requiresCredentials: false,
                 logs: []
               });
+            }
+
+            // If any file system on this device requires credentials, mark the device
+            if (fs.requiresCredentials) {
+              devicesByIp.get(fs.ip).requiresCredentials = true;
             }
 
             const device = devicesByIp.get(fs.ip);
@@ -1619,17 +1706,20 @@ export const GameProvider = ({ children }) => {
               networkId: network.networkId,
               fileSystemIds: device.fileSystemIds,  // Array of file system IDs
               accessible: false,
+              requiresCredentials: device.requiresCredentials,
               logs: device.logs
             });
 
             console.log(`📡 NetworkRegistry: Registered ${device.hostname} (${device.ip}) with ${device.fileSystemIds.length} file systems on ${network.networkName}`);
           });
 
-          // Register individual file systems
+          // Register individual file systems (merge deletedFiles with status: 'deleted')
           network.fileSystems.forEach(fs => {
+            const normalFiles = (fs.files || []).map(f => ({ ...f, status: f.status || 'normal' }));
+            const deletedFileEntries = (fs.deletedFiles || []).map(f => ({ ...f, status: 'deleted' }));
             networkRegistry.registerFileSystem({
               id: fs.id,
-              files: fs.files || [],
+              files: [...normalFiles, ...deletedFileEntries],
               fileSystemName: fs.fileSystemName
             });
           });
@@ -1669,7 +1759,20 @@ export const GameProvider = ({ children }) => {
 
       addMessage(briefingWithTimestamp);
     }
-  }, [addMessage, currentTime, username, managerName]);
+
+    // Send intro message if defined (fires on acceptance)
+    const introMessage = mission.triggers?.start?.introMessage;
+    if (introMessage) {
+      const delay = introMessage.delay || 0;
+      console.log(`📧 Scheduling intro message for ${mission.title} with delay=${delay}`);
+      scheduleGameTimeCallback(() => {
+        triggerEventBus.emit('sendMissionIntroMessage', {
+          missionId: mission.missionId,
+          introMessage,
+        });
+      }, delay, timeSpeed);
+    }
+  }, [addMessage, currentTime, username, managerName, timeSpeed]);
 
   // Dismiss a procedural mission (removes from pool, frees client, generates replacement)
   const dismissMission = useCallback((mission) => {
@@ -2118,6 +2221,10 @@ export const GameProvider = ({ children }) => {
             managerName: managerName,
           };
           message = createMessageFromTemplate(msgConfig.templateId, messageData);
+          // Use deterministic ID from config when provided (needed for messageRead triggers)
+          if (msgConfig.id && message) {
+            message.id = msgConfig.id.startsWith('msg-') ? msgConfig.id : `msg-${msgConfig.id}`;
+          }
         } else if (msgConfig.body) {
           // Direct body - replace placeholders
           const messageBody = msgConfig.body
@@ -2229,7 +2336,7 @@ export const GameProvider = ({ children }) => {
     return () => unsubscribe();
   }, [messages]);
 
-  // Algorithm pack installation → update decryptionAlgorithms + check for both packs
+  // Algorithm pack installation → update decryptionAlgorithms
   useEffect(() => {
     const handleSoftwareInstalled = (data) => {
       if (data.softwareId === 'algorithm-pack-blowfish') {
@@ -2241,23 +2348,133 @@ export const GameProvider = ({ children }) => {
           prev.includes('rsa-2048') ? prev : [...prev, 'rsa-2048']
         );
       }
-
-      // Check if both packs are now installed (including the current install)
-      // software is an array of ID strings, not objects
-      const hasBlowfish = data.softwareId === 'algorithm-pack-blowfish' || software.includes('algorithm-pack-blowfish');
-      const hasRsa = data.softwareId === 'algorithm-pack-rsa' || software.includes('algorithm-pack-rsa');
-
-      if (hasBlowfish && hasRsa) {
-        console.log('🎉 Both algorithm packs installed - sending story teaser');
-        scheduleGameTimeCallback(() => {
-          addMessage(createPlaceholderStoryMessage(username, managerName));
-        }, 10000, timeSpeed);
-      }
     };
 
     const unsubscribe = triggerEventBus.on('softwareInstalled', handleSoftwareInstalled);
     return () => unsubscribe();
+  }, []);
+
+  // Both algorithm packs installed → send story teaser (useEffect avoids stale closure)
+  const algoTeaserSentRef = useRef(false);
+  useEffect(() => {
+    if (software.includes('algorithm-pack-blowfish') && software.includes('algorithm-pack-rsa') && !algoTeaserSentRef.current) {
+      algoTeaserSentRef.current = true;
+      console.log('🎉 Both algorithm packs installed - sending story teaser');
+      scheduleGameTimeCallback(() => {
+        addMessage(createPlaceholderStoryMessage(username, managerName));
+      }, 10000, timeSpeed);
+    }
   }, [software, username, managerName, timeSpeed, addMessage]);
+
+  // Pre-mission tool delivery: send cracking-intro when story teaser is read,
+  // sniffer-intro when relay-practice-success is read (tools must be available before missions appear)
+  useEffect(() => {
+    const handleToolDelivery = (data) => {
+      if (data.messageId === 'msg-story-teaser-post-decryption') {
+        console.log('📦 Story teaser read - sending cracking-intro in 5s game time');
+        scheduleGameTimeCallback(() => {
+          triggerEventBus.emit('storyEventTriggered', {
+            storyEventId: 'evt-cracking-intro',
+            eventId: 'msg-cracking-intro',
+            message: { id: 'msg-cracking-intro', templateId: 'cracking-intro' },
+          });
+        }, 5000, timeSpeed);
+      }
+      if (data.messageId === 'msg-cracking-intro') {
+        console.log('📦 Cracking intro read - unlocking cracking-tooling');
+        if (!unlockedFeatures.includes('cracking-tooling')) {
+          setUnlockedFeatures(prev => prev.includes('cracking-tooling') ? prev : [...prev, 'cracking-tooling']);
+        }
+      }
+      if (data.messageId === 'msg-relay-practice-success') {
+        console.log('📦 Relay practice success read - setting sniffer credit threshold to 50000');
+        setCreditThresholdForSniffer(50000);
+      }
+    };
+
+    const unsubscribe = triggerEventBus.on('messageRead', handleToolDelivery);
+    return () => unsubscribe();
+  }, [timeSpeed, unlockedFeatures]);
+
+  // Listen for feature unlock events from scripted events
+  useEffect(() => {
+    const handleUnlockFeature = ({ featureId }) => {
+      if (featureId && !unlockedFeatures.includes(featureId)) {
+        setUnlockedFeatures(prev => [...prev, featureId]);
+        console.log(`🔓 Feature unlocked: ${featureId}`);
+      }
+    };
+
+    const handleGenerateRelayNodes = ({ count }) => {
+      const nodes = genRelayNodes(count || 6);
+      setRelayNodes(prev => [...prev, ...nodes]);
+      console.log(`🔗 Generated ${nodes.length} relay nodes`);
+    };
+
+    const handleStartTrace = ({ totalETT }) => {
+      if (totalETT && currentTime) {
+        setTraceState({
+          active: true,
+          totalETT,
+          startTime: currentTime.getTime(),
+        });
+        console.log(`🔴 Trace started! ETT: ${totalETT}ms`);
+
+        // Auto-activate trace monitor if installed but not running
+        setActivePassiveSoftware(prev => {
+          if (software.includes('trace-monitor') && !prev.includes('trace-monitor')) {
+            console.log('📡 Auto-activating trace monitor for trace');
+            return [...prev, 'trace-monitor'];
+          }
+          return prev;
+        });
+      }
+    };
+
+    const handleResetGameSpeed = () => {
+      console.log('⏱️ Resetting game speed to 1x (scripted event)');
+      setTimeSpeed(TIME_SPEEDS.NORMAL);
+    };
+
+    const unsub1 = triggerEventBus.on('unlockFeature', handleUnlockFeature);
+    const unsub2 = triggerEventBus.on('generateRelayNodes', handleGenerateRelayNodes);
+    const unsub3 = triggerEventBus.on('startTrace', handleStartTrace);
+    const unsub4 = triggerEventBus.on('resetGameSpeed', handleResetGameSpeed);
+    return () => { unsub1(); unsub2(); unsub3(); unsub4(); };
+  }, [unlockedFeatures, currentTime, software]);
+
+  // Clear trace when no hostile connections remain
+  useEffect(() => {
+    if (!traceState?.active) return;
+    const hasHostileConnection = activeConnections.some(conn => {
+      const network = networkRegistry.getNetwork(conn.networkId);
+      return network?.hostile === true;
+    });
+    if (!hasHostileConnection) {
+      setTraceState(null);
+      console.log('🟢 Trace cleared - no hostile connections');
+    }
+  }, [activeConnections, traceState]);
+
+  // After reboot: if relay-setup-pending is flagged, send the relay-unlock message
+  useEffect(() => {
+    const handleDesktopLoaded = () => {
+      if (unlockedFeaturesRef.current.includes('relay-setup-pending')) {
+        console.log('🔄 Reboot detected with relay-setup-pending — sending relay unlock message in 5s');
+        setUnlockedFeatures(prev => prev.filter(f => f !== 'relay-setup-pending'));
+        scheduleGameTimeCallback(() => {
+          triggerEventBus.emit('storyEventTriggered', {
+            storyEventId: 'evt-relay-unlock-post-reboot',
+            eventId: 'msg-relay-unlock',
+            message: { id: 'msg-relay-unlock', templateId: 'relay-system-unlock' },
+          });
+        }, 5000, timeSpeed);
+      }
+    };
+
+    const unsub = triggerEventBus.on('desktopLoaded', handleDesktopLoaded);
+    return () => unsub();
+  }, [timeSpeed]);
 
   // Set decryption tease threshold when player reads the "Investigation Missions Unlocked" message
   useEffect(() => {
@@ -2901,21 +3118,46 @@ export const GameProvider = ({ children }) => {
       const { missionId, introMessage } = data;
       console.log(`📧 Handling intro message for mission: ${missionId}`);
 
-      const template = MESSAGE_TEMPLATES[introMessage.templateId];
-      if (!template) {
-        console.error(`❌ Message template not found: ${introMessage.templateId}`);
-        return;
+      let message;
+      if (introMessage.templateId) {
+        const template = MESSAGE_TEMPLATES[introMessage.templateId];
+        if (!template) {
+          console.error(`❌ Message template not found: ${introMessage.templateId}`);
+          return;
+        }
+
+        // Create message from template
+        message = createMessageFromTemplate(introMessage.templateId, {
+          username,
+          managerName,
+        });
+
+        if (!message) {
+          console.error(`❌ Failed to create message from template: ${introMessage.templateId}`);
+          return;
+        }
+      } else {
+        // Inline message (no template) — build from introMessage fields
+        const replacePlaceholders = (str) => {
+          if (!str) return str;
+          return str.replace(/\{username\}/g, username).replace(/\{managerName\}/g, managerName);
+        };
+        message = {
+          id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          from: replacePlaceholders(introMessage.from || 'SourceNet Manager'),
+          fromId: replacePlaceholders(introMessage.fromId || 'SNET-MGR'),
+          fromName: replacePlaceholders(introMessage.fromName || 'SourceNet Manager'),
+          subject: replacePlaceholders(introMessage.subject || 'Mission Update'),
+          body: replacePlaceholders(introMessage.body || ''),
+          read: false,
+          archived: false,
+          attachments: introMessage.attachments || [],
+        };
       }
 
-      // Create message from template
-      const message = createMessageFromTemplate(introMessage.templateId, {
-        username,
-        managerName,
-      });
-
-      if (!message) {
-        console.error(`❌ Failed to create message from template: ${introMessage.templateId}`);
-        return;
+      // Merge in any attachments from the introMessage definition (if not already in template)
+      if (introMessage.attachments && introMessage.attachments.length > 0 && (!message.attachments || message.attachments.length === 0)) {
+        message.attachments = introMessage.attachments;
       }
 
       // Set timestamp
@@ -2993,9 +3235,17 @@ export const GameProvider = ({ children }) => {
       unlockedFeatures,
       pendingHardwareUpgrades,
       spareHardware,
+      purchasedServices,
+      // Relay & trace system
+      relayNodes,
+      activeRelayChain,
+      traceState,
+      rebuildCount,
       // Future content tease system
       creditThresholdForDecryption,
       decryptionMessageSent,
+      creditThresholdForSniffer,
+      snifferMessageSent,
       // Decryption system
       decryptionAlgorithms,
       missionDecryptionOperations: { decrypted: Array.from(missionDecryptionOperations.decrypted || []) },
@@ -3004,6 +3254,7 @@ export const GameProvider = ({ children }) => {
         uploadDestinations: Array.from((missionUploadOperations.uploadDestinations || new Map()).entries()),
       },
       missionAvDetections: Array.from(missionAvDetections || []),
+      missionPasswordCracks: Array.from(missionPasswordCracks || []),
       // Passive software system
       activePassiveSoftware,
       // Global Network System
@@ -3016,8 +3267,9 @@ export const GameProvider = ({ children }) => {
     activeConnections, lastScanResults, discoveredDevices, fileManagerConnections, lastFileOperation,
     downloadQueue, transactions, licensedSoftware, bankruptcyCountdown, lastInterestTime, bankingMessagesSent, reputationMessagesSent,
     proceduralMissionsEnabled, missionPool, pendingChainMissions, activeClientIds, clientStandings, extensionOffers, localSSDFiles, knownMaliciousFiles,
-    betterMessageRead, hardwareUnlockMessageSent, unlockedFeatures, pendingHardwareUpgrades, spareHardware, creditThresholdForDecryption, decryptionMessageSent,
-    decryptionAlgorithms, missionDecryptionOperations, missionUploadOperations, missionAvDetections, activePassiveSoftware]);
+    betterMessageRead, hardwareUnlockMessageSent, unlockedFeatures, pendingHardwareUpgrades, spareHardware, purchasedServices,
+    relayNodes, activeRelayChain, traceState, rebuildCount, creditThresholdForDecryption, decryptionMessageSent, creditThresholdForSniffer, snifferMessageSent,
+    decryptionAlgorithms, missionDecryptionOperations, missionUploadOperations, missionAvDetections, missionPasswordCracks, activePassiveSoftware]);
 
   // Reboot system - also applies any pending hardware upgrades
   const rebootSystem = useCallback(() => {
@@ -3129,6 +3381,12 @@ export const GameProvider = ({ children }) => {
     setPendingHardwareUpgrades({});
     setLastAppliedHardware([]);
     setSpareHardware([]);
+    setPurchasedServices([]);
+    // Reset relay & trace system
+    setRelayNodes([]);
+    setActiveRelayChain([]);
+    setTraceState(null);
+    setRebuildCount(0);
     // Reset future content tease system
     setCreditThresholdForDecryption(null);
     setDecryptionMessageSent(false);
@@ -3136,6 +3394,8 @@ export const GameProvider = ({ children }) => {
     setDecryptionAlgorithms(['aes-128', 'aes-256']);
     setMissionDecryptionOperations({ decrypted: new Set() });
     setMissionUploadOperations({ uploaded: new Set(), uploadDestinations: new Map() });
+    setMissionAvDetections(new Set());
+    setMissionPasswordCracks(new Set());
     // Reset passive software
     setActivePassiveSoftware([]);
     // Reset ransomware lockout
@@ -3247,10 +3507,19 @@ export const GameProvider = ({ children }) => {
     setPendingHardwareUpgrades(gameState.pendingHardwareUpgrades ?? {});
     setLastAppliedHardware([]); // Don't restore - only set during reboot
     setSpareHardware(gameState.spareHardware ?? []);
+    setPurchasedServices(gameState.purchasedServices ?? []);
+
+    // Restore relay & trace system
+    setRelayNodes(gameState.relayNodes ?? []);
+    setActiveRelayChain(gameState.activeRelayChain ?? []);
+    setTraceState(gameState.traceState ?? null);
+    setRebuildCount(gameState.rebuildCount ?? 0);
 
     // Restore future content tease system
     setCreditThresholdForDecryption(gameState.creditThresholdForDecryption ?? null);
     setDecryptionMessageSent(gameState.decryptionMessageSent ?? false);
+    setCreditThresholdForSniffer(gameState.creditThresholdForSniffer ?? null);
+    setSnifferMessageSent(gameState.snifferMessageSent ?? false);
 
     // Restore decryption system
     setDecryptionAlgorithms(gameState.decryptionAlgorithms ?? ['aes-128', 'aes-256']);
@@ -3262,6 +3531,7 @@ export const GameProvider = ({ children }) => {
       uploadDestinations: new Map(gameState.missionUploadOperations?.uploadDestinations ?? []),
     });
     setMissionAvDetections(new Set(gameState.missionAvDetections ?? []));
+    setMissionPasswordCracks(new Set(gameState.missionPasswordCracks ?? []));
 
     // Restore passive software
     setActivePassiveSoftware(gameState.activePassiveSoftware ?? []);
@@ -3439,10 +3709,13 @@ export const GameProvider = ({ children }) => {
     setMissionUploadOperations,
     missionAvDetections,
     setMissionAvDetections,
+    missionPasswordCracks,
+    setMissionPasswordCracks,
 
     // Passive Software
     activePassiveSoftware,
     startPassiveSoftware,
+    stopPassiveSoftware,
 
     // Procedural Mission System
     proceduralMissionsEnabled,
@@ -3470,6 +3743,18 @@ export const GameProvider = ({ children }) => {
     lastAppliedHardware,
     spareHardware,
     setSpareHardware,
+    purchasedServices,
+    setPurchasedServices,
+
+    // Relay & Trace System
+    relayNodes,
+    setRelayNodes,
+    activeRelayChain,
+    setActiveRelayChain,
+    traceState,
+    setTraceState,
+    rebuildCount,
+    setRebuildCount,
 
     // Actions
     initializePlayer,

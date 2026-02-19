@@ -575,21 +575,49 @@ class StoryMissionManager {
     console.log(`✅ Setting up scripted event triggers for ${missionDef.missionId}`);
 
     missionDef.scriptedEvents.forEach((scriptedEvent) => {
-      const { type, objectiveId, delay } = scriptedEvent.trigger;
+      const { type, objectiveId, delay, requiredObjectives } = scriptedEvent.trigger;
       console.log(`✅ Subscribing to trigger: type=${type}, objectiveId=${objectiveId}`);
 
       if (type === 'afterObjectiveComplete') {
+        // For compound triggers (requiredObjectives), listen for any relevant objective completing
+        const allRelevantObjectives = requiredObjectives && requiredObjectives.length > 0
+          ? [objectiveId, ...requiredObjectives]
+          : [objectiveId];
+
         const unsubscribe = triggerEventBus.on('objectiveComplete', (data) => {
+          if (data.missionId !== missionDef.missionId) return;
+          if (!allRelevantObjectives.includes(data.objectiveId)) return;
+
           console.log(`✅ objectiveComplete: obj=${data.objectiveId}, mission=${data.missionId}`);
 
-          if (data.objectiveId === objectiveId && data.missionId === missionDef.missionId) {
-            console.log(`✅ Scripted event triggered: ${scriptedEvent.id}`);
-            // Use game-time-aware scheduling with persistence tracking
-            const payload = { missionId: missionDef.missionId, eventId: scriptedEvent.id, scriptedEvent };
-            this.schedulePendingEvent('scriptedEvent', payload, delay || 0, () => {
-              this.executeScriptedEvent(missionDef.missionId, scriptedEvent);
-            });
+          // Guard against duplicate scheduling
+          if (this.firedEvents.has(scriptedEvent.id)) return;
+
+          // For compound triggers, check ALL relevant objectives are complete
+          if (requiredObjectives && requiredObjectives.length > 0 && this.gameStateGetter) {
+            const gameState = this.gameStateGetter();
+            const completedObjIds = new Set(
+              (gameState.activeMission?.objectives || [])
+                .filter(o => o.status === 'complete')
+                .map(o => o.id)
+            );
+            // The completing objective may not be in state yet
+            completedObjIds.add(data.objectiveId);
+
+            const allMet = allRelevantObjectives.every(id => completedObjIds.has(id));
+            if (!allMet) {
+              console.log(`⏳ Deferring ${scriptedEvent.id}: waiting for ${allRelevantObjectives.filter(id => !completedObjIds.has(id)).join(', ')}`);
+              return;
+            }
           }
+
+          this.firedEvents.add(scriptedEvent.id);
+          console.log(`✅ Scripted event triggered: ${scriptedEvent.id}`);
+          // Use game-time-aware scheduling with persistence tracking
+          const payload = { missionId: missionDef.missionId, eventId: scriptedEvent.id, scriptedEvent };
+          this.schedulePendingEvent('scriptedEvent', payload, delay || 0, () => {
+            this.executeScriptedEvent(missionDef.missionId, scriptedEvent);
+          });
         });
 
         this.addUnsubscriber(missionDef.missionId, unsubscribe);
@@ -677,6 +705,27 @@ class StoryMissionManager {
         this.addUnsubscriber(missionDef.missionId, unsubscribe);
       }
 
+      // Handle missionAccepted trigger - fires when the mission is accepted by the player
+      if (type === 'missionAccepted') {
+        const unsubscribe = triggerEventBus.on('missionAccepted', (data) => {
+          console.log(`📋 missionAccepted: missionId=${data.missionId}, looking for: ${missionDef.missionId}`);
+
+          if (data.missionId === missionDef.missionId) {
+            if (!this.isMissionStillActive(missionDef.missionId)) {
+              console.log(`⚠️ Mission ${missionDef.missionId} no longer active, skipping ${scriptedEvent.id}`);
+              return;
+            }
+            console.log(`✅ missionAccepted trigger matched: ${scriptedEvent.id}`);
+            const payload = { missionId: missionDef.missionId, eventId: scriptedEvent.id, scriptedEvent };
+            this.schedulePendingEvent('scriptedEvent', payload, delay || 0, () => {
+              this.executeScriptedEvent(missionDef.missionId, scriptedEvent);
+            });
+          }
+        });
+
+        this.addUnsubscriber(missionDef.missionId, unsubscribe);
+      }
+
       // Handle eventBusEvent trigger - fires when a specific event bus event is emitted
       if (type === 'eventBusEvent') {
         const { eventName } = scriptedEvent.trigger;
@@ -735,18 +784,7 @@ class StoryMissionManager {
 
     console.log(`📋 Activating mission: ${mission.title} (${missionId})`);
 
-    // Check if mission has an intro message
-    const introMessage = mission.triggers?.start?.introMessage;
-    if (introMessage) {
-      console.log(`📧 Scheduling intro message for ${mission.title}`);
-      const delay = introMessage.delay || 0;
-
-      const payload = { missionId: mission.missionId, introMessage };
-      this.schedulePendingEvent('introMessage', payload, delay, () => {
-        console.log(`📧 Sending intro message for ${mission.title}`);
-        triggerEventBus.emit('sendMissionIntroMessage', payload);
-      });
-    }
+    // Note: introMessage is sent on acceptance, not activation (see GameContext.acceptMission)
 
     // Emit event that mission is now available
     console.log(`📡 Emitting missionAvailable event for ${mission.title}`);
@@ -876,6 +914,7 @@ class StoryMissionManager {
 
     this.missions.clear();
     this.unsubscribers.clear();
+    this.firedEvents.clear();
   }
 
   /**

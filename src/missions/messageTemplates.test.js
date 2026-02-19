@@ -110,4 +110,112 @@ describe('messageTemplates', () => {
       expect(message.subject).not.toContain('{missionTitle}');
     });
   });
+
+  describe('New story arc templates - existence and fields', () => {
+    it('should have lockdown-complete template with required fields', () => {
+      const template = MESSAGE_TEMPLATES['lockdown-complete'];
+      expect(template).toBeDefined();
+      expect(template.from).toBeDefined();
+      expect(template.subject).toBeDefined();
+      expect(template.body).toBeDefined();
+      expect(template.fromId).toBeDefined();
+      expect(template.subject).toBe('Data Recovered - Pacific Freight');
+    });
+
+    it('should have manhunt-success template with required fields', () => {
+      const template = MESSAGE_TEMPLATES['manhunt-success'];
+      expect(template).toBeDefined();
+      expect(template.from).toBeDefined();
+      expect(template.subject).toBeDefined();
+      expect(template.body).toBeDefined();
+      expect(template.fromId).toBeDefined();
+    });
+
+    it('should have manhunt-beta-discovered template with required fields', () => {
+      const template = MESSAGE_TEMPLATES['manhunt-beta-discovered'];
+      expect(template).toBeDefined();
+      expect(template.from).toBeDefined();
+      expect(template.subject).toBeDefined();
+      expect(template.body).toBeDefined();
+      expect(template.subject).toBe('Next Hop Found - DarkNode-Beta');
+    });
+
+    it('should have manhunt-origin-discovered template with required fields', () => {
+      const template = MESSAGE_TEMPLATES['manhunt-origin-discovered'];
+      expect(template).toBeDefined();
+      expect(template.from).toBeDefined();
+      expect(template.subject).toBeDefined();
+      expect(template.body).toBeDefined();
+      expect(template.subject).toBe('Origin Located - DarkNode-Origin');
+    });
+
+    it('should have sniffer-intro template', () => {
+      const template = MESSAGE_TEMPLATES['sniffer-intro'];
+      expect(template).toBeDefined();
+      expect(template.subject).toBe('New Tool Available - Network Sniffer');
+    });
+
+    it('should have relay-system-unlock template with trace warning', () => {
+      const template = MESSAGE_TEMPLATES['relay-system-unlock'];
+      expect(template).toBeDefined();
+      expect(template.body).toContain('TWO rebuilds');
+    });
+
+    it('should have cracking-intro template', () => {
+      const template = MESSAGE_TEMPLATES['cracking-intro'];
+      expect(template).toBeDefined();
+      expect(template.subject).toBe('Password Cracking Tools - Ready');
+    });
+
+    it('should have cracking-intrusion-alert template', () => {
+      const template = MESSAGE_TEMPLATES['cracking-intrusion-alert'];
+      expect(template).toBeDefined();
+      expect(template.subject).toBe('ALERT: They Found You');
+    });
+
+    it('should have relay-practice-intro template', () => {
+      const template = MESSAGE_TEMPLATES['relay-practice-intro'];
+      expect(template).toBeDefined();
+      expect(template.subject).toBe('Behind Enemy Lines - New Mission');
+    });
+  });
+
+  describe('createMessageFromTemplate - new templates', () => {
+    it('should create lockdown-complete message with placeholders replaced', () => {
+      const message = createMessageFromTemplate('lockdown-complete', {
+        username: 'agent_x',
+        managerName: 'Sam',
+      });
+
+      expect(message).toBeDefined();
+      expect(message.body).toContain('agent_x');
+      expect(message.body).toContain('Sam');
+      expect(message.body).not.toContain('{username}');
+      expect(message.body).not.toContain('{managerName}');
+    });
+
+    it('should create manhunt-success message', () => {
+      const message = createMessageFromTemplate('manhunt-success', {
+        username: 'test_user',
+        managerName: 'Jordan',
+      });
+
+      expect(message).toBeDefined();
+      expect(message.from).toBe('SourceNet Manager');
+      expect(message.body).toContain('test_user');
+      expect(message.body).toContain('Jordan');
+    });
+
+    it('should create sniffer-intro message', () => {
+      const message = createMessageFromTemplate('sniffer-intro', {
+        username: 'operative',
+        managerName: 'Alex',
+      });
+
+      expect(message).toBeDefined();
+      expect(message.subject).toBe('New Tool Available - Network Sniffer');
+      expect(message.body).toContain('operative');
+      expect(message.body).toContain('50,000 credits');
+    });
+  });
 });

@@ -16,6 +16,10 @@ import tutorialPart2 from './data/tutorial-part-2.json';
 import investigationIntro from './data/investigation-intro.json';
 import dataDetective from './data/data-detective.json';
 import ransomwareRecovery from './data/ransomware-recovery.json';
+import lockedOut from './data/locked-out.json';
+import behindEnemyLines from './data/behind-enemy-lines.json';
+import lockdown from './data/lockdown.json';
+import digitalManhunt from './data/digital-manhunt.json';
 
 /**
  * All story event definitions (initial welcome messages)
@@ -40,6 +44,10 @@ export const tutorialMissions = [
 export const storyMissions = [
   dataDetective,
   ransomwareRecovery,
+  lockedOut,
+  behindEnemyLines,
+  lockdown,
+  digitalManhunt,
 ];
 
 /**

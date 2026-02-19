@@ -630,6 +630,280 @@ On a separate note - the sophistication of this attack was unusual. Our security
 Sincerely,
 MetroLink Transit Authority`,
   },
+  // ===== PASSWORD CRACKING ARC TEMPLATES =====
+
+  // Story Mission 1: "Locked Out" - Password cracker intro
+  'cracking-intro': {
+    from: 'SourceNet Manager',
+    fromId: 'SNET-MGR-{random}',
+    fromName: 'SourceNet Manager {managerName}',
+    subject: 'Password Cracking Tools - Ready',
+    body: `{username},
+
+The Password Cracker is ready. I've cleared it for purchase in the Portal.
+
+Quick overview: some files are password-protected rather than encrypted. The Decryption Tool won't help you with those. The Password Cracker uses three methods:
+
+- DICTIONARY ATTACK: Fast, uses a word list. Install the Dictionary Packs from the Portal for better results.
+- BRUTE FORCE: Slow but guaranteed. Heavily CPU-dependent.
+- RAINBOW TABLE: Very fast lookup against pre-computed hash tables. You'll need to purchase the tables separately (they're large).
+
+One thing — the Password Cracker is a RAM hog. Your current memory might not be enough to run it alongside your other tools. I've flagged your account for RAM upgrades in the Portal. You may need to buy more memory and reboot before you can use the cracker effectively.
+
+Your first job is a straightforward one — a client who lost access to their own password-protected files. Good way to learn the tool. Check the Mission Board once you've installed everything.
+
+- {managerName}`,
+  },
+
+  // Story Mission 1: Post-intrusion — player's system is compromised
+  'cracking-intrusion-alert': {
+    from: 'SourceNet Manager',
+    fromId: 'SNET-MGR-{random}',
+    fromName: 'SourceNet Manager {managerName}',
+    subject: 'ALERT: They Found You',
+    body: `{username},
+
+We have a serious problem.
+
+Remember the ransomware group that hit MetroLink? They've been monitoring anyone who undid their work. That includes you.
+
+They just traced your connection and forced a disconnect. I'm getting reports that they attempted to breach your terminal. Our firewall held, but they know who you are now.
+
+This changes everything. From now on, you can't just connect directly to hostile networks. They'll see you coming.
+
+I'm arranging something — a relay system that bounces your connection through multiple nodes, making you much harder to trace. It'll be available in the Portal shortly.
+
+Your system is being rebuilt with new credentials. The rebuild requires a reboot to complete — go to the power menu and reboot now. Once the rebuild finishes, hostile actors won't be able to find you using your old identity.
+
+This one's on us — first rebuild is free. But understand this: if they mark you again, the rebuild gets expensive. And SourceNet has a limit. Three marks and you're out.
+
+Reboot now, and I'll have the relay tools ready when you're back.
+
+- {managerName}`,
+  },
+
+  // Story Mission 1: Aftermath — relay system unlock
+  'relay-system-unlock': {
+    from: 'SourceNet Manager',
+    fromId: 'SNET-MGR-{random}',
+    fromName: 'SourceNet Manager {managerName}',
+    subject: 'Relay System & Trace Monitor - Available',
+    body: `{username},
+
+Your system rebuild is complete. New credentials, clean slate. They won't find you the same way again.
+
+I've set up two things for you:
+
+1. VPN RELAY MODULE — Purchase this from the Portal (Software tab). It upgrades your VPN Client with relay routing. Instead of connecting directly, you bounce through relay nodes that mask your origin.
+
+2. TRACE MONITOR — Purchase this from the Portal too. A passive app that runs in the background and warns you when someone is actively tracing your connection. You'll hear beeping that speeds up as the trace gets closer. Pay attention to it.
+
+You'll also need to visit the Portal's new SERVICES tab and purchase the Standard Relay Service. This gives you your initial set of relay nodes. Without them, the relay module has nothing to work with.
+
+Here's how it works:
+- Open VPN Client and expand the relay panel
+- Select relay nodes to build your route
+- More nodes = harder to trace, but lower bandwidth and higher cost
+- When you're connected through relays, the Trace Monitor will show your estimated time before being traced
+
+WARNING: Relay nodes can be BURNED. If you're traced, all relays in your chain get compromised and become unusable. You can buy replacements from the Services tab, but that costs credits. Vary which relays you put at the front of your chain — the first relay always gets traced first.
+
+IMPORTANT: If you ARE fully traced, the consequences are serious. Your system will be rebuilt (again), and all relay nodes in your chain will be burned. You can survive TWO rebuilds total. After that, SourceNet will be forced to terminate your contract — we can't risk our infrastructure being compromised a third time.
+
+Think of relay nodes as expendable shields. Vary which ones go first in your chain. And if the beeping gets too fast, disconnect and regroup. Losing a mission is better than losing a rebuild.
+
+Take some time to set this up before your next mission. Practice connecting through relays to get comfortable with the system.
+
+- {managerName}`,
+  },
+
+  // Story Mission 2: "Behind Enemy Lines" — relay practice
+  'relay-practice-intro': {
+    from: 'SourceNet Manager',
+    fromId: 'SNET-MGR-{random}',
+    fromName: 'SourceNet Manager {managerName}',
+    subject: 'Behind Enemy Lines - New Mission',
+    body: `{username},
+
+The same threat actor group that hit MetroLink just attacked another client. Their network is under active surveillance by the attackers.
+
+This is your first real test of the relay system. You MUST connect through relay nodes — a direct connection will get you traced and burned immediately.
+
+Build your relay chain carefully:
+- More relays = longer before you're traced
+- Watch the bandwidth — your chain is only as fast as its slowest relay
+- Keep the Trace Monitor running. When you hear beeping, you need to finish up fast.
+
+Complete the investigation objectives before you're traced. If you get traced, you'll be forcibly disconnected and your relay nodes will be burned.
+
+This is the reality of the work now. The people we're investigating are watching for us.
+
+Good luck.
+
+- {managerName}`,
+  },
+
+  // Story Mission 2: Aftermath — generated missions may now have traces
+  'relay-practice-success': {
+    from: 'SourceNet Manager',
+    fromId: 'SNET-MGR-{random}',
+    fromName: 'SourceNet Manager {managerName}',
+    subject: 'Well Handled',
+    body: `{username},
+
+Nice work under pressure. Using relays effectively while maintaining operational tempo — that's the skillset that separates good operatives from great ones.
+
+A warning: some of the contract missions on the Mission Board may now involve networks monitored by hostile actors. These jobs will pay more, but you'll need to use your relay system and trace monitor. Check the mission briefing carefully — it'll tell you if a network is hostile.
+
+I'm working on something else — a way to take the fight to these threat actors directly. But I need time, and it'll require additional tools that aren't cheap. Keep taking contracts, keep building credits.
+
+When I have something, you'll be the first to know.
+
+- {managerName}`,
+  },
+
+  // Story Mission 3: "Lockdown" — Network Sniffer intro
+  'sniffer-intro': {
+    from: 'SourceNet Manager',
+    fromId: 'SNET-MGR-{random}',
+    fromName: 'SourceNet Manager {managerName}',
+    subject: 'New Tool Available - Network Sniffer',
+    body: `{username},
+
+I've been working on getting you access to a tool that's going to change how you operate.
+
+We're seeing more situations where clients are completely locked out of their own networks — credentials changed, passwords reset, total lockout. Standard tools can't help when you don't have valid credentials to start with.
+
+The NETWORK SNIFFER is now available in the Portal. It monitors network traffic and reconstructs access credentials from what it intercepts. Think of it as listening in on the network until you've captured enough data to rebuild the keys.
+
+It's expensive — 50,000 credits — but it's essential for the kind of work that's coming. Networks that have been seized by threat actors, clients who've been completely locked out. Without this tool, those jobs are impossible.
+
+One warning: the networks where you'll need this are hostile. Trace pressure will be active. You'll need your relay chain and trace monitor running while the sniffer does its work.
+
+Purchase it when you're ready. You'll need it soon.
+
+- {managerName}`,
+  },
+
+  // Story Mission 3: "Lockdown" — completion
+  'lockdown-complete': {
+    from: 'SourceNet Manager',
+    fromId: 'SNET-MGR-{random}',
+    fromName: 'SourceNet Manager {managerName}',
+    subject: 'Data Recovered - Pacific Freight',
+    body: `{username},
+
+Well done. Pacific Freight has their shipping data back and operations are resuming. They're very grateful.
+
+The Network Sniffer proved its worth. Being able to reconstruct credentials from intercepted traffic is a capability most operatives don't have. It makes you extremely valuable for situations where clients have been completely locked out.
+
+I've been analyzing the attack patterns across all these incidents — MetroLink, Coastal Power, now Pacific Freight. The same group is behind all of them, and we're getting closer to tracing them back to their source.
+
+When I have enough intel, you'll be the one I send in.
+
+- {managerName}`,
+  },
+
+  // Story Mission 4: "Digital Manhunt" — combines everything
+  'manhunt-intro': {
+    from: 'SourceNet Manager',
+    fromId: 'SNET-MGR-{random}',
+    fromName: 'SourceNet Manager {managerName}',
+    subject: 'Digital Manhunt - We Have a Lead',
+    body: `{username},
+
+We finally have enough intel to track the threat actor group that's been causing all this damage. MetroLink, the seized network, everything — it all traces back to the same group.
+
+I've mapped out their relay infrastructure. They use the same techniques we do — bouncing through relay nodes to hide their origin. But they made mistakes. Left digital breadcrumbs.
+
+Your job: follow the trail through their relay infrastructure. Each node needs to be compromised — crack credentials, decrypt data, and find the connection to the next hop. Work your way back to their origin.
+
+This will test every tool you have:
+- Relay chains for your own protection
+- Trace monitor to stay ahead of their countermeasures
+- Network sniffer to intercept their traffic
+- Password cracker for any protected files you find
+- Your judgment to know when to push and when to pull out
+
+This is the biggest job I've ever assigned. And the most dangerous. But you're ready.
+
+Let's find out who these people are.
+
+- {managerName}`,
+  },
+
+  // Story Mission 4: Progressive credential discovery messages
+  'manhunt-beta-discovered': {
+    from: 'SourceNet Manager',
+    fromId: 'SNET-MGR-{random}',
+    fromName: 'SourceNet Manager {managerName}',
+    subject: 'Next Hop Found - DarkNode-Beta',
+    body: `{username},
+
+The credentials you decrypted from DarkNode-Alpha contain connection data for the next hop in their relay chain.
+
+I've mapped it: DarkNode-Beta (10.99.2.0/24). This is their second relay node. Credentials attached — add them to your NAR.
+
+Their operator notes are likely password-protected. Crack them to find the trail to their origin.
+
+Stay on the relay chain. They're watching.
+
+- {managerName}`,
+  },
+
+  'manhunt-origin-discovered': {
+    from: 'SourceNet Manager',
+    fromId: 'SNET-MGR-{random}',
+    fromName: 'SourceNet Manager {managerName}',
+    subject: 'Origin Located - DarkNode-Origin',
+    body: `{username},
+
+The operator notes from DarkNode-Beta confirm the final hop. DarkNode-Origin (10.99.3.0/24) — their command center.
+
+Credentials attached. This is where we find out who they really are.
+
+Get in, crack their target list, and copy the operation plan. That's the evidence we need.
+
+Be careful. This is the heart of their operation.
+
+- {managerName}`,
+  },
+
+  // Story Mission 4: Aftermath — sets up future content
+  'manhunt-success': {
+    from: 'SourceNet Manager',
+    fromId: 'SNET-MGR-{random}',
+    fromName: 'SourceNet Manager {managerName}',
+    subject: 'We Got Them... But There Is More',
+    body: `{username},
+
+Outstanding work. We've identified the group and their infrastructure is being dismantled as we speak.
+
+But there's a problem. What you found at the end of the chain — that wasn't a small operation. These people are connected to something much bigger. The data you recovered suggests this group was just one cell in a larger network.
+
+I need time to analyze what we've found. In the meantime, keep taking contracts and building your capabilities. I have a feeling we're going to need everything you've got for what comes next.
+
+I'll be in touch.
+
+- {managerName}`,
+  },
+
+  // ===== PASSWORD CRACKING PROCEDURAL MISSION TEMPLATES =====
+
+  'password-crack-success': {
+    from: '{clientName}',
+    fromId: 'CLIENT-{random}',
+    fromName: '{clientName}',
+    subject: 'Files Unlocked - Thank You',
+    body: `Dear {username},
+
+Thank you for unlocking our password-protected files. We've regained full access to our data.
+
+Payment has been sent separately.
+
+Sincerely,
+{clientName}`,
+  },
 };
 
 export default { createMessageFromTemplate, MESSAGE_TEMPLATES };

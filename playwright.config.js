@@ -29,7 +29,15 @@ export default defineConfig({
     {
       name: 'chromium',
       testDir: './e2e',
-      testIgnore: /generators\//,  // Exclude generators from main project
+      testIgnore: [/generators\//, /playthroughs\//],  // Exclude generators and playthroughs
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'playthroughs',
+      testDir: './e2e/playthroughs',
+      timeout: 150000, // 2.5 minute timeout for long playthrough tests
+      fullyParallel: false,
+      workers: 8,
       use: { ...devices['Desktop Chrome'] },
     },
   ],

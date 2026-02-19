@@ -15,15 +15,10 @@
   },
   "triggers": {
     "start": {
-      "type": "afterMissionComplete",
-      "missionId": "tutorial-part-1",
-      "delay": 30000,
-      "introMessage": {
-        "delay": 0,
-        "from": "manager",
-        "subject": "Let's try something simpler",
-        "templateId": "tutorial-2-intro"
-      }
+      "type": "timeSinceEvent",
+      "event": "messageRead",
+      "condition": { "messageId": "msg-tutorial-simpler" },
+      "delay": 0
     }
   },
   "requirements": {

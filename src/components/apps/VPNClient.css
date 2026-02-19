@@ -147,3 +147,241 @@
   font-style: italic;
   padding: 20px;
 }
+
+/* Relay Badge on connected items */
+.relay-badge {
+  color: #9C27B0;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+/* Relay Panel */
+.relay-panel {
+  border: 1px solid #9C27B0;
+  background: #f8f0ff;
+  margin: 10px 0;
+  border-radius: 4px;
+}
+
+.relay-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.relay-panel-header:hover {
+  background: #f0e0ff;
+}
+
+.relay-panel-chevron {
+  font-size: 10px;
+  color: #9C27B0;
+}
+
+.relay-panel-title {
+  font-weight: bold;
+  color: #9C27B0;
+  font-size: 13px;
+}
+
+.relay-panel-summary {
+  color: #666;
+  font-size: 12px;
+  margin-left: auto;
+}
+
+.relay-panel-content {
+  padding: 0 12px 12px;
+}
+
+.relay-nodes-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 6px;
+  font-weight: bold;
+}
+
+.relay-nodes-list {
+  max-height: 200px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.relay-empty,
+.relay-placeholder {
+  color: #999;
+  font-style: italic;
+  padding: 10px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.relay-node {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 12px;
+}
+
+.relay-node:hover {
+  border-color: #9C27B0;
+}
+
+.relay-node.selected {
+  border-color: #9C27B0;
+  background: #f0e0ff;
+}
+
+.relay-node-name {
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.relay-node-stats {
+  display: flex;
+  gap: 10px;
+  color: #666;
+  font-size: 11px;
+}
+
+.relay-suspicion-high {
+  color: #e53935;
+  font-weight: bold;
+}
+
+.relay-node-order {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.relay-order-number {
+  color: #9C27B0;
+  font-weight: bold;
+  min-width: 20px;
+  text-align: center;
+}
+
+.relay-move-btn {
+  background: #e0d0f0;
+  border: 1px solid #9C27B0;
+  color: #9C27B0;
+  cursor: pointer;
+  padding: 1px 4px;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.relay-move-btn:hover:not(:disabled) {
+  background: #d0b0e0;
+}
+
+.relay-move-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Relay chain stats */
+.relay-chain-stats {
+  margin-top: 10px;
+  padding: 8px 10px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.relay-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.relay-stat-label {
+  color: #666;
+}
+
+.relay-stat-value {
+  font-weight: bold;
+  color: #333;
+}
+
+.relay-ett {
+  color: #ff6b35;
+}
+
+.relay-clear-btn {
+  margin-top: 8px;
+  padding: 5px 12px;
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  color: #666;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  width: 100%;
+}
+
+.relay-clear-btn:hover {
+  background: #e0e0e0;
+}
+
+/* Burned relay nodes section */
+.relay-burned-section {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #ddd;
+}
+
+.relay-burned-section h3 {
+  font-size: 14px;
+  margin: 0 0 10px 0;
+  color: #e53935;
+}
+
+.relay-burned-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.relay-burned-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 10px;
+  background: #fce4ec;
+  border: 1px solid #e53935;
+  font-size: 12px;
+}
+
+.relay-burned-name {
+  color: #999;
+  text-decoration: line-through;
+}
+
+.relay-burned-badge {
+  color: #e53935;
+  font-weight: bold;
+  font-size: 11px;
+}
+
+.relay-burned-hint {
+  font-size: 11px;
+  color: #999;
+  margin-top: 6px;
+  font-style: italic;
+}

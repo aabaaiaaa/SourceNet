@@ -320,6 +320,8 @@ test.describe('Ransomware Recovery Mission', () => {
         console.log('Ransomware overlay appeared');
 
         // DO NOT install antivirus - let ransomware progress to 100%
+        // Scripted event resets speed to 1x; restore 100x so ransomware completes quickly
+        await setSpecificTimeSpeed(page, 100);
         // At 100x speed: 60s game time = 600ms real, 3s grace = 30ms real
         // Wait for ransomware lock screen to appear (scenario param skips boot)
         await expect(page.locator('.ransomware-lock-screen')).toBeVisible({ timeout: 30000 });

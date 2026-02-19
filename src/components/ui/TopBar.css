@@ -204,6 +204,32 @@
   opacity: 1;
 }
 
+.passive-status {
+  margin-left: auto;
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.5px;
+}
+
+.passive-status.on {
+  color: #fff;
+  background-color: #43a047;
+  animation: passive-pulse 2s ease-in-out infinite;
+}
+
+.passive-status.off {
+  color: #aaa;
+  background-color: #444;
+}
+
+@keyframes passive-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
 /* Load Game Modal */
 .modal-overlay {
   position: fixed;
@@ -544,4 +570,79 @@
   50% {
     opacity: 0.6;
   }
+}
+
+/* Trace Monitor Indicator */
+.topbar-trace-monitor {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  cursor: default;
+  border-radius: 3px;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.topbar-trace-monitor.tracing {
+  background: rgba(255, 0, 0, 0.25);
+  border: 1px solid rgba(255, 60, 60, 0.4);
+  animation: trace-glow 1.5s ease-in-out infinite;
+}
+
+.topbar-trace-monitor.beep {
+  background: rgba(255, 0, 0, 0.6);
+  box-shadow: 0 0 8px rgba(255, 0, 0, 0.6), 0 0 16px rgba(255, 0, 0, 0.3);
+}
+
+@keyframes trace-glow {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(255, 0, 0, 0.2);
+    background: rgba(255, 0, 0, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+    background: rgba(255, 0, 0, 0.4);
+  }
+}
+
+.trace-icon {
+  font-size: 14px;
+}
+
+.trace-ett {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  color: #ff4444;
+  font-size: 14px;
+  text-shadow: 0 0 4px rgba(255, 68, 68, 0.5);
+}
+
+/* Reboot Required Indicator */
+.topbar-reboot-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  font-size: 12px;
+  cursor: default;
+  border-radius: 3px;
+  background: rgba(255, 165, 0, 0.2);
+  animation: reboot-pulse 1.5s ease-in-out infinite;
+}
+
+.reboot-icon {
+  font-size: 14px;
+  color: #FFA500;
+}
+
+.reboot-text {
+  font-weight: bold;
+  color: #FFA500;
+  font-size: 11px;
+}
+
+@keyframes reboot-pulse {
+  0%, 100% { background: rgba(255, 165, 0, 0.2); }
+  50% { background: rgba(255, 165, 0, 0.4); }
 }

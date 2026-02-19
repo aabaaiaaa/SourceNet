@@ -5,6 +5,8 @@ import { formatDateTime, getAllSavesFlat } from '../../utils/helpers';
 import { getReputationTier } from '../../systems/ReputationSystem';
 import { calculateStorageUsed, calculateLocalFilesSize, formatStorage } from '../../systems/StorageSystem';
 import { SOFTWARE_CATALOG } from '../../constants/gameConstants';
+import { getTotalRamMB, getUsedRamMB, formatRam } from '../../systems/RamSystem';
+import useTraceMonitor from '../../systems/useTraceMonitor';
 import networkRegistry from '../../systems/NetworkRegistry';
 import SecurityIndicator from './SecurityIndicator';
 import triggerEventBus from '../../core/triggerEventBus';
@@ -62,6 +64,8 @@ const TopBar = () => {
     bankruptcyCountdown,
     reputationCountdown,
     software,
+    hardware,
+    windows,
     getBandwidthInfo,
     // Subscribe to these to trigger re-renders when bandwidth operations change
     // (the actual values are used by getBandwidthInfo internally)
@@ -70,7 +74,11 @@ const TopBar = () => {
     localSSDFiles,
     activePassiveSoftware,
     startPassiveSoftware,
+    stopPassiveSoftware,
+    pendingHardwareUpgrades,
   } = useGame();
+
+  const { isMonitorActive: traceMonitorActive, isTraceActive, traceProgress, beepActive } = useTraceMonitor();
 
   const [showPowerMenu, setShowPowerMenu] = useState(false);
   const [showAppLauncher, setShowAppLauncher] = useState(false);
@@ -246,11 +254,15 @@ const TopBar = () => {
     'data-recovery-tool': { id: 'dataRecoveryTool', name: 'Data Recovery Tool', softwareId: 'data-recovery-tool' },
     'decryption-tool': { id: 'decryptionTool', name: 'Decryption Tool', softwareId: 'decryption-tool' },
     'advanced-firewall-av': { id: 'advancedFirewallAv', name: 'Advanced Firewall & Antivirus', softwareId: 'advanced-firewall-av' },
+    'password-cracker': { id: 'passwordCracker', name: 'Password Cracker', softwareId: 'password-cracker' },
+    'vpn-relay-upgrade': { id: 'vpnRelayUpgrade', name: 'VPN Relay Module', softwareId: 'vpn-relay-upgrade', hidden: true },
+    'trace-monitor': { id: 'traceMonitor', name: 'Trace Monitor', softwareId: 'trace-monitor' },
+    'network-sniffer': { id: 'networkSniffer', name: 'Network Sniffer', softwareId: 'network-sniffer' },
   };
 
   const apps = (software || [])
     .map((sw) => typeof sw === 'string' ? appMap[sw] : appMap[sw.id])
-    .filter((app) => app !== undefined)
+    .filter((app) => app !== undefined && !app.hidden)
     .sort((a, b) => a.name.localeCompare(b.name));
 
   const handleSave = () => {
@@ -509,6 +521,21 @@ const TopBar = () => {
           </div>
         )}
 
+        {/* Trace Monitor Indicator */}
+        {traceMonitorActive && (
+          <div
+            className={`topbar-trace-monitor ${isTraceActive ? 'tracing' : ''} ${beepActive && isTraceActive ? 'beep' : ''}`}
+            title={isTraceActive && traceProgress
+              ? `TRACE ACTIVE - ETT: ${traceProgress.formattedRemaining}`
+              : 'Trace Monitor Active - No active traces'}
+          >
+            <span className="trace-icon">{isTraceActive ? '🔴' : '📡'}</span>
+            {isTraceActive && traceProgress && (
+              <span className="trace-ett">{traceProgress.formattedRemaining}</span>
+            )}
+          </div>
+        )}
+
         {/* Security Indicator */}
         {activePassiveSoftware?.includes('advanced-firewall-av') && (
           <SecurityIndicator
@@ -575,6 +602,17 @@ const TopBar = () => {
             </div>
           );
         })()}
+
+        {/* Reboot Required Indicator */}
+        {pendingHardwareUpgrades && Object.keys(pendingHardwareUpgrades).length > 0 && (
+          <div
+            className="topbar-reboot-indicator"
+            title="New hardware installed — reboot to apply"
+          >
+            <span className="reboot-icon">&#x27F3;</span>
+            <span className="reboot-text">Reboot Required</span>
+          </div>
+        )}
 
         {/* Active Mission Indicator */}
         {activeMission && (() => {
@@ -667,7 +705,9 @@ const TopBar = () => {
                     key={app.id}
                     onClick={() => {
                       if (isPassive) {
-                        if (!isPassiveRunning && startPassiveSoftware) {
+                        if (isPassiveRunning && stopPassiveSoftware) {
+                          stopPassiveSoftware(app.softwareId);
+                        } else if (!isPassiveRunning && startPassiveSoftware) {
                           startPassiveSoftware(app.softwareId);
                         }
                       } else {
@@ -677,17 +717,24 @@ const TopBar = () => {
                     }}
                     className={MULTI_INSTANCE_APPS.includes(app.id) ? 'multi-instance-app' : ''}
                     title={isPassive
-                      ? (isPassiveRunning ? `${app.name} (running)` : `${app.name} (click to start)`)
+                      ? (isPassiveRunning ? `${app.name} (running - click to stop)` : `${app.name} (click to start)`)
                       : (MULTI_INSTANCE_APPS.includes(app.id) ? `${app.name} (can open multiple)` : app.name)}
                   >
                     {app.name}
                     {MULTI_INSTANCE_APPS.includes(app.id) && <span className="multi-instance-badge">⊞</span>}
-                    {isPassiveRunning && <span className="multi-instance-badge">✓</span>}
+                    {isPassive && (
+                      <span className={`passive-status ${isPassiveRunning ? 'on' : 'off'}`}>
+                        {isPassiveRunning ? 'ON' : 'OFF'}
+                      </span>
+                    )}
                   </button>
                 );
               })}
               <div className="app-launcher-storage">
                 {formatStorage(calculateStorageUsed(software || []), calculateLocalFilesSize(localSSDFiles || []), 90)}
+              </div>
+              <div className="app-launcher-storage">
+                RAM: {formatRam(getUsedRamMB(windows, activePassiveSoftware), getTotalRamMB(hardware))}
               </div>
             </div>
           )}

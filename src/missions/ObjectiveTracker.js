@@ -171,6 +171,32 @@ export const checkSecureDeleteObjective = (objective, recoveryOperations = {}) =
  * @param {object} decryptionOperations - Cumulative decryption operations { decrypted: Set<filename> }
  * @returns {boolean} Objective complete
  */
+/**
+ * Check if password crack objective is complete
+ * @param {object} objective - Objective definition with targetFiles
+ * @param {Set} crackedFiles - Set of cracked file names
+ * @returns {boolean} Objective complete
+ */
+export const checkPasswordCrackObjective = (objective, crackedFiles = new Set()) => {
+  const { targetFiles } = objective;
+  if (!targetFiles || targetFiles.length === 0) return false;
+
+  const completedCount = targetFiles.filter(file => crackedFiles.has(file)).length;
+  return completedCount >= targetFiles.length;
+};
+
+/**
+ * Check if credential extraction objective is complete
+ * Tracks when player uses Network Sniffer to extract credentials for a network
+ * @param {object} objective - Objective definition with target networkId
+ * @param {array} extractedCredentials - Array of { networkId } objects
+ * @returns {boolean} Objective complete
+ */
+export const checkCredentialExtractionObjective = (objective, extractedCredentials = []) => {
+  if (!objective.target) return false;
+  return extractedCredentials.some(entry => entry.networkId === objective.target);
+};
+
 export const checkFileDecryptionObjective = (objective, decryptionOperations = {}) => {
   const { targetFiles } = objective;
   if (!targetFiles || targetFiles.length === 0) return false;
@@ -584,6 +610,18 @@ const isObjectiveComplete = (objective, gameState) => {
         gameState.activePassiveSoftware || []
       );
 
+    case 'passwordCrack':
+      return checkPasswordCrackObjective(
+        objective,
+        gameState.missionPasswordCracks || new Set()
+      );
+
+    case 'credentialExtraction':
+      return checkCredentialExtractionObjective(
+        objective,
+        gameState.missionCredentialExtractions || []
+      );
+
     case 'avThreatDetected':
       return checkAvThreatDetectedObjective(
         objective,
@@ -654,6 +692,7 @@ export const initializeObjectiveTracking = (mission, onObjectiveComplete) => {
     'fileUploadComplete',     // Decryption Tool upload
     'passiveSoftwareStarted', // Passive software activation
     'avThreatDetected',       // Antivirus malware detection
+    'credentialsExtracted',   // Network Sniffer credential extraction
   ];
 
   events.forEach((eventType) => {

@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { storyEvents, tutorialMissions, allMissions } from '../../missions/missionData';
+import lockedOut from '../../missions/data/locked-out.json';
+import behindEnemyLines from '../../missions/data/behind-enemy-lines.json';
+import lockdown from '../../missions/data/lockdown.json';
+import digitalManhunt from '../../missions/data/digital-manhunt.json';
 
 /**
  * JSON Validation Tests
@@ -92,8 +96,13 @@ describe('Mission JSON Validation', () => {
     });
 
     it('should have valid objective types', () => {
-      const validTypes = ['networkConnection', 'networkScan', 'fileSystemConnection', 'fileOperation', 'narEntryAdded', 'verification'];
-      tutorialMissions.forEach((mission) => {
+      const validTypes = [
+        'networkConnection', 'networkScan', 'fileSystemConnection', 'fileOperation',
+        'narEntryAdded', 'credentialExtraction', 'verification',
+        'passwordCrack', 'investigation', 'fileRecovery', 'fileDecryption', 'fileUpload',
+        'dataRecoveryScan', 'secureDelete',
+      ];
+      allMissions.forEach((mission) => {
         mission.objectives.forEach((obj) => {
           expect(obj.type).toBeDefined();
           expect(validTypes).toContain(obj.type);
@@ -186,6 +195,10 @@ describe('Mission JSON Validation', () => {
         'log-viewer',
         'data-recovery-tool',
         'decryption-tool',
+        'password-cracker',
+        'network-sniffer',
+        'vpn-relay-upgrade',
+        'trace-monitor',
       ];
 
       allMissions.forEach((mission) => {
@@ -194,6 +207,133 @@ describe('Mission JSON Validation', () => {
             expect(validSoftwareIds).toContain(softwareId);
           });
         }
+      });
+    });
+  });
+
+  describe('Locked Out - Mission-Specific Validation', () => {
+    it('should have networkConnection and passwordCrack objectives', () => {
+      const types = lockedOut.objectives.map(o => o.type);
+      expect(types).toContain('networkConnection');
+      expect(types).toContain('passwordCrack');
+    });
+
+    it('should have at least 2 passwordCrack objectives', () => {
+      const cracks = lockedOut.objectives.filter(o => o.type === 'passwordCrack');
+      expect(cracks.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should have scripted events including unlockFeature and generateRelayNodes', () => {
+      const actionTypes = lockedOut.scriptedEvents.flatMap(se => se.actions.map(a => a.type));
+      expect(actionTypes).toContain('unlockFeature');
+      expect(actionTypes).toContain('generateRelayNodes');
+    });
+
+    it('should revoke meridian-internal on completion', () => {
+      const meridian = lockedOut.networks.find(n => n.networkId === 'meridian-internal');
+      expect(meridian).toBeDefined();
+      expect(meridian.revokeOnComplete).toBe(true);
+    });
+  });
+
+  describe('Behind Enemy Lines - Mission-Specific Validation', () => {
+    it('should have revokeOnComplete on coastal-ops', () => {
+      const coastal = behindEnemyLines.networks.find(n => n.networkId === 'coastal-ops');
+      expect(coastal).toBeDefined();
+      expect(coastal.revokeOnComplete).toBe(true);
+    });
+
+    it('should have hostile flag on coastal-ops', () => {
+      const coastal = behindEnemyLines.networks.find(n => n.networkId === 'coastal-ops');
+      expect(coastal.hostile).toBe(true);
+    });
+
+    it('should have startTrace scripted event', () => {
+      const traceEvent = behindEnemyLines.scriptedEvents.find(
+        se => se.actions.some(a => a.type === 'startTrace')
+      );
+      expect(traceEvent).toBeDefined();
+    });
+
+    it('should have investigation and fileRecovery objectives', () => {
+      const types = behindEnemyLines.objectives.map(o => o.type);
+      expect(types).toContain('investigation');
+      expect(types).toContain('fileRecovery');
+    });
+  });
+
+  describe('Lockdown - Mission-Specific Validation', () => {
+    it('should have pfs-backup-safe network', () => {
+      const backup = lockdown.networks.find(n => n.networkId === 'pfs-backup-safe');
+      expect(backup).toBeDefined();
+    });
+
+    it('should have obj-backup-data paste objective with destination 10.200.50.5', () => {
+      const backup = lockdown.objectives.find(o => o.id === 'obj-backup-data');
+      expect(backup).toBeDefined();
+      expect(backup.type).toBe('fileOperation');
+      expect(backup.operation).toBe('paste');
+      expect(backup.destination).toBe('10.200.50.5');
+    });
+
+    it('should revoke both pacific-freight and pfs-backup-safe on complete', () => {
+      const pacific = lockdown.networks.find(n => n.networkId === 'pacific-freight');
+      const backup = lockdown.networks.find(n => n.networkId === 'pfs-backup-safe');
+      expect(pacific.revokeOnComplete).toBe(true);
+      expect(backup.revokeOnComplete).toBe(true);
+    });
+
+    it('should have credentialExtraction objective', () => {
+      const types = lockdown.objectives.map(o => o.type);
+      expect(types).toContain('credentialExtraction');
+    });
+  });
+
+  describe('Digital Manhunt - Mission-Specific Validation', () => {
+    it('should have exactly 3 initial objectives', () => {
+      expect(digitalManhunt.objectives).toHaveLength(3);
+      const ids = digitalManhunt.objectives.map(o => o.id);
+      expect(ids).toContain('obj-connect-alpha');
+      expect(ids).toContain('obj-crack-alpha-logs');
+      expect(ids).toContain('obj-decrypt-next-hop');
+    });
+
+    it('should have addExtensionObjectives in scripted events', () => {
+      const extensionActions = digitalManhunt.scriptedEvents.flatMap(
+        se => se.actions.filter(a => a.type === 'addExtensionObjectives')
+      );
+      expect(extensionActions.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should have introMessage in triggers.start', () => {
+      expect(digitalManhunt.triggers.start.introMessage).toBeDefined();
+      expect(digitalManhunt.triggers.start.introMessage.from).toBeDefined();
+      expect(digitalManhunt.triggers.start.introMessage.subject).toBeDefined();
+    });
+
+    it('should have all 3 networks with revokeOnComplete', () => {
+      expect(digitalManhunt.networks).toHaveLength(3);
+      digitalManhunt.networks.forEach(network => {
+        expect(network.revokeOnComplete).toBe(true);
+      });
+    });
+
+    it('should have obj-copy-evidence with destination local in extension objectives', () => {
+      // obj-copy-evidence is added via scripted event, find it there
+      const allExtensionObjectives = digitalManhunt.scriptedEvents
+        .flatMap(se => se.actions)
+        .filter(a => a.type === 'addExtensionObjectives')
+        .flatMap(a => a.objectives);
+
+      const copyEvidence = allExtensionObjectives.find(o => o.id === 'obj-copy-evidence');
+      expect(copyEvidence).toBeDefined();
+      expect(copyEvidence.destination).toBe('local');
+    });
+
+    it('should have all 3 darknode networks as hostile', () => {
+      digitalManhunt.networks.forEach(network => {
+        expect(network.hostile).toBe(true);
+        expect(network.networkId).toMatch(/^darknode-/);
       });
     });
   });

@@ -83,12 +83,33 @@ test.describe('Scenario Generator: Post Tutorial Complete', () => {
         await setSpeed(1);
 
         // ========================================
-        // STEP 4: Accept Tutorial Part 2
+        // STEP 4: Read "Let's try something simpler" message to trigger tutorial-part-2
         // ========================================
+        await page.click('text=☰');
+        await page.click('.app-launcher-menu >> text=SNet Mail');
+        await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
+
+        // Go to inbox if needed
+        const backBtnStep4 = page.locator('button:has-text("Back")');
+        if (await backBtnStep4.isVisible()) await backBtnStep4.click();
+        await page.waitForTimeout(200);
+
+        // Read the "Let's try something simpler" message (triggers tutorial-part-2)
+        const simplerMsg = page.locator('.message-item:has-text("simpler")');
+        await expect(simplerMsg).toBeVisible({ timeout: 5000 });
+        await simplerMsg.click();
+        await page.waitForTimeout(500);
+
+        // Go back to inbox and close mail
+        const backBtnStep4b = page.locator('button:has-text("Back")');
+        if (await backBtnStep4b.isVisible()) await backBtnStep4b.click();
+        await page.waitForTimeout(200);
+
+        // Open Mission Board and accept tutorial-part-2
         await page.click('text=☰');
         await page.click('.app-launcher-menu >> text=Mission Board');
         await page.locator('.tab:has-text("Available")').click();
-        await page.waitForTimeout(500);
+        await expect(page.locator('.mission-card:has-text("Log File Restoration")')).toBeVisible({ timeout: 10000 });
         await page.locator('.mission-card:has-text("Log File Restoration")').locator('button').first().click();
 
         // Get new credentials

@@ -360,6 +360,19 @@ export async function waitForAndDismissForcedDisconnection(page, timeout = 10000
     await expect(page.locator('.forced-disconnect-overlay')).not.toBeVisible({ timeout: 2000 });
 }
 
+/**
+ * Dismiss the TopBar disconnection notice (from revokeOnComplete) if visible
+ * @param {Page} page - Playwright page object
+ */
+export async function dismissDisconnectionNotice(page) {
+    const dismissBtn = page.locator('.disconnection-notice .dismiss-btn');
+    const isVisible = await dismissBtn.isVisible({ timeout: 2000 }).catch(() => false);
+    if (isVisible) {
+        await dismissBtn.click({ force: true });
+        await page.waitForTimeout(300);
+    }
+}
+
 // ============================================================================
 // OBJECTIVE VERIFICATION HELPERS
 // ============================================================================
@@ -489,4 +502,350 @@ export async function repairSelectedFiles(page) {
  */
 export async function setSpecificTimeSpeed(page, speed) {
     await page.evaluate((s) => window.gameContext.setSpecificTimeSpeed(s), speed);
+}
+
+// ============================================================================
+// SCENARIO & SETUP HELPERS
+// ============================================================================
+
+/**
+ * Load a scenario fixture and wait for the desktop and game context to be ready
+ * @param {Page} page - Playwright page object
+ * @param {string} scenarioName - Scenario name (e.g., 'post-ransomware-recovery')
+ */
+export async function loadScenario(page, scenarioName) {
+    await page.goto('/');
+    await page.evaluate(() => localStorage.clear());
+    await page.goto(`/?scenario=${scenarioName}`);
+    await expect(page.locator('.desktop')).toBeVisible({ timeout: 15000 });
+    await page.waitForFunction(() => window.gameContext?.setSpecificTimeSpeed, { timeout: 10000 });
+}
+
+/**
+ * Inject credits into the first bank account
+ * @param {Page} page - Playwright page object
+ * @param {number} amount - Amount to add
+ */
+export async function addCredits(page, amount) {
+    await page.evaluate((amt) => {
+        const accounts = window.gameContext.bankAccounts;
+        if (accounts && accounts.length > 0) {
+            accounts[0].balance += amt;
+        }
+    }, amount);
+}
+
+/**
+ * Purchase an item from the Portal (software, hardware, or services).
+ * Opens Portal, navigates to the section, purchases, waits for install, closes Portal.
+ * @param {Page} page - Playwright page object
+ * @param {string} itemName - Display name of the item (e.g., 'Password Cracker')
+ * @param {Object} [options] - Options
+ * @param {string} [options.section='Software'] - Portal section: 'Software', 'Hardware', or 'Services'
+ * @param {boolean} [options.keepOpen=false] - If true, don't close the Portal window
+ */
+export async function purchaseFromPortal(page, itemName, { section = 'Software', keepOpen = false } = {}) {
+    await openApp(page, 'Portal');
+    const portal = page.locator('.window:has-text("Portal")');
+    const modal = portal.locator('.modal-content');
+
+    await portal.locator(`.section-btn:has-text("${section}")`).click();
+    await page.waitForTimeout(300);
+
+    const item = portal.locator('.portal-item').filter({
+        has: page.locator('.item-name', { hasText: itemName })
+    });
+    await expect(item).toBeVisible({ timeout: 5000 });
+    await item.locator('.purchase-btn').click();
+
+    if (await modal.isVisible({ timeout: 1000 }).catch(() => false)) {
+        await modal.locator('button:has-text("Confirm")').click();
+        await page.waitForTimeout(200);
+    }
+
+    // For services, there's no install badge — just wait briefly
+    if (section === 'Services') {
+        await page.waitForTimeout(1000);
+    } else {
+        await expect(item.locator('.status-badge.installed-badge')).toBeVisible({ timeout: 120000 });
+    }
+
+    if (!keepOpen) {
+        await closeWindow(page, 'Portal');
+    }
+}
+
+// ============================================================================
+// MISSION HELPERS
+// ============================================================================
+
+/**
+ * Wait for a mission to become available on the Mission Board or as the active mission
+ * @param {Page} page - Playwright page object
+ * @param {string} missionId - Mission ID (e.g., 'locked-out')
+ * @param {number} timeout - Timeout in ms
+ */
+export async function waitForMission(page, missionId, timeout = 60000) {
+    await page.waitForFunction(
+        (id) => {
+            const board = window.gameContext.availableMissions || [];
+            const active = window.gameContext.activeMission;
+            return board.some(m => m.missionId === id) || active?.missionId === id;
+        },
+        missionId,
+        { timeout }
+    );
+}
+
+/**
+ * Accept a mission from the Mission Board by its display title
+ * @param {Page} page - Playwright page object
+ * @param {string} missionTitle - Display title (e.g., 'Locked Out')
+ */
+export async function acceptMission(page, missionTitle) {
+    await openApp(page, 'Mission Board');
+    const board = page.locator('.window:has-text("Mission Board")');
+    const card = board.locator(`.mission-card:has-text("${missionTitle}")`);
+    await expect(card).toBeVisible({ timeout: 5000 });
+    await card.locator('.accept-mission-btn').click();
+    await page.waitForTimeout(500);
+    await closeWindow(page, 'Mission Board');
+}
+
+/**
+ * Navigate to the SNet Mail inbox. Opens mail if not open, navigates back from message view if needed.
+ * @param {Page} page - Playwright page object
+ */
+export async function goToMailInbox(page) {
+    // Check if mail is already open
+    const mailWindow = page.locator('.window:has-text("SNet Mail")');
+    const isOpen = await mailWindow.isVisible().catch(() => false);
+
+    if (!isOpen) {
+        await openMail(page);
+    }
+
+    const backBtn = mailWindow.locator('button:has-text("Back")');
+    if (await backBtn.isVisible().catch(() => false)) {
+        await backBtn.click();
+        await page.waitForTimeout(200);
+    }
+}
+
+/**
+ * Read a message and activate its NAR attachment (Click to add → credentials used).
+ * Opens mail, finds the message, reads it, clicks NAR attachment, closes mail.
+ * @param {Page} page - Playwright page object
+ * @param {string} messageSubject - Message subject to read
+ */
+export async function activateNarFromMessage(page, messageSubject) {
+    await goToMailInbox(page);
+    await waitForMessage(page, messageSubject, 30000);
+    await readMessage(page, messageSubject);
+    await page.waitForTimeout(300);
+
+    const narAttachment = page.locator('.attachment-item:has-text("Click to add")');
+    await expect(narAttachment).toBeVisible({ timeout: 5000 });
+    await narAttachment.click();
+    await expect(page.locator('.attachment-item:has-text("credentials used")')).toBeVisible({ timeout: 5000 });
+    await closeWindow(page, 'SNet Mail');
+}
+
+/**
+ * Wait for an objective to complete by its ID (via gameContext)
+ * @param {Page} page - Playwright page object
+ * @param {string} objectiveId - The objective ID
+ * @param {number} timeout - Timeout in ms
+ */
+export async function waitForObjectiveById(page, objectiveId, timeout = 60000) {
+    await page.waitForFunction(
+        (id) => {
+            const mission = window.gameContext.activeMission;
+            const obj = mission?.objectives?.find(o => o.id === id);
+            return obj?.status === 'complete';
+        },
+        objectiveId,
+        { timeout }
+    );
+}
+
+/**
+ * Wait for a mission to complete (activeMission becomes null or missionId in completedMissions)
+ * @param {Page} page - Playwright page object
+ * @param {string} missionId - Mission ID
+ * @param {number} timeout - Timeout in ms
+ */
+export async function waitForMissionComplete(page, missionId, timeout = 30000) {
+    await page.waitForFunction(
+        (id) => {
+            const mission = window.gameContext.activeMission;
+            const completed = window.gameContext.completedMissions;
+            return mission === null || completed?.some(m => m.missionId === id);
+        },
+        missionId,
+        { timeout }
+    );
+}
+
+// ============================================================================
+// APP GAMEPLAY HELPERS
+// ============================================================================
+
+/**
+ * Connect to a network through relay nodes via VPN Client.
+ * Opens VPN Client, selects network, expands relay panel, selects N nodes, connects, closes.
+ * @param {Page} page - Playwright page object
+ * @param {string} networkName - Display name of the network
+ * @param {number} relayCount - Number of relay nodes to select (default 2)
+ */
+export async function connectThroughRelays(page, networkName, relayCount = 2) {
+    await openApp(page, 'VPN Client');
+    const vpn = page.locator('.window:has-text("VPN Client")');
+
+    await vpn.locator('select').selectOption({ label: networkName });
+    await page.waitForTimeout(300);
+
+    // Expand relay panel if collapsed
+    const relayPanel = vpn.locator('.relay-panel-content');
+    if (!await relayPanel.isVisible().catch(() => false)) {
+        await vpn.locator('.relay-panel-header').click();
+        await page.waitForTimeout(300);
+    }
+
+    // Clear previous selection
+    const clearBtn = vpn.locator('.relay-clear-btn');
+    if (await clearBtn.isVisible().catch(() => false)) {
+        await clearBtn.click();
+        await page.waitForTimeout(200);
+    }
+
+    // Select relay nodes
+    const nodes = vpn.locator('.relay-node');
+    const nodeCount = await nodes.count();
+    const toSelect = Math.min(relayCount, nodeCount);
+    for (let i = 0; i < toSelect; i++) {
+        await nodes.nth(i).click();
+        await page.waitForTimeout(200);
+    }
+
+    await vpn.locator('button:has-text("Connect")').click();
+    await expect(vpn.locator('button:has-text("Disconnect")')).toBeVisible({ timeout: 30000 });
+    await closeWindow(page, 'VPN Client');
+}
+
+/**
+ * Crack a password-protected file using the Password Cracker app.
+ * Opens the cracker, selects the file system and file, picks method, starts crack,
+ * and waits for the objective to complete.
+ * @param {Page} page - Playwright page object
+ * @param {string} fileSystemId - File system ID (e.g., 'fs-meridian-hr')
+ * @param {string} fileName - File name to crack (e.g., 'personnel-records.db')
+ * @param {string} objectiveId - Objective ID to wait for completion
+ * @param {Object} [options] - Options
+ * @param {string} [options.method='Brute Force'] - Attack method button text
+ * @param {boolean} [options.keepOpen=false] - If true, don't close the cracker window
+ */
+export async function crackPassword(page, fileSystemId, fileName, objectiveId, { method = 'Brute Force', keepOpen = false } = {}) {
+    // Open Password Cracker if not already open
+    const pcWindow = page.locator('.window:has-text("Password Cracker")');
+    if (!await pcWindow.isVisible().catch(() => false)) {
+        await openApp(page, 'Password Cracker');
+    }
+
+    await pcWindow.locator('.pc-dropdown').selectOption(fileSystemId);
+    await page.waitForTimeout(500);
+
+    const file = pcWindow.locator(`.pc-file-item:has-text("${fileName}")`);
+    await expect(file).toBeVisible({ timeout: 5000 });
+    await file.click();
+    await page.waitForTimeout(300);
+
+    await pcWindow.locator(`.pc-method-btn:has-text("${method}")`).click();
+    await page.waitForTimeout(200);
+
+    await pcWindow.locator('.pc-start-btn').click();
+
+    await waitForObjectiveById(page, objectiveId, 120000);
+
+    if (!keepOpen) {
+        // Wait for success auto-clear before closing (avoids stale state)
+        await page.waitForTimeout(2500);
+        await closeWindow(page, 'Password Cracker');
+    }
+}
+
+/**
+ * Use the Network Sniffer to extract credentials from a network.
+ * Opens the sniffer, selects network, starts monitoring, waits for reconstruction,
+ * extracts credentials, and waits for the objective to complete.
+ * @param {Page} page - Playwright page object
+ * @param {string} networkId - Network ID for the sniffer dropdown
+ * @param {string} objectiveId - Objective ID to wait for completion
+ */
+export async function snifferExtractCredentials(page, networkId, objectiveId) {
+    await openApp(page, 'Network Sniffer');
+    const sniffer = page.locator('.window:has-text("Network Sniffer")');
+
+    await sniffer.locator('select').first().selectOption(networkId);
+    await page.waitForTimeout(500);
+
+    // Ensure Extract Credentials mode
+    const credModeBtn = sniffer.locator('.ns-mode-btn:has-text("Extract Credentials")');
+    if (await credModeBtn.isVisible().catch(() => false)) {
+        await credModeBtn.click();
+        await page.waitForTimeout(200);
+    }
+
+    await sniffer.locator('button:has-text("Start Monitoring")').click();
+
+    // Wait for hash reconstruction to complete
+    await page.waitForFunction(
+        () => document.querySelector('.window:has(.network-sniffer) .ns-extract-btn') !== null,
+        { timeout: 120000 }
+    );
+
+    await sniffer.locator('.ns-extract-btn').click();
+    await waitForObjectiveById(page, objectiveId, 30000);
+
+    await closeWindow(page, 'Network Sniffer');
+}
+
+/**
+ * Activate a passive software app from the app launcher (e.g., Trace Monitor, Advanced Firewall).
+ * @param {Page} page - Playwright page object
+ * @param {string} appName - App name in the launcher (e.g., 'Trace Monitor')
+ */
+export async function activatePassiveApp(page, softwareId) {
+    await page.evaluate((id) => {
+        if (window.gameContext?.startPassiveSoftware) {
+            window.gameContext.startPassiveSoftware(id);
+        }
+    }, softwareId);
+    await page.waitForTimeout(500);
+}
+
+/**
+ * Reboot the game via sleep menu → load. Useful for testing post-reboot events.
+ * @param {Page} page - Playwright page object
+ */
+export async function rebootGame(page) {
+    page.once('dialog', async (dialog) => dialog.accept());
+    await page.hover('text=\u23FB');
+    await page.click('.dropdown-menu button:has-text("Sleep")');
+    await expect(page.locator('.sleep-overlay')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.game-login-screen')).toBeVisible({ timeout: 10000 });
+
+    const loadBtn = page.locator('button:has-text("Load Latest")');
+    await expect(loadBtn.first()).toBeVisible({ timeout: 10000 });
+    await loadBtn.first().click();
+
+    await expect(page.locator('.desktop')).toBeVisible({ timeout: 15000 });
+    await page.waitForFunction(() => window.gameContext?.setSpecificTimeSpeed, { timeout: 10000 });
+
+    // Dismiss pause overlay if visible (game pauses on load)
+    const pauseOverlay = page.locator('text=Click anywhere or press ESC to resume');
+    if (await pauseOverlay.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await page.click('.desktop');
+        await page.waitForTimeout(500);
+    }
 }

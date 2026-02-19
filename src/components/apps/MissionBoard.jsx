@@ -176,6 +176,9 @@ const MissionBoard = () => {
           // Arc info for procedural missions
           const isArcMission = mission.arcId && mission.arcTotal > 1;
 
+          // Check if any network is hostile
+          const hasHostileNetwork = mission.networks?.some(n => n.hostile);
+
           return (
             <div
               key={mission.missionId || mission.id}
@@ -196,6 +199,9 @@ const MissionBoard = () => {
                     <span className="arc-badge">
                       📖 {mission.arcSequence}/{mission.arcTotal}
                     </span>
+                  )}
+                  {hasHostileNetwork && (
+                    <span className="hostile-badge">HOSTILE</span>
                   )}
                   <span className={`difficulty-badge difficulty-${mission.difficulty?.toLowerCase()}`}>
                     {mission.difficulty || 'Easy'}

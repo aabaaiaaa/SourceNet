@@ -1,0 +1,358 @@
+.network-sniffer {
+  padding: 15px;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: 'Courier New', Courier, monospace;
+  color: #222;
+}
+
+.ns-header h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.ns-subtitle {
+  margin: 4px 0 0;
+  color: #666;
+  font-size: 11px;
+}
+
+/* Sections */
+.ns-section {
+  border: 1px solid var(--osnet-border);
+  border-radius: 3px;
+  padding: 10px;
+}
+
+.ns-section h3 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Dropdown */
+.ns-dropdown {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--osnet-border);
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 12px;
+  color: #222;
+  background: white;
+}
+
+.ns-dropdown:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Mode Buttons */
+.ns-modes {
+  display: flex;
+  gap: 6px;
+}
+
+.ns-mode-btn {
+  flex: 1;
+  padding: 8px;
+  background: white;
+  border: 1px solid var(--osnet-border);
+  color: #222;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  transition: all 0.15s;
+}
+
+.ns-mode-btn:hover:not(:disabled) {
+  background: #f0f0f0;
+}
+
+.ns-mode-btn.active {
+  border-color: #1976d2;
+  background: #e3f2fd;
+  color: #1976d2;
+  font-weight: bold;
+}
+
+.ns-mode-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Packet Log */
+.ns-packet-log {
+  height: 180px;
+  overflow-y: auto;
+  background: #1a1a2e;
+  border-radius: 3px;
+  padding: 6px;
+  font-size: 11px;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.ns-packet {
+  display: flex;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.ns-packet.fragment {
+  color: #ffcc00;
+  font-weight: bold;
+}
+
+.ns-pkt-time {
+  color: #666;
+  min-width: 80px;
+}
+
+.ns-pkt-src {
+  color: #33ccff;
+  min-width: 110px;
+}
+
+.ns-pkt-arrow {
+  color: #555;
+}
+
+.ns-pkt-dst {
+  color: #66ff99;
+  min-width: 110px;
+}
+
+.ns-pkt-proto {
+  color: #cc99ff;
+  min-width: 50px;
+  font-weight: bold;
+}
+
+.ns-pkt-info {
+  color: #aaa;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ns-packet.fragment .ns-pkt-info {
+  color: #ffcc00;
+}
+
+.ns-packet-placeholder {
+  color: #666;
+  font-style: italic;
+  padding: 8px;
+  text-align: center;
+}
+
+/* Hash Reconstruction */
+.ns-reconstruction {
+  margin-bottom: 8px;
+}
+
+.ns-recon-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: #444;
+}
+
+.ns-recon-fragments {
+  color: #d84315;
+  font-size: 11px;
+}
+
+/* Progress Bar */
+.ns-progress-bar {
+  height: 18px;
+  background: #e0e0e0;
+  border: 1px solid var(--osnet-border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.ns-progress-fill {
+  height: 100%;
+  background: #1976d2;
+  transition: width 0.3s ease;
+  border-radius: 3px;
+}
+
+.ns-progress-fill.ready {
+  background: #4CAF50;
+  animation: ns-pulse-ready 1s ease-in-out infinite;
+}
+
+.ns-progress-fill.success {
+  background: #4CAF50;
+}
+
+@keyframes ns-pulse-ready {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.ns-progress-text {
+  font-size: 11px;
+  color: #666;
+  text-align: right;
+}
+
+/* Status */
+.ns-status {
+  padding: 6px 8px;
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.ns-status.success {
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+/* Hardware Info */
+.ns-hardware-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #888;
+  padding-top: 4px;
+  border-top: 1px solid var(--osnet-border);
+}
+
+/* Action Buttons */
+.ns-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.ns-start-btn,
+.ns-extract-btn,
+.ns-cancel-btn,
+.ns-reset-btn {
+  padding: 8px 20px;
+  border: 1px solid var(--osnet-border);
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.ns-start-btn {
+  background: #1976d2;
+  color: white;
+  border-color: #1976d2;
+}
+
+.ns-start-btn:hover {
+  background: #1565c0;
+}
+
+.ns-extract-btn {
+  background: #4CAF50;
+  color: white;
+  border-color: #4CAF50;
+  animation: ns-pulse-ready 1.5s ease-in-out infinite;
+}
+
+.ns-extract-btn:hover {
+  background: #45a049;
+}
+
+.ns-cancel-btn {
+  background: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+.ns-cancel-btn:hover {
+  background: #c82333;
+}
+
+.ns-reset-btn {
+  background: white;
+  color: #222;
+}
+
+.ns-reset-btn:hover {
+  background: #f0f0f0;
+}
+
+/* Empty / Placeholder */
+.ns-empty {
+  color: #888;
+  font-style: italic;
+  font-size: 12px;
+  padding: 4px 0;
+}
+
+.ns-success-message {
+  color: #2e7d32;
+  font-weight: bold;
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+}
+
+/* Investigation Mode - Analysis Summary */
+.ns-analysis-summary {
+  display: flex;
+  gap: 16px;
+  padding: 10px;
+  border: 1px solid var(--osnet-border);
+  border-radius: 3px;
+  margin-top: 8px;
+}
+
+.ns-analysis-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.ns-stat-label {
+  color: #888;
+  font-size: 10px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.ns-stat-value {
+  color: #1976d2;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Scrollbar styling for packet log */
+.ns-packet-log::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ns-packet-log::-webkit-scrollbar-track {
+  background: #0a0a1a;
+}
+
+.ns-packet-log::-webkit-scrollbar-thumb {
+  background: #2a2a5e;
+  border-radius: 3px;
+}
+
+.ns-packet-log::-webkit-scrollbar-thumb:hover {
+  background: #3a3a6e;
+}

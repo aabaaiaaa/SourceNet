@@ -16,7 +16,6 @@ import {
     connectToNetwork,
     scanNetwork,
     waitForMessage,
-    readMessage,
 } from '../helpers/common-actions.js';
 
 test.setTimeout(180000);
@@ -138,6 +137,15 @@ async function secureDeleteCriticalFile(page) {
 
     // Wait for the secure delete operation to complete
     await expect(drtWindow.locator('.data-recovery-file-item.operating')).toHaveCount(0, { timeout: 30000 });
+
+    // At 100x speed, mission failure + forced disconnect can happen instantly.
+    // Dismiss the Network Disconnected notification if it appears (overlays the close button).
+    const dismissBtn = page.locator('.disconnection-notice .dismiss-btn');
+    const noticeVisible = await dismissBtn.isVisible().catch(() => false);
+    if (noticeVisible) {
+        await dismissBtn.click({ force: true });
+        await page.waitForTimeout(300);
+    }
 
     await closeWindow(page, 'Data Recovery Tool');
 }

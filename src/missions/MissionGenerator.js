@@ -258,55 +258,64 @@ function generateFiles(industry, missionType, targetCount, corrupted = false) {
             repair: ['ledger_{date}.db', 'transactions_{date}.dat', 'accounts_{date}.enc', 'audit_log_{date}.txt', 'system_config_{date}.cfg', 'backup_index_{date}.log'],
             backup: ['customer_data_{date}.db', 'loan_records_{date}.dat', 'compliance_{date}.enc', 'daily_report_{date}.pdf', 'branch_config_{date}.cfg', 'audit_trail_{date}.log'],
             transfer: ['quarterly_report_{date}.xlsx', 'financial_summary_{date}.pdf', 'archive_{date}.tar', 'temp_cache_{date}.dat', 'sync_log_{date}.txt'],
-            decryption: ['vault_keys_{date}.bak', 'wire_transfers_{date}.log', 'auth_tokens_{date}.dat', 'rate_tables_{date}.cfg', 'settlement_{date}.db', 'card_hashes_{date}.bin']
+            decryption: ['vault_keys_{date}.bak', 'wire_transfers_{date}.log', 'auth_tokens_{date}.dat', 'rate_tables_{date}.cfg', 'settlement_{date}.db', 'card_hashes_{date}.bin'],
+            cracking: ['personnel_records_{date}.db', 'vault_access_{date}.zip', 'wire_auth_{date}.dat', 'compliance_archive_{date}.zip', 'account_hashes_{date}.db', 'audit_sealed_{date}.zip']
         },
         government: {
             repair: ['citizen_records_{date}.db', 'permit_system_{date}.dat', 'case_files_{date}.enc', 'index_{date}.log', 'system_state_{date}.cfg'],
             backup: ['registry_{date}.db', 'tax_filings_{date}.dat', 'license_data_{date}.enc', 'form_templates_{date}.pdf', 'process_log_{date}.txt'],
             transfer: ['archive_records_{date}.tar', 'historical_data_{date}.zip', 'backup_{date}.db', 'readme_{date}.txt', 'manifest_{date}.log'],
-            decryption: ['clearance_records_{date}.dat', 'sealed_filings_{date}.db', 'classified_index_{date}.log', 'inter_agency_{date}.cfg', 'audit_chain_{date}.bin']
+            decryption: ['clearance_records_{date}.dat', 'sealed_filings_{date}.db', 'classified_index_{date}.log', 'inter_agency_{date}.cfg', 'audit_chain_{date}.bin'],
+            cracking: ['classified_docs_{date}.zip', 'employee_credentials_{date}.db', 'sealed_records_{date}.zip', 'clearance_files_{date}.dat', 'inter_agency_auth_{date}.db']
         },
         healthcare: {
             repair: ['patient_records_{date}.enc', 'ehr_system_{date}.db', 'lab_results_{date}.dat', 'scheduler_config_{date}.cfg', 'error_log_{date}.txt'],
             backup: ['medical_imaging_{date}.dat', 'prescriptions_{date}.db', 'appointments_{date}.enc', 'staff_schedule_{date}.xlsx', 'backup_status_{date}.log'],
             transfer: ['hipaa_archive_{date}.enc', 'patient_history_{date}.tar', 'compliance_{date}.zip', 'transfer_log_{date}.txt', 'checksum_{date}.dat'],
-            decryption: ['clinical_trials_{date}.db', 'pharmacy_keys_{date}.dat', 'hipaa_tokens_{date}.bin', 'radiology_{date}.dcm', 'insurance_claims_{date}.log']
+            decryption: ['clinical_trials_{date}.db', 'pharmacy_keys_{date}.dat', 'hipaa_tokens_{date}.bin', 'radiology_{date}.dcm', 'insurance_claims_{date}.log'],
+            cracking: ['patient_archive_{date}.zip', 'prescription_db_{date}.db', 'hipaa_sealed_{date}.zip', 'staff_credentials_{date}.db', 'research_data_{date}.zip']
         },
         corporate: {
             repair: ['crm_database_{date}.db', 'erp_system_{date}.dat', 'hr_records_{date}.enc', 'email_archive_{date}.tar', 'config_{date}.cfg', 'error_{date}.log'],
             backup: ['sales_data_{date}.db', 'inventory_{date}.dat', 'project_files_{date}.zip', 'meeting_notes_{date}.pdf', 'system_{date}.cfg'],
             transfer: ['quarterly_backup_{date}.tar', 'financial_records_{date}.enc', 'contracts_{date}.zip', 'index_{date}.db', 'manifest_{date}.txt'],
-            decryption: ['trade_secrets_{date}.dat', 'api_keys_{date}.cfg', 'payroll_hashes_{date}.bin', 'board_minutes_{date}.db', 'nda_archive_{date}.log', 'vpn_certs_{date}.pem']
+            decryption: ['trade_secrets_{date}.dat', 'api_keys_{date}.cfg', 'payroll_hashes_{date}.bin', 'board_minutes_{date}.db', 'nda_archive_{date}.log', 'vpn_certs_{date}.pem'],
+            cracking: ['payroll_archive_{date}.zip', 'hr_database_{date}.db', 'executive_files_{date}.zip', 'contract_vault_{date}.db', 'admin_credentials_{date}.dat']
         },
         utilities: {
             repair: ['scada_config_{date}.db', 'grid_telemetry_{date}.dat', 'meter_data_{date}.enc', 'sensor_calibration_{date}.cfg', 'event_log_{date}.txt'],
             backup: ['outage_logs_{date}.dat', 'maintenance_{date}.db', 'sensor_data_{date}.enc', 'grid_map_{date}.pdf', 'backup_schedule_{date}.cfg'],
             transfer: ['infrastructure_{date}.tar', 'network_config_{date}.zip', 'system_backup_{date}.db', 'migration_log_{date}.txt', 'readme_{date}.pdf'],
-            decryption: ['plc_firmware_{date}.bin', 'grid_auth_{date}.dat', 'scada_certs_{date}.pem', 'relay_config_{date}.db', 'substation_{date}.log']
+            decryption: ['plc_firmware_{date}.bin', 'grid_auth_{date}.dat', 'scada_certs_{date}.pem', 'relay_config_{date}.db', 'substation_{date}.log'],
+            cracking: ['scada_access_{date}.db', 'grid_credentials_{date}.zip', 'maintenance_sealed_{date}.db', 'sensor_auth_{date}.dat', 'operator_vault_{date}.zip']
         },
         shipping: {
             repair: ['tracking_system_{date}.db', 'logistics_{date}.dat', 'manifest_{date}.enc', 'route_cache_{date}.dat', 'driver_log_{date}.txt'],
             backup: ['shipment_records_{date}.db', 'customs_{date}.dat', 'routes_{date}.enc', 'fleet_status_{date}.xlsx', 'backup_config_{date}.cfg'],
             transfer: ['warehouse_{date}.tar', 'fleet_data_{date}.zip', 'inventory_{date}.db', 'transfer_receipt_{date}.pdf', 'sync_log_{date}.txt'],
-            decryption: ['customs_seals_{date}.bin', 'container_manifest_{date}.dat', 'gps_keys_{date}.cfg', 'cargo_insurance_{date}.db', 'port_clearance_{date}.log']
+            decryption: ['customs_seals_{date}.bin', 'container_manifest_{date}.dat', 'gps_keys_{date}.cfg', 'cargo_insurance_{date}.db', 'port_clearance_{date}.log'],
+            cracking: ['customs_archive_{date}.zip', 'fleet_credentials_{date}.db', 'cargo_manifest_{date}.zip', 'port_access_{date}.db', 'logistics_sealed_{date}.dat']
         },
         emergency: {
             repair: ['dispatch_logs_{date}.db', 'incident_reports_{date}.dat', 'personnel_{date}.enc', 'radio_config_{date}.cfg', 'system_status_{date}.log'],
             backup: ['call_records_{date}.db', 'response_times_{date}.dat', 'equipment_{date}.enc', 'training_docs_{date}.pdf', 'schedule_{date}.xlsx'],
             transfer: ['emergency_archive_{date}.tar', 'training_{date}.zip', 'protocols_{date}.db', 'handover_notes_{date}.txt', 'audit_{date}.log'],
-            decryption: ['radio_ciphers_{date}.bin', 'dispatch_keys_{date}.dat', 'incident_sealed_{date}.db', 'mutual_aid_{date}.cfg', 'responder_certs_{date}.pem']
+            decryption: ['radio_ciphers_{date}.bin', 'dispatch_keys_{date}.dat', 'incident_sealed_{date}.db', 'mutual_aid_{date}.cfg', 'responder_certs_{date}.pem'],
+            cracking: ['incident_archive_{date}.zip', 'personnel_records_{date}.db', 'dispatch_sealed_{date}.zip', 'responder_auth_{date}.db', 'protocol_vault_{date}.dat']
         },
         nonprofit: {
             repair: ['donor_database_{date}.db', 'volunteer_{date}.dat', 'programs_{date}.enc', 'newsletter_draft_{date}.pdf', 'config_{date}.cfg'],
             backup: ['fundraising_{date}.db', 'grants_{date}.dat', 'events_{date}.enc', 'annual_summary_{date}.xlsx', 'email_templates_{date}.zip'],
             transfer: ['annual_report_{date}.tar', 'financial_{date}.zip', 'membership_{date}.db', 'media_assets_{date}.tar', 'readme_{date}.txt'],
-            decryption: ['beneficiary_keys_{date}.dat', 'grant_tokens_{date}.bin', 'donor_privacy_{date}.db', 'board_sealed_{date}.log', 'fund_audit_{date}.cfg']
+            decryption: ['beneficiary_keys_{date}.dat', 'grant_tokens_{date}.bin', 'donor_privacy_{date}.db', 'board_sealed_{date}.log', 'fund_audit_{date}.cfg'],
+            cracking: ['donor_archive_{date}.zip', 'grant_sealed_{date}.db', 'board_minutes_{date}.zip', 'volunteer_credentials_{date}.db', 'financial_vault_{date}.dat']
         },
         cultural: {
             repair: ['catalog_{date}.db', 'collections_{date}.dat', 'exhibitions_{date}.enc', 'visitor_log_{date}.csv', 'settings_{date}.cfg'],
             backup: ['archives_{date}.db', 'digitization_{date}.dat', 'metadata_{date}.enc', 'restoration_notes_{date}.pdf', 'index_{date}.log'],
             transfer: ['preservation_{date}.tar', 'restoration_{date}.zip', 'inventory_{date}.db', 'accession_log_{date}.csv', 'readme_{date}.txt'],
-            decryption: ['provenance_keys_{date}.dat', 'acquisition_sealed_{date}.db', 'digital_rights_{date}.bin', 'archive_certs_{date}.pem', 'loan_agreements_{date}.log']
+            decryption: ['provenance_keys_{date}.dat', 'acquisition_sealed_{date}.db', 'digital_rights_{date}.bin', 'archive_certs_{date}.pem', 'loan_agreements_{date}.log'],
+            cracking: ['collection_archive_{date}.zip', 'provenance_sealed_{date}.db', 'acquisition_vault_{date}.zip', 'curator_credentials_{date}.db', 'exhibit_records_{date}.dat']
         }
     };
 
@@ -3554,9 +3563,341 @@ export function generateVirusHuntMission(client, options = {}) {
 }
 
 /**
+ * Pick a hash type based on player progression, weighted toward harder hashes
+ * @param {string[]} availableHashes - Available hash types (e.g. ['md5', 'sha256'])
+ * @returns {string} Selected hash type
+ */
+function pickHashType(availableHashes) {
+    if (!availableHashes || availableHashes.length === 0) return 'md5';
+    const weighted = [];
+    for (const hash of availableHashes) {
+        const weight = hash === 'bcrypt' ? 3 : hash === 'sha256' ? 2 : 1;
+        for (let i = 0; i < weight; i++) weighted.push(hash);
+    }
+    return randomPick(weighted);
+}
+
+/**
+ * Get available hash types based on player progression
+ * @param {string[]} unlockedSoftware - Player's unlocked software/features
+ * @returns {string[]} Available hash types
+ */
+export function getPlayerHashTypes(unlockedSoftware = []) {
+    const types = ['md5']; // Always available
+    const hasCracking = unlockedSoftware.includes('cracking-tooling');
+    if (hasCracking) {
+        types.push('sha1', 'sha256');
+    }
+    const hasSniffer = unlockedSoftware.includes('sniffer-tooling');
+    if (hasSniffer) {
+        types.push('bcrypt'); // End-game hash type
+    }
+    return types;
+}
+
+/**
+ * Hash type payout multipliers (harder hashes = better pay)
+ */
+const HASH_PAYOUT_MULTIPLIERS = {
+    md5: 1.0,
+    sha1: 1.3,
+    sha256: 1.6,
+    bcrypt: 2.0,
+};
+
+/**
+ * Generate password-protected files for cracking missions
+ * @param {string} industry - Client industry
+ * @param {number} targetCount - Number of target password-protected files
+ * @param {string} hashType - Hash type for password protection
+ * @returns {Object} { files, targetFiles }
+ */
+function generatePasswordProtectedFiles(industry, targetCount, hashType) {
+    const { files, targetFiles } = generateFiles(industry, 'cracking', targetCount, false);
+
+    // Mark target files as password-protected
+    files.forEach(f => {
+        if (f.targetFile) {
+            f.passwordProtected = true;
+            f.hashType = hashType;
+        }
+    });
+
+    return { files, targetFiles };
+}
+
+/**
+ * Generate a cracking briefing message
+ * @param {Object} client - Client object
+ * @param {Array} networks - Network definitions
+ * @param {number|null} timeLimitMinutes - Time limit
+ * @param {Object} context - { targetFiles, hashType }
+ * @returns {Object} Briefing message object
+ */
+function generateCrackingBriefing(client, networks, timeLimitMinutes, context = {}) {
+    const { targetFiles = [], hashType = 'md5' } = context;
+
+    const hashNames = { md5: 'MD5', sha1: 'SHA-1', sha256: 'SHA-256', bcrypt: 'bcrypt' };
+
+    const briefingTemplates = [
+        `Our former IT administrator left abruptly and password-protected several critical files before departing. We need these files unlocked urgently.`,
+        `A system migration left several important files locked with passwords that were never documented. We need a specialist to crack them open.`,
+        `After a security incident, some of our files ended up password-protected and we've lost the credentials. We need them recovered.`,
+        `Our previous contractor locked several files with passwords that were never shared with us. We need access restored immediately.`,
+    ];
+
+    let body = 'Dear {username},\n\n';
+    body += randomPick(briefingTemplates);
+    body += `\n\nThe files appear to be protected with ${hashNames[hashType] || hashType} hashing.`;
+
+    if (targetFiles.length > 0) {
+        body += `\n\n🔒 Files to crack:`;
+        targetFiles.forEach(file => { body += `\n• ${file}`; });
+    }
+
+    if (timeLimitMinutes) {
+        body += `\n\n⚠️ TIME SENSITIVE: This task must be completed within ${timeLimitMinutes} minutes of acceptance.`;
+    }
+
+    body += `\n\nAttached are the network credentials you'll need to access our systems.`;
+    body += `\n\nSincerely,\n{clientName}`;
+
+    const uniqueId = `msg-briefing-crack-${client.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    return {
+        id: uniqueId,
+        from: client.name,
+        fromId: client.id,
+        fromName: client.name,
+        subject: 'Mission Briefing: Password Recovery Request',
+        body,
+        attachments: generateNarAttachments(networks),
+        read: false,
+        timestamp: new Date().toISOString()
+    };
+}
+
+/**
+ * Generate a password crack mission
+ * Connect, scan, crack password-protected files
+ * @param {Object} client - Client object
+ * @param {Object} options - { hasTimed, playerHashTypes }
+ * @returns {Object} Complete mission object
+ */
+export function generatePasswordCrackMission(client, options = {}) {
+    const { hasTimed = false, playerHashTypes = ['md5'] } = options;
+
+    const hashType = pickHashType(playerHashTypes);
+    const hashMultiplier = HASH_PAYOUT_MULTIPLIERS[hashType] || 1.0;
+    const targetFileCount = randomInt(2, 4);
+    const difficulty = targetFileCount <= 2 ? 'Easy' : targetFileCount <= 3 ? 'Medium' : 'Hard';
+
+    const infra = generateNetworkInfrastructure(client, 'cracking', targetFileCount, {
+        deviceConfigs: [{ fileSystemCount: 1 }]
+    });
+
+    const { files, targetFiles } = generatePasswordProtectedFiles(
+        client.industry, targetFileCount, hashType
+    );
+
+    infra.networks[0].fileSystems[0].files = files;
+
+    const timeLimitMinutes = hasTimed ? Math.floor(6 + targetFileCount * 2) : null;
+    const objectiveCount = 3 + targetFileCount; // connect + scan + crack files
+    const basePayout = Math.floor(calculatePayout(objectiveCount, timeLimitMinutes, client, infra.totalDataBytes) * hashMultiplier);
+
+    const objectives = [
+        { id: 'obj-connect', description: `Connect to ${infra.networks[0].networkName}`, type: 'networkConnection', target: infra.primaryNetworkId, status: 'pending' },
+        { id: 'obj-scan', description: `Scan network and locate server`, type: 'networkScan', target: infra.primaryNetworkId, expectedResult: infra.hostname, status: 'pending' },
+        { id: 'obj-crack', description: `Crack ${targetFileCount} password-protected files`, type: 'passwordCrack', targetFiles, status: 'pending' },
+        { id: 'obj-verify', description: 'Verify mission completion', type: 'verification', autoComplete: false, status: 'pending' },
+    ];
+
+    const briefingMessage = generateCrackingBriefing(client, infra.networks, timeLimitMinutes, {
+        targetFiles, hashType
+    });
+
+    return {
+        missionId: generateMissionId('crack', client.id),
+        title: `Password Recovery for ${client.name}`,
+        client: client.name,
+        clientId: client.id,
+        clientType: client.clientType,
+        industry: client.industry,
+        difficulty,
+        missionType: 'password-crack',
+        basePayout,
+        networks: infra.networks,
+        objectives,
+        targetFiles,
+        totalDataBytes: infra.totalDataBytes,
+        requirements: { software: ['vpn-client', 'network-scanner', 'file-manager', 'password-cracker'] },
+        consequences: {
+            success: generateSuccessConsequences(client, basePayout),
+            failure: generateFailureConsequences(client, basePayout)
+        },
+        timeLimitMinutes,
+        briefingMessage,
+        isProcedurallyGenerated: true,
+        generatedAt: new Date().toISOString(),
+    };
+}
+
+/**
+ * Generate an investigation + crack mission
+ * Investigate logs to find which files are locked, then crack them
+ * @param {Object} client - Client object
+ * @param {Object} options - { hasTimed, playerHashTypes }
+ * @returns {Object} Complete mission object
+ */
+export function generateInvestigationCrackMission(client, options = {}) {
+    const { hasTimed = false, playerHashTypes = ['md5'] } = options;
+
+    const hashType = pickHashType(playerHashTypes);
+    const hashMultiplier = HASH_PAYOUT_MULTIPLIERS[hashType] || 1.0;
+    const targetFileCount = randomInt(2, 3);
+    const difficulty = 'Hard';
+
+    const infra = generateNetworkInfrastructure(client, 'cracking', targetFileCount, {
+        deviceConfigs: [{ fileSystemCount: randomInt(1, 2) }]
+    });
+
+    const { files, targetFiles } = generatePasswordProtectedFiles(
+        client.industry, targetFileCount, hashType
+    );
+
+    // Put target files in the correct file system (first one)
+    const correctFsIndex = 0;
+    const correctFs = infra.networks[0].fileSystems[correctFsIndex];
+    correctFs.files = files;
+
+    // Add investigation logs pointing to the locked files (logs go on file system in flat format)
+    if (!correctFs.logs) correctFs.logs = [];
+    correctFs.logs.push(
+        { type: 'system', action: 'access_denied', note: `Password-protected files detected on ${correctFs.name}`, timestamp: '2024-03-15T14:00:00Z' },
+        { type: 'remote', action: 'unauthorized_access', user: 'unknown', note: 'External connection - files locked', timestamp: '2024-03-15T14:05:00Z' }
+    );
+
+    const timeLimitMinutes = hasTimed ? Math.floor(8 + targetFileCount * 2.5) : null;
+    const objectiveCount = 5 + targetFileCount;
+    const basePayout = Math.floor(calculatePayout(objectiveCount, timeLimitMinutes, client, infra.totalDataBytes) * hashMultiplier * 1.3);
+
+    const objectives = [
+        { id: 'obj-connect', description: `Connect to ${infra.networks[0].networkName}`, type: 'networkConnection', target: infra.primaryNetworkId, status: 'pending' },
+        { id: 'obj-scan', description: `Scan network and locate server`, type: 'networkScan', target: infra.primaryNetworkId, expectedResult: infra.hostname, status: 'pending' },
+        { id: 'obj-investigate', description: `Review logs to identify locked files`, type: 'investigation', target: infra.primaryNetworkId, investigationType: 'logReview', correctFileSystemId: correctFs.id, status: 'pending' },
+        { id: 'obj-crack', description: `Crack ${targetFileCount} locked files`, type: 'passwordCrack', targetFiles, status: 'pending' },
+        { id: 'obj-verify', description: 'Verify mission completion', type: 'verification', autoComplete: false, status: 'pending' },
+    ];
+
+    const briefingMessage = generateCrackingBriefing(client, infra.networks, timeLimitMinutes, {
+        targetFiles, hashType
+    });
+
+    return {
+        missionId: generateMissionId('inv-crack', client.id),
+        title: `Investigation & Recovery for ${client.name}`,
+        client: client.name,
+        clientId: client.id,
+        clientType: client.clientType,
+        industry: client.industry,
+        difficulty,
+        missionType: 'investigation-crack',
+        basePayout,
+        networks: infra.networks,
+        objectives,
+        targetFiles,
+        totalDataBytes: infra.totalDataBytes,
+        requirements: { software: ['vpn-client', 'network-scanner', 'file-manager', 'password-cracker', 'log-viewer'] },
+        consequences: {
+            success: generateSuccessConsequences(client, basePayout),
+            failure: generateFailureConsequences(client, basePayout)
+        },
+        timeLimitMinutes,
+        briefingMessage,
+        isProcedurallyGenerated: true,
+        generatedAt: new Date().toISOString(),
+    };
+}
+
+/**
+ * Generate a crack-and-recover mission
+ * Former employee locked files before leaving - crack then backup
+ * @param {Object} client - Client object
+ * @param {Object} options - { hasTimed, playerHashTypes }
+ * @returns {Object} Complete mission object
+ */
+export function generateCrackAndRecoverMission(client, options = {}) {
+    const { hasTimed = false, playerHashTypes = ['md5'] } = options;
+
+    const hashType = pickHashType(playerHashTypes);
+    const hashMultiplier = HASH_PAYOUT_MULTIPLIERS[hashType] || 1.0;
+    const targetFileCount = randomInt(2, 4);
+    const difficulty = targetFileCount <= 2 ? 'Medium' : 'Hard';
+
+    const infra = generateNetworkInfrastructure(client, 'cracking', targetFileCount, {
+        sameNetworkBackup: true,
+        deviceConfigs: [{ fileSystemCount: 1 }, { fileSystemCount: 1 }]
+    });
+
+    const { files, targetFiles } = generatePasswordProtectedFiles(
+        client.industry, targetFileCount, hashType
+    );
+
+    infra.networks[0].fileSystems[0].files = files;
+
+    const timeLimitMinutes = hasTimed ? Math.floor(8 + targetFileCount * 2) : null;
+    const objectiveCount = 4 + targetFileCount * 2; // connect + scan + crack + copy each
+    const basePayout = Math.floor(calculatePayout(objectiveCount, timeLimitMinutes, client, infra.totalDataBytes) * hashMultiplier * 1.2);
+
+    // Backup destination (second device in the network)
+    const backupIp = infra.devices.length > 1
+        ? infra.devices[1].ip
+        : infra.primaryIp;
+
+    const objectives = [
+        { id: 'obj-connect', description: `Connect to ${infra.networks[0].networkName}`, type: 'networkConnection', target: infra.primaryNetworkId, status: 'pending' },
+        { id: 'obj-scan', description: `Scan network and locate servers`, type: 'networkScan', target: infra.primaryNetworkId, expectedResult: infra.hostname, status: 'pending' },
+        { id: 'obj-crack', description: `Crack ${targetFileCount} locked files`, type: 'passwordCrack', targetFiles, status: 'pending' },
+        { id: 'obj-backup', description: `Back up cracked files to backup server`, type: 'fileOperation', operation: 'paste', targetFiles, destination: backupIp, status: 'pending' },
+        { id: 'obj-verify', description: 'Verify mission completion', type: 'verification', autoComplete: false, status: 'pending' },
+    ];
+
+    const briefingMessage = generateCrackingBriefing(client, infra.networks, timeLimitMinutes, {
+        targetFiles, hashType
+    });
+
+    return {
+        missionId: generateMissionId('crack-recover', client.id),
+        title: `Credential Recovery for ${client.name}`,
+        client: client.name,
+        clientId: client.id,
+        clientType: client.clientType,
+        industry: client.industry,
+        difficulty,
+        missionType: 'crack-and-recover',
+        basePayout,
+        networks: infra.networks,
+        objectives,
+        targetFiles,
+        totalDataBytes: infra.totalDataBytes,
+        requirements: { software: ['vpn-client', 'network-scanner', 'file-manager', 'password-cracker'] },
+        consequences: {
+            success: generateSuccessConsequences(client, basePayout),
+            failure: generateFailureConsequences(client, basePayout)
+        },
+        timeLimitMinutes,
+        briefingMessage,
+        isProcedurallyGenerated: true,
+        generatedAt: new Date().toISOString(),
+    };
+}
+
+/**
  * Get available mission types based on unlocked features
  * Investigation missions require 'investigation-missions' unlock (earned by completing data-detective)
  * Decryption missions require 'decryption-missions' unlock (earned by completing ransomware-recovery)
+ * Cracking missions require 'cracking-tooling' unlock (earned by completing locked-out)
  * @param {Array} unlockedSoftware - Array of unlocked software/feature IDs
  * @returns {Array} Array of available mission type strings
  */
@@ -3585,6 +3926,15 @@ export function getMissionTypesForPlayer(unlockedSoftware = []) {
         types.push('virus-hunt');                  // AV scan + secure delete
     }
 
+    // Check if cracking missions are unlocked (unlocked by completing locked-out)
+    const hasCrackingTooling = unlockedSoftware.includes('cracking-tooling');
+
+    if (hasCrackingTooling) {
+        types.push('password-crack');             // Basic password crack
+        types.push('investigation-crack');        // Investigation + crack
+        types.push('crack-and-recover');          // Crack + backup
+    }
+
     return types;
 }
 
@@ -3605,6 +3955,9 @@ export default {
     generateMultiLayerDecryptionMission,
     generateDecryptionMalwareMission,
     generateVirusHuntMission,
+    generatePasswordCrackMission,
+    generateInvestigationCrackMission,
+    generateCrackAndRecoverMission,
     generateMissionArc,
     generateNetworkInfrastructure,
     calculateTimeLimit,
@@ -3612,5 +3965,6 @@ export default {
     resetMissionIdCounter,
     getMissionTypesForPlayer,
     getPlayerAlgorithms,
+    getPlayerHashTypes,
     networkComplexityConfig
 };

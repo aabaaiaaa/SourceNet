@@ -249,14 +249,20 @@ export const createPlaceholderStoryMessage = (username, managerName) => ({
   from: 'SourceNet Manager',
   fromId: 'SNET-MGR-STORY',
   fromName: `SourceNet Manager ${managerName}`,
-  subject: 'Something Big',
+  subject: 'Next Phase - Password Cracking Tools',
   body: `${username},
 
 I've been watching your progress. Full algorithm suite, solid track record, handling complex multi-layer jobs without breaking a sweat.
 
-I've got something big lined up for you. Can't say more right now - I need to verify some things first. But this is different from the contract work. This is the kind of job that changes things.
+Here's what's coming next: password cracking. Different from decryption - you're not reversing an algorithm, you're breaking through password protection on locked files. Think archives, databases, protected documents. Clients lose access to their own systems all the time and need someone to get them back in.
 
-Stay sharp. I'll be in touch soon.
+I'm working on getting you access to a Password Cracker tool. The tool itself is 10,000 credits and you'll need a RAM upgrade to run it - the cracker is very memory-hungry. That's the minimum to get started. Brute force attacks are slow but they work on anything.
+
+Once you're ready to move faster, there are add-on packs available: dictionary lists and rainbow tables. They make cracking significantly faster but they're not cheap - the full suite runs 70,000+ credits. You don't need them right away. The first cracking job can be done with brute force alone.
+
+My advice: get the Password Cracker and a RAM upgrade, then start taking cracking contracts. Use the payouts to build up for the add-on packs over time. The work pays well.
+
+I'll be in touch when it's ready. Stay sharp.
 
 - ${managerName}`,
   timestamp: null,

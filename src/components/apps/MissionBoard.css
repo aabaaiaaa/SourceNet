@@ -540,6 +540,16 @@
   font-weight: bold;
 }
 
+/* Hostile Network Badge */
+.hostile-badge {
+  background: #d32f2f;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
 /* Optional Objective Label */
 .optional-label {
   color: #888;

@@ -9,6 +9,12 @@ import {
   checkDataRecoveryScanObjective,
   checkFileRecoveryObjective,
   checkSecureDeleteObjective,
+  checkPasswordCrackObjective,
+  checkCredentialExtractionObjective,
+  checkFileDecryptionObjective,
+  checkFileUploadObjective,
+  checkSoftwareActivationObjective,
+  checkAvThreatDetectedObjective,
   checkMissionObjectives,
   getFileOperationProgress,
   getFileOperationDetails,
@@ -986,6 +992,261 @@ describe('ObjectiveTracker', () => {
 
       expect(checkSecureDeleteObjective(objective, {})).toBe(false);
       expect(checkSecureDeleteObjective(objective, undefined)).toBe(false);
+    });
+  });
+
+  describe('checkPasswordCrackObjective', () => {
+    it('should return true when all target files are cracked', () => {
+      const objective = {
+        type: 'passwordCrack',
+        targetFiles: ['secret.zip', 'locked.db'],
+      };
+      const crackedFiles = new Set(['secret.zip', 'locked.db']);
+      expect(checkPasswordCrackObjective(objective, crackedFiles)).toBe(true);
+    });
+
+    it('should return false when some target files are not cracked', () => {
+      const objective = {
+        type: 'passwordCrack',
+        targetFiles: ['secret.zip', 'locked.db'],
+      };
+      const crackedFiles = new Set(['secret.zip']);
+      expect(checkPasswordCrackObjective(objective, crackedFiles)).toBe(false);
+    });
+
+    it('should return false when no files are cracked', () => {
+      const objective = {
+        type: 'passwordCrack',
+        targetFiles: ['secret.zip'],
+      };
+      expect(checkPasswordCrackObjective(objective, new Set())).toBe(false);
+    });
+
+    it('should return false when targetFiles is empty', () => {
+      const objective = { type: 'passwordCrack', targetFiles: [] };
+      expect(checkPasswordCrackObjective(objective, new Set(['secret.zip']))).toBe(false);
+    });
+
+    it('should handle missing targetFiles', () => {
+      const objective = { type: 'passwordCrack' };
+      expect(checkPasswordCrackObjective(objective, new Set())).toBe(false);
+    });
+
+    it('should handle default empty crackedFiles', () => {
+      const objective = { type: 'passwordCrack', targetFiles: ['secret.zip'] };
+      expect(checkPasswordCrackObjective(objective)).toBe(false);
+    });
+  });
+
+  describe('checkCredentialExtractionObjective', () => {
+    it('should return true when credentials extracted for target network', () => {
+      const objective = {
+        type: 'credentialExtraction',
+        target: 'target-network',
+      };
+      const extracted = [{ networkId: 'target-network', deviceIps: ['10.0.1.50'] }];
+      expect(checkCredentialExtractionObjective(objective, extracted)).toBe(true);
+    });
+
+    it('should return false when credentials not extracted for target', () => {
+      const objective = {
+        type: 'credentialExtraction',
+        target: 'target-network',
+      };
+      const extracted = [{ networkId: 'other-network', deviceIps: ['10.0.2.50'] }];
+      expect(checkCredentialExtractionObjective(objective, extracted)).toBe(false);
+    });
+
+    it('should return false when no credentials extracted', () => {
+      const objective = {
+        type: 'credentialExtraction',
+        target: 'target-network',
+      };
+      expect(checkCredentialExtractionObjective(objective, [])).toBe(false);
+    });
+
+    it('should return false when target is missing', () => {
+      const objective = { type: 'credentialExtraction' };
+      const extracted = [{ networkId: 'target-network' }];
+      expect(checkCredentialExtractionObjective(objective, extracted)).toBe(false);
+    });
+
+    it('should handle default empty extractedCredentials', () => {
+      const objective = { type: 'credentialExtraction', target: 'net-1' };
+      expect(checkCredentialExtractionObjective(objective)).toBe(false);
+    });
+
+    it('should work with multiple extraction entries', () => {
+      const objective = {
+        type: 'credentialExtraction',
+        target: 'net-b',
+      };
+      const extracted = [
+        { networkId: 'net-a' },
+        { networkId: 'net-b' },
+        { networkId: 'net-c' },
+      ];
+      expect(checkCredentialExtractionObjective(objective, extracted)).toBe(true);
+    });
+  });
+
+  describe('checkFileDecryptionObjective', () => {
+    it('should return true when all target files are decrypted', () => {
+      const objective = {
+        type: 'fileDecryption',
+        targetFiles: ['encrypted.dat', 'locked.bin'],
+      };
+      const ops = { decrypted: new Set(['encrypted.dat', 'locked.bin']) };
+      expect(checkFileDecryptionObjective(objective, ops)).toBe(true);
+    });
+
+    it('should return false when some files not decrypted', () => {
+      const objective = {
+        type: 'fileDecryption',
+        targetFiles: ['encrypted.dat', 'locked.bin'],
+      };
+      const ops = { decrypted: new Set(['encrypted.dat']) };
+      expect(checkFileDecryptionObjective(objective, ops)).toBe(false);
+    });
+
+    it('should return false when targetFiles is empty', () => {
+      const objective = { type: 'fileDecryption', targetFiles: [] };
+      expect(checkFileDecryptionObjective(objective, { decrypted: new Set(['x']) })).toBe(false);
+    });
+
+    it('should handle missing decryptionOperations', () => {
+      const objective = { type: 'fileDecryption', targetFiles: ['file.dat'] };
+      expect(checkFileDecryptionObjective(objective)).toBe(false);
+      expect(checkFileDecryptionObjective(objective, {})).toBe(false);
+    });
+  });
+
+  describe('checkFileUploadObjective', () => {
+    it('should return true when all target files uploaded', () => {
+      const objective = {
+        type: 'fileUpload',
+        targetFiles: ['report.pdf'],
+      };
+      const ops = { uploaded: new Set(['report.pdf']), uploadDestinations: new Map() };
+      expect(checkFileUploadObjective(objective, ops)).toBe(true);
+    });
+
+    it('should return true when destination matches', () => {
+      const objective = {
+        type: 'fileUpload',
+        targetFiles: ['report.pdf'],
+        destination: '10.0.0.5',
+      };
+      const ops = {
+        uploaded: new Set(['report.pdf']),
+        uploadDestinations: new Map([['report.pdf', '10.0.0.5']]),
+      };
+      expect(checkFileUploadObjective(objective, ops)).toBe(true);
+    });
+
+    it('should return false when destination does not match', () => {
+      const objective = {
+        type: 'fileUpload',
+        targetFiles: ['report.pdf'],
+        destination: '10.0.0.5',
+      };
+      const ops = {
+        uploaded: new Set(['report.pdf']),
+        uploadDestinations: new Map([['report.pdf', '10.0.0.99']]),
+      };
+      expect(checkFileUploadObjective(objective, ops)).toBe(false);
+    });
+
+    it('should return false when files not uploaded', () => {
+      const objective = {
+        type: 'fileUpload',
+        targetFiles: ['report.pdf'],
+      };
+      expect(checkFileUploadObjective(objective, { uploaded: new Set() })).toBe(false);
+    });
+
+    it('should handle missing uploadOperations', () => {
+      const objective = { type: 'fileUpload', targetFiles: ['file.pdf'] };
+      expect(checkFileUploadObjective(objective)).toBe(false);
+    });
+  });
+
+  describe('checkSoftwareActivationObjective', () => {
+    it('should return true when target software is active', () => {
+      const objective = {
+        type: 'softwareActivation',
+        target: 'trace-monitor',
+      };
+      expect(checkSoftwareActivationObjective(objective, ['trace-monitor', 'advanced-firewall-av'])).toBe(true);
+    });
+
+    it('should return false when target software is not active', () => {
+      const objective = {
+        type: 'softwareActivation',
+        target: 'trace-monitor',
+      };
+      expect(checkSoftwareActivationObjective(objective, ['advanced-firewall-av'])).toBe(false);
+    });
+
+    it('should return false when no passive software active', () => {
+      const objective = {
+        type: 'softwareActivation',
+        target: 'trace-monitor',
+      };
+      expect(checkSoftwareActivationObjective(objective, [])).toBe(false);
+    });
+
+    it('should return false when target is missing', () => {
+      const objective = { type: 'softwareActivation' };
+      expect(checkSoftwareActivationObjective(objective, ['trace-monitor'])).toBe(false);
+    });
+
+    it('should handle default empty activePassiveSoftware', () => {
+      const objective = { type: 'softwareActivation', target: 'trace-monitor' };
+      expect(checkSoftwareActivationObjective(objective)).toBe(false);
+    });
+  });
+
+  describe('checkAvThreatDetectedObjective', () => {
+    it('should return true when all target files detected as threats', () => {
+      const objective = {
+        type: 'avThreatDetected',
+        targetFiles: ['malware.exe', 'trojan.dll'],
+      };
+      const detections = new Set(['malware.exe', 'trojan.dll', 'virus.bat']);
+      expect(checkAvThreatDetectedObjective(objective, detections)).toBe(true);
+    });
+
+    it('should return false when some target files not detected', () => {
+      const objective = {
+        type: 'avThreatDetected',
+        targetFiles: ['malware.exe', 'trojan.dll'],
+      };
+      const detections = new Set(['malware.exe']);
+      expect(checkAvThreatDetectedObjective(objective, detections)).toBe(false);
+    });
+
+    it('should return false when no detections', () => {
+      const objective = {
+        type: 'avThreatDetected',
+        targetFiles: ['malware.exe'],
+      };
+      expect(checkAvThreatDetectedObjective(objective, new Set())).toBe(false);
+    });
+
+    it('should return false when targetFiles is empty', () => {
+      const objective = { type: 'avThreatDetected', targetFiles: [] };
+      expect(checkAvThreatDetectedObjective(objective, new Set(['malware.exe']))).toBe(false);
+    });
+
+    it('should handle missing targetFiles', () => {
+      const objective = { type: 'avThreatDetected' };
+      expect(checkAvThreatDetectedObjective(objective, new Set())).toBe(false);
+    });
+
+    it('should handle default empty avDetections', () => {
+      const objective = { type: 'avThreatDetected', targetFiles: ['x.exe'] };
+      expect(checkAvThreatDetectedObjective(objective)).toBe(false);
     });
   });
 });

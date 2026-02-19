@@ -1,7 +1,7 @@
 {
   "username": "scenario_user",
-  "playerMailId": "SNET-B9K-NRS-SKL",
-  "currentTime": "2020-03-25T09:12:47.000Z",
+  "playerMailId": "SNET-RNU-DBO-5SD",
+  "currentTime": "2020-03-25T09:10:03.000Z",
   "hardware": {
     "cpu": {
       "id": "cpu-1ghz-single",
@@ -15,6 +15,7 @@
         "id": "ram-2gb",
         "name": "2GB RAM",
         "capacity": "2GB",
+        "capacityMB": 2048,
         "price": 150,
         "power": 3
       }
@@ -80,8 +81,8 @@
     "mission-board",
     "network-address-register",
     "network-scanner",
-    "file-manager",
-    "vpn-client"
+    "vpn-client",
+    "file-manager"
   ],
   "bankAccounts": [
     {
@@ -106,11 +107,11 @@
     {
       "id": "msg-welcome-manager",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-ZAG-LQB",
-      "fromName": "SourceNet Manager Reese",
-      "subject": "Hi from your manager - Reese",
-      "body": "Hey scenario_user!\n\nWelcome to the team! I'm Reese, and I'll be your manager here at SourceNet. I was present during your interview process and I have to say, you really impressed us with your skills and dedication.\n\nTo help you get started, I've attached a welcome bonus cheque for 1,000 credits. Just click on the attachment to deposit it into your bank account.\n\nTake some time to get comfortable with your setup. I'll be reaching out again soon with your first assignment.\n\nLooking forward to working with you!\n\n- Reese",
-      "timestamp": "2020-03-25T09:00:19.000Z",
+      "fromId": "SNET-MGR-7W5-TE1",
+      "fromName": "SourceNet Manager Avery",
+      "subject": "Hi from your manager - Avery",
+      "body": "Hey scenario_user!\n\nWelcome to the team! I'm Avery, and I'll be your manager here at SourceNet. I was present during your interview process and I have to say, you really impressed us with your skills and dedication.\n\nTo help you get started, I've attached a welcome bonus cheque for 1,000 credits. Just click on the attachment to deposit it into your bank account.\n\nTake some time to get comfortable with your setup. I'll be reaching out again soon with your first assignment.\n\nLooking forward to working with you!\n\n- Avery",
+      "timestamp": "2020-03-25T09:00:25.000Z",
       "read": true,
       "archived": true,
       "attachments": [
@@ -124,11 +125,11 @@
     {
       "id": "msg-mission-board-license",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-MZT-E9O",
-      "fromName": "SourceNet Manager Reese",
+      "fromId": "SNET-MGR-37X-PF4",
+      "fromName": "SourceNet Manager Avery",
       "subject": "Get Ready for Your First Mission",
-      "body": "Hey scenario_user!\n\nNow that you're all set up, it's time to get you started with actual work.\n\nI've attached a license for the SourceNet Mission Board application. This is where you'll find all available missions from our clients.\n\nTo get started:\n\n1. Click the attachment above to add the Mission Board license to your account\n2. Open the OSNet Portal from your app launcher\n3. Go to Software section - you'll see \"SourceNet Mission Board\" marked as \"Licensed\"\n4. Download and install it\n5. Once installed, open the Mission Board from your app launcher\n\nI've posted your first assignment there. It's a straightforward file repair job for one of our clients - perfect for learning the ropes.\n\nOnce you install the Mission Board, I'll send you the software licenses you'll need to complete the mission.\n\n- Reese",
-      "timestamp": "2020-03-25T09:00:54.000Z",
+      "body": "Hey scenario_user!\n\nNow that you're all set up, it's time to get you started with actual work.\n\nI've attached a license for the SourceNet Mission Board application. This is where you'll find all available missions from our clients.\n\nTo get started:\n\n1. Click the attachment above to add the Mission Board license to your account\n2. Open the OSNet Portal from your app launcher\n3. Go to Software section - you'll see \"SourceNet Mission Board\" marked as \"Licensed\"\n4. Download and install it\n5. Once installed, open the Mission Board from your app launcher\n\nI've posted your first assignment there. It's a straightforward file repair job for one of our clients - perfect for learning the ropes.\n\nOnce you install the Mission Board, I'll send you the software licenses you'll need to complete the mission.\n\n- Avery",
+      "timestamp": "2020-03-25T09:01:09.000Z",
       "read": true,
       "archived": true,
       "attachments": [
@@ -145,11 +146,11 @@
     {
       "id": "msg-tutorial-software-licenses",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-FDC-2SY",
-      "fromName": "SourceNet Manager Reese",
+      "fromId": "SNET-MGR-WHX-O8Y",
+      "fromName": "SourceNet Manager Avery",
       "subject": "Mission Software",
-      "body": "Great! Now that you have the Mission Board installed, let me get you set up with the tools you'll need for your first mission.\n\nI've attached free licenses for the essential software (total value: $1,350):\n\n- SourceNet VPN Client ($500): Secure access to client networks\n- Network Address Register ($200): Manages your network connections\n- Network Scanner ($300): Finds machines and file systems on networks\n- File Manager ($350): Access and repair files on remote systems\n\nInstallation steps:\n\n1. Click all the attachments above to add them to your account\n2. Open the Portal and install all four software applications\n3. Once installed, open the Mission Board and accept the \"Log File Repair\" mission\n\nWhen you accept the mission, you'll receive the network credentials for ClientA-Corporate as an attachment. Use the Network Address Register to add them to your NAR.\n\nThe mission objectives are straightforward:\n- Connect to ClientA-Corporate network via VPN\n- Scan the network to find their file server\n- Use File Manager to detect and repair corrupted log files\n\nYour Mission Board will track each objective as you complete them.\n\nGood luck!\n\n- Reese",
-      "timestamp": "2020-03-25T09:01:31.000Z",
+      "body": "Great! Now that you have the Mission Board installed, let me get you set up with the tools you'll need for your first mission.\n\nI've attached free licenses for the essential software (total value: $1,350):\n\n- SourceNet VPN Client ($500): Secure access to client networks\n- Network Address Register ($200): Manages your network connections\n- Network Scanner ($300): Finds machines and file systems on networks\n- File Manager ($350): Access and repair files on remote systems\n\nInstallation steps:\n\n1. Click all the attachments above to add them to your account\n2. Open the Portal and install all four software applications\n3. Once installed, open the Mission Board and accept the \"Log File Repair\" mission\n\nWhen you accept the mission, you'll receive the network credentials for ClientA-Corporate as an attachment. Use the Network Address Register to add them to your NAR.\n\nThe mission objectives are straightforward:\n- Connect to ClientA-Corporate network via VPN\n- Scan the network to find their file server\n- Use File Manager to detect and repair corrupted log files\n\nYour Mission Board will track each objective as you complete them.\n\nGood luck!\n\n- Avery",
+      "timestamp": "2020-03-25T09:02:39.000Z",
       "read": true,
       "archived": true,
       "attachments": [
@@ -188,13 +189,13 @@
       ]
     },
     {
-      "id": "msg-briefing-tutorial-part-1-1770916977211",
+      "id": "msg-briefing-tutorial-part-1-1771508803945",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-3WW-JB9",
-      "fromName": "SourceNet Manager Reese",
+      "fromId": "SNET-MGR-XKP-F6Z",
+      "fromName": "SourceNet Manager Avery",
       "subject": "ClientA Network Credentials",
-      "body": "Perfect! Now that you've accepted the mission, here are the network credentials for ClientA-Corporate.\n\nClick the attachment above to add it to your Network Address Register. Then you can use your VPN Client to connect to their network.\n\nRemember the mission objectives:\n1. Connect to ClientA-Corporate network\n2. Scan the network to find file servers\n3. Use File Manager to repair corrupted log files\n\nYou've got this!\n\n- Reese",
-      "timestamp": "2020-03-25T09:04:11.000Z",
+      "body": "Perfect! Now that you've accepted the mission, here are the network credentials for ClientA-Corporate.\n\nClick the attachment above to add it to your Network Address Register. Then you can use your VPN Client to connect to their network.\n\nRemember the mission objectives:\n1. Connect to ClientA-Corporate network\n2. Scan the network to find file servers\n3. Use File Manager to repair corrupted log files\n\nYou've got this!\n\n- Avery",
+      "timestamp": "2020-03-25T09:04:26.000Z",
       "read": true,
       "archived": true,
       "attachments": [
@@ -211,63 +212,61 @@
       ]
     },
     {
-      "id": "bank-firstOverdraft-1770916995749",
+      "id": "bank-firstOverdraft-1771508825836",
       "from": "First Bank Ltd",
       "fromId": "SNET-FBL-000-001",
       "to": "scenario_user",
-      "toId": "SNET-B9K-NRS-SKL",
+      "toId": "SNET-RNU-DBO-5SD",
       "subject": "Overdraft Notice - Interest Charges Apply",
       "body": "Dear scenario_user,\n\nYour account with First Bank Ltd is currently overdrawn.\n\nCurrent Balance: -9,000 credits\nOverdraft Interest Rate: 1% per minute (in-game time)\n\nInterest will be charged every minute until your balance returns to positive.\n\nBANKRUPTCY WARNING:\nIf your account remains overdrawn by MORE than 10,000 credits for 5 consecutive\nminutes, your account will be referred to financial authorities for asset seizure.\n\nWe recommend depositing funds immediately to avoid further charges.\n\nSincerely,\nFirst Bank Ltd",
-      "timestamp": "2020-03-25T09:05:23.000Z",
+      "timestamp": "2020-03-25T09:05:16.000Z",
       "read": true,
       "archived": true
     },
     {
       "id": "msg-manager-angry",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-T0T-L62",
-      "fromName": "SourceNet Manager Reese",
+      "fromId": "SNET-MGR-B7Y-BDC",
+      "fromName": "SourceNet Manager Avery",
       "subject": "What happened?!",
-      "body": "scenario_user,\n\nWhat just happened?! I was monitoring your mission and I saw you DELETE all the log files instead of repairing them!\n\nThe client's network administrator had to forcibly disconnect you to prevent further damage and has REVOKED your network access credentials. Those files were CRITICAL for their audit compliance!\n\nThis is a critical lesson: network administrators can revoke your access at any time if they believe you're a security threat. Your NAR entry for ClientA-Corporate is now deauthorized and unusable. You'll need new credentials to reconnect.\n\nThe client is demanding 10,000 credits in compensation for the data loss and emergency recovery. SourceNet policy requires YOU to cover mission failures, so that amount has been deducted from your account.\n\nYour reputation has taken a serious hit. You went from Superb to Accident Prone. I know you impressed us in the interview, but this is completely unacceptable.\n\nYou need to be EXTREMELY careful. DO NOT become bankrupt. If you're overdrawn by more than 10,000 credits for 5 minutes, the financial authorities will seize your assets and SourceNet will not protect you.\n\nI'm giving you another chance, but you need to prove you can handle this work.\n\n- Reese",
-      "timestamp": "2020-03-25T09:05:32.000Z",
+      "body": "scenario_user,\n\nWhat just happened?! I was monitoring your mission and I saw you DELETE all the log files instead of repairing them!\n\nThe client's network administrator had to forcibly disconnect you to prevent further damage and has REVOKED your network access credentials. Those files were CRITICAL for their audit compliance!\n\nThis is a critical lesson: network administrators can revoke your access at any time if they believe you're a security threat. Your NAR entry for ClientA-Corporate is now deauthorized and unusable. You'll need new credentials to reconnect.\n\nThe client is demanding 10,000 credits in compensation for the data loss and emergency recovery. SourceNet policy requires YOU to cover mission failures, so that amount has been deducted from your account.\n\nYour reputation has taken a serious hit. You went from Superb to Accident Prone. I know you impressed us in the interview, but this is completely unacceptable.\n\nYou need to be EXTREMELY careful. DO NOT become bankrupt. If you're overdrawn by more than 10,000 credits for 5 minutes, the financial authorities will seize your assets and SourceNet will not protect you.\n\nI'm giving you another chance, but you need to prove you can handle this work.\n\n- Avery",
+      "timestamp": "2020-03-25T09:05:22.000Z",
       "read": true,
       "archived": true,
       "attachments": []
     },
     {
-      "id": "bank-approachingBankruptcy-1770916995749",
+      "id": "bank-approachingBankruptcy-1771508825836",
       "from": "First Bank Ltd",
       "fromId": "SNET-FBL-000-001",
       "to": "scenario_user",
-      "toId": "SNET-B9K-NRS-SKL",
+      "toId": "SNET-RNU-DBO-5SD",
       "subject": "Warning: Approaching Bankruptcy Threshold",
       "body": "Dear scenario_user,\n\nWARNING: Your account balance is approaching the bankruptcy threshold.\n\nCurrent Balance: -9,000 credits\nBankruptcy Threshold: -10,000 credits\n\nYou are 1,000 credits away from the bankruptcy threshold.\n\nIf your balance drops below -10,000 credits for 5 consecutive minutes, your\naccount will be referred to financial authorities for asset seizure.\n\nPlease take immediate action to improve your account balance.\n\nSincerely,\nFirst Bank Ltd",
-      "timestamp": "2020-03-25T09:05:28.000Z",
+      "timestamp": "2020-03-25T09:05:19.000Z",
       "read": true,
       "archived": true
     },
     {
-      "id": "msg-1770916996689-i5hs6v68l",
+      "id": "msg-tutorial-simpler",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-BNZ",
-      "fromName": "SourceNet Manager Reese",
+      "fromId": "SNET-MGR-3E8-55C",
+      "fromName": "SourceNet Manager Avery",
       "subject": "Let's try something simpler",
-      "body": "scenario_user,\n\nOkay, I know that was rough. Let me give you a simpler task to help you recover.\n\nThe same client (TechCorp) kept backups of those log files you... deleted. They need you to RESTORE the backups by copying them back to the original location.\n\nThis should be straightforward - just copy files from one location to another. No repairing, no deleting, just copying. You can handle that, right?\n\nHere's what you need to do:\n\n1. Open the Mission Board and accept \"Log File Restoration\"\n2. Reconnect to ClientA-Corporate network (they've re-authorized you)\n3. Use Network Scanner to find BOTH file systems:\n   - fileserver-01 (original location - currently empty)\n   - backup-server (backup location - has the files you need to copy)\n4. Open TWO File Manager windows - one for each file system\n5. Copy all log files FROM backup-server TO fileserver-01\n\nThis mission pays 1,000 credits. It won't get you out of debt, but it's a start.\n\nYou need to work until you're back in the black (not overdrawn anymore). There are several missions available after this one - all basic file work. Boring stuff, but you're not in a position to be picky right now given your situation.\n\nOnce you're out of debt, I'll reach out again with better work.\n\nDon't mess this one up.\n\n- Reese",
-      "timestamp": "2020-03-25T09:05:52.000Z",
+      "body": "scenario_user,\n\nOkay, I know that was rough. Let me give you a simpler task to help you recover.\n\nThe same client (TechCorp) kept backups of those log files you... deleted. They need you to RESTORE the backups by copying them back to the original location.\n\nThis should be straightforward - just copy files from one location to another. No repairing, no deleting, just copying. You can handle that, right?\n\nHere's what you need to do:\n\n1. Open the Mission Board and accept \"Log File Restoration\"\n2. Reconnect to ClientA-Corporate network (they've re-authorized you)\n3. Use Network Scanner to find BOTH file systems:\n   - fileserver-01 (original location - currently empty)\n   - backup-server (backup location - has the files you need to copy)\n4. Open TWO File Manager windows - one for each file system\n5. Copy all log files FROM backup-server TO fileserver-01\n\nThis mission pays 1,000 credits. It won't get you out of debt, but it's a start.\n\nYou need to work until you're back in the black (not overdrawn anymore). There are several missions available after this one - all basic file work. Boring stuff, but you're not in a position to be picky right now given your situation.\n\nOnce you're out of debt, I'll reach out again with better work.\n\nDon't mess this one up.\n\n- Avery",
+      "timestamp": "2020-03-25T09:05:33.000Z",
       "read": true,
       "archived": true,
-      "attachments": [],
-      "toId": "SNET-B9K-NRS-SKL",
-      "to": "scenario_user"
+      "attachments": []
     },
     {
-      "id": "msg-briefing-tutorial-part-2-1770916999158",
+      "id": "msg-briefing-tutorial-part-2-1771508830422",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-KS6-STH",
-      "fromName": "SourceNet Manager Reese",
+      "fromId": "SNET-MGR-005-VAC",
+      "fromName": "SourceNet Manager Avery",
       "subject": "Updated Network Access - Backup Server",
-      "body": "Good, you accepted the restoration mission.\n\nI've negotiated with the client and secured NEW network credentials for you. After that disaster, they completely revoked your previous access, so this is a fresh NAR entry with different network permissions.\n\nThey've restructured their network access - you'll now connect to a different subnet with access to their backup-server. Click the attachment to add the new credentials to your Network Address Register.\n\nOnce you've added the credentials, use Network Scanner to find BOTH file systems: fileserver-01 (now empty after the sabotage) and backup-server (which has the backup copies).\n\nThen:\n1. Open TWO File Manager windows - one for each file system\n2. Copy all 8 log files from backup-server TO fileserver-01\n\nSimple copy job. Don't mess this up.\n\n- Reese",
-      "timestamp": "2020-03-25T09:08:49.000Z",
+      "body": "Good, you accepted the restoration mission.\n\nI've negotiated with the client and secured NEW network credentials for you. After that disaster, they completely revoked your previous access, so this is a fresh NAR entry with different network permissions.\n\nThey've restructured their network access - you'll now connect to a different subnet with access to their backup-server. Click the attachment to add the new credentials to your Network Address Register.\n\nOnce you've added the credentials, use Network Scanner to find BOTH file systems: fileserver-01 (now empty after the sabotage) and backup-server (which has the backup copies).\n\nThen:\n1. Open TWO File Manager windows - one for each file system\n2. Copy all 8 log files from backup-server TO fileserver-01\n\nSimple copy job. Don't mess this up.\n\n- Avery",
+      "timestamp": "2020-03-25T09:07:53.000Z",
       "read": true,
       "archived": true,
       "attachments": [
@@ -285,13 +284,13 @@
       ]
     },
     {
-      "id": "msg-1770917006130-fg30mfrrz",
+      "id": "msg-1771508840620-as8l1ctf0",
       "from": "Client A - TechCorp Industries",
-      "fromId": "CLIENT-Q03",
+      "fromId": "CLIENT-C3V",
       "fromName": "Client A - TechCorp Industries",
       "subject": "Payment for Log File Restoration",
       "body": "Dear scenario_user,\n\nThank you for completing the work on \"Log File Restoration\".\n\nPlease find attached a digital cheque for 850 credits as agreed.\n\nSincerely,\nClient A - TechCorp Industries",
-      "timestamp": "2020-03-25T09:09:46.000Z",
+      "timestamp": "2020-03-25T09:09:17.000Z",
       "read": true,
       "archived": true,
       "attachments": [
@@ -305,11 +304,11 @@
     {
       "id": "msg-manager-better",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-LPG-9HT",
-      "fromName": "SourceNet Manager Reese",
+      "fromId": "SNET-MGR-59B-3XZ",
+      "fromName": "SourceNet Manager Avery",
       "subject": "Better",
-      "body": "scenario_user,\n\nOkay, that's more like it. Simple task, executed correctly.\n\nYou're still deep in debt (-8,000 credits), but at least you're moving in the right direction.\n\nDue to the recent global security exploit, there's a LOT of work available right now - mostly boring backup and file repair jobs. Not exciting work, but you need to take what you can get until you're back in the black.\n\nCheck the Mission Board - there are several missions available. Work through them until your account is positive again. Once you're out of debt, I'll reach out with better opportunities.\n\nYour reputation is still \"Accident Prone\" after that first mission disaster. You'll need to successfully complete missions to rebuild it.\n\nKeep working.\n\n- Reese",
-      "timestamp": "2020-03-25T09:09:59.000Z",
+      "body": "scenario_user,\n\nOkay, that's more like it. Simple task, executed correctly.\n\nYou're still deep in debt (-8,000 credits), but at least you're moving in the right direction.\n\nDue to the recent global security exploit, there's a LOT of work available right now - mostly boring backup and file repair jobs. Not exciting work, but you need to take what you can get until you're back in the black.\n\nCheck the Mission Board - there are several missions available. Work through them until your account is positive again. Once you're out of debt, I'll reach out with better opportunities.\n\nYour reputation is still \"Accident Prone\" after that first mission disaster. You'll need to successfully complete missions to rebuild it.\n\nKeep working.\n\n- Avery",
+      "timestamp": "2020-03-25T09:09:27.000Z",
       "read": true,
       "archived": false,
       "attachments": []
@@ -317,17 +316,17 @@
     {
       "id": "msg-manager-nar-info",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-0JQ-W7U",
-      "fromName": "SourceNet Manager Reese",
+      "fromId": "SNET-MGR-F95-0OY",
+      "fromName": "SourceNet Manager Avery",
       "subject": "About Network Access",
-      "body": "scenario_user,\n\nOne more thing - you may have noticed your network access to ClientA-Corporate was revoked after the mission completed.\n\nThis is standard procedure. Network credentials provided for missions are temporary - once a job is done (successfully or not), the client's access credentials are automatically invalidated. You'll see revoked entries in your Network Address Register (NAR) for record-keeping.\n\nDon't worry about losing access. Each new mission comes with fresh credentials. This keeps things clean and secure for both you and the clients.\n\nJust something to be aware of.\n\n- Reese",
-      "timestamp": "2020-03-25T09:10:10.000Z",
+      "body": "scenario_user,\n\nOne more thing - you may have noticed your network access to ClientA-Corporate was revoked after the mission completed.\n\nThis is standard procedure. Network credentials provided for missions are temporary - once a job is done (successfully or not), the client's access credentials are automatically invalidated. You'll see revoked entries in your Network Address Register (NAR) for record-keeping.\n\nDon't worry about losing access. Each new mission comes with fresh credentials. This keeps things clean and secure for both you and the clients.\n\nJust something to be aware of.\n\n- Avery",
+      "timestamp": "2020-03-25T09:09:37.000Z",
       "read": true,
       "archived": true,
       "attachments": []
     }
   ],
-  "managerName": "Reese",
+  "managerName": "Avery",
   "windows": [],
   "reputation": 3,
   "reputationCountdown": null,
@@ -340,7 +339,7 @@
       "client": "Client A - TechCorp Industries",
       "difficulty": "Beginner",
       "status": "failed",
-      "completionTime": "2020-03-25T09:05:22.000Z",
+      "completionTime": "2020-03-25T09:05:16.000Z",
       "payout": -10000,
       "reputationChange": -6,
       "failureReason": "Files deleted instead of repaired"
@@ -352,7 +351,7 @@
       "client": "Client A - TechCorp Industries",
       "difficulty": "Beginner",
       "status": "success",
-      "completionTime": "2020-03-25T09:09:46.000Z",
+      "completionTime": "2020-03-25T09:09:17.000Z",
       "payout": 850,
       "reputationChange": 0,
       "failureReason": null
@@ -457,76 +456,52 @@
   "downloadQueue": [],
   "transactions": [
     {
-      "id": "txn-cheque-1770916970277",
-      "date": "2020-03-25T09:00:48.000Z",
+      "id": "txn-cheque-1771508789873",
+      "date": "2020-03-25T09:01:31.000Z",
       "type": "income",
       "amount": 1000,
       "description": "Cheque Deposit",
       "balanceAfter": 1000
     },
     {
-      "id": "txn-interest-1770916996977",
-      "date": "2020-03-25T09:06:22.000Z",
+      "id": "txn-interest-1771508827666",
+      "date": "2020-03-25T09:06:16.000Z",
       "type": "expense",
       "amount": -90,
       "description": "Overdraft Interest",
       "balanceAfter": -9090
     },
     {
-      "id": "txn-interest-1770916997576",
-      "date": "2020-03-25T09:07:22.000Z",
+      "id": "txn-interest-1771508828477",
+      "date": "2020-03-25T09:07:16.000Z",
       "type": "expense",
       "amount": -91,
       "description": "Overdraft Interest",
       "balanceAfter": -9181
     },
     {
-      "id": "txn-interest-1770916998177",
-      "date": "2020-03-25T09:08:22.000Z",
+      "id": "txn-interest-1771508838391",
+      "date": "2020-03-25T09:08:16.000Z",
       "type": "expense",
       "amount": -92,
       "description": "Overdraft Interest",
       "balanceAfter": -9273
     },
     {
-      "id": "txn-interest-1770917004236",
-      "date": "2020-03-25T09:09:22.000Z",
+      "id": "txn-interest-1771508840450",
+      "date": "2020-03-25T09:09:16.000Z",
       "type": "expense",
       "amount": -93,
       "description": "Overdraft Interest",
       "balanceAfter": -9366
     },
     {
-      "id": "txn-interest-1770917006370",
-      "date": "2020-03-25T09:10:22.000Z",
+      "id": "txn-interest-1771508857109",
+      "date": "2020-03-25T09:09:52.000Z",
       "type": "expense",
       "amount": -94,
       "description": "Overdraft Interest",
       "balanceAfter": -9460
-    },
-    {
-      "id": "txn-interest-1770917007021",
-      "date": "2020-03-25T09:11:22.000Z",
-      "type": "expense",
-      "amount": -95,
-      "description": "Overdraft Interest",
-      "balanceAfter": -9555
-    },
-    {
-      "id": "txn-interest-1770917008532",
-      "date": "2020-03-25T09:12:22.000Z",
-      "type": "expense",
-      "amount": -96,
-      "description": "Overdraft Interest",
-      "balanceAfter": -9651
-    },
-    {
-      "id": "txn-interest-1770917023342",
-      "date": "2020-03-25T09:12:35.000Z",
-      "type": "expense",
-      "amount": -97,
-      "description": "Overdraft Interest",
-      "balanceAfter": -9748
     }
   ],
   "licensedSoftware": [
@@ -542,7 +517,8 @@
     "Welcome to SourceNet!",
     "Hi from your manager - {managerName}",
     "Get Ready for Your First Mission",
-    "Mission Software"
+    "Mission Software",
+    "sabotage-deletion"
   ],
   "pendingStoryEvents": [],
   "bankingMessagesSent": {
@@ -559,90 +535,69 @@
   "proceduralMissionsEnabled": true,
   "missionPool": [
     {
-      "missionId": "repair-emerg-volunteer-fire-1770917023726-1",
-      "title": "File Repair for Volunteer Fire Department #7",
-      "client": "Volunteer Fire Department #7",
-      "clientId": "emerg-volunteer-fire",
-      "clientType": "emerg-volunteer",
-      "industry": "emergency",
+      "missionId": "backup-gov-riverside-library-1771508857487-1",
+      "title": "Data Backup for Riverside Public Library",
+      "client": "Riverside Public Library",
+      "clientId": "gov-riverside-library",
+      "clientType": "gov-library",
+      "industry": "government",
       "difficulty": "Easy",
-      "missionType": "repair",
-      "basePayout": 880,
+      "missionType": "backup",
+      "basePayout": 2728,
       "category": "procedural",
       "networks": [
         {
-          "networkId": "emerg-volunteer-fire-network-1770917023725",
-          "networkName": "VolunteerFire-Network",
-          "address": "10.177.162.0/24",
-          "bandwidth": 500,
+          "networkId": "gov-riverside-library-network-1771508857486",
+          "networkName": "RiversidePublic-Network",
+          "address": "10.254.226.0/24",
+          "bandwidth": 750,
           "revokeOnComplete": true,
           "revokeReason": "Mission access expired",
           "fileSystems": [
             {
-              "id": "fs-emerg-volunteer-fire-1770917023726-d0-fs0",
-              "ip": "10.177.162.10",
-              "name": "volunteerfire-fileserver-01",
+              "id": "fs-gov-riverside-library-1771508857487-d0-fs0",
+              "ip": "10.254.226.10",
+              "name": "riversidepublic-fileserver-01",
               "files": [
                 {
-                  "name": "dispatch_logs_2023_Q4.db",
-                  "size": "249.8 MB",
-                  "sizeBytes": 261938421,
-                  "corrupted": true,
+                  "name": "registry_2024_Q1.db",
+                  "size": "1.1 GB",
+                  "sizeBytes": 1131099047,
+                  "corrupted": false,
                   "targetFile": true
                 },
                 {
-                  "name": "incident_reports_2024_01.dat",
-                  "size": "46.7 MB",
-                  "sizeBytes": 48938411,
-                  "corrupted": true,
+                  "name": "license_data_2024_Q2.enc",
+                  "size": "36.9 MB",
+                  "sizeBytes": 38682634,
+                  "corrupted": false,
                   "targetFile": true
                 },
                 {
-                  "name": "system_status_2024_01.log",
-                  "size": "75.7 KB",
-                  "sizeBytes": 77502,
-                  "corrupted": true,
+                  "name": "license_data_2023_12.enc",
+                  "size": "99.3 MB",
+                  "sizeBytes": 104150563,
+                  "corrupted": false,
                   "targetFile": true
                 },
                 {
-                  "name": "radio_config_2024_03.cfg",
-                  "size": "34.9 KB",
-                  "sizeBytes": 35786,
-                  "corrupted": true,
+                  "name": "registry_2024_03.db",
+                  "size": "1.2 GB",
+                  "sizeBytes": 1312818612,
+                  "corrupted": false,
                   "targetFile": true
                 },
                 {
-                  "name": "incident_reports_2023_12.dat",
-                  "size": "24.5 MB",
-                  "sizeBytes": 25640455,
-                  "corrupted": true,
-                  "targetFile": true
-                },
-                {
-                  "name": "system_status_2024_Q2.log",
-                  "size": "138.1 KB",
-                  "sizeBytes": 141371,
+                  "name": "form_templates_2024_05.pdf",
+                  "size": "3.5 MB",
+                  "sizeBytes": 3708016,
                   "corrupted": false,
                   "targetFile": false
                 },
                 {
-                  "name": "personnel_2024_02.enc",
-                  "size": "92.6 MB",
-                  "sizeBytes": 97099183,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "personnel_2023_Q4.enc",
-                  "size": "20.9 MB",
-                  "sizeBytes": 21944251,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "radio_config_2024_Q1.cfg",
-                  "size": "29.2 KB",
-                  "sizeBytes": 29923,
+                  "name": "license_data_2024_Q1.enc",
+                  "size": "49.8 MB",
+                  "sizeBytes": 52214960,
                   "corrupted": false,
                   "targetFile": false
                 }
@@ -650,283 +605,19 @@
               "accessible": true
             }
           ]
-        }
-      ],
-      "objectives": [
-        {
-          "id": "obj-1",
-          "description": "Connect to VolunteerFire-Network network",
-          "type": "networkConnection",
-          "target": "emerg-volunteer-fire-network-1770917023725"
         },
         {
-          "id": "obj-2",
-          "description": "Use Network Scanner to locate the file server",
-          "type": "networkScan",
-          "target": "emerg-volunteer-fire-network-1770917023725",
-          "expectedResults": [
-            "10.177.162.10"
-          ]
-        },
-        {
-          "id": "obj-3",
-          "description": "Repair 5 corrupted files",
-          "type": "fileOperation",
-          "operation": "repair",
-          "targetFiles": [
-            "dispatch_logs_2023_Q4.db",
-            "incident_reports_2024_01.dat",
-            "system_status_2024_01.log",
-            "radio_config_2024_03.cfg",
-            "incident_reports_2023_12.dat"
-          ]
-        },
-        {
-          "id": "obj-verify",
-          "description": "Verify mission completion",
-          "type": "verification",
-          "autoComplete": false
-        }
-      ],
-      "targetFiles": [
-        "dispatch_logs_2023_Q4.db",
-        "incident_reports_2024_01.dat",
-        "system_status_2024_01.log",
-        "radio_config_2024_03.cfg",
-        "incident_reports_2023_12.dat"
-      ],
-      "totalDataBytes": 336630575,
-      "requirements": {
-        "software": [
-          "vpn-client",
-          "network-address-register",
-          "network-scanner",
-          "file-manager"
-        ],
-        "minReputation": 3
-      },
-      "consequences": {
-        "success": {
-          "credits": 880,
-          "reputation": 1,
-          "messages": [
-            {
-              "id": "msg-success-1770917023727",
-              "from": "Volunteer Fire Department #7",
-              "fromId": "emerg-volunteer-fire",
-              "fromName": "Volunteer Fire Department #7",
-              "subject": "Mission Complete - Payment Enclosed",
-              "body": "Dear {username},\n\nThank you for your efficient work. We're pleased with the results and have processed your payment.\n\nSincerely,\n{clientName}",
-              "attachments": [
-                {
-                  "type": "cheque",
-                  "amount": 880,
-                  "description": "Payment for completed mission"
-                }
-              ],
-              "delay": 3000
-            }
-          ]
-        },
-        "failure": {
-          "credits": -220,
-          "reputation": -1,
-          "messages": [
-            {
-              "id": "msg-failure-incomplete-1770917023727",
-              "from": "Volunteer Fire Department #7",
-              "fromId": "emerg-volunteer-fire",
-              "fromName": "Volunteer Fire Department #7",
-              "subject": "Mission Failed",
-              "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
-              "attachments": [],
-              "delay": 2000
-            }
-          ],
-          "messageVariants": {
-            "deadline": {
-              "id": "msg-failure-deadline-1770917023727",
-              "from": "Volunteer Fire Department #7",
-              "fromId": "emerg-volunteer-fire",
-              "fromName": "Volunteer Fire Department #7",
-              "subject": "Mission Failed",
-              "body": "Dear {username},\n\nTime ran out before the work was completed. We expected better from someone with your reputation.\n\nSincerely,\n{clientName}",
-              "attachments": [],
-              "delay": 2000
-            },
-            "incomplete": {
-              "id": "msg-failure-incomplete-1770917023727",
-              "from": "Volunteer Fire Department #7",
-              "fromId": "emerg-volunteer-fire",
-              "fromName": "Volunteer Fire Department #7",
-              "subject": "Mission Failed",
-              "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
-              "attachments": [],
-              "delay": 2000
-            },
-            "filesDeleted": {
-              "id": "msg-failure-filesDeleted-1770917023727",
-              "from": "Volunteer Fire Department #7",
-              "fromId": "emerg-volunteer-fire",
-              "fromName": "Volunteer Fire Department #7",
-              "subject": "Mission Failed",
-              "body": "Dear {username},\n\nCritical files required for this task have been deleted. We cannot proceed and must terminate this engagement immediately.\n\nSincerely,\n{clientName}",
-              "attachments": [],
-              "delay": 2000
-            }
-          }
-        }
-      },
-      "timeLimitMinutes": null,
-      "briefingMessage": {
-        "id": "msg-briefing-repair-emerg-volunteer-fire-1770917023727-8yhghxv1i",
-        "from": "Volunteer Fire Department #7",
-        "fromId": "emerg-volunteer-fire",
-        "fromName": "Volunteer Fire Department #7",
-        "subject": "Mission Briefing: Repair Request",
-        "body": "Dear {username},\n\nSeveral critical files have become corrupted due to a system error. Your expertise in file repair would be greatly appreciated.\n\n📁 Files to repair:\n• dispatch_logs_2023_Q4.db\n• incident_reports_2024_01.dat\n• system_status_2024_01.log\n• radio_config_2024_03.cfg\n• incident_reports_2023_12.dat\n\nTotal data: 321 MB\n\nAttached are the network credentials you'll need to access our systems.\n\nSincerely,\n{clientName}",
-        "attachments": [
-          {
-            "type": "networkAddress",
-            "networkId": "emerg-volunteer-fire-network-1770917023725",
-            "networkName": "VolunteerFire-Network",
-            "address": "10.177.162.0/24",
-            "deviceIps": [
-              "10.177.162.10"
-            ]
-          }
-        ],
-        "read": false,
-        "timestamp": "2026-02-12T17:23:43.727Z"
-      },
-      "isProcedurallyGenerated": true,
-      "generatedAt": "2026-02-12T17:23:43.727Z",
-      "arcId": null,
-      "arcSequence": null,
-      "arcTotal": null,
-      "requiresCompletedMission": null,
-      "expiresAt": "2020-03-25T09:39:35.000Z"
-    },
-    {
-      "missionId": "backup-health-maple-clinic-1770917023727-2",
-      "title": "Data Backup for Maple Street Family Clinic",
-      "client": "Maple Street Family Clinic",
-      "clientId": "health-maple-clinic",
-      "clientType": "health-clinic",
-      "industry": "healthcare",
-      "difficulty": "Easy",
-      "missionType": "backup",
-      "basePayout": 1924,
-      "category": "procedural",
-      "networks": [
-        {
-          "networkId": "health-maple-clinic-network-1770917023727",
-          "networkName": "MapleStreet-Network",
-          "address": "10.172.176.0/24",
+          "networkId": "gov-riverside-library-dest-1771508857487",
+          "networkName": "RiversidePublic-Backup",
+          "address": "10.96.73.0/24",
           "bandwidth": 2000,
           "revokeOnComplete": true,
           "revokeReason": "Mission access expired",
           "fileSystems": [
             {
-              "id": "fs-health-maple-clinic-1770917023727-d0-fs0",
-              "ip": "10.172.176.10",
-              "name": "maplestreet-fileserver01-01/data",
-              "fileSystemName": "/data",
-              "files": [
-                {
-                  "name": "backup_status_2023_11.log",
-                  "size": "194.3 KB",
-                  "sizeBytes": 198951,
-                  "corrupted": false,
-                  "targetFile": true
-                },
-                {
-                  "name": "staff_schedule_2024_02.xlsx",
-                  "size": "1.2 MB",
-                  "sizeBytes": 1299776,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "medical_imaging_2024_03.dat",
-                  "size": "27.1 MB",
-                  "sizeBytes": 28461746,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "appointments_2024_Q2.enc",
-                  "size": "92.5 MB",
-                  "sizeBytes": 97038970,
-                  "corrupted": false,
-                  "targetFile": false
-                }
-              ],
-              "accessible": true
-            },
-            {
-              "id": "fs-health-maple-clinic-1770917023727-d0-fs1",
-              "ip": "10.172.176.10",
-              "name": "maplestreet-fileserver01-01/logs",
-              "fileSystemName": "/logs",
-              "files": [
-                {
-                  "name": "medical_imaging_2024_01.dat",
-                  "size": "42.5 MB",
-                  "sizeBytes": 44530023,
-                  "corrupted": false,
-                  "targetFile": true
-                },
-                {
-                  "name": "medical_imaging_2024_03.dat",
-                  "size": "14.0 MB",
-                  "sizeBytes": 14669137,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "medical_imaging_2023_12.dat",
-                  "size": "45.6 MB",
-                  "sizeBytes": 47866872,
-                  "corrupted": false,
-                  "targetFile": false
-                }
-              ],
-              "accessible": true
-            },
-            {
-              "id": "fs-health-maple-clinic-1770917023727-d1-fs0",
-              "ip": "10.172.176.11",
-              "name": "maplestreet-fileserver02-01",
-              "files": [
-                {
-                  "name": "prescriptions_2024_05.db",
-                  "size": "950.3 MB",
-                  "sizeBytes": 996500027,
-                  "corrupted": false,
-                  "targetFile": true
-                },
-                {
-                  "name": "medical_imaging_2023_12.dat",
-                  "size": "1.7 MB",
-                  "sizeBytes": 1739927,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "prescriptions_2024_Q1.db",
-                  "size": "1.1 GB",
-                  "sizeBytes": 1196854630,
-                  "corrupted": false,
-                  "targetFile": false
-                }
-              ],
-              "accessible": true
-            },
-            {
-              "id": "fs-health-maple-clinic-1770917023727-backup",
-              "ip": "10.172.176.20",
-              "name": "maplestreet-backup-01",
+              "id": "fs-gov-riverside-library-1771508857487-dest",
+              "ip": "10.96.73.10",
+              "name": "riversidepublic-backup-01",
               "files": [],
               "accessible": true
             }
@@ -936,315 +627,56 @@
       "objectives": [
         {
           "id": "obj-1",
-          "description": "Connect to MapleStreet-Network network",
+          "description": "Connect to RiversidePublic-Network network",
           "type": "networkConnection",
-          "target": "health-maple-clinic-network-1770917023727"
-        },
-        {
-          "id": "obj-2",
-          "description": "Use Network Scanner to locate 2 file servers",
-          "type": "networkScan",
-          "target": "health-maple-clinic-network-1770917023727",
-          "expectedResults": [
-            "10.172.176.10",
-            "10.172.176.11"
-          ]
-        },
-        {
-          "id": "obj-3",
-          "description": "Copy 3 files from 3 file systems to backup server",
-          "type": "fileOperation",
-          "operation": "copy",
-          "targetFiles": [
-            "backup_status_2023_11.log",
-            "medical_imaging_2024_01.dat",
-            "prescriptions_2024_05.db"
-          ]
-        },
-        {
-          "id": "obj-4",
-          "description": "Paste 3 files to maplestreet-backup-01",
-          "type": "fileOperation",
-          "operation": "paste",
-          "targetFiles": [
-            "backup_status_2023_11.log",
-            "medical_imaging_2024_01.dat",
-            "prescriptions_2024_05.db"
-          ],
-          "destination": "10.172.176.20"
-        },
-        {
-          "id": "obj-verify",
-          "description": "Verify mission completion",
-          "type": "verification",
-          "autoComplete": false
-        }
-      ],
-      "targetFiles": [
-        "backup_status_2023_11.log",
-        "medical_imaging_2024_01.dat",
-        "prescriptions_2024_05.db"
-      ],
-      "totalDataBytes": 1041229001,
-      "requirements": {
-        "software": [
-          "vpn-client",
-          "network-address-register",
-          "network-scanner",
-          "file-manager"
-        ],
-        "minReputation": 2
-      },
-      "consequences": {
-        "success": {
-          "credits": 1924,
-          "reputation": 1,
-          "messages": [
-            {
-              "id": "msg-success-1770917023727",
-              "from": "Maple Street Family Clinic",
-              "fromId": "health-maple-clinic",
-              "fromName": "Maple Street Family Clinic",
-              "subject": "Mission Complete - Payment Enclosed",
-              "body": "Dear {username},\n\nThank you for your efficient work. We're pleased with the results and have processed your payment.\n\nSincerely,\n{clientName}",
-              "attachments": [
-                {
-                  "type": "cheque",
-                  "amount": 1924,
-                  "description": "Payment for completed mission"
-                }
-              ],
-              "delay": 3000
-            }
-          ]
-        },
-        "failure": {
-          "credits": -481,
-          "reputation": -1,
-          "messages": [
-            {
-              "id": "msg-failure-incomplete-1770917023727",
-              "from": "Maple Street Family Clinic",
-              "fromId": "health-maple-clinic",
-              "fromName": "Maple Street Family Clinic",
-              "subject": "Mission Failed",
-              "body": "Dear {username},\n\nThe mission was not completed as requested. This has caused significant inconvenience to our operations.\n\nSincerely,\n{clientName}",
-              "attachments": [],
-              "delay": 2000
-            }
-          ],
-          "messageVariants": {
-            "deadline": {
-              "id": "msg-failure-deadline-1770917023727",
-              "from": "Maple Street Family Clinic",
-              "fromId": "health-maple-clinic",
-              "fromName": "Maple Street Family Clinic",
-              "subject": "Mission Failed",
-              "body": "Dear {username},\n\nTime ran out before the work was completed. We expected better from someone with your reputation.\n\nSincerely,\n{clientName}",
-              "attachments": [],
-              "delay": 2000
-            },
-            "incomplete": {
-              "id": "msg-failure-incomplete-1770917023727",
-              "from": "Maple Street Family Clinic",
-              "fromId": "health-maple-clinic",
-              "fromName": "Maple Street Family Clinic",
-              "subject": "Mission Failed",
-              "body": "Dear {username},\n\nThe mission was not completed as requested. This has caused significant inconvenience to our operations.\n\nSincerely,\n{clientName}",
-              "attachments": [],
-              "delay": 2000
-            },
-            "filesDeleted": {
-              "id": "msg-failure-filesDeleted-1770917023727",
-              "from": "Maple Street Family Clinic",
-              "fromId": "health-maple-clinic",
-              "fromName": "Maple Street Family Clinic",
-              "subject": "Mission Failed",
-              "body": "Dear {username},\n\nWe've detected that essential mission files have been removed from our systems. This mission cannot be completed.\n\nSincerely,\n{clientName}",
-              "attachments": [],
-              "delay": 2000
-            }
-          }
-        }
-      },
-      "timeLimitMinutes": 7,
-      "briefingMessage": {
-        "id": "msg-briefing-backup-health-maple-clinic-1770917023727-z09i2u2is",
-        "from": "Maple Street Family Clinic",
-        "fromId": "health-maple-clinic",
-        "fromName": "Maple Street Family Clinic",
-        "subject": "Mission Briefing: Backup Request",
-        "body": "Dear {username},\n\nOur compliance team has requested an emergency backup of sensitive records. Time is of the essence.\n\n📁 Files to back up:\n• backup_status_2023_11.log\n• medical_imaging_2024_01.dat\n• prescriptions_2024_05.db\n\nTotal data: 993 MB\n\n⚠️ TIME SENSITIVE: This task must be completed within 7 minutes of acceptance.\n\nAttached are the network credentials you'll need to access our systems.\n\nSincerely,\n{clientName}",
-        "attachments": [
-          {
-            "type": "networkAddress",
-            "networkId": "health-maple-clinic-network-1770917023727",
-            "networkName": "MapleStreet-Network",
-            "address": "10.172.176.0/24",
-            "deviceIps": [
-              "10.172.176.10",
-              "10.172.176.10",
-              "10.172.176.11",
-              "10.172.176.20"
-            ]
-          }
-        ],
-        "read": false,
-        "timestamp": "2026-02-12T17:23:43.727Z"
-      },
-      "isProcedurallyGenerated": true,
-      "generatedAt": "2026-02-12T17:23:43.727Z",
-      "arcId": null,
-      "arcSequence": null,
-      "arcTotal": null,
-      "requiresCompletedMission": null,
-      "expiresAt": "2020-03-25T09:48:35.000Z"
-    },
-    {
-      "missionId": "backup-cultural-arts-center-1770917023727-3",
-      "title": "Data Backup for Community Arts Center",
-      "client": "Community Arts Center",
-      "clientId": "cultural-arts-center",
-      "clientType": "cultural-local",
-      "industry": "cultural",
-      "difficulty": "Medium",
-      "missionType": "backup",
-      "basePayout": 1531,
-      "category": "procedural",
-      "networks": [
-        {
-          "networkId": "cultural-arts-center-network-1770917023727",
-          "networkName": "CommunityArts-Network",
-          "address": "10.129.191.0/24",
-          "bandwidth": 1000,
-          "revokeOnComplete": true,
-          "revokeReason": "Mission access expired",
-          "fileSystems": [
-            {
-              "id": "fs-cultural-arts-center-1770917023727-d0-fs0",
-              "ip": "10.129.191.10",
-              "name": "communityarts-fileserver-01",
-              "files": [
-                {
-                  "name": "digitization_2024_Q2.dat",
-                  "size": "15.3 MB",
-                  "sizeBytes": 16055538,
-                  "corrupted": false,
-                  "targetFile": true
-                },
-                {
-                  "name": "restoration_notes_2024_05.pdf",
-                  "size": "8.9 MB",
-                  "sizeBytes": 9314539,
-                  "corrupted": false,
-                  "targetFile": true
-                },
-                {
-                  "name": "index_2023_Q4.log",
-                  "size": "289.8 KB",
-                  "sizeBytes": 296764,
-                  "corrupted": false,
-                  "targetFile": true
-                },
-                {
-                  "name": "index_2024_02.log",
-                  "size": "421.5 KB",
-                  "sizeBytes": 431652,
-                  "corrupted": false,
-                  "targetFile": true
-                },
-                {
-                  "name": "restoration_notes_2024_01.pdf",
-                  "size": "534.8 KB",
-                  "sizeBytes": 547605,
-                  "corrupted": false,
-                  "targetFile": true
-                },
-                {
-                  "name": "archives_2024_02.db",
-                  "size": "1.4 GB",
-                  "sizeBytes": 1507777664,
-                  "corrupted": false,
-                  "targetFile": true
-                },
-                {
-                  "name": "digitization_2024_Q1.dat",
-                  "size": "31.9 MB",
-                  "sizeBytes": 33416981,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "digitization_2024_01.dat",
-                  "size": "8.2 MB",
-                  "sizeBytes": 8609897,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "index_2024_01.log",
-                  "size": "401.9 KB",
-                  "sizeBytes": 411578,
-                  "corrupted": false,
-                  "targetFile": false
-                }
-              ],
-              "accessible": true
-            },
-            {
-              "id": "fs-cultural-arts-center-1770917023727-backup",
-              "ip": "10.129.191.20",
-              "name": "communityarts-backup-01",
-              "files": [],
-              "accessible": true
-            }
-          ]
-        }
-      ],
-      "objectives": [
-        {
-          "id": "obj-1",
-          "description": "Connect to CommunityArts-Network network",
-          "type": "networkConnection",
-          "target": "cultural-arts-center-network-1770917023727"
+          "target": "gov-riverside-library-network-1771508857486"
         },
         {
           "id": "obj-2",
           "description": "Use Network Scanner to locate file server",
           "type": "networkScan",
-          "target": "cultural-arts-center-network-1770917023727",
+          "target": "gov-riverside-library-network-1771508857486",
           "expectedResults": [
-            "10.129.191.10"
+            "10.254.226.10"
           ]
         },
         {
           "id": "obj-3",
-          "description": "Copy 6 files to backup server",
+          "description": "Copy 4 files",
           "type": "fileOperation",
           "operation": "copy",
           "targetFiles": [
-            "digitization_2024_Q2.dat",
-            "restoration_notes_2024_05.pdf",
-            "index_2023_Q4.log",
-            "index_2024_02.log",
-            "restoration_notes_2024_01.pdf",
-            "archives_2024_02.db"
+            "registry_2024_Q1.db",
+            "license_data_2024_Q2.enc",
+            "license_data_2023_12.enc",
+            "registry_2024_03.db"
           ]
         },
         {
           "id": "obj-4",
-          "description": "Paste 6 files to communityarts-backup-01",
+          "description": "Connect to RiversidePublic-Backup network",
+          "type": "networkConnection",
+          "target": "gov-riverside-library-dest-1771508857487"
+        },
+        {
+          "id": "obj-5",
+          "description": "Use Network Scanner to find riversidepublic-backup-01",
+          "type": "networkScan",
+          "target": "gov-riverside-library-dest-1771508857487",
+          "expectedResult": "riversidepublic-backup-01"
+        },
+        {
+          "id": "obj-6",
+          "description": "Paste 4 files to backup server",
           "type": "fileOperation",
           "operation": "paste",
           "targetFiles": [
-            "digitization_2024_Q2.dat",
-            "restoration_notes_2024_05.pdf",
-            "index_2023_Q4.log",
-            "index_2024_02.log",
-            "restoration_notes_2024_01.pdf",
-            "archives_2024_02.db"
+            "registry_2024_Q1.db",
+            "license_data_2024_Q2.enc",
+            "license_data_2023_12.enc",
+            "registry_2024_03.db"
           ],
-          "destination": "10.129.191.20"
+          "destination": "10.96.73.10"
         },
         {
           "id": "obj-verify",
@@ -1254,14 +686,12 @@
         }
       ],
       "targetFiles": [
-        "digitization_2024_Q2.dat",
-        "restoration_notes_2024_05.pdf",
-        "index_2023_Q4.log",
-        "index_2024_02.log",
-        "restoration_notes_2024_01.pdf",
-        "archives_2024_02.db"
+        "registry_2024_Q1.db",
+        "license_data_2024_Q2.enc",
+        "license_data_2023_12.enc",
+        "registry_2024_03.db"
       ],
-      "totalDataBytes": 1534423762,
+      "totalDataBytes": 2586750856,
       "requirements": {
         "software": [
           "vpn-client",
@@ -1273,20 +703,20 @@
       },
       "consequences": {
         "success": {
-          "credits": 1531,
+          "credits": 2728,
           "reputation": 1,
           "messages": [
             {
-              "id": "msg-success-1770917023727",
-              "from": "Community Arts Center",
-              "fromId": "cultural-arts-center",
-              "fromName": "Community Arts Center",
+              "id": "msg-success-1771508857487",
+              "from": "Riverside Public Library",
+              "fromId": "gov-riverside-library",
+              "fromName": "Riverside Public Library",
               "subject": "Mission Complete - Payment Enclosed",
-              "body": "Dear {username},\n\nGreat job on completing the mission. Your professionalism is appreciated. Payment attached.\n\nSincerely,\n{clientName}",
+              "body": "Dear {username},\n\nThank you for your efficient work. We're pleased with the results and have processed your payment.\n\nSincerely,\n{clientName}",
               "attachments": [
                 {
                   "type": "cheque",
-                  "amount": 1531,
+                  "amount": 2728,
                   "description": "Payment for completed mission"
                 }
               ],
@@ -1295,14 +725,14 @@
           ]
         },
         "failure": {
-          "credits": -382,
+          "credits": -682,
           "reputation": -1,
           "messages": [
             {
-              "id": "msg-failure-incomplete-1770917023727",
-              "from": "Community Arts Center",
-              "fromId": "cultural-arts-center",
-              "fromName": "Community Arts Center",
+              "id": "msg-failure-incomplete-1771508857487",
+              "from": "Riverside Public Library",
+              "fromId": "gov-riverside-library",
+              "fromName": "Riverside Public Library",
               "subject": "Mission Failed",
               "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
               "attachments": [],
@@ -1311,30 +741,30 @@
           ],
           "messageVariants": {
             "deadline": {
-              "id": "msg-failure-deadline-1770917023727",
-              "from": "Community Arts Center",
-              "fromId": "cultural-arts-center",
-              "fromName": "Community Arts Center",
+              "id": "msg-failure-deadline-1771508857487",
+              "from": "Riverside Public Library",
+              "fromId": "gov-riverside-library",
+              "fromName": "Riverside Public Library",
               "subject": "Mission Failed",
               "body": "Dear {username},\n\nTime ran out before the work was completed. We expected better from someone with your reputation.\n\nSincerely,\n{clientName}",
               "attachments": [],
               "delay": 2000
             },
             "incomplete": {
-              "id": "msg-failure-incomplete-1770917023727",
-              "from": "Community Arts Center",
-              "fromId": "cultural-arts-center",
-              "fromName": "Community Arts Center",
+              "id": "msg-failure-incomplete-1771508857487",
+              "from": "Riverside Public Library",
+              "fromId": "gov-riverside-library",
+              "fromName": "Riverside Public Library",
               "subject": "Mission Failed",
               "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
               "attachments": [],
               "delay": 2000
             },
             "filesDeleted": {
-              "id": "msg-failure-filesDeleted-1770917023727",
-              "from": "Community Arts Center",
-              "fromId": "cultural-arts-center",
-              "fromName": "Community Arts Center",
+              "id": "msg-failure-filesDeleted-1771508857487",
+              "from": "Riverside Public Library",
+              "fromId": "gov-riverside-library",
+              "fromName": "Riverside Public Library",
               "subject": "Mission Failed",
               "body": "Dear {username},\n\nCritical files required for this task have been deleted. We cannot proceed and must terminate this engagement immediately.\n\nSincerely,\n{clientName}",
               "attachments": [],
@@ -1343,453 +773,116 @@
           }
         }
       },
-      "timeLimitMinutes": null,
+      "timeLimitMinutes": 8,
       "briefingMessage": {
-        "id": "msg-briefing-backup-cultural-arts-center-1770917023727-xvbtglmp7",
-        "from": "Community Arts Center",
-        "fromId": "cultural-arts-center",
-        "fromName": "Community Arts Center",
+        "id": "msg-briefing-backup-gov-riverside-library-1771508857488-796o4jfax",
+        "from": "Riverside Public Library",
+        "fromId": "gov-riverside-library",
+        "fromName": "Riverside Public Library",
         "subject": "Mission Briefing: Backup Request",
-        "body": "Dear {username},\n\nAs part of our disaster recovery plan, we require immediate backup of essential data files.\n\n📁 Files to back up:\n• digitization_2024_Q2.dat\n• restoration_notes_2024_05.pdf\n• index_2023_Q4.log\n• index_2024_02.log\n• restoration_notes_2024_01.pdf\n• archives_2024_02.db\n\nTotal data: 1.4 GB\n\nAttached are the network credentials you'll need to access our systems.\n\nSincerely,\n{clientName}",
+        "body": "Dear {username},\n\nOur compliance team has requested an emergency backup of sensitive records. Time is of the essence.\n\n📁 Files to back up:\n• registry_2024_Q1.db\n• license_data_2024_Q2.enc\n• license_data_2023_12.enc\n• registry_2024_03.db\n\nTotal data: 2.4 GB\n\n⚠️ TIME SENSITIVE: This task must be completed within 8 minutes of acceptance.\n\nAttached are the network credentials you'll need to access our systems.\n\nSincerely,\n{clientName}",
         "attachments": [
           {
             "type": "networkAddress",
-            "networkId": "cultural-arts-center-network-1770917023727",
-            "networkName": "CommunityArts-Network",
-            "address": "10.129.191.0/24",
+            "networkId": "gov-riverside-library-network-1771508857486",
+            "networkName": "RiversidePublic-Network",
+            "address": "10.254.226.0/24",
             "deviceIps": [
-              "10.129.191.10",
-              "10.129.191.20"
-            ]
-          }
-        ],
-        "read": false,
-        "timestamp": "2026-02-12T17:23:43.727Z"
-      },
-      "isProcedurallyGenerated": true,
-      "generatedAt": "2026-02-12T17:23:43.727Z",
-      "arcId": null,
-      "arcSequence": null,
-      "arcTotal": null,
-      "requiresCompletedMission": null,
-      "expiresAt": "2020-03-25T09:32:35.000Z"
-    },
-    {
-      "missionId": "transfer-emerg-rescue-squad-1770917023727-4",
-      "title": "Data Transfer for County Rescue Squad",
-      "client": "County Rescue Squad",
-      "clientId": "emerg-rescue-squad",
-      "clientType": "emerg-volunteer",
-      "industry": "emergency",
-      "difficulty": "Medium",
-      "missionType": "transfer",
-      "basePayout": 1783,
-      "category": "procedural",
-      "networks": [
-        {
-          "networkId": "emerg-rescue-squad-network-1770917023727",
-          "networkName": "CountyRescue-Network",
-          "address": "10.205.122.0/24",
-          "bandwidth": 2000,
-          "revokeOnComplete": true,
-          "revokeReason": "Mission access expired",
-          "fileSystems": [
-            {
-              "id": "fs-emerg-rescue-squad-1770917023727-d0-fs0",
-              "ip": "10.205.122.10",
-              "name": "countyrescue-fileserver-01/data",
-              "fileSystemName": "/data",
-              "files": [
-                {
-                  "name": "emergency_archive_2024_Q1.tar",
-                  "size": "438.1 MB",
-                  "sizeBytes": 459416198,
-                  "corrupted": false,
-                  "targetFile": true
-                },
-                {
-                  "name": "audit_2023_12.log",
-                  "size": "44.9 KB",
-                  "sizeBytes": 46020,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "training_2024_01.zip",
-                  "size": "167.8 MB",
-                  "sizeBytes": 175965216,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "audit_2023_11.log",
-                  "size": "325.2 KB",
-                  "sizeBytes": 333026,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "training_2024_Q1.zip",
-                  "size": "342.0 MB",
-                  "sizeBytes": 358595522,
-                  "corrupted": false,
-                  "targetFile": false
-                }
-              ],
-              "accessible": true
-            },
-            {
-              "id": "fs-emerg-rescue-squad-1770917023727-d0-fs1",
-              "ip": "10.205.122.10",
-              "name": "countyrescue-fileserver-01/logs",
-              "fileSystemName": "/logs",
-              "files": [
-                {
-                  "name": "protocols_2023_Q4.db",
-                  "size": "133.6 MB",
-                  "sizeBytes": 140040486,
-                  "corrupted": false,
-                  "targetFile": true
-                },
-                {
-                  "name": "protocols_2023_12.db",
-                  "size": "254.5 MB",
-                  "sizeBytes": 266816251,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "training_2023_12.zip",
-                  "size": "150.5 MB",
-                  "sizeBytes": 157831182,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "emergency_archive_2024_04.tar",
-                  "size": "335.7 MB",
-                  "sizeBytes": 351962488,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "audit_2024_01.log",
-                  "size": "159.7 KB",
-                  "sizeBytes": 163556,
-                  "corrupted": false,
-                  "targetFile": false
-                }
-              ],
-              "accessible": true
-            },
-            {
-              "id": "fs-emerg-rescue-squad-1770917023727-d0-fs2",
-              "ip": "10.205.122.10",
-              "name": "countyrescue-fileserver-01/backups",
-              "fileSystemName": "/backups",
-              "files": [
-                {
-                  "name": "training_2024_03.zip",
-                  "size": "475.8 MB",
-                  "sizeBytes": 498941376,
-                  "corrupted": false,
-                  "targetFile": true
-                },
-                {
-                  "name": "audit_2024_04.log",
-                  "size": "451.8 KB",
-                  "sizeBytes": 462694,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "emergency_archive_2023_12.tar",
-                  "size": "143.1 MB",
-                  "sizeBytes": 150043379,
-                  "corrupted": false,
-                  "targetFile": false
-                }
-              ],
-              "accessible": true
-            }
-          ]
-        },
-        {
-          "networkId": "emerg-rescue-squad-dest-1770917023727",
-          "networkName": "CountyRescue-Backup",
-          "address": "10.253.84.0/24",
-          "bandwidth": 1500,
-          "revokeOnComplete": true,
-          "revokeReason": "Mission access expired",
-          "fileSystems": [
-            {
-              "id": "fs-emerg-rescue-squad-1770917023727-dest",
-              "ip": "10.253.84.10",
-              "name": "countyrescue-backup-01",
-              "files": [],
-              "accessible": true
-            }
-          ]
-        }
-      ],
-      "objectives": [
-        {
-          "id": "obj-1",
-          "description": "Connect to CountyRescue-Network network",
-          "type": "networkConnection",
-          "target": "emerg-rescue-squad-network-1770917023727"
-        },
-        {
-          "id": "obj-2",
-          "description": "Use Network Scanner to locate file server",
-          "type": "networkScan",
-          "target": "emerg-rescue-squad-network-1770917023727",
-          "expectedResults": [
-            "10.205.122.10"
-          ]
-        },
-        {
-          "id": "obj-3",
-          "description": "Copy 3 files from 3 file systems",
-          "type": "fileOperation",
-          "operation": "copy",
-          "targetFiles": [
-            "emergency_archive_2024_Q1.tar",
-            "protocols_2023_Q4.db",
-            "training_2024_03.zip"
-          ]
-        },
-        {
-          "id": "obj-4",
-          "description": "Connect to CountyRescue-Backup network",
-          "type": "networkConnection",
-          "target": "emerg-rescue-squad-dest-1770917023727"
-        },
-        {
-          "id": "obj-5",
-          "description": "Use Network Scanner to find countyrescue-backup-01",
-          "type": "networkScan",
-          "target": "emerg-rescue-squad-dest-1770917023727",
-          "expectedResult": "countyrescue-backup-01"
-        },
-        {
-          "id": "obj-6",
-          "description": "Paste 3 files to destination",
-          "type": "fileOperation",
-          "operation": "paste",
-          "targetFiles": [
-            "emergency_archive_2024_Q1.tar",
-            "protocols_2023_Q4.db",
-            "training_2024_03.zip"
-          ],
-          "destination": "10.253.84.10"
-        },
-        {
-          "id": "obj-verify",
-          "description": "Verify mission completion",
-          "type": "verification",
-          "autoComplete": false
-        }
-      ],
-      "targetFiles": [
-        "emergency_archive_2024_Q1.tar",
-        "protocols_2023_Q4.db",
-        "training_2024_03.zip"
-      ],
-      "totalDataBytes": 1098398060,
-      "requirements": {
-        "software": [
-          "vpn-client",
-          "network-address-register",
-          "network-scanner",
-          "file-manager"
-        ],
-        "minReputation": 3
-      },
-      "consequences": {
-        "success": {
-          "credits": 1783,
-          "reputation": 1,
-          "messages": [
-            {
-              "id": "msg-success-1770917023727",
-              "from": "County Rescue Squad",
-              "fromId": "emerg-rescue-squad",
-              "fromName": "County Rescue Squad",
-              "subject": "Mission Complete - Payment Enclosed",
-              "body": "Dear {username},\n\nExcellent work! The task has been completed to our satisfaction. Payment has been authorized.\n\nSincerely,\n{clientName}",
-              "attachments": [
-                {
-                  "type": "cheque",
-                  "amount": 1783,
-                  "description": "Payment for completed mission"
-                }
-              ],
-              "delay": 3000
-            }
-          ]
-        },
-        "failure": {
-          "credits": -445,
-          "reputation": -1,
-          "messages": [
-            {
-              "id": "msg-failure-incomplete-1770917023727",
-              "from": "County Rescue Squad",
-              "fromId": "emerg-rescue-squad",
-              "fromName": "County Rescue Squad",
-              "subject": "Mission Failed",
-              "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
-              "attachments": [],
-              "delay": 2000
-            }
-          ],
-          "messageVariants": {
-            "deadline": {
-              "id": "msg-failure-deadline-1770917023727",
-              "from": "County Rescue Squad",
-              "fromId": "emerg-rescue-squad",
-              "fromName": "County Rescue Squad",
-              "subject": "Mission Failed",
-              "body": "Dear {username},\n\nTime ran out before the work was completed. We expected better from someone with your reputation.\n\nSincerely,\n{clientName}",
-              "attachments": [],
-              "delay": 2000
-            },
-            "incomplete": {
-              "id": "msg-failure-incomplete-1770917023727",
-              "from": "County Rescue Squad",
-              "fromId": "emerg-rescue-squad",
-              "fromName": "County Rescue Squad",
-              "subject": "Mission Failed",
-              "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
-              "attachments": [],
-              "delay": 2000
-            },
-            "filesDeleted": {
-              "id": "msg-failure-filesDeleted-1770917023727",
-              "from": "County Rescue Squad",
-              "fromId": "emerg-rescue-squad",
-              "fromName": "County Rescue Squad",
-              "subject": "Mission Failed",
-              "body": "Dear {username},\n\nWe've detected that essential mission files have been removed from our systems. This mission cannot be completed.\n\nSincerely,\n{clientName}",
-              "attachments": [],
-              "delay": 2000
-            }
-          }
-        }
-      },
-      "timeLimitMinutes": null,
-      "briefingMessage": {
-        "id": "msg-briefing-transfer-emerg-rescue-squad-1770917023728-i481zng13",
-        "from": "County Rescue Squad",
-        "fromId": "emerg-rescue-squad",
-        "fromName": "County Rescue Squad",
-        "subject": "Mission Briefing: Transfer Request",
-        "body": "Dear {username},\n\nWe're migrating data to a new backup server and need files transferred securely between systems.\n\n📁 Files to transfer:\n• emergency_archive_2024_Q1.tar\n• protocols_2023_Q4.db\n• training_2024_03.zip\n\nTotal data: 1.0 GB\n\nAttached are the network credentials you'll need to access our systems.\n\nSincerely,\n{clientName}",
-        "attachments": [
-          {
-            "type": "networkAddress",
-            "networkId": "emerg-rescue-squad-network-1770917023727",
-            "networkName": "CountyRescue-Network",
-            "address": "10.205.122.0/24",
-            "deviceIps": [
-              "10.205.122.10",
-              "10.205.122.10",
-              "10.205.122.10"
+              "10.254.226.10"
             ]
           },
           {
             "type": "networkAddress",
-            "networkId": "emerg-rescue-squad-dest-1770917023727",
-            "networkName": "CountyRescue-Backup",
-            "address": "10.253.84.0/24",
+            "networkId": "gov-riverside-library-dest-1771508857487",
+            "networkName": "RiversidePublic-Backup",
+            "address": "10.96.73.0/24",
             "deviceIps": [
-              "10.253.84.10"
+              "10.96.73.10"
             ]
           }
         ],
         "read": false,
-        "timestamp": "2026-02-12T17:23:43.728Z"
+        "timestamp": "2026-02-19T13:47:37.488Z"
       },
       "isProcedurallyGenerated": true,
-      "generatedAt": "2026-02-12T17:23:43.728Z",
+      "generatedAt": "2026-02-19T13:47:37.488Z",
       "arcId": null,
       "arcSequence": null,
       "arcTotal": null,
       "requiresCompletedMission": null,
-      "expiresAt": "2020-03-25T10:12:35.000Z"
+      "expiresAt": "2020-03-25T10:02:52.000Z"
     },
     {
-      "missionId": "repair-ship-metro-delivery-1770917023728-5",
-      "title": "Data Recovery Escalation (1/3): File Repair for Metro Delivery Services",
-      "client": "Metro Delivery Services",
-      "clientId": "ship-metro-delivery",
-      "clientType": "ship-courier",
-      "industry": "shipping",
+      "missionId": "repair-bank-first-community-1771508857488-2",
+      "title": "File Repair for First Community Credit Union",
+      "client": "First Community Credit Union",
+      "clientId": "bank-first-community",
+      "clientType": "bank-local",
+      "industry": "banking",
       "difficulty": "Easy",
       "missionType": "repair",
-      "basePayout": 1010,
-      "category": "procedural-arc",
+      "basePayout": 1363,
+      "category": "procedural",
       "networks": [
         {
-          "networkId": "ship-metro-delivery-network-1770917023728",
-          "networkName": "MetroDelivery-Network",
-          "address": "10.247.222.0/24",
+          "networkId": "bank-first-community-network-1771508857488",
+          "networkName": "FirstCommunity-Network",
+          "address": "10.119.4.0/24",
           "bandwidth": 2000,
           "revokeOnComplete": true,
           "revokeReason": "Mission access expired",
           "fileSystems": [
             {
-              "id": "fs-ship-metro-delivery-1770917023728-d0-fs0",
-              "ip": "10.247.222.10",
-              "name": "metrodelivery-fileserver-01",
+              "id": "fs-bank-first-community-1771508857488-d0-fs0",
+              "ip": "10.119.4.10",
+              "name": "firstcommunity-fileserver-01",
               "files": [
                 {
-                  "name": "driver_log_2024_02.txt",
-                  "size": "108.8 KB",
-                  "sizeBytes": 111417,
+                  "name": "system_config_2023_Q4.cfg",
+                  "size": "4.3 KB",
+                  "sizeBytes": 4433,
                   "corrupted": true,
                   "targetFile": true
                 },
                 {
-                  "name": "tracking_system_2023_11.db",
-                  "size": "415.1 MB",
-                  "sizeBytes": 435219736,
+                  "name": "accounts_2023_Q4.enc",
+                  "size": "73.8 MB",
+                  "sizeBytes": 77433441,
                   "corrupted": true,
                   "targetFile": true
                 },
                 {
-                  "name": "driver_log_2024_04.txt",
-                  "size": "327.0 KB",
-                  "sizeBytes": 334866,
+                  "name": "audit_log_2024_05.txt",
+                  "size": "103.5 KB",
+                  "sizeBytes": 106011,
                   "corrupted": true,
                   "targetFile": true
                 },
                 {
-                  "name": "logistics_2024_Q2.dat",
-                  "size": "5.2 MB",
-                  "sizeBytes": 5401510,
+                  "name": "system_config_2024_02.cfg",
+                  "size": "24.2 KB",
+                  "sizeBytes": 24809,
                   "corrupted": true,
                   "targetFile": true
                 },
                 {
-                  "name": "driver_log_2024_03.txt",
-                  "size": "128.4 KB",
-                  "sizeBytes": 131497,
+                  "name": "accounts_2024_Q2.enc",
+                  "size": "53.2 MB",
+                  "sizeBytes": 55749435,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "transactions_2024_02.dat",
+                  "size": "30.3 MB",
+                  "sizeBytes": 31820060,
                   "corrupted": false,
                   "targetFile": false
                 },
                 {
-                  "name": "route_cache_2024_02.dat",
-                  "size": "13.0 MB",
-                  "sizeBytes": 13594258,
-                  "corrupted": false,
-                  "targetFile": false
-                },
-                {
-                  "name": "driver_log_2024_01.txt",
-                  "size": "218.6 KB",
-                  "sizeBytes": 223855,
+                  "name": "system_config_2024_Q2.cfg",
+                  "size": "4.8 KB",
+                  "sizeBytes": 4865,
                   "corrupted": false,
                   "targetFile": false
                 }
@@ -1802,29 +895,30 @@
       "objectives": [
         {
           "id": "obj-1",
-          "description": "Connect to MetroDelivery-Network network",
+          "description": "Connect to FirstCommunity-Network network",
           "type": "networkConnection",
-          "target": "ship-metro-delivery-network-1770917023728"
+          "target": "bank-first-community-network-1771508857488"
         },
         {
           "id": "obj-2",
           "description": "Use Network Scanner to locate the file server",
           "type": "networkScan",
-          "target": "ship-metro-delivery-network-1770917023728",
+          "target": "bank-first-community-network-1771508857488",
           "expectedResults": [
-            "10.247.222.10"
+            "10.119.4.10"
           ]
         },
         {
           "id": "obj-3",
-          "description": "Repair 4 corrupted files",
+          "description": "Repair 5 corrupted files",
           "type": "fileOperation",
           "operation": "repair",
           "targetFiles": [
-            "driver_log_2024_02.txt",
-            "tracking_system_2023_11.db",
-            "driver_log_2024_04.txt",
-            "logistics_2024_Q2.dat"
+            "system_config_2023_Q4.cfg",
+            "accounts_2023_Q4.enc",
+            "audit_log_2024_05.txt",
+            "system_config_2024_02.cfg",
+            "accounts_2024_Q2.enc"
           ]
         },
         {
@@ -1835,12 +929,13 @@
         }
       ],
       "targetFiles": [
-        "driver_log_2024_02.txt",
-        "tracking_system_2023_11.db",
-        "driver_log_2024_04.txt",
-        "logistics_2024_Q2.dat"
+        "system_config_2023_Q4.cfg",
+        "accounts_2023_Q4.enc",
+        "audit_log_2024_05.txt",
+        "system_config_2024_02.cfg",
+        "accounts_2024_Q2.enc"
       ],
-      "totalDataBytes": 441067529,
+      "totalDataBytes": 133318129,
       "requirements": {
         "software": [
           "vpn-client",
@@ -1852,20 +947,20 @@
       },
       "consequences": {
         "success": {
-          "credits": 1010,
+          "credits": 1363,
           "reputation": 1,
           "messages": [
             {
-              "id": "msg-success-1770917023728",
-              "from": "Metro Delivery Services",
-              "fromId": "ship-metro-delivery",
-              "fromName": "Metro Delivery Services",
+              "id": "msg-success-1771508857488",
+              "from": "First Community Credit Union",
+              "fromId": "bank-first-community",
+              "fromName": "First Community Credit Union",
               "subject": "Mission Complete - Payment Enclosed",
               "body": "Dear {username},\n\nThank you for your efficient work. We're pleased with the results and have processed your payment.\n\nSincerely,\n{clientName}",
               "attachments": [
                 {
                   "type": "cheque",
-                  "amount": 1010,
+                  "amount": 1363,
                   "description": "Payment for completed mission"
                 }
               ],
@@ -1874,14 +969,303 @@
           ]
         },
         "failure": {
-          "credits": -252,
+          "credits": -340,
           "reputation": -1,
           "messages": [
             {
-              "id": "msg-failure-incomplete-1770917023728",
-              "from": "Metro Delivery Services",
-              "fromId": "ship-metro-delivery",
-              "fromName": "Metro Delivery Services",
+              "id": "msg-failure-incomplete-1771508857488",
+              "from": "First Community Credit Union",
+              "fromId": "bank-first-community",
+              "fromName": "First Community Credit Union",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            }
+          ],
+          "messageVariants": {
+            "deadline": {
+              "id": "msg-failure-deadline-1771508857488",
+              "from": "First Community Credit Union",
+              "fromId": "bank-first-community",
+              "fromName": "First Community Credit Union",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nTime ran out before the work was completed. We expected better from someone with your reputation.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            },
+            "incomplete": {
+              "id": "msg-failure-incomplete-1771508857488",
+              "from": "First Community Credit Union",
+              "fromId": "bank-first-community",
+              "fromName": "First Community Credit Union",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            },
+            "filesDeleted": {
+              "id": "msg-failure-filesDeleted-1771508857488",
+              "from": "First Community Credit Union",
+              "fromId": "bank-first-community",
+              "fromName": "First Community Credit Union",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nWe've detected that essential mission files have been removed from our systems. This mission cannot be completed.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            }
+          }
+        }
+      },
+      "timeLimitMinutes": 6,
+      "briefingMessage": {
+        "id": "msg-briefing-repair-bank-first-community-1771508857488-wq2681akw",
+        "from": "First Community Credit Union",
+        "fromId": "bank-first-community",
+        "fromName": "First Community Credit Union",
+        "subject": "Mission Briefing: Repair Request",
+        "body": "Dear {username},\n\nWe've experienced some data corruption on our file server. We need someone to repair the affected files as soon as possible.\n\n📁 Files to repair:\n• system_config_2023_Q4.cfg\n• accounts_2023_Q4.enc\n• audit_log_2024_05.txt\n• system_config_2024_02.cfg\n• accounts_2024_Q2.enc\n\nTotal data: 127 MB\n\n⚠️ TIME SENSITIVE: This task must be completed within 6 minutes of acceptance.\n\nAttached are the network credentials you'll need to access our systems.\n\nSincerely,\n{clientName}",
+        "attachments": [
+          {
+            "type": "networkAddress",
+            "networkId": "bank-first-community-network-1771508857488",
+            "networkName": "FirstCommunity-Network",
+            "address": "10.119.4.0/24",
+            "deviceIps": [
+              "10.119.4.10"
+            ]
+          }
+        ],
+        "read": false,
+        "timestamp": "2026-02-19T13:47:37.488Z"
+      },
+      "isProcedurallyGenerated": true,
+      "generatedAt": "2026-02-19T13:47:37.488Z",
+      "arcId": null,
+      "arcSequence": null,
+      "arcTotal": null,
+      "requiresCompletedMission": null,
+      "expiresAt": "2020-03-25T10:05:52.000Z"
+    },
+    {
+      "missionId": "backup-nonprofit-community-center-1771508857488-3",
+      "title": "Data Backup for Riverside Community Center",
+      "client": "Riverside Community Center",
+      "clientId": "nonprofit-community-center",
+      "clientType": "nonprofit-community",
+      "industry": "nonprofit",
+      "difficulty": "Medium",
+      "missionType": "backup",
+      "basePayout": 3217,
+      "category": "procedural",
+      "networks": [
+        {
+          "networkId": "nonprofit-community-center-network-1771508857488",
+          "networkName": "RiversideCommunity-Network",
+          "address": "10.144.23.0/24",
+          "bandwidth": 1500,
+          "revokeOnComplete": true,
+          "revokeReason": "Mission access expired",
+          "fileSystems": [
+            {
+              "id": "fs-nonprofit-community-center-1771508857488-d0-fs0",
+              "ip": "10.144.23.10",
+              "name": "riversidecommunity-fileserver-01",
+              "files": [
+                {
+                  "name": "email_templates_2024_03.zip",
+                  "size": "104.0 MB",
+                  "sizeBytes": 109059155,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "annual_summary_2024_05.xlsx",
+                  "size": "1.1 MB",
+                  "sizeBytes": 1172462,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "annual_summary_2024_01.xlsx",
+                  "size": "4.4 MB",
+                  "sizeBytes": 4642253,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "email_templates_2024_01.zip",
+                  "size": "236.4 MB",
+                  "sizeBytes": 247884495,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "fundraising_2023_12.db",
+                  "size": "2.0 GB",
+                  "sizeBytes": 2132915309,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "fundraising_2024_01.db",
+                  "size": "504.6 MB",
+                  "sizeBytes": 529072445,
+                  "corrupted": false,
+                  "targetFile": true
+                },
+                {
+                  "name": "fundraising_2024_05.db",
+                  "size": "591.7 MB",
+                  "sizeBytes": 620433865,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "grants_2023_11.dat",
+                  "size": "44.1 MB",
+                  "sizeBytes": 46250458,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            }
+          ]
+        },
+        {
+          "networkId": "nonprofit-community-center-dest-1771508857488",
+          "networkName": "RiversideCommunity-Backup",
+          "address": "10.254.210.0/24",
+          "bandwidth": 1500,
+          "revokeOnComplete": true,
+          "revokeReason": "Mission access expired",
+          "fileSystems": [
+            {
+              "id": "fs-nonprofit-community-center-1771508857488-dest",
+              "ip": "10.254.210.10",
+              "name": "riversidecommunity-backup-01",
+              "files": [],
+              "accessible": true
+            }
+          ]
+        }
+      ],
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Connect to RiversideCommunity-Network network",
+          "type": "networkConnection",
+          "target": "nonprofit-community-center-network-1771508857488"
+        },
+        {
+          "id": "obj-2",
+          "description": "Use Network Scanner to locate file server",
+          "type": "networkScan",
+          "target": "nonprofit-community-center-network-1771508857488",
+          "expectedResults": [
+            "10.144.23.10"
+          ]
+        },
+        {
+          "id": "obj-3",
+          "description": "Copy 6 files",
+          "type": "fileOperation",
+          "operation": "copy",
+          "targetFiles": [
+            "email_templates_2024_03.zip",
+            "annual_summary_2024_05.xlsx",
+            "annual_summary_2024_01.xlsx",
+            "email_templates_2024_01.zip",
+            "fundraising_2023_12.db",
+            "fundraising_2024_01.db"
+          ]
+        },
+        {
+          "id": "obj-4",
+          "description": "Connect to RiversideCommunity-Backup network",
+          "type": "networkConnection",
+          "target": "nonprofit-community-center-dest-1771508857488"
+        },
+        {
+          "id": "obj-5",
+          "description": "Use Network Scanner to find riversidecommunity-backup-01",
+          "type": "networkScan",
+          "target": "nonprofit-community-center-dest-1771508857488",
+          "expectedResult": "riversidecommunity-backup-01"
+        },
+        {
+          "id": "obj-6",
+          "description": "Paste 6 files to backup server",
+          "type": "fileOperation",
+          "operation": "paste",
+          "targetFiles": [
+            "email_templates_2024_03.zip",
+            "annual_summary_2024_05.xlsx",
+            "annual_summary_2024_01.xlsx",
+            "email_templates_2024_01.zip",
+            "fundraising_2023_12.db",
+            "fundraising_2024_01.db"
+          ],
+          "destination": "10.254.210.10"
+        },
+        {
+          "id": "obj-verify",
+          "description": "Verify mission completion",
+          "type": "verification",
+          "autoComplete": false
+        }
+      ],
+      "targetFiles": [
+        "email_templates_2024_03.zip",
+        "annual_summary_2024_05.xlsx",
+        "annual_summary_2024_01.xlsx",
+        "email_templates_2024_01.zip",
+        "fundraising_2023_12.db",
+        "fundraising_2024_01.db"
+      ],
+      "totalDataBytes": 3024746119,
+      "requirements": {
+        "software": [
+          "vpn-client",
+          "network-address-register",
+          "network-scanner",
+          "file-manager"
+        ],
+        "minReputation": 1
+      },
+      "consequences": {
+        "success": {
+          "credits": 3217,
+          "reputation": 1,
+          "messages": [
+            {
+              "id": "msg-success-1771508857488",
+              "from": "Riverside Community Center",
+              "fromId": "nonprofit-community-center",
+              "fromName": "Riverside Community Center",
+              "subject": "Mission Complete - Payment Enclosed",
+              "body": "Dear {username},\n\nExcellent work! The task has been completed to our satisfaction. Payment has been authorized.\n\nSincerely,\n{clientName}",
+              "attachments": [
+                {
+                  "type": "cheque",
+                  "amount": 3217,
+                  "description": "Payment for completed mission"
+                }
+              ],
+              "delay": 3000
+            }
+          ]
+        },
+        "failure": {
+          "credits": -804,
+          "reputation": -1,
+          "messages": [
+            {
+              "id": "msg-failure-incomplete-1771508857488",
+              "from": "Riverside Community Center",
+              "fromId": "nonprofit-community-center",
+              "fromName": "Riverside Community Center",
               "subject": "Mission Failed",
               "body": "Dear {username},\n\nThe mission was not completed as requested. This has caused significant inconvenience to our operations.\n\nSincerely,\n{clientName}",
               "attachments": [],
@@ -1890,32 +1274,355 @@
           ],
           "messageVariants": {
             "deadline": {
-              "id": "msg-failure-deadline-1770917023728",
-              "from": "Metro Delivery Services",
-              "fromId": "ship-metro-delivery",
-              "fromName": "Metro Delivery Services",
+              "id": "msg-failure-deadline-1771508857488",
+              "from": "Riverside Community Center",
+              "fromId": "nonprofit-community-center",
+              "fromName": "Riverside Community Center",
               "subject": "Mission Failed",
               "body": "Dear {username},\n\nThe deadline has passed and we can no longer use your services for this task. This is very disappointing.\n\nSincerely,\n{clientName}",
               "attachments": [],
               "delay": 2000
             },
             "incomplete": {
-              "id": "msg-failure-incomplete-1770917023728",
-              "from": "Metro Delivery Services",
-              "fromId": "ship-metro-delivery",
-              "fromName": "Metro Delivery Services",
+              "id": "msg-failure-incomplete-1771508857488",
+              "from": "Riverside Community Center",
+              "fromId": "nonprofit-community-center",
+              "fromName": "Riverside Community Center",
               "subject": "Mission Failed",
               "body": "Dear {username},\n\nThe mission was not completed as requested. This has caused significant inconvenience to our operations.\n\nSincerely,\n{clientName}",
               "attachments": [],
               "delay": 2000
             },
             "filesDeleted": {
-              "id": "msg-failure-filesDeleted-1770917023728",
-              "from": "Metro Delivery Services",
-              "fromId": "ship-metro-delivery",
-              "fromName": "Metro Delivery Services",
+              "id": "msg-failure-filesDeleted-1771508857488",
+              "from": "Riverside Community Center",
+              "fromId": "nonprofit-community-center",
+              "fromName": "Riverside Community Center",
               "subject": "Mission Failed",
-              "body": "Dear {username},\n\nCritical files required for this task have been deleted. We cannot proceed and must terminate this engagement immediately.\n\nSincerely,\n{clientName}",
+              "body": "Dear {username},\n\nThe files we needed you to work with no longer exist. Your access has been revoked effective immediately.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            }
+          }
+        }
+      },
+      "timeLimitMinutes": 8,
+      "briefingMessage": {
+        "id": "msg-briefing-backup-nonprofit-community-center-1771508857488-y2mw9rwj4",
+        "from": "Riverside Community Center",
+        "fromId": "nonprofit-community-center",
+        "fromName": "Riverside Community Center",
+        "subject": "Mission Briefing: Backup Request",
+        "body": "Dear {username},\n\nWe need to create secure backups of critical files before our scheduled maintenance window.\n\n📁 Files to back up:\n• email_templates_2024_03.zip\n• annual_summary_2024_05.xlsx\n• annual_summary_2024_01.xlsx\n• email_templates_2024_01.zip\n• fundraising_2023_12.db\n• fundraising_2024_01.db\n\nTotal data: 2.8 GB\n\n⚠️ TIME SENSITIVE: This task must be completed within 8 minutes of acceptance.\n\nAttached are the network credentials you'll need to access our systems.\n\nSincerely,\n{clientName}",
+        "attachments": [
+          {
+            "type": "networkAddress",
+            "networkId": "nonprofit-community-center-network-1771508857488",
+            "networkName": "RiversideCommunity-Network",
+            "address": "10.144.23.0/24",
+            "deviceIps": [
+              "10.144.23.10"
+            ]
+          },
+          {
+            "type": "networkAddress",
+            "networkId": "nonprofit-community-center-dest-1771508857488",
+            "networkName": "RiversideCommunity-Backup",
+            "address": "10.254.210.0/24",
+            "deviceIps": [
+              "10.254.210.10"
+            ]
+          }
+        ],
+        "read": false,
+        "timestamp": "2026-02-19T13:47:37.488Z"
+      },
+      "isProcedurallyGenerated": true,
+      "generatedAt": "2026-02-19T13:47:37.488Z",
+      "arcId": null,
+      "arcSequence": null,
+      "arcTotal": null,
+      "requiresCompletedMission": null,
+      "expiresAt": "2020-03-25T09:32:52.000Z"
+    },
+    {
+      "missionId": "repair-cultural-town-museum-1771508857488-4",
+      "title": "File Repair for Town Historical Museum",
+      "client": "Town Historical Museum",
+      "clientId": "cultural-town-museum",
+      "clientType": "cultural-local",
+      "industry": "cultural",
+      "difficulty": "Medium",
+      "missionType": "repair",
+      "basePayout": 886,
+      "category": "procedural",
+      "networks": [
+        {
+          "networkId": "cultural-town-museum-network-1771508857488",
+          "networkName": "TownHistorical-Network",
+          "address": "10.46.79.0/24",
+          "bandwidth": 1000,
+          "revokeOnComplete": true,
+          "revokeReason": "Mission access expired",
+          "fileSystems": [
+            {
+              "id": "fs-cultural-town-museum-1771508857488-d0-fs0",
+              "ip": "10.46.79.10",
+              "name": "townhistorical-fileserver01-01",
+              "files": [
+                {
+                  "name": "visitor_log_2024_05.csv",
+                  "size": "235.0 KB",
+                  "sizeBytes": 240631,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "exhibitions_2024_05.enc",
+                  "size": "45.5 MB",
+                  "sizeBytes": 47736406,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "catalog_2024_Q2.db",
+                  "size": "434.7 MB",
+                  "sizeBytes": 455817699,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "collections_2023_12.dat",
+                  "size": "48.3 MB",
+                  "sizeBytes": 50635511,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "catalog_2024_03.db",
+                  "size": "183.5 MB",
+                  "sizeBytes": 192457305,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            },
+            {
+              "id": "fs-cultural-town-museum-1771508857488-d1-fs0",
+              "ip": "10.46.79.11",
+              "name": "townhistorical-fileserver02-01/data",
+              "fileSystemName": "/data",
+              "files": [
+                {
+                  "name": "visitor_log_2024_05.csv",
+                  "size": "244.5 KB",
+                  "sizeBytes": 250317,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "visitor_log_2023_12.csv",
+                  "size": "96.3 KB",
+                  "sizeBytes": 98656,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "visitor_log_2024_04.csv",
+                  "size": "308.8 KB",
+                  "sizeBytes": 316237,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "collections_2023_12.dat",
+                  "size": "36.7 MB",
+                  "sizeBytes": 38439110,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "catalog_2024_01.db",
+                  "size": "317.6 MB",
+                  "sizeBytes": 333048150,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "settings_2023_11.cfg",
+                  "size": "26.2 KB",
+                  "sizeBytes": 26839,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            },
+            {
+              "id": "fs-cultural-town-museum-1771508857488-d1-fs1",
+              "ip": "10.46.79.11",
+              "name": "townhistorical-fileserver02-01/logs",
+              "fileSystemName": "/logs",
+              "files": [
+                {
+                  "name": "collections_2024_Q2.dat",
+                  "size": "7.4 MB",
+                  "sizeBytes": 7725686,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "exhibitions_2024_01.enc",
+                  "size": "5.0 MB",
+                  "sizeBytes": 5277060,
+                  "corrupted": true,
+                  "targetFile": true
+                },
+                {
+                  "name": "collections_2024_03.dat",
+                  "size": "5.8 MB",
+                  "sizeBytes": 6045669,
+                  "corrupted": false,
+                  "targetFile": false
+                },
+                {
+                  "name": "visitor_log_2023_12.csv",
+                  "size": "30.8 KB",
+                  "sizeBytes": 31568,
+                  "corrupted": false,
+                  "targetFile": false
+                }
+              ],
+              "accessible": true
+            }
+          ]
+        }
+      ],
+      "objectives": [
+        {
+          "id": "obj-1",
+          "description": "Connect to TownHistorical-Network network",
+          "type": "networkConnection",
+          "target": "cultural-town-museum-network-1771508857488"
+        },
+        {
+          "id": "obj-2",
+          "description": "Use Network Scanner to locate 2 file servers",
+          "type": "networkScan",
+          "target": "cultural-town-museum-network-1771508857488",
+          "expectedResults": [
+            "10.46.79.10",
+            "10.46.79.11"
+          ]
+        },
+        {
+          "id": "obj-3",
+          "description": "Repair 7 corrupted files across 3 file systems",
+          "type": "fileOperation",
+          "operation": "repair",
+          "targetFiles": [
+            "visitor_log_2024_05.csv",
+            "exhibitions_2024_05.enc",
+            "catalog_2024_Q2.db",
+            "visitor_log_2024_05.csv",
+            "visitor_log_2023_12.csv",
+            "collections_2024_Q2.dat",
+            "exhibitions_2024_01.enc"
+          ]
+        },
+        {
+          "id": "obj-verify",
+          "description": "Verify mission completion",
+          "type": "verification",
+          "autoComplete": false
+        }
+      ],
+      "targetFiles": [
+        "visitor_log_2024_05.csv",
+        "exhibitions_2024_05.enc",
+        "catalog_2024_Q2.db",
+        "visitor_log_2024_05.csv",
+        "visitor_log_2023_12.csv",
+        "collections_2024_Q2.dat",
+        "exhibitions_2024_01.enc"
+      ],
+      "totalDataBytes": 517146455,
+      "requirements": {
+        "software": [
+          "vpn-client",
+          "network-address-register",
+          "network-scanner",
+          "file-manager"
+        ],
+        "minReputation": 1
+      },
+      "consequences": {
+        "success": {
+          "credits": 886,
+          "reputation": 1,
+          "messages": [
+            {
+              "id": "msg-success-1771508857488",
+              "from": "Town Historical Museum",
+              "fromId": "cultural-town-museum",
+              "fromName": "Town Historical Museum",
+              "subject": "Mission Complete - Payment Enclosed",
+              "body": "Dear {username},\n\nGreat job on completing the mission. Your professionalism is appreciated. Payment attached.\n\nSincerely,\n{clientName}",
+              "attachments": [
+                {
+                  "type": "cheque",
+                  "amount": 886,
+                  "description": "Payment for completed mission"
+                }
+              ],
+              "delay": 3000
+            }
+          ]
+        },
+        "failure": {
+          "credits": -221,
+          "reputation": -1,
+          "messages": [
+            {
+              "id": "msg-failure-incomplete-1771508857488",
+              "from": "Town Historical Museum",
+              "fromId": "cultural-town-museum",
+              "fromName": "Town Historical Museum",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            }
+          ],
+          "messageVariants": {
+            "deadline": {
+              "id": "msg-failure-deadline-1771508857488",
+              "from": "Town Historical Museum",
+              "fromId": "cultural-town-museum",
+              "fromName": "Town Historical Museum",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nUnfortunately, you failed to complete the task within the required timeframe. We've had to find alternative solutions.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            },
+            "incomplete": {
+              "id": "msg-failure-incomplete-1771508857488",
+              "from": "Town Historical Museum",
+              "fromId": "cultural-town-museum",
+              "fromName": "Town Historical Museum",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
+              "attachments": [],
+              "delay": 2000
+            },
+            "filesDeleted": {
+              "id": "msg-failure-filesDeleted-1771508857488",
+              "from": "Town Historical Museum",
+              "fromId": "cultural-town-museum",
+              "fromName": "Town Historical Museum",
+              "subject": "Mission Failed",
+              "body": "Dear {username},\n\nThe files we needed you to work with no longer exist. Your access has been revoked effective immediately.\n\nSincerely,\n{clientName}",
               "attachments": [],
               "delay": 2000
             }
@@ -1924,711 +1631,62 @@
       },
       "timeLimitMinutes": null,
       "briefingMessage": {
-        "id": "msg-briefing-repair-ship-metro-delivery-1770917023728-pkfdh4ccc",
-        "from": "Metro Delivery Services",
-        "fromId": "ship-metro-delivery",
-        "fromName": "Metro Delivery Services",
+        "id": "msg-briefing-repair-cultural-town-museum-1771508857488-eljkhk99h",
+        "from": "Town Historical Museum",
+        "fromId": "cultural-town-museum",
+        "fromName": "Town Historical Museum",
         "subject": "Mission Briefing: Repair Request",
-        "body": "Dear {username},\n\nSeveral critical files have become corrupted due to a system error. Your expertise in file repair would be greatly appreciated.\n\n📁 Files to repair:\n• driver_log_2024_02.txt\n• tracking_system_2023_11.db\n• driver_log_2024_04.txt\n• logistics_2024_Q2.dat\n\nTotal data: 421 MB\n\nAttached are the network credentials you'll need to access our systems.\n\n[Mission 1 of 3]\n\nSincerely,\n{clientName}",
+        "body": "Dear {username},\n\nWe've experienced some data corruption on our file server. We need someone to repair the affected files as soon as possible.\n\n📁 Files to repair:\n• visitor_log_2024_05.csv\n• exhibitions_2024_05.enc\n• catalog_2024_Q2.db\n• visitor_log_2024_05.csv\n• visitor_log_2023_12.csv\n• collections_2024_Q2.dat\n• exhibitions_2024_01.enc\n\nTotal data: 493 MB\n\nAttached are the network credentials you'll need to access our systems.\n\nSincerely,\n{clientName}",
         "attachments": [
           {
             "type": "networkAddress",
-            "networkId": "ship-metro-delivery-network-1770917023728",
-            "networkName": "MetroDelivery-Network",
-            "address": "10.247.222.0/24",
+            "networkId": "cultural-town-museum-network-1771508857488",
+            "networkName": "TownHistorical-Network",
+            "address": "10.46.79.0/24",
             "deviceIps": [
-              "10.247.222.10"
+              "10.46.79.10",
+              "10.46.79.11",
+              "10.46.79.11"
             ]
           }
         ],
         "read": false,
-        "timestamp": "2026-02-12T17:23:43.728Z"
+        "timestamp": "2026-02-19T13:47:37.488Z"
       },
       "isProcedurallyGenerated": true,
-      "generatedAt": "2026-02-12T17:23:43.728Z",
-      "arcId": "arc-1770917023728-n8e849coe",
-      "arcSequence": 1,
-      "arcTotal": 3,
+      "generatedAt": "2026-02-19T13:47:37.488Z",
+      "arcId": null,
+      "arcSequence": null,
+      "arcTotal": null,
       "requiresCompletedMission": null,
-      "arcName": "Data Recovery Escalation",
-      "expiresAt": "2020-03-25T09:44:35.000Z"
+      "expiresAt": "2020-03-25T09:42:52.000Z"
     }
   ],
-  "pendingChainMissions": {
-    "arc-1770917023728-n8e849coe": [
-      {
-        "missionId": "backup-ship-metro-delivery-1770917023728-6",
-        "title": "Data Recovery Escalation (2/3): Data Backup for Metro Delivery Services",
-        "client": "Metro Delivery Services",
-        "clientId": "ship-metro-delivery",
-        "clientType": "ship-courier",
-        "industry": "shipping",
-        "difficulty": "Hard",
-        "missionType": "backup",
-        "basePayout": 2546,
-        "category": "procedural-arc",
-        "networks": [
-          {
-            "networkId": "ship-metro-delivery-network-1770917023728",
-            "networkName": "MetroDelivery-Network",
-            "address": "10.18.143.0/24",
-            "bandwidth": 2000,
-            "revokeOnComplete": true,
-            "revokeReason": "Mission access expired",
-            "fileSystems": [
-              {
-                "id": "fs-ship-metro-delivery-1770917023728-d0-fs0",
-                "ip": "10.18.143.10",
-                "name": "metrodelivery-fileserver-01/data",
-                "fileSystemName": "/data",
-                "files": [
-                  {
-                    "name": "routes_2024_Q1.enc",
-                    "size": "87.6 MB",
-                    "sizeBytes": 91827482,
-                    "corrupted": false,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "backup_config_2023_12.cfg",
-                    "size": "27.2 KB",
-                    "sizeBytes": 27880,
-                    "corrupted": false,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "shipment_records_2024_05.db",
-                    "size": "2.0 GB",
-                    "sizeBytes": 2144227940,
-                    "corrupted": false,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "customs_2024_Q1.dat",
-                    "size": "28.2 MB",
-                    "sizeBytes": 29599582,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "customs_2024_03.dat",
-                    "size": "35.1 MB",
-                    "sizeBytes": 36848961,
-                    "corrupted": false,
-                    "targetFile": false
-                  }
-                ],
-                "accessible": true
-              },
-              {
-                "id": "fs-ship-metro-delivery-1770917023728-d0-fs1",
-                "ip": "10.18.143.10",
-                "name": "metrodelivery-fileserver-01/logs",
-                "fileSystemName": "/logs",
-                "files": [
-                  {
-                    "name": "customs_2024_01.dat",
-                    "size": "28.3 MB",
-                    "sizeBytes": 29657580,
-                    "corrupted": false,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "backup_config_2023_Q4.cfg",
-                    "size": "25.4 KB",
-                    "sizeBytes": 26034,
-                    "corrupted": false,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "backup_config_2024_03.cfg",
-                    "size": "3.0 KB",
-                    "sizeBytes": 3073,
-                    "corrupted": false,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "fleet_status_2023_11.xlsx",
-                    "size": "1.8 MB",
-                    "sizeBytes": 1923655,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "shipment_records_2024_02.db",
-                    "size": "1.7 GB",
-                    "sizeBytes": 1874707901,
-                    "corrupted": false,
-                    "targetFile": false
-                  }
-                ],
-                "accessible": true
-              },
-              {
-                "id": "fs-ship-metro-delivery-1770917023728-d0-fs2",
-                "ip": "10.18.143.10",
-                "name": "metrodelivery-fileserver-01/backups",
-                "fileSystemName": "/backups",
-                "files": [
-                  {
-                    "name": "fleet_status_2024_Q2.xlsx",
-                    "size": "5.8 MB",
-                    "sizeBytes": 6082315,
-                    "corrupted": false,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "routes_2024_Q2.enc",
-                    "size": "69.8 MB",
-                    "sizeBytes": 73198765,
-                    "corrupted": false,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "shipment_records_2024_01.db",
-                    "size": "1.1 GB",
-                    "sizeBytes": 1207353892,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "fleet_status_2023_11.xlsx",
-                    "size": "7.2 MB",
-                    "sizeBytes": 7505749,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "customs_2023_Q4.dat",
-                    "size": "40.7 MB",
-                    "sizeBytes": 42720848,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "shipment_records_2024_03.db",
-                    "size": "1.7 GB",
-                    "sizeBytes": 1854476430,
-                    "corrupted": false,
-                    "targetFile": false
-                  }
-                ],
-                "accessible": true
-              },
-              {
-                "id": "fs-ship-metro-delivery-1770917023728-backup",
-                "ip": "10.18.143.20",
-                "name": "metrodelivery-backup-01",
-                "files": [],
-                "accessible": true
-              }
-            ]
-          }
-        ],
-        "objectives": [
-          {
-            "id": "obj-1",
-            "description": "Connect to MetroDelivery-Network network",
-            "type": "networkConnection",
-            "target": "ship-metro-delivery-network-1770917023728"
-          },
-          {
-            "id": "obj-2",
-            "description": "Use Network Scanner to locate file server",
-            "type": "networkScan",
-            "target": "ship-metro-delivery-network-1770917023728",
-            "expectedResults": [
-              "10.18.143.10"
-            ]
-          },
-          {
-            "id": "obj-3",
-            "description": "Copy 8 files from 3 file systems to backup server",
-            "type": "fileOperation",
-            "operation": "copy",
-            "targetFiles": [
-              "routes_2024_Q1.enc",
-              "backup_config_2023_12.cfg",
-              "shipment_records_2024_05.db",
-              "customs_2024_01.dat",
-              "backup_config_2023_Q4.cfg",
-              "backup_config_2024_03.cfg",
-              "fleet_status_2024_Q2.xlsx",
-              "routes_2024_Q2.enc"
-            ]
-          },
-          {
-            "id": "obj-4",
-            "description": "Paste 8 files to metrodelivery-backup-01",
-            "type": "fileOperation",
-            "operation": "paste",
-            "targetFiles": [
-              "routes_2024_Q1.enc",
-              "backup_config_2023_12.cfg",
-              "shipment_records_2024_05.db",
-              "customs_2024_01.dat",
-              "backup_config_2023_Q4.cfg",
-              "backup_config_2024_03.cfg",
-              "fleet_status_2024_Q2.xlsx",
-              "routes_2024_Q2.enc"
-            ],
-            "destination": "10.18.143.20"
-          },
-          {
-            "id": "obj-verify",
-            "description": "Verify mission completion",
-            "type": "verification",
-            "autoComplete": false
-          }
-        ],
-        "targetFiles": [
-          "routes_2024_Q1.enc",
-          "backup_config_2023_12.cfg",
-          "shipment_records_2024_05.db",
-          "customs_2024_01.dat",
-          "backup_config_2023_Q4.cfg",
-          "backup_config_2024_03.cfg",
-          "fleet_status_2024_Q2.xlsx",
-          "routes_2024_Q2.enc"
-        ],
-        "totalDataBytes": 2345051069,
-        "requirements": {
-          "software": [
-            "vpn-client",
-            "network-address-register",
-            "network-scanner",
-            "file-manager"
-          ],
-          "minReputation": 2
-        },
-        "consequences": {
-          "success": {
-            "credits": 2546,
-            "reputation": 1,
-            "messages": [
-              {
-                "id": "msg-success-1770917023728",
-                "from": "Metro Delivery Services",
-                "fromId": "ship-metro-delivery",
-                "fromName": "Metro Delivery Services",
-                "subject": "Mission Complete - Payment Enclosed",
-                "body": "Dear {username},\n\nGreat job on completing the mission. Your professionalism is appreciated. Payment attached.\n\nSincerely,\n{clientName}",
-                "attachments": [
-                  {
-                    "type": "cheque",
-                    "amount": 2546,
-                    "description": "Payment for completed mission"
-                  }
-                ],
-                "delay": 3000
-              }
-            ]
-          },
-          "failure": {
-            "credits": -636,
-            "reputation": -1,
-            "messages": [
-              {
-                "id": "msg-failure-incomplete-1770917023728",
-                "from": "Metro Delivery Services",
-                "fromId": "ship-metro-delivery",
-                "fromName": "Metro Delivery Services",
-                "subject": "Mission Failed",
-                "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
-                "attachments": [],
-                "delay": 2000
-              }
-            ],
-            "messageVariants": {
-              "deadline": {
-                "id": "msg-failure-deadline-1770917023728",
-                "from": "Metro Delivery Services",
-                "fromId": "ship-metro-delivery",
-                "fromName": "Metro Delivery Services",
-                "subject": "Mission Failed",
-                "body": "Dear {username},\n\nUnfortunately, you failed to complete the task within the required timeframe. We've had to find alternative solutions.\n\nSincerely,\n{clientName}",
-                "attachments": [],
-                "delay": 2000
-              },
-              "incomplete": {
-                "id": "msg-failure-incomplete-1770917023728",
-                "from": "Metro Delivery Services",
-                "fromId": "ship-metro-delivery",
-                "fromName": "Metro Delivery Services",
-                "subject": "Mission Failed",
-                "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
-                "attachments": [],
-                "delay": 2000
-              },
-              "filesDeleted": {
-                "id": "msg-failure-filesDeleted-1770917023728",
-                "from": "Metro Delivery Services",
-                "fromId": "ship-metro-delivery",
-                "fromName": "Metro Delivery Services",
-                "subject": "Mission Failed",
-                "body": "Dear {username},\n\nCritical files required for this task have been deleted. We cannot proceed and must terminate this engagement immediately.\n\nSincerely,\n{clientName}",
-                "attachments": [],
-                "delay": 2000
-              }
-            }
-          }
-        },
-        "timeLimitMinutes": 7,
-        "briefingMessage": {
-          "id": "msg-briefing-backup-ship-metro-delivery-1770917023728-mjumvpzs5",
-          "from": "Metro Delivery Services",
-          "fromId": "ship-metro-delivery",
-          "fromName": "Metro Delivery Services",
-          "subject": "Mission Briefing: Backup Request",
-          "body": "Dear {username},\n\nThank you for the previous repair. We've discovered more issues and need immediate backup.\n\nAs part of our disaster recovery plan, we require immediate backup of essential data files.\n\n📁 Files to back up:\n• routes_2024_Q1.enc\n• backup_config_2023_12.cfg\n• shipment_records_2024_05.db\n• customs_2024_01.dat\n• backup_config_2023_Q4.cfg\n• backup_config_2024_03.cfg\n• fleet_status_2024_Q2.xlsx\n• routes_2024_Q2.enc\n\nTotal data: 2.2 GB\n\n⚠️ TIME SENSITIVE: This task must be completed within 7 minutes of acceptance.\n\nAttached are the network credentials you'll need to access our systems.\n\n[Mission 2 of 3]\n\nSincerely,\n{clientName}",
-          "attachments": [
-            {
-              "type": "networkAddress",
-              "networkId": "ship-metro-delivery-network-1770917023728",
-              "networkName": "MetroDelivery-Network",
-              "address": "10.18.143.0/24",
-              "deviceIps": [
-                "10.18.143.10",
-                "10.18.143.10",
-                "10.18.143.10",
-                "10.18.143.20"
-              ]
-            }
-          ],
-          "read": false,
-          "timestamp": "2026-02-12T17:23:43.728Z"
-        },
-        "isProcedurallyGenerated": true,
-        "generatedAt": "2026-02-12T17:23:43.728Z",
-        "arcId": "arc-1770917023728-n8e849coe",
-        "arcSequence": 2,
-        "arcTotal": 3,
-        "requiresCompletedMission": "repair-ship-metro-delivery-1770917023728-5",
-        "arcName": "Data Recovery Escalation"
-      },
-      {
-        "missionId": "repair-ship-metro-delivery-1770917023728-7",
-        "title": "Data Recovery Escalation (3/3): File Repair for Metro Delivery Services",
-        "client": "Metro Delivery Services",
-        "clientId": "ship-metro-delivery",
-        "clientType": "ship-courier",
-        "industry": "shipping",
-        "difficulty": "Easy",
-        "missionType": "repair",
-        "basePayout": 1021,
-        "category": "procedural-arc",
-        "networks": [
-          {
-            "networkId": "ship-metro-delivery-network-1770917023728",
-            "networkName": "MetroDelivery-Network",
-            "address": "10.97.99.0/24",
-            "bandwidth": 750,
-            "revokeOnComplete": true,
-            "revokeReason": "Mission access expired",
-            "fileSystems": [
-              {
-                "id": "fs-ship-metro-delivery-1770917023728-d0-fs0",
-                "ip": "10.97.99.10",
-                "name": "metrodelivery-fileserver-01/data",
-                "fileSystemName": "/data",
-                "files": [
-                  {
-                    "name": "route_cache_2024_05.dat",
-                    "size": "39.8 MB",
-                    "sizeBytes": 41702825,
-                    "corrupted": true,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "logistics_2023_12.dat",
-                    "size": "41.6 MB",
-                    "sizeBytes": 43643112,
-                    "corrupted": true,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "route_cache_2024_Q2.dat",
-                    "size": "43.2 MB",
-                    "sizeBytes": 45292973,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "tracking_system_2024_04.db",
-                    "size": "234.3 MB",
-                    "sizeBytes": 245639632,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "logistics_2023_11.dat",
-                    "size": "17.5 MB",
-                    "sizeBytes": 18365787,
-                    "corrupted": false,
-                    "targetFile": false
-                  }
-                ],
-                "accessible": true
-              },
-              {
-                "id": "fs-ship-metro-delivery-1770917023728-d0-fs1",
-                "ip": "10.97.99.10",
-                "name": "metrodelivery-fileserver-01/logs",
-                "fileSystemName": "/logs",
-                "files": [
-                  {
-                    "name": "route_cache_2023_Q4.dat",
-                    "size": "13.0 MB",
-                    "sizeBytes": 13627711,
-                    "corrupted": true,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "tracking_system_2024_Q2.db",
-                    "size": "348.9 MB",
-                    "sizeBytes": 365893157,
-                    "corrupted": true,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "logistics_2023_11.dat",
-                    "size": "33.1 MB",
-                    "sizeBytes": 34723440,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "route_cache_2023_12.dat",
-                    "size": "39.9 MB",
-                    "sizeBytes": 41825897,
-                    "corrupted": false,
-                    "targetFile": false
-                  }
-                ],
-                "accessible": true
-              },
-              {
-                "id": "fs-ship-metro-delivery-1770917023728-d0-fs2",
-                "ip": "10.97.99.10",
-                "name": "metrodelivery-fileserver-01/backups",
-                "fileSystemName": "/backups",
-                "files": [
-                  {
-                    "name": "driver_log_2023_11.txt",
-                    "size": "34.7 KB",
-                    "sizeBytes": 35551,
-                    "corrupted": true,
-                    "targetFile": true
-                  },
-                  {
-                    "name": "logistics_2024_Q2.dat",
-                    "size": "49.4 MB",
-                    "sizeBytes": 51819232,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "route_cache_2023_12.dat",
-                    "size": "13.3 MB",
-                    "sizeBytes": 13949898,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "manifest_2024_02.enc",
-                    "size": "18.7 MB",
-                    "sizeBytes": 19623109,
-                    "corrupted": false,
-                    "targetFile": false
-                  },
-                  {
-                    "name": "manifest_2023_12.enc",
-                    "size": "65.2 MB",
-                    "sizeBytes": 68413739,
-                    "corrupted": false,
-                    "targetFile": false
-                  }
-                ],
-                "accessible": true
-              }
-            ]
-          }
-        ],
-        "objectives": [
-          {
-            "id": "obj-1",
-            "description": "Connect to MetroDelivery-Network network",
-            "type": "networkConnection",
-            "target": "ship-metro-delivery-network-1770917023728"
-          },
-          {
-            "id": "obj-2",
-            "description": "Use Network Scanner to locate the file server",
-            "type": "networkScan",
-            "target": "ship-metro-delivery-network-1770917023728",
-            "expectedResults": [
-              "10.97.99.10"
-            ]
-          },
-          {
-            "id": "obj-3",
-            "description": "Repair 5 corrupted files across 3 file systems",
-            "type": "fileOperation",
-            "operation": "repair",
-            "targetFiles": [
-              "route_cache_2024_05.dat",
-              "logistics_2023_12.dat",
-              "route_cache_2023_Q4.dat",
-              "tracking_system_2024_Q2.db",
-              "driver_log_2023_11.txt"
-            ]
-          },
-          {
-            "id": "obj-verify",
-            "description": "Verify mission completion",
-            "type": "verification",
-            "autoComplete": false
-          }
-        ],
-        "targetFiles": [
-          "route_cache_2024_05.dat",
-          "logistics_2023_12.dat",
-          "route_cache_2023_Q4.dat",
-          "tracking_system_2024_Q2.db",
-          "driver_log_2023_11.txt"
-        ],
-        "totalDataBytes": 464902356,
-        "requirements": {
-          "software": [
-            "vpn-client",
-            "network-address-register",
-            "network-scanner",
-            "file-manager"
-          ],
-          "minReputation": 2
-        },
-        "consequences": {
-          "success": {
-            "credits": 1021,
-            "reputation": 1,
-            "messages": [
-              {
-                "id": "msg-success-1770917023728",
-                "from": "Metro Delivery Services",
-                "fromId": "ship-metro-delivery",
-                "fromName": "Metro Delivery Services",
-                "subject": "Mission Complete - Payment Enclosed",
-                "body": "Dear {username},\n\nThank you for your efficient work. We're pleased with the results and have processed your payment.\n\nSincerely,\n{clientName}",
-                "attachments": [
-                  {
-                    "type": "cheque",
-                    "amount": 1021,
-                    "description": "Payment for completed mission"
-                  }
-                ],
-                "delay": 3000
-              }
-            ]
-          },
-          "failure": {
-            "credits": -255,
-            "reputation": -1,
-            "messages": [
-              {
-                "id": "msg-failure-incomplete-1770917023728",
-                "from": "Metro Delivery Services",
-                "fromId": "ship-metro-delivery",
-                "fromName": "Metro Delivery Services",
-                "subject": "Mission Failed",
-                "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
-                "attachments": [],
-                "delay": 2000
-              }
-            ],
-            "messageVariants": {
-              "deadline": {
-                "id": "msg-failure-deadline-1770917023728",
-                "from": "Metro Delivery Services",
-                "fromId": "ship-metro-delivery",
-                "fromName": "Metro Delivery Services",
-                "subject": "Mission Failed",
-                "body": "Dear {username},\n\nThe deadline has passed and we can no longer use your services for this task. This is very disappointing.\n\nSincerely,\n{clientName}",
-                "attachments": [],
-                "delay": 2000
-              },
-              "incomplete": {
-                "id": "msg-failure-incomplete-1770917023728",
-                "from": "Metro Delivery Services",
-                "fromId": "ship-metro-delivery",
-                "fromName": "Metro Delivery Services",
-                "subject": "Mission Failed",
-                "body": "Dear {username},\n\nWe're disappointed that you were unable to complete the assigned task. We may need to reconsider future engagements.\n\nSincerely,\n{clientName}",
-                "attachments": [],
-                "delay": 2000
-              },
-              "filesDeleted": {
-                "id": "msg-failure-filesDeleted-1770917023728",
-                "from": "Metro Delivery Services",
-                "fromId": "ship-metro-delivery",
-                "fromName": "Metro Delivery Services",
-                "subject": "Mission Failed",
-                "body": "Dear {username},\n\nThe files we needed you to work with no longer exist. Your access has been revoked effective immediately.\n\nSincerely,\n{clientName}",
-                "attachments": [],
-                "delay": 2000
-              }
-            }
-          }
-        },
-        "timeLimitMinutes": null,
-        "briefingMessage": {
-          "id": "msg-briefing-repair-ship-metro-delivery-1770917023728-2jm6c7u3s",
-          "from": "Metro Delivery Services",
-          "fromId": "ship-metro-delivery",
-          "fromName": "Metro Delivery Services",
-          "subject": "Mission Briefing: Repair Request",
-          "body": "Dear {username},\n\nThe backup was successful. Now we need the recovered files repaired.\n\nSeveral critical files have become corrupted due to a system error. Your expertise in file repair would be greatly appreciated.\n\n📁 Files to repair:\n• route_cache_2024_05.dat\n• logistics_2023_12.dat\n• route_cache_2023_Q4.dat\n• tracking_system_2024_Q2.db\n• driver_log_2023_11.txt\n\nTotal data: 443 MB\n\nAttached are the network credentials you'll need to access our systems.\n\n[Mission 3 of 3]\n\nSincerely,\n{clientName}",
-          "attachments": [
-            {
-              "type": "networkAddress",
-              "networkId": "ship-metro-delivery-network-1770917023728",
-              "networkName": "MetroDelivery-Network",
-              "address": "10.97.99.0/24",
-              "deviceIps": [
-                "10.97.99.10",
-                "10.97.99.10",
-                "10.97.99.10"
-              ]
-            }
-          ],
-          "read": false,
-          "timestamp": "2026-02-12T17:23:43.728Z"
-        },
-        "isProcedurallyGenerated": true,
-        "generatedAt": "2026-02-12T17:23:43.728Z",
-        "arcId": "arc-1770917023728-n8e849coe",
-        "arcSequence": 3,
-        "arcTotal": 3,
-        "requiresCompletedMission": "backup-ship-metro-delivery-1770917023728-6",
-        "arcName": "Data Recovery Escalation"
-      }
-    ]
-  },
+  "pendingChainMissions": {},
   "activeClientIds": [
-    "emerg-volunteer-fire",
-    "health-maple-clinic",
-    "cultural-arts-center",
-    "emerg-rescue-squad",
-    "ship-metro-delivery"
+    "gov-riverside-library",
+    "bank-first-community",
+    "nonprofit-community-center",
+    "cultural-town-museum"
   ],
   "clientStandings": {},
   "extensionOffers": {},
   "localSSDFiles": [],
+  "knownMaliciousFiles": [],
   "betterMessageRead": true,
   "hardwareUnlockMessageSent": false,
   "unlockedFeatures": [],
   "pendingHardwareUpgrades": {},
+  "spareHardware": [],
+  "purchasedServices": [],
+  "relayNodes": [],
+  "activeRelayChain": [],
+  "traceState": null,
+  "rebuildCount": 0,
   "creditThresholdForDecryption": null,
   "decryptionMessageSent": false,
+  "creditThresholdForSniffer": null,
+  "snifferMessageSent": false,
   "decryptionAlgorithms": [
     "aes-128",
     "aes-256"
@@ -2641,6 +1699,7 @@
     "uploadDestinations": []
   },
   "missionAvDetections": [],
+  "missionPasswordCracks": [],
   "activePassiveSoftware": [],
   "networkRegistry": {
     "networks": [
@@ -2651,67 +1710,68 @@
         "bandwidth": 50,
         "accessible": false,
         "discovered": true,
-        "accessGrantedDate": "2026-02-12T17:23:20.276Z",
+        "hostile": false,
+        "accessGrantedDate": "2026-02-19T13:47:11.806Z",
         "logs": [
           {
-            "id": "log-1770916980371-nsckzw5r1",
-            "timestamp": "2020-03-25T09:04:24.000Z",
+            "id": "log-1771508807296-thwm2zgnk",
+            "timestamp": "2020-03-25T09:04:37.000Z",
             "type": "remote",
             "action": "connect",
             "user": "scenario_user",
             "note": "Connected via VPN"
           },
           {
-            "id": "log-1770916980371-ztgp0pov8",
-            "timestamp": "2020-03-25T09:04:24.000Z",
+            "id": "log-1771508807296-5mwsimxoa",
+            "timestamp": "2020-03-25T09:04:37.000Z",
             "type": "remote",
             "action": "connect",
             "user": "scenario_user",
             "note": "Connected via VPN"
           },
           {
-            "id": "log-1770916992054-7wdp50g0g",
-            "timestamp": "2020-03-25T09:04:59.000Z",
+            "id": "log-1771508820314-2dxmtx6v8",
+            "timestamp": "2020-03-25T09:05:05.000Z",
             "type": "remote",
             "action": "connect",
             "user": "scenario_user",
             "note": "Connected via VPN"
           },
           {
-            "id": "log-1770916992054-0ommanq39",
-            "timestamp": "2020-03-25T09:04:59.000Z",
+            "id": "log-1771508820314-pufd30dvt",
+            "timestamp": "2020-03-25T09:05:05.000Z",
             "type": "remote",
             "action": "connect",
             "user": "scenario_user",
             "note": "Connected via VPN"
           },
           {
-            "id": "log-1770917003320-2bygs9l3d",
-            "timestamp": "2020-03-25T09:09:04.000Z",
+            "id": "log-1771508834702-u8mvhvomr",
+            "timestamp": "2020-03-25T09:08:01.000Z",
             "type": "remote",
             "action": "connect",
             "user": "scenario_user",
             "note": "Connected via VPN"
           },
           {
-            "id": "log-1770917003320-814czujzn",
-            "timestamp": "2020-03-25T09:09:04.000Z",
+            "id": "log-1771508834702-gu15cplbl",
+            "timestamp": "2020-03-25T09:08:01.000Z",
             "type": "remote",
             "action": "connect",
             "user": "scenario_user",
             "note": "Connected via VPN"
           },
           {
-            "id": "log-1770917006099-w9rcp3unh",
-            "timestamp": "2026-02-12T17:23:26.099Z",
+            "id": "log-1771508840584-brsm0nps6",
+            "timestamp": "2026-02-19T13:47:20.584Z",
             "type": "remote",
             "action": "disconnect",
             "user": "scenario_user",
             "note": "Disconnected (access revoked): Mission access expired"
           },
           {
-            "id": "log-1770917006099-n8mbc17cq",
-            "timestamp": "2026-02-12T17:23:26.099Z",
+            "id": "log-1771508840584-mvrl3bvm4",
+            "timestamp": "2026-02-19T13:47:20.584Z",
             "type": "remote",
             "action": "disconnect",
             "user": "scenario_user",
@@ -2731,10 +1791,11 @@
         ],
         "fileSystemId": "fs-clienta-01",
         "accessible": false,
+        "requiresCredentials": false,
         "logs": [
           {
-            "id": "log-1770916993604-p45sbcyg4",
-            "timestamp": "2020-03-25T09:05:02.000Z",
+            "id": "log-1771508822015-asir8za86",
+            "timestamp": "2020-03-25T09:05:08.000Z",
             "type": "file",
             "action": "repair",
             "user": "scenario_user",
@@ -2743,8 +1804,8 @@
             "sizeBytes": 2560
           },
           {
-            "id": "log-1770916993605-sxmfjfpo9",
-            "timestamp": "2020-03-25T09:05:02.000Z",
+            "id": "log-1771508822015-9chrftlk7",
+            "timestamp": "2020-03-25T09:05:08.000Z",
             "type": "file",
             "action": "repair",
             "user": "scenario_user",
@@ -2753,8 +1814,8 @@
             "sizeBytes": 3174
           },
           {
-            "id": "log-1770916993605-aj6vil0tt",
-            "timestamp": "2020-03-25T09:05:02.000Z",
+            "id": "log-1771508822016-p11ru6wvq",
+            "timestamp": "2020-03-25T09:05:08.000Z",
             "type": "file",
             "action": "repair",
             "user": "scenario_user",
@@ -2763,8 +1824,8 @@
             "sizeBytes": 2867
           },
           {
-            "id": "log-1770916993605-1tyeptq2z",
-            "timestamp": "2020-03-25T09:05:02.000Z",
+            "id": "log-1771508822016-x5s301l0f",
+            "timestamp": "2020-03-25T09:05:08.000Z",
             "type": "file",
             "action": "repair",
             "user": "scenario_user",
@@ -2773,8 +1834,8 @@
             "sizeBytes": 3277
           },
           {
-            "id": "log-1770916993605-i9mc7tnh1",
-            "timestamp": "2020-03-25T09:05:02.000Z",
+            "id": "log-1771508822016-hfjk4h1fr",
+            "timestamp": "2020-03-25T09:05:08.000Z",
             "type": "file",
             "action": "repair",
             "user": "scenario_user",
@@ -2783,8 +1844,8 @@
             "sizeBytes": 2970
           },
           {
-            "id": "log-1770916993605-0407yr5yl",
-            "timestamp": "2020-03-25T09:05:02.000Z",
+            "id": "log-1771508822016-s20hu1afs",
+            "timestamp": "2020-03-25T09:05:08.000Z",
             "type": "file",
             "action": "repair",
             "user": "scenario_user",
@@ -2793,8 +1854,8 @@
             "sizeBytes": 3072
           },
           {
-            "id": "log-1770916993605-zrgrfabns",
-            "timestamp": "2020-03-25T09:05:02.000Z",
+            "id": "log-1771508822016-13ipihrm8",
+            "timestamp": "2020-03-25T09:05:08.000Z",
             "type": "file",
             "action": "repair",
             "user": "scenario_user",
@@ -2803,8 +1864,8 @@
             "sizeBytes": 2765
           },
           {
-            "id": "log-1770916993605-9bibkjchj",
-            "timestamp": "2020-03-25T09:05:02.000Z",
+            "id": "log-1771508822016-pib4lylu9",
+            "timestamp": "2020-03-25T09:05:08.000Z",
             "type": "file",
             "action": "repair",
             "user": "scenario_user",
@@ -2813,8 +1874,8 @@
             "sizeBytes": 3379
           },
           {
-            "id": "log-1770917005904-oi45hh3hi",
-            "timestamp": "2020-03-25T09:09:37.000Z",
+            "id": "log-1771508838322-m8bixr08m",
+            "timestamp": "2020-03-25T09:08:15.000Z",
             "type": "file",
             "action": "paste",
             "user": "scenario_user",
@@ -2823,8 +1884,8 @@
             "sizeBytes": 2560
           },
           {
-            "id": "log-1770917005904-hzc1e7b1e",
-            "timestamp": "2020-03-25T09:09:37.000Z",
+            "id": "log-1771508838322-16rvx9pkq",
+            "timestamp": "2020-03-25T09:08:15.000Z",
             "type": "file",
             "action": "paste",
             "user": "scenario_user",
@@ -2833,8 +1894,8 @@
             "sizeBytes": 3174
           },
           {
-            "id": "log-1770917005904-mwe6qaelk",
-            "timestamp": "2020-03-25T09:09:37.000Z",
+            "id": "log-1771508838322-camwyqxip",
+            "timestamp": "2020-03-25T09:08:15.000Z",
             "type": "file",
             "action": "paste",
             "user": "scenario_user",
@@ -2843,8 +1904,8 @@
             "sizeBytes": 2867
           },
           {
-            "id": "log-1770917005904-yhud2hqpq",
-            "timestamp": "2020-03-25T09:09:37.000Z",
+            "id": "log-1771508838322-ypw4xpmdw",
+            "timestamp": "2020-03-25T09:08:15.000Z",
             "type": "file",
             "action": "paste",
             "user": "scenario_user",
@@ -2853,8 +1914,8 @@
             "sizeBytes": 3277
           },
           {
-            "id": "log-1770917005904-ufwp8doj7",
-            "timestamp": "2020-03-25T09:09:37.000Z",
+            "id": "log-1771508838322-5ush0wyuu",
+            "timestamp": "2020-03-25T09:08:15.000Z",
             "type": "file",
             "action": "paste",
             "user": "scenario_user",
@@ -2863,8 +1924,8 @@
             "sizeBytes": 2970
           },
           {
-            "id": "log-1770917005904-uwbcamev8",
-            "timestamp": "2020-03-25T09:09:37.000Z",
+            "id": "log-1771508838322-oy92aavrr",
+            "timestamp": "2020-03-25T09:08:15.000Z",
             "type": "file",
             "action": "paste",
             "user": "scenario_user",
@@ -2873,8 +1934,8 @@
             "sizeBytes": 3072
           },
           {
-            "id": "log-1770917005904-5qopcp8ta",
-            "timestamp": "2020-03-25T09:09:37.000Z",
+            "id": "log-1771508838322-r5f1e0qxn",
+            "timestamp": "2020-03-25T09:08:15.000Z",
             "type": "file",
             "action": "paste",
             "user": "scenario_user",
@@ -2883,8 +1944,8 @@
             "sizeBytes": 2765
           },
           {
-            "id": "log-1770917005904-4obw7twor",
-            "timestamp": "2020-03-25T09:09:37.000Z",
+            "id": "log-1771508838322-5p7vfysgc",
+            "timestamp": "2020-03-25T09:08:15.000Z",
             "type": "file",
             "action": "paste",
             "user": "scenario_user",
@@ -2903,10 +1964,11 @@
         ],
         "fileSystemId": "fs-clienta-backup",
         "accessible": false,
+        "requiresCredentials": false,
         "logs": [
           {
-            "id": "log-1770917005904-rp4d7qc4h",
-            "timestamp": "2020-03-25T09:09:37.000Z",
+            "id": "log-1771508838223-b6jvdb6cm",
+            "timestamp": "2020-03-25T09:08:14.000Z",
             "type": "file",
             "action": "copy",
             "user": "scenario_user",
@@ -2915,8 +1977,8 @@
             "sizeBytes": 2560
           },
           {
-            "id": "log-1770917005904-w98kzi2ba",
-            "timestamp": "2020-03-25T09:09:37.000Z",
+            "id": "log-1771508838223-ur3ykectw",
+            "timestamp": "2020-03-25T09:08:14.000Z",
             "type": "file",
             "action": "copy",
             "user": "scenario_user",
@@ -2925,8 +1987,8 @@
             "sizeBytes": 3174
           },
           {
-            "id": "log-1770917005904-l79gmsed6",
-            "timestamp": "2020-03-25T09:09:37.000Z",
+            "id": "log-1771508838224-ne9w7tgp4",
+            "timestamp": "2020-03-25T09:08:14.000Z",
             "type": "file",
             "action": "copy",
             "user": "scenario_user",
@@ -2935,8 +1997,8 @@
             "sizeBytes": 2867
           },
           {
-            "id": "log-1770917005904-tnfixinzt",
-            "timestamp": "2020-03-25T09:09:37.000Z",
+            "id": "log-1771508838224-l5qnua7qc",
+            "timestamp": "2020-03-25T09:08:14.000Z",
             "type": "file",
             "action": "copy",
             "user": "scenario_user",
@@ -2945,8 +2007,8 @@
             "sizeBytes": 3277
           },
           {
-            "id": "log-1770917005904-smu546nbm",
-            "timestamp": "2020-03-25T09:09:37.000Z",
+            "id": "log-1771508838224-ku0unq99i",
+            "timestamp": "2020-03-25T09:08:14.000Z",
             "type": "file",
             "action": "copy",
             "user": "scenario_user",
@@ -2955,8 +2017,8 @@
             "sizeBytes": 2970
           },
           {
-            "id": "log-1770917005904-j2zrisjwj",
-            "timestamp": "2020-03-25T09:09:37.000Z",
+            "id": "log-1771508838224-zld0svqvt",
+            "timestamp": "2020-03-25T09:08:14.000Z",
             "type": "file",
             "action": "copy",
             "user": "scenario_user",
@@ -2965,8 +2027,8 @@
             "sizeBytes": 3072
           },
           {
-            "id": "log-1770917005904-yh7eg772g",
-            "timestamp": "2020-03-25T09:09:37.000Z",
+            "id": "log-1771508838224-lflq29x3k",
+            "timestamp": "2020-03-25T09:08:14.000Z",
             "type": "file",
             "action": "copy",
             "user": "scenario_user",
@@ -2975,8 +2037,8 @@
             "sizeBytes": 2765
           },
           {
-            "id": "log-1770917005904-12yl8p8tx",
-            "timestamp": "2020-03-25T09:09:37.000Z",
+            "id": "log-1771508838224-etokpi9bg",
+            "timestamp": "2020-03-25T09:08:14.000Z",
             "type": "file",
             "action": "copy",
             "user": "scenario_user",
@@ -2994,57 +2056,68 @@
           {
             "name": "log_2023_11.txt",
             "size": "2.4 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           },
           {
             "name": "log_2023_12.txt",
             "size": "2.6 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           },
           {
             "name": "system.log",
             "size": "1.2 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           },
           {
             "name": "log_2024_01.txt",
             "size": "2.5 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           },
           {
             "name": "log_2024_02.txt",
             "size": "3.1 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           },
           {
             "name": "log_2024_03.txt",
             "size": "2.8 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           },
           {
             "name": "log_2024_04.txt",
             "size": "3.2 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           },
           {
             "name": "log_2024_05.txt",
             "size": "2.9 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           },
           {
             "name": "log_2024_06.txt",
             "size": "3.0 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           },
           {
             "name": "log_2024_07.txt",
             "size": "2.7 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           },
           {
             "name": "log_2024_08.txt",
             "size": "3.3 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           }
         ]
       },
@@ -3054,47 +2127,55 @@
           {
             "name": "log_2024_01.txt",
             "size": "2.5 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           },
           {
             "name": "log_2024_02.txt",
             "size": "3.1 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           },
           {
             "name": "log_2024_03.txt",
             "size": "2.8 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           },
           {
             "name": "log_2024_04.txt",
             "size": "3.2 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           },
           {
             "name": "log_2024_05.txt",
             "size": "2.9 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           },
           {
             "name": "log_2024_06.txt",
             "size": "3.0 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           },
           {
             "name": "log_2024_07.txt",
             "size": "2.7 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           },
           {
             "name": "log_2024_08.txt",
             "size": "3.3 KB",
-            "corrupted": false
+            "corrupted": false,
+            "status": "normal"
           }
         ]
       }
     ]
   },
-  "savedAt": "2026-02-12T17:23:49.352Z",
-  "saveName": "25/03/2020 09:12:47"
+  "savedAt": "2026-02-19T13:47:43.179Z",
+  "saveName": "25/03/2020 09:10:03"
 }

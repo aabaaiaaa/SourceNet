@@ -195,6 +195,13 @@
           "from": "manager",
           "subject": "What happened?!",
           "templateId": "tutorial-1-failure"
+        },
+        {
+          "id": "tutorial-simpler",
+          "delay": 30000,
+          "from": "manager",
+          "subject": "Let's try something simpler",
+          "templateId": "tutorial-2-intro"
         }
       ],
       "note": "Bank overdraft message triggered by Banking System (not story)"

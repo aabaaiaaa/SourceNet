@@ -1,0 +1,180 @@
+{
+  "missionId": "locked-out",
+  "title": "Locked Out",
+  "description": "A financial services firm has lost access to their password-protected personnel database and payroll archive. Crack the passwords and restore access before the end-of-month payroll run.",
+  "client": "Meridian Financial Group",
+  "difficulty": "Medium",
+  "basePayout": 8000,
+  "oneTime": true,
+  "category": "cracking",
+
+  "triggers": {
+    "start": {
+      "type": "timeSinceEvent",
+      "event": "messageRead",
+      "condition": { "messageId": "msg-cracking-intro" },
+      "delay": 5000
+    }
+  },
+
+  "requirements": {
+    "software": ["password-cracker", "vpn-client", "network-scanner", "file-manager"]
+  },
+
+  "briefingMessage": {
+    "from": "Meridian Financial Group",
+    "fromId": "MFG-OPS-001",
+    "fromName": "Meridian Financial Group",
+    "subject": "URGENT: Locked Out of Critical Systems",
+    "body": "Dear SourceNet Contractor,\n\nWe are Meridian Financial Group, a mid-size financial services firm with 200+ employees. Our former IT administrator left the company abruptly last week and we've discovered that several critical files on our internal servers are password-protected.\n\nSpecifically:\n\n1. Our personnel database (personnel-records.db) on hr-server - contains employee records needed for compliance audits. Protected with what we believe is an MD5 hash.\n\n2. Our payroll archive (payroll-Q4-2019.zip) on finance-server - contains last quarter's payroll data needed for the upcoming tax filing. This one appears to be SHA-256 protected.\n\nWe've preserved the servers as-is. End-of-month payroll processing is in 3 days and without these files, 200 people don't get paid.\n\nNetwork credentials are attached. Please connect, locate the files, and crack the passwords.\n\nUrgently,\nOperations Director\nMeridian Financial Group"
+  },
+
+  "networks": [
+    {
+      "networkId": "meridian-internal",
+      "networkName": "Meridian-Internal",
+      "revokeOnComplete": true,
+      "revokeReason": "Mission access expired",
+      "address": "10.20.30.0/24",
+      "bandwidth": 80,
+      "fileSystems": [
+        {
+          "id": "fs-meridian-hr",
+          "name": "hr-server",
+          "ip": "10.20.30.10",
+          "files": [
+            { "name": "personnel-records.db", "size": "15 MB", "passwordProtected": true, "hashType": "md5" },
+            { "name": "org-chart-2019.pdf", "size": "2 MB" },
+            { "name": "employee-handbook.pdf", "size": "5 MB" }
+          ]
+        },
+        {
+          "id": "fs-meridian-finance",
+          "name": "finance-server",
+          "ip": "10.20.30.20",
+          "files": [
+            { "name": "payroll-Q4-2019.zip", "size": "8 MB", "passwordProtected": true, "hashType": "sha256" },
+            { "name": "budget-2020.xlsx", "size": "3 MB" },
+            { "name": "tax-forms-template.pdf", "size": "1 MB" }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "objectives": [
+    {
+      "id": "obj-connect-meridian",
+      "description": "Connect to Meridian-Internal network",
+      "type": "networkConnection",
+      "target": "meridian-internal"
+    },
+    {
+      "id": "obj-scan-meridian",
+      "description": "Scan network and locate hr-server",
+      "type": "networkScan",
+      "target": "meridian-internal",
+      "expectedResult": "hr-server"
+    },
+    {
+      "id": "obj-crack-personnel",
+      "description": "Crack password on personnel-records.db",
+      "type": "passwordCrack",
+      "targetFiles": ["personnel-records.db"]
+    },
+    {
+      "id": "obj-crack-payroll",
+      "description": "Crack password on payroll-Q4-2019.zip",
+      "type": "passwordCrack",
+      "targetFiles": ["payroll-Q4-2019.zip"]
+    }
+  ],
+
+  "scriptedEvents": [
+    {
+      "id": "evt-intrusion-attack",
+      "trigger": {
+        "type": "afterObjectiveComplete",
+        "objectiveId": "obj-crack-payroll",
+        "requiredObjectives": ["obj-crack-personnel"],
+        "delay": 5000
+      },
+      "actions": [
+        {
+          "type": "forceDisconnect",
+          "network": "meridian-internal",
+          "reason": "External intrusion detected - connection severed"
+        },
+        {
+          "type": "sendMessage",
+          "eventId": "msg-intrusion-alert",
+          "templateId": "cracking-intrusion-alert",
+          "message": {
+            "id": "msg-intrusion-alert",
+            "templateId": "cracking-intrusion-alert"
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt-relay-unlock",
+      "trigger": {
+        "type": "messageRead",
+        "messageId": "msg-intrusion-alert",
+        "delay": 0
+      },
+      "actions": [
+        {
+          "type": "unlockFeature",
+          "featureId": "relay-setup-pending"
+        }
+      ]
+    },
+    {
+      "id": "evt-relay-activate",
+      "trigger": {
+        "type": "messageRead",
+        "messageId": "msg-relay-unlock",
+        "delay": 0
+      },
+      "actions": [
+        {
+          "type": "unlockFeature",
+          "featureId": "relay-service"
+        },
+        {
+          "type": "generateRelayNodes",
+          "count": 6
+        }
+      ]
+    },
+    {
+      "id": "evt-mission-complete",
+      "trigger": {
+        "type": "messageRead",
+        "messageId": "msg-intrusion-alert",
+        "delay": 0
+      },
+      "actions": [
+        {
+          "type": "setMissionStatus",
+          "status": "success"
+        }
+      ]
+    }
+  ],
+
+  "consequences": {
+    "success": {
+      "credits": 8000,
+      "reputation": 2,
+      "messages": []
+    },
+    "failure": {
+      "credits": -3000,
+      "reputation": -2,
+      "retryable": false,
+      "messages": []
+    }
+  }
+}

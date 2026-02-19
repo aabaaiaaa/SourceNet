@@ -12,6 +12,8 @@ import FileManager from '../apps/FileManager';
 import LogViewer from '../apps/LogViewer';
 import DataRecoveryTool from '../apps/DataRecoveryTool';
 import DecryptionTool from '../apps/DecryptionTool';
+import PasswordCracker from '../apps/PasswordCracker';
+import NetworkSniffer from '../apps/NetworkSniffer';
 import './Window.css';
 
 const Window = ({ window }) => {
@@ -105,6 +107,10 @@ const Window = ({ window }) => {
         return <DataRecoveryTool />;
       case 'decryptionTool':
         return <DecryptionTool />;
+      case 'passwordCracker':
+        return <PasswordCracker />;
+      case 'networkSniffer':
+        return <NetworkSniffer />;
       default:
         return <div>App not found: {window.appId}</div>;
     }
@@ -134,6 +140,10 @@ const Window = ({ window }) => {
         return 'Data Recovery Tool';
       case 'decryptionTool':
         return 'Decryption Tool';
+      case 'passwordCracker':
+        return 'Password Cracker';
+      case 'networkSniffer':
+        return 'Network Sniffer';
       default:
         return 'Unknown App';
     }

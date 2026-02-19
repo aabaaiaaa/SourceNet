@@ -171,7 +171,11 @@ export function generateNarAttachments(networks) {
         networkName: network.networkName,
         address: network.address,
         // Extract device IPs from fileSystems for granting access when NAR is activated
-        deviceIps: (network.fileSystems || []).map(fs => fs.ip).filter(Boolean)
+        // Exclude devices that require credential extraction (sniffer must unlock those)
+        deviceIps: (network.fileSystems || [])
+            .filter(fs => !fs.requiresCredentials)
+            .map(fs => fs.ip)
+            .filter(Boolean)
     }));
 }
 

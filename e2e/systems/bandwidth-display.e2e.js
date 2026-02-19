@@ -174,11 +174,13 @@ test.describe('Bandwidth Display - Preview Values', () => {
 
   test('should show in-use speed during operation', async ({ page }) => {
     await completeBoot(page, 'bw_preview_current');
-    await setCreditsViaDebug(page, 1000);
-    await openPortalSoftware(page);
-    await purchaseSoftware(page);
 
-    // Wait for bandwidth indicator to show active state first
+    // Register a long-running operation directly to avoid race with real downloads completing
+    await page.evaluate(() => {
+      window.gameContext.registerBandwidthOperation('software_download', 5000, { id: 'preview_test' });
+    });
+
+    // Wait for bandwidth indicator to show active state
     const bandwidthIndicator = page.locator('.topbar-bandwidth');
     await expect(bandwidthIndicator).toContainText('⬇', { timeout: 5000 });
 

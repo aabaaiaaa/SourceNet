@@ -144,7 +144,6 @@ export const canPurchaseHardware = (hardware, pendingUpgrades, category, item) =
     const psuWattage = projectedHardware.powerSupply?.wattage || 0;
 
     if (consumption > psuWattage) {
-        const needed = consumption;
         const available = psuWattage - calculatePowerConsumption(
             getProjectedHardware(hardware, pendingUpgrades, null, null)
         );

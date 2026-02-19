@@ -139,6 +139,8 @@ import {
     generatePoolMission,
     addExpirationToMission,
     poolConfig,
+    getProgressionLevel,
+    getPoolConfigForProgression,
 } from './MissionPoolManager';
 
 import { canAccessClientType } from '../systems/ReputationSystem';
@@ -1002,6 +1004,103 @@ describe('MissionPoolManager', () => {
 
             expect(missionWithExpiration.expiresAt).not.toBe('old-value');
             expect(new Date(missionWithExpiration.expiresAt)).toBeInstanceOf(Date);
+        });
+    });
+
+    // ========================================================================
+    // Progression Level Detection
+    // ========================================================================
+
+    describe('getProgressionLevel', () => {
+        it('should return early for no unlocks', () => {
+            expect(getProgressionLevel([])).toBe('early');
+        });
+
+        it('should return early for default empty argument', () => {
+            expect(getProgressionLevel()).toBe('early');
+        });
+
+        it('should return midGame with investigation-missions unlock', () => {
+            expect(getProgressionLevel(['investigation-missions'])).toBe('midGame');
+        });
+
+        it('should return lateGame with decryption-missions unlock', () => {
+            expect(getProgressionLevel(['decryption-missions'])).toBe('lateGame');
+        });
+
+        it('should return crackingGame with cracking-tooling unlock', () => {
+            expect(getProgressionLevel(['cracking-tooling'])).toBe('crackingGame');
+        });
+
+        it('should return endGame with sniffer-tooling unlock', () => {
+            expect(getProgressionLevel(['sniffer-tooling'])).toBe('endGame');
+        });
+
+        it('should prioritize endGame over crackingGame', () => {
+            expect(getProgressionLevel(['cracking-tooling', 'sniffer-tooling'])).toBe('endGame');
+        });
+
+        it('should prioritize crackingGame over lateGame', () => {
+            expect(getProgressionLevel(['decryption-missions', 'cracking-tooling'])).toBe('crackingGame');
+        });
+
+        it('should return endGame when all unlocks present', () => {
+            expect(getProgressionLevel([
+                'investigation-missions',
+                'decryption-missions',
+                'cracking-tooling',
+                'sniffer-tooling',
+            ])).toBe('endGame');
+        });
+    });
+
+    describe('getPoolConfigForProgression', () => {
+        it('should return early config by default', () => {
+            const config = getPoolConfigForProgression([]);
+            expect(config.min).toBeDefined();
+            expect(config.max).toBeDefined();
+            expect(config.crackingChance).toBe(0);
+            expect(config.snifferChance).toBe(0);
+        });
+
+        it('should return crackingGame config with cracking unlock', () => {
+            const config = getPoolConfigForProgression(['cracking-tooling']);
+            expect(config.crackingChance).toBe(0.40);
+            expect(config.guaranteeCracking).toBe(true);
+            expect(config.snifferChance).toBe(0);
+        });
+
+        it('should return endGame config with sniffer unlock', () => {
+            const config = getPoolConfigForProgression(['sniffer-tooling']);
+            expect(config.snifferChance).toBe(0.35);
+            expect(config.guaranteeSniffer).toBe(true);
+            expect(config.crackingChance).toBe(0.30);
+        });
+
+        it('should have increasing pool sizes across progression', () => {
+            const earlyConfig = getPoolConfigForProgression([]);
+            const crackConfig = getPoolConfigForProgression(['cracking-tooling']);
+            const endConfig = getPoolConfigForProgression(['sniffer-tooling']);
+
+            expect(crackConfig.min).toBeGreaterThanOrEqual(earlyConfig.min);
+            expect(endConfig.min).toBeGreaterThanOrEqual(crackConfig.min);
+        });
+
+        it('crackingGame should guarantee at least one cracking mission', () => {
+            const config = getPoolConfigForProgression(['cracking-tooling']);
+            expect(config.guaranteeCracking).toBe(true);
+        });
+
+        it('endGame should guarantee cracking and sniffer missions', () => {
+            const config = getPoolConfigForProgression(['sniffer-tooling']);
+            expect(config.guaranteeCracking).toBe(true);
+            expect(config.guaranteeSniffer).toBe(true);
+        });
+
+        it('lateGame should have no cracking or sniffer missions', () => {
+            const config = getPoolConfigForProgression(['decryption-missions']);
+            expect(config.crackingChance).toBe(0);
+            expect(config.snifferChance).toBe(0);
         });
     });
 });

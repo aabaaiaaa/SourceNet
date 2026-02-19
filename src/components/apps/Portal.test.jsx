@@ -21,6 +21,7 @@ describe('Portal Component', () => {
     );
     expect(screen.getByText('Hardware')).toBeInTheDocument();
     expect(screen.getByText('Software')).toBeInTheDocument();
+    expect(screen.getByText('Services')).toBeInTheDocument();
   });
 
   it('should display hardware items with prices', () => {

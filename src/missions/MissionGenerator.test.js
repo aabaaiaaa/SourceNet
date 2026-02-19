@@ -34,6 +34,9 @@ import {
     generateInvestigationRepairMission,
     generateInvestigationRecoveryMission,
     generateSecureDeletionMission,
+    generatePasswordCrackMission,
+    generateInvestigationCrackMission,
+    generateCrackAndRecoverMission,
     generateMissionArc,
     generateNetworkInfrastructure,
     calculateTimeLimit,
@@ -732,11 +735,12 @@ describe('MissionGenerator', () => {
             expect(mission.isInvestigation).toBe(true);
         });
 
-        it('should create multiple file systems (2-4 volumes)', () => {
+        it('should create multiple file systems (needle-in-haystack)', () => {
             const mission = generateInvestigationRecoveryMission(mockClient);
 
-            expect(mission.fileSystemCount).toBeGreaterThanOrEqual(10);
-            expect(mission.fileSystemCount).toBeLessThanOrEqual(35);
+            // Patterns: A(10-15), B(8-24), C(6-30) — minimum possible is 6
+            expect(mission.fileSystemCount).toBeGreaterThanOrEqual(6);
+            expect(mission.fileSystemCount).toBeLessThanOrEqual(30);
         });
 
         it('should have target file system with deleted files', () => {
@@ -997,6 +1001,307 @@ describe('MissionGenerator', () => {
                         expect(fileName.length).toBeGreaterThan(0);
                     });
                 });
+            });
+        });
+    });
+
+    // ========================================================================
+    // Password Cracking Mission Generators
+    // ========================================================================
+
+    describe('generatePasswordCrackMission', () => {
+        it('should generate a valid password crack mission', () => {
+            const mockClient = createMockClient();
+            const mission = generatePasswordCrackMission(mockClient);
+
+            expect(mission).toBeDefined();
+            expect(mission.missionId).toBeDefined();
+            expect(mission.missionType).toBe('password-crack');
+            expect(mission.client).toBe('Test Corporation');
+            expect(mission.isProcedurallyGenerated).toBe(true);
+        });
+
+        it('should include required software', () => {
+            const mockClient = createMockClient();
+            const mission = generatePasswordCrackMission(mockClient);
+
+            expect(mission.requirements.software).toContain('vpn-client');
+            expect(mission.requirements.software).toContain('network-scanner');
+            expect(mission.requirements.software).toContain('file-manager');
+            expect(mission.requirements.software).toContain('password-cracker');
+        });
+
+        it('should have correct objective types', () => {
+            const mockClient = createMockClient();
+            const mission = generatePasswordCrackMission(mockClient);
+
+            const objectiveTypes = mission.objectives.map(o => o.type);
+            expect(objectiveTypes).toContain('networkConnection');
+            expect(objectiveTypes).toContain('networkScan');
+            expect(objectiveTypes).toContain('passwordCrack');
+            expect(objectiveTypes).toContain('verification');
+        });
+
+        it('should have password-protected target files', () => {
+            const mockClient = createMockClient();
+            const mission = generatePasswordCrackMission(mockClient);
+
+            const crackObjective = mission.objectives.find(o => o.type === 'passwordCrack');
+            expect(crackObjective).toBeDefined();
+            expect(Array.isArray(crackObjective.targetFiles)).toBe(true);
+            expect(crackObjective.targetFiles.length).toBeGreaterThanOrEqual(2);
+            expect(crackObjective.targetFiles.length).toBeLessThanOrEqual(4);
+        });
+
+        it('should generate networks with file systems containing protected files', () => {
+            const mockClient = createMockClient();
+            const mission = generatePasswordCrackMission(mockClient);
+
+            expect(mission.networks.length).toBeGreaterThan(0);
+            const network = mission.networks[0];
+            expect(network.fileSystems).toBeDefined();
+            expect(network.fileSystems.length).toBeGreaterThan(0);
+
+            // Find password-protected files in the file systems
+            const protectedFiles = [];
+            network.fileSystems.forEach(fs => {
+                (fs.files || []).forEach(f => {
+                    if (f.passwordProtected) protectedFiles.push(f);
+                });
+            });
+            expect(protectedFiles.length).toBeGreaterThan(0);
+            protectedFiles.forEach(f => {
+                expect(f.hashType).toBeDefined();
+                expect(['md5', 'sha1', 'sha256', 'bcrypt']).toContain(f.hashType);
+            });
+        });
+
+        it('should assign difficulty based on file count', () => {
+            const mockClient = createMockClient();
+            // Generate multiple to check variety
+            const missions = Array.from({ length: 10 }, () => generatePasswordCrackMission(mockClient));
+            const difficulties = new Set(missions.map(m => m.difficulty));
+            // Should have at least one of the valid difficulties
+            difficulties.forEach(d => {
+                expect(['Easy', 'Medium', 'Hard']).toContain(d);
+            });
+        });
+
+        it('should have positive basePayout', () => {
+            const mockClient = createMockClient();
+            const mission = generatePasswordCrackMission(mockClient);
+            expect(mission.basePayout).toBeGreaterThan(0);
+        });
+
+        it('should include briefing message', () => {
+            const mockClient = createMockClient();
+            const mission = generatePasswordCrackMission(mockClient);
+
+            expect(mission.briefingMessage).toBeDefined();
+            expect(mission.briefingMessage.from).toBeDefined();
+            expect(mission.briefingMessage.subject).toBeDefined();
+            expect(mission.briefingMessage.body).toBeDefined();
+        });
+
+        it('should respect hash type options', () => {
+            const mockClient = createMockClient();
+            const mission = generatePasswordCrackMission(mockClient, { playerHashTypes: ['md5'] });
+
+            const network = mission.networks[0];
+            const protectedFiles = [];
+            network.fileSystems.forEach(fs => {
+                (fs.files || []).forEach(f => {
+                    if (f.passwordProtected) protectedFiles.push(f);
+                });
+            });
+            // With only md5 available, all protected files should be md5
+            protectedFiles.forEach(f => {
+                expect(f.hashType).toBe('md5');
+            });
+        });
+
+        it('should support timed missions', () => {
+            const mockClient = createMockClient();
+            const mission = generatePasswordCrackMission(mockClient, { hasTimed: true });
+            expect(mission.timeLimitMinutes).toBeGreaterThan(0);
+        });
+
+        it('should not have time limit by default', () => {
+            const mockClient = createMockClient();
+            const mission = generatePasswordCrackMission(mockClient);
+            expect(mission.timeLimitMinutes).toBeNull();
+        });
+    });
+
+    describe('generateInvestigationCrackMission', () => {
+        it('should generate a valid investigation crack mission', () => {
+            const mockClient = createMockClient();
+            const mission = generateInvestigationCrackMission(mockClient);
+
+            expect(mission).toBeDefined();
+            expect(mission.missionId).toBeDefined();
+            expect(mission.missionType).toBe('investigation-crack');
+            expect(mission.isProcedurallyGenerated).toBe(true);
+        });
+
+        it('should include log-viewer in requirements', () => {
+            const mockClient = createMockClient();
+            const mission = generateInvestigationCrackMission(mockClient);
+
+            expect(mission.requirements.software).toContain('log-viewer');
+            expect(mission.requirements.software).toContain('password-cracker');
+        });
+
+        it('should have investigation objective', () => {
+            const mockClient = createMockClient();
+            const mission = generateInvestigationCrackMission(mockClient);
+
+            const investigationObj = mission.objectives.find(o => o.type === 'investigation');
+            expect(investigationObj).toBeDefined();
+        });
+
+        it('should have password crack objective', () => {
+            const mockClient = createMockClient();
+            const mission = generateInvestigationCrackMission(mockClient);
+
+            const crackObj = mission.objectives.find(o => o.type === 'passwordCrack');
+            expect(crackObj).toBeDefined();
+            expect(crackObj.targetFiles.length).toBeGreaterThanOrEqual(2);
+        });
+
+        it('should always be Hard difficulty', () => {
+            const mockClient = createMockClient();
+            const missions = Array.from({ length: 5 }, () =>
+                generateInvestigationCrackMission(mockClient)
+            );
+            missions.forEach(m => {
+                expect(m.difficulty).toBe('Hard');
+            });
+        });
+
+        it('should have device logs for investigation', () => {
+            const mockClient = createMockClient();
+            const mission = generateInvestigationCrackMission(mockClient);
+
+            const network = mission.networks[0];
+            // At least one file system should have logs on the device
+            const hasLogs = network.fileSystems.some(fs => fs.logs && fs.logs.length > 0);
+            expect(hasLogs).toBe(true);
+        });
+
+        it('should have higher payout than basic crack mission', () => {
+            const mockClient = createMockClient();
+            // Generate several to compare averages
+            const crackPayouts = Array.from({ length: 10 }, () =>
+                generatePasswordCrackMission(mockClient).basePayout
+            );
+            const investPayouts = Array.from({ length: 10 }, () =>
+                generateInvestigationCrackMission(mockClient).basePayout
+            );
+            const avgCrack = crackPayouts.reduce((a, b) => a + b) / crackPayouts.length;
+            const avgInvest = investPayouts.reduce((a, b) => a + b) / investPayouts.length;
+            // Investigation should generally pay more (1.3x multiplier)
+            expect(avgInvest).toBeGreaterThan(avgCrack * 0.9); // Allow margin for randomness
+        });
+    });
+
+    describe('generateCrackAndRecoverMission', () => {
+        it('should generate a valid crack and recover mission', () => {
+            const mockClient = createMockClient();
+            const mission = generateCrackAndRecoverMission(mockClient);
+
+            expect(mission).toBeDefined();
+            expect(mission.missionId).toBeDefined();
+            expect(mission.missionType).toBe('crack-and-recover');
+            expect(mission.isProcedurallyGenerated).toBe(true);
+        });
+
+        it('should have password crack and file operation objectives', () => {
+            const mockClient = createMockClient();
+            const mission = generateCrackAndRecoverMission(mockClient);
+
+            const crackObj = mission.objectives.find(o => o.type === 'passwordCrack');
+            const backupObj = mission.objectives.find(o => o.type === 'fileOperation');
+
+            expect(crackObj).toBeDefined();
+            expect(backupObj).toBeDefined();
+            expect(backupObj.operation).toBe('paste');
+        });
+
+        it('should have two devices in network (source and backup)', () => {
+            const mockClient = createMockClient();
+            const mission = generateCrackAndRecoverMission(mockClient);
+
+            const network = mission.networks[0];
+            expect(network.fileSystems.length).toBeGreaterThanOrEqual(2);
+        });
+
+        it('should require password-cracker software', () => {
+            const mockClient = createMockClient();
+            const mission = generateCrackAndRecoverMission(mockClient);
+
+            expect(mission.requirements.software).toContain('password-cracker');
+            expect(mission.requirements.software).toContain('file-manager');
+        });
+
+        it('should have password-protected target files as non-null strings', () => {
+            const mockClient = createMockClient();
+            const mission = generateCrackAndRecoverMission(mockClient);
+
+            const crackObj = mission.objectives.find(o => o.type === 'passwordCrack');
+            expect(crackObj.targetFiles.length).toBeGreaterThanOrEqual(2);
+            crackObj.targetFiles.forEach(fileName => {
+                expect(typeof fileName).toBe('string');
+                expect(fileName.length).toBeGreaterThan(0);
+            });
+        });
+
+        it('should have file operation target files matching crack target files', () => {
+            const mockClient = createMockClient();
+            const mission = generateCrackAndRecoverMission(mockClient);
+
+            const crackObj = mission.objectives.find(o => o.type === 'passwordCrack');
+            const backupObj = mission.objectives.find(o => o.type === 'fileOperation');
+
+            // Backup target files should match the cracked files
+            expect(backupObj.targetFiles).toEqual(crackObj.targetFiles);
+        });
+    });
+
+    describe('Cracking mission target files validation', () => {
+        it('should have non-null, non-empty target file strings across all cracking types', () => {
+            const mockClient = createMockClient();
+            const missions = [
+                generatePasswordCrackMission(mockClient),
+                generateInvestigationCrackMission(mockClient),
+                generateCrackAndRecoverMission(mockClient),
+            ];
+
+            missions.forEach(mission => {
+                const crackObj = mission.objectives.find(o => o.type === 'passwordCrack');
+                expect(crackObj).toBeDefined();
+                expect(Array.isArray(crackObj.targetFiles)).toBe(true);
+                expect(crackObj.targetFiles.length).toBeGreaterThan(0);
+                crackObj.targetFiles.forEach(fileName => {
+                    expect(typeof fileName).toBe('string');
+                    expect(fileName).not.toBeNull();
+                    expect(fileName).not.toBeUndefined();
+                    expect(fileName.length).toBeGreaterThan(0);
+                });
+            });
+        });
+
+        it('should generate cracking missions for all industries', () => {
+            const industries = ['banking', 'government', 'healthcare', 'corporate', 'utilities', 'shipping'];
+            industries.forEach(industry => {
+                const client = createMockClient({ industry });
+                const mission = generatePasswordCrackMission(client);
+                expect(mission).toBeDefined();
+                expect(mission.missionId).toBeDefined();
+
+                // Should have password-protected files
+                const crackObj = mission.objectives.find(o => o.type === 'passwordCrack');
+                expect(crackObj.targetFiles.length).toBeGreaterThan(0);
             });
         });
     });

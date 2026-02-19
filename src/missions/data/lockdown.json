@@ -1,0 +1,191 @@
+{
+  "missionId": "lockdown",
+  "title": "Lockdown",
+  "description": "A logistics company's entire network has been seized by threat actors. All credentials changed. Use the Network Sniffer to intercept traffic, reconstruct credentials, and regain access.",
+  "client": "Pacific Freight Solutions",
+  "difficulty": "Very Hard",
+  "basePayout": 18000,
+  "oneTime": true,
+  "category": "investigation",
+
+  "triggers": {
+    "start": {
+      "type": "timeSinceEvent",
+      "event": "messageRead",
+      "condition": { "messageId": "msg-sniffer-intro" },
+      "delay": 5000
+    }
+  },
+
+  "requirements": {
+    "software": ["vpn-client", "network-scanner", "file-manager", "network-sniffer", "vpn-relay-upgrade", "trace-monitor"]
+  },
+
+  "briefingMessage": {
+    "from": "Pacific Freight Solutions",
+    "fromId": "PFS-OPS-001",
+    "fromName": "Pacific Freight Solutions",
+    "subject": "EMERGENCY: Complete Network Lockout",
+    "body": "Dear SourceNet Contractor,\n\nWe are Pacific Freight Solutions — we manage shipping logistics for the entire Pacific coast.\n\nThree days ago we lost control of our entire network. Every password, every credential — changed. All 500 employees are locked out. Shipping manifests, tracking data, customs documentation — we can't access any of it.\n\nWe can still reach the network edge (basic connectivity works), but nothing beyond that. We can see traffic flowing inside our network — the attackers are actively using our infrastructure — but we can't authenticate to any system.\n\nWe need someone who can get in there and recover our data. Our shipping operations are at a standstill and every hour costs us money.\n\nOne piece of good news: we have a separate backup site on a different network segment that the attackers don't seem to have touched. If you can recover our shipping manifests, back them up there for safekeeping.\n\nBe careful. Whoever did this is still on our network, and they're watching.\n\nDesperately,\nCTO\nPacific Freight Solutions",
+    "attachments": [
+      {
+        "type": "networkAddress",
+        "networkId": "pacific-freight",
+        "networkName": "PacificFreight-Core",
+        "address": "192.168.100.0/24",
+        "deviceIps": ["192.168.100.1"]
+      },
+      {
+        "type": "networkAddress",
+        "networkId": "pfs-backup-safe",
+        "networkName": "PFS-BackupSite",
+        "address": "10.200.50.0/24",
+        "deviceIps": ["10.200.50.5"]
+      }
+    ]
+  },
+
+  "networks": [
+    {
+      "networkId": "pacific-freight",
+      "networkName": "PacificFreight-Core",
+      "address": "192.168.100.0/24",
+      "bandwidth": 100,
+      "hostile": true,
+      "revokeOnComplete": true,
+      "revokeReason": "Mission access expired",
+      "fileSystems": [
+        {
+          "id": "fs-pf-gateway",
+          "name": "edge-gateway",
+          "ip": "192.168.100.1",
+          "files": []
+        },
+        {
+          "id": "fs-pf-logistics",
+          "name": "logistics-primary",
+          "ip": "192.168.100.10",
+          "requiresCredentials": true,
+          "files": [
+            { "name": "shipping-manifests-2020.db", "size": "25 MB" },
+            { "name": "tracking-data-march.csv", "size": "8 MB" },
+            { "name": "customs-forms-pending.zip", "size": "12 MB" }
+          ]
+        },
+        {
+          "id": "fs-pf-backup",
+          "name": "backup-vault",
+          "ip": "192.168.100.20",
+          "requiresCredentials": true,
+          "files": [
+            { "name": "logistics-backup-full.tar", "size": "50 MB" },
+            { "name": "employee-directory.db", "size": "5 MB" }
+          ]
+        }
+      ]
+    },
+    {
+      "networkId": "pfs-backup-safe",
+      "networkName": "PFS-BackupSite",
+      "address": "10.200.50.0/24",
+      "bandwidth": 80,
+      "revokeOnComplete": true,
+      "revokeReason": "Mission access expired",
+      "fileSystems": [
+        {
+          "id": "fs-pfs-safe-storage",
+          "name": "safe-storage",
+          "ip": "10.200.50.5",
+          "files": []
+        }
+      ]
+    }
+  ],
+
+  "objectives": [
+    {
+      "id": "obj-connect-pacific",
+      "description": "Connect to PacificFreight-Core through relay nodes",
+      "type": "networkConnection",
+      "target": "pacific-freight"
+    },
+    {
+      "id": "obj-scan-pacific",
+      "description": "Scan network and locate logistics-primary",
+      "type": "networkScan",
+      "target": "pacific-freight",
+      "expectedResult": "logistics-primary"
+    },
+    {
+      "id": "obj-sniff-credentials",
+      "description": "Use Network Sniffer to reconstruct credentials",
+      "type": "credentialExtraction",
+      "target": "pacific-freight"
+    },
+    {
+      "id": "obj-access-logistics",
+      "description": "Access logistics-primary file system",
+      "type": "fileSystemConnection",
+      "target": "fs-pf-logistics"
+    },
+    {
+      "id": "obj-backup-data",
+      "description": "Copy shipping manifests to the secure backup site",
+      "type": "fileOperation",
+      "operation": "paste",
+      "targetFiles": ["shipping-manifests-2020.db"],
+      "destination": "10.200.50.5"
+    }
+  ],
+
+  "scriptedEvents": [
+    {
+      "id": "evt-start-trace-lockdown",
+      "trigger": {
+        "type": "afterObjectiveComplete",
+        "objectiveId": "obj-connect-pacific",
+        "delay": 3000
+      },
+      "actions": [
+        {
+          "type": "startTrace",
+          "totalETT": 480000
+        }
+      ]
+    },
+    {
+      "id": "evt-mission-complete-lockdown",
+      "trigger": {
+        "type": "afterObjectiveComplete",
+        "objectiveId": "obj-backup-data",
+        "delay": 0
+      },
+      "actions": [
+        {
+          "type": "setMissionStatus",
+          "status": "success"
+        }
+      ]
+    }
+  ],
+
+  "consequences": {
+    "success": {
+      "credits": 18000,
+      "reputation": 3,
+      "messages": [
+        {
+          "id": "msg-lockdown-complete",
+          "templateId": "lockdown-complete",
+          "delay": 15000
+        }
+      ]
+    },
+    "failure": {
+      "credits": -8000,
+      "reputation": -3,
+      "retryable": false,
+      "messages": []
+    }
+  }
+}

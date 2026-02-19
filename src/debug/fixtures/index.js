@@ -18,6 +18,10 @@ import scenarioPostDataDetectiveRecovery from './scenario-post-data-detective-re
 import scenarioPostDataDetectiveCompletion from './scenario-post-data-detective-completion.save.json';
 import scenarioPreRansomwareTrap from './scenario-pre-ransomware-trap.save.json';
 import scenarioPostRansomwareRecovery from './scenario-post-ransomware-recovery.save.json';
+import scenarioPostLockedOut from './scenario-post-locked-out.save.json';
+import scenarioPostBehindEnemyLines from './scenario-post-behind-enemy-lines.save.json';
+import scenarioPostLockdown from './scenario-post-lockdown.save.json';
+import scenarioPostDigitalManhunt from './scenario-post-digital-manhunt.save.json';
 
 // Export all available scenarios
 export const SCENARIO_FIXTURES = {
@@ -30,6 +34,10 @@ export const SCENARIO_FIXTURES = {
     'post-data-detective-completion': scenarioPostDataDetectiveCompletion,
     'pre-ransomware-trap': scenarioPreRansomwareTrap,
     'post-ransomware-recovery': scenarioPostRansomwareRecovery,
+    'post-locked-out': scenarioPostLockedOut,
+    'post-behind-enemy-lines': scenarioPostBehindEnemyLines,
+    'post-lockdown': scenarioPostLockdown,
+    'post-digital-manhunt': scenarioPostDigitalManhunt,
 };
 
 /**

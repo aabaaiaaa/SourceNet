@@ -1,18 +1,25 @@
 /**
  * Feature Unlock System
- * 
+ *
  * Manages which hardware and software items are available for purchase.
  * Features are unlocked through story progression (reading specific messages).
- * 
+ *
  * Unlock IDs:
  * - 'network-adapters': Network adapter hardware (unlocked with hardware-unlock message)
- * 
- * Future unlocks (planned):
  * - 'cpu-upgrades': CPU hardware
- * - 'memory-upgrades': Memory hardware
+ * - 'memory-upgrades': Memory hardware (also unlocked by cracking-tooling)
  * - 'storage-upgrades': Storage hardware
  * - 'power-upgrades': PSU hardware
  * - 'motherboard-upgrades': Motherboard hardware
+ * - 'investigation-tooling': Log Viewer & Data Recovery Tool
+ * - 'decryption-tooling': Decryption Tool
+ * - 'decryption-algorithms': Blowfish & RSA algorithm packs
+ * - 'security-tooling': Advanced Firewall & Antivirus
+ * - 'cracking-tooling': Password Cracker, dictionaries, rainbow tables, RAM hardware
+ * - 'relay-service': Portal Services tab, VPN Relay Module, Trace Monitor
+ * - 'sniffer-tooling': Network Sniffer
+ * - 'cracking-missions': Procedural password-crack missions
+ * - 'sniffer-missions': Procedural sniffer missions
  */
 
 /**
@@ -32,22 +39,24 @@ export const isFeatureUnlocked = (unlockedFeatures, featureId) => {
  * @returns {boolean} True if category is unlocked
  */
 export const isHardwareCategoryUnlocked = (unlockedFeatures, category) => {
-    // Map hardware categories to their unlock feature ID
+    // Map hardware categories to their unlock feature ID(s)
+    // Some categories can be unlocked by multiple features
     const categoryUnlockMap = {
-        processors: 'cpu-upgrades',
-        memory: 'memory-upgrades',
-        storage: 'storage-upgrades',
-        motherboards: 'motherboard-upgrades',
-        powerSupplies: 'power-upgrades',
-        network: 'network-adapters',
+        processors: ['cpu-upgrades'],
+        memory: ['memory-upgrades', 'cracking-tooling'],
+        storage: ['storage-upgrades'],
+        motherboards: ['motherboard-upgrades'],
+        powerSupplies: ['power-upgrades'],
+        network: ['network-adapters'],
     };
 
-    const requiredUnlock = categoryUnlockMap[category];
+    const requiredUnlocks = categoryUnlockMap[category];
 
     // If no unlock requirement defined, it's always locked (not yet implemented)
-    if (!requiredUnlock) return false;
+    if (!requiredUnlocks) return false;
 
-    return unlockedFeatures.includes(requiredUnlock);
+    // Unlocked if ANY of the feature IDs is present
+    return requiredUnlocks.some(unlock => unlockedFeatures.includes(unlock));
 };
 
 /**
@@ -80,6 +89,12 @@ export const getUnlockHint = (unlockId) => {
         'motherboard-upgrades': 'Hardware upgrades not yet available',
         'power-upgrades': 'Hardware upgrades not yet available',
         'investigation-tooling': 'Complete more missions to unlock investigation tools',
+        'decryption-tooling': 'Complete more missions to unlock decryption tools',
+        'decryption-algorithms': 'Complete more missions to unlock algorithm packs',
+        'security-tooling': 'Complete more missions to unlock security tools',
+        'cracking-tooling': 'Progress further in the story to unlock cracking tools',
+        'relay-service': 'Progress further in the story to unlock relay services',
+        'sniffer-tooling': 'Progress further in the story to unlock network analysis tools',
     };
 
     return hintMap[unlockId] || 'Not yet available';
@@ -91,6 +106,7 @@ export const getUnlockHint = (unlockId) => {
  * @returns {string|null} Required unlock ID or null if always locked
  */
 export const getHardwareCategoryUnlockId = (category) => {
+    // Returns the primary unlock ID for display purposes
     const categoryUnlockMap = {
         processors: 'cpu-upgrades',
         memory: 'memory-upgrades',
