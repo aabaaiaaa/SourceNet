@@ -2,6 +2,8 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useGame } from '../../contexts/useGame';
 import triggerEventBus from '../../core/triggerEventBus';
 import networkRegistry from '../../systems/NetworkRegistry';
+import useFileSystemSelection from '../../hooks/useFileSystemSelection';
+import useNetworkDisconnection from '../../hooks/useNetworkDisconnection';
 import {
   calculateScanDuration,
   getDiscoveredDeletedFiles,
@@ -24,8 +26,6 @@ const DataRecoveryTool = () => {
   const [operatingFiles, setOperatingFiles] = useState(new Set()); // File names being operated on
   const [operationProgress, setOperationProgress] = useState({}); // Progress per file name
   const [operationTypes, setOperationTypes] = useState({}); // Operation type per file name
-  const [disconnectionMessage, setDisconnectionMessage] = useState(null);
-
   // Refs
   const scanAnimationRef = useRef(null);
   const scanStartTimeRef = useRef(null);
@@ -45,79 +45,26 @@ const DataRecoveryTool = () => {
   }, []);
 
   // Build list of available file systems from connected networks
-  const availableFileSystems = useMemo(() => {
-    const fileSystems = [];
-
-    if (!activeConnections) return fileSystems;
-
-    activeConnections.forEach((connection) => {
-      const network = networkRegistry.getNetwork(connection.networkId);
-      const discoveredData = discoveredDevices?.[connection.networkId];
-      const discovered = discoveredData instanceof Set ? discoveredData : new Set(discoveredData || []);
-
-      if (network && network.accessible) {
-        const accessibleDevices = networkRegistry.getAccessibleDevices(connection.networkId);
-
-        accessibleDevices.forEach((device) => {
-          if (discovered.has(device.ip) && device.fileSystemId) {
-            const fs = networkRegistry.getFileSystem(device.fileSystemId);
-            if (fs) {
-              fileSystems.push({
-                id: fs.id,
-                ip: device.ip,
-                name: device.hostname,
-                label: `${device.ip} - ${device.hostname}`,
-                files: fs.files || [],
-                networkId: connection.networkId,
-              });
-            }
-          }
-        });
-      }
-    });
-
-    return fileSystems;
-  }, [activeConnections, discoveredDevices]);
+  const availableFileSystems = useFileSystemSelection(activeConnections, discoveredDevices);
 
   // Handle network disconnection
-  useEffect(() => {
-    const handleDisconnect = ({ networkId, networkName }) => {
-      if (currentNetworkId === networkId) {
-        // Cancel any ongoing scan
-        if (scanAnimationRef.current) {
-          cancelAnimationFrame(scanAnimationRef.current);
-          scanAnimationRef.current = null;
-        }
-
-        // Cancel any ongoing operations
-        activeOperationsRef.current.clear();
-
-        // Clear state
-        setSelectedFileSystem('');
-        setCurrentNetworkId('');
-        setAllFiles([]);
-        setScannedDeletedFiles(new Set());
-        setScanProgress(0);
-        setScanning(false);
-        setSelectedFiles(new Set());
-        setOperatingFiles(new Set());
-        setOperationProgress({});
-        setOperationTypes({});
-        setDisconnectionMessage(`Disconnected from ${networkName}`);
-      }
-    };
-
-    triggerEventBus.on('networkDisconnected', handleDisconnect);
-    return () => triggerEventBus.off('networkDisconnected', handleDisconnect);
-  }, [currentNetworkId]);
-
-  // Auto-clear disconnection message
-  useEffect(() => {
-    if (disconnectionMessage) {
-      const timer = setTimeout(() => setDisconnectionMessage(null), 3000);
-      return () => clearTimeout(timer);
+  const { disconnectionMessage } = useNetworkDisconnection(currentNetworkId, () => {
+    if (scanAnimationRef.current) {
+      cancelAnimationFrame(scanAnimationRef.current);
+      scanAnimationRef.current = null;
     }
-  }, [disconnectionMessage]);
+    activeOperationsRef.current.clear();
+    setSelectedFileSystem('');
+    setCurrentNetworkId('');
+    setAllFiles([]);
+    setScannedDeletedFiles(new Set());
+    setScanProgress(0);
+    setScanning(false);
+    setSelectedFiles(new Set());
+    setOperatingFiles(new Set());
+    setOperationProgress({});
+    setOperationTypes({});
+  });
 
   // Subscribe to fileSystemChanged events
   useEffect(() => {

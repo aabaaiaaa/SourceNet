@@ -1,12 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { GameProvider } from '../../contexts/GameContext';
+import { screen, fireEvent } from '@testing-library/react';
+import { renderWithGame } from '../../test/helpers/renderHelpers';
 import LogViewer from './LogViewer';
 import triggerEventBus from '../../core/triggerEventBus';
-
-const renderWithProvider = (component) => {
-  return render(<GameProvider>{component}</GameProvider>);
-};
 
 describe('LogViewer Component', () => {
   beforeEach(() => {
@@ -18,28 +14,28 @@ describe('LogViewer Component', () => {
   });
 
   it('should render app title', () => {
-    renderWithProvider(<LogViewer />);
+    renderWithGame(<LogViewer />);
     expect(screen.getByText('Log Viewer')).toBeInTheDocument();
   });
 
   it('should render subtitle', () => {
-    renderWithProvider(<LogViewer />);
+    renderWithGame(<LogViewer />);
     expect(screen.getByText('View network and device activity logs')).toBeInTheDocument();
   });
 
   it('should show Network Logs tab by default', () => {
-    renderWithProvider(<LogViewer />);
+    renderWithGame(<LogViewer />);
     const networkTab = screen.getByRole('button', { name: /Network Logs/i });
     expect(networkTab).toHaveClass('active');
   });
 
   it('should show Device Logs tab', () => {
-    renderWithProvider(<LogViewer />);
+    renderWithGame(<LogViewer />);
     expect(screen.getByRole('button', { name: /Device Logs/i })).toBeInTheDocument();
   });
 
   it('should switch between tabs', () => {
-    renderWithProvider(<LogViewer />);
+    renderWithGame(<LogViewer />);
 
     const networkTab = screen.getByRole('button', { name: /Network Logs/i });
     const deviceTab = screen.getByRole('button', { name: /Device Logs/i });
@@ -64,19 +60,19 @@ describe('LogViewer Component', () => {
   });
 
   it('should show no-networks message when no networks connected', () => {
-    renderWithProvider(<LogViewer />);
+    renderWithGame(<LogViewer />);
     expect(screen.getByText(/No networks connected/i)).toBeInTheDocument();
   });
 
   it('should disable View Logs button when no network selected', () => {
-    renderWithProvider(<LogViewer />);
+    renderWithGame(<LogViewer />);
     // In Network tab with no networks connected, button doesn't show
     // because no-networks message is displayed instead
     expect(screen.queryByRole('button', { name: /View Logs/i })).not.toBeInTheDocument();
   });
 
   it('should show network selector placeholder', () => {
-    renderWithProvider(<LogViewer />);
+    renderWithGame(<LogViewer />);
     // Message is shown when no networks connected
     expect(screen.getByText(/Use the VPN Client to connect to a network first/i)).toBeInTheDocument();
   });
@@ -92,7 +88,7 @@ describe('LogViewer Device Tab', () => {
   });
 
   it('should show no-networks message on device tab when no networks connected', () => {
-    renderWithProvider(<LogViewer />);
+    renderWithGame(<LogViewer />);
 
     // Switch to device tab
     const deviceTab = screen.getByRole('button', { name: /Device Logs/i });

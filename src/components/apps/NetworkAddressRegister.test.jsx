@@ -1,13 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { GameContext } from '../../contexts/GameContext';
-import { GameProvider } from '../../contexts/GameContext';
+import { renderWithGame } from '../../test/helpers/renderHelpers';
 import NetworkAddressRegister from './NetworkAddressRegister';
 import networkRegistry from '../../systems/NetworkRegistry';
-
-const renderWithProvider = (component) => {
-  return render(<GameProvider>{component}</GameProvider>);
-};
 
 const createMockContext = (overrides = {}) => ({
   activeConnections: [],
@@ -38,12 +34,12 @@ describe('NetworkAddressRegister Component', () => {
   });
 
   it('should render app title', () => {
-    renderWithProvider(<NetworkAddressRegister />);
+    renderWithGame(<NetworkAddressRegister />);
     expect(screen.getByText('Network Address Register')).toBeInTheDocument();
   });
 
   it('should show empty state when no entries', () => {
-    renderWithProvider(<NetworkAddressRegister />);
+    renderWithGame(<NetworkAddressRegister />);
     expect(screen.getByText(/No network credentials registered/i)).toBeInTheDocument();
   });
 

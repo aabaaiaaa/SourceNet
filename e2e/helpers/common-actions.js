@@ -598,6 +598,25 @@ export async function waitForMission(page, missionId, timeout = 60000) {
 }
 
 /**
+ * Wait for a mission of a specific type to appear in the mission pool.
+ * Polls gameContext.missionPool until a matching mission is found.
+ * @param {Page} page - Playwright page object
+ * @param {string[]} missionTypes - Array of mission type strings to match (e.g., ['investigation-repair', 'investigation-recovery'])
+ * @param {number} timeout - Timeout in ms (default 30000)
+ * @returns {Promise<Object|null>} The matching mission object, or null if not found (caller should test.skip())
+ */
+export async function waitForMissionOfType(page, missionTypes, timeout = 30000) {
+    const startTime = Date.now();
+    while (Date.now() - startTime < timeout) {
+        const pool = await page.evaluate(() => window.gameContext.missionPool);
+        const match = pool.find(m => missionTypes.includes(m.missionType));
+        if (match) return match;
+        await page.waitForTimeout(500);
+    }
+    return null;
+}
+
+/**
  * Accept a mission from the Mission Board by its display title
  * @param {Page} page - Playwright page object
  * @param {string} missionTitle - Display title (e.g., 'Locked Out')

@@ -3,6 +3,7 @@ import { useGame } from '../contexts/useGame';
 import { hasSaves } from '../utils/helpers';
 import { getScenarioFixture } from '../debug/fixtures';
 import networkRegistry from '../systems/NetworkRegistry';
+import ErrorBoundary from './ui/ErrorBoundary';
 import GameLoginScreen from './GameLoginScreen';
 import BootSequence from './boot/BootSequence';
 import UsernameSelection from './boot/UsernameSelection';
@@ -134,7 +135,7 @@ const GameRoot = () => {
     case 'username':
       return <UsernameSelection />;
     case 'desktop':
-      return <Desktop />;
+      return <ErrorBoundary><Desktop /></ErrorBoundary>;
     case 'gameOver-bankruptcy':
       return (
         <GameOverOverlay

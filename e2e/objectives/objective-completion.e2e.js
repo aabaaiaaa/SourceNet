@@ -19,6 +19,7 @@ import {
     repairSelectedFiles,
     setSpecificTimeSpeed,
     activateMissionNar,
+    waitForMissionOfType,
 } from '../helpers/common-actions.js';
 
 test.setTimeout(120000);
@@ -36,14 +37,7 @@ test.describe('Objective Completion', () => {
             await setSpecificTimeSpeed(page, 100);
 
             // Wait for mission pool to have a data-recovery mission (has networkScan objective)
-            let mission = null;
-            for (let attempt = 0; attempt < 20; attempt++) {
-                await page.waitForTimeout(500);
-                const pool = await page.evaluate(() => window.gameContext.missionPool);
-                // data-recovery missions have networkScan objective
-                mission = pool.find(m => m.missionType === 'data-recovery');
-                if (mission) break;
-            }
+            const mission = await waitForMissionOfType(page, ['data-recovery']);
 
             if (!mission) {
                 console.log('No data-recovery mission found, skipping test');
@@ -159,18 +153,10 @@ test.describe('Objective Completion', () => {
             // Speed up game time
             await setSpecificTimeSpeed(page, 100);
 
-            // Wait for mission pool to have a standard data-recovery mission
-            let mission = null;
-            for (let attempt = 0; attempt < 20; attempt++) {
-                await page.waitForTimeout(500);
-                const pool = await page.evaluate(() => window.gameContext.missionPool);
-                mission = pool.find(m =>
-                    m.objectives?.some(o => o.type === 'networkConnection')
-                );
-                if (mission) break;
-            }
+            // Wait for mission pool to have a mission with networkConnection objective
+            const mission = await waitForMissionOfType(page, ['data-recovery', 'corporate-repair']);
 
-            if (!mission) {
+            if (!mission || !mission.objectives?.some(o => o.type === 'networkConnection')) {
                 console.log('No mission with networkConnection objective found, skipping');
                 test.skip();
                 return;
@@ -215,17 +201,9 @@ test.describe('Objective Completion', () => {
             await setSpecificTimeSpeed(page, 100);
 
             // Wait for mission pool to have a mission with fileSystemConnection objective
-            let mission = null;
-            for (let attempt = 0; attempt < 20; attempt++) {
-                await page.waitForTimeout(500);
-                const pool = await page.evaluate(() => window.gameContext.missionPool);
-                mission = pool.find(m =>
-                    m.objectives?.some(o => o.type === 'fileSystemConnection')
-                );
-                if (mission) break;
-            }
+            const mission = await waitForMissionOfType(page, ['data-recovery', 'corporate-repair']);
 
-            if (!mission) {
+            if (!mission || !mission.objectives?.some(o => o.type === 'fileSystemConnection')) {
                 console.log('No mission with fileSystemConnection objective found, skipping');
                 test.skip();
                 return;
@@ -281,14 +259,7 @@ test.describe('Objective Completion', () => {
             await setSpecificTimeSpeed(page, 100);
 
             // Wait for an investigation mission to appear in the pool
-            const investigationTypes = ['investigation-repair', 'investigation-recovery'];
-            let mission = null;
-            for (let attempt = 0; attempt < 20; attempt++) {
-                await page.waitForTimeout(500);
-                const pool = await page.evaluate(() => window.gameContext.missionPool);
-                mission = pool.find(m => investigationTypes.includes(m.missionType));
-                if (mission) break;
-            }
+            const mission = await waitForMissionOfType(page, ['investigation-repair', 'investigation-recovery']);
 
             if (!mission) {
                 console.log('No investigation mission found, skipping test');

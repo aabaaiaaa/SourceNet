@@ -211,8 +211,11 @@ export function initializePool(reputation, currentTime, options = {}) {
     let decryptionAdded = false;
     let crackingAdded = false;
 
-    // Generate initial missions
-    while (pool.length < targetSize) {
+    // Generate initial missions (max attempts prevents infinite loop if generation repeatedly fails)
+    let attempts = 0;
+    const maxAttempts = targetSize * 3;
+    while (pool.length < targetSize && attempts < maxAttempts) {
+        attempts++;
         const result = generatePoolMission(reputation, currentTime, activeClientIds, pool.length < config.minAccessible, { unlockedSoftware });
 
         if (result) {

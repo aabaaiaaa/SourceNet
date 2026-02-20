@@ -1,52 +1,28 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { GameContext } from '../../contexts/GameContext';
+import { screen, fireEvent } from '@testing-library/react';
+import { renderWithGameContext } from '../../test/helpers/renderHelpers';
 import MissionBoard from './MissionBoard';
-
-// Create a custom provider for testing with specific context values
-const createTestContext = (overrides = {}) => ({
-  gamePhase: 'playing',
-  currentTime: new Date('2026-01-26T12:00:00'),
-  availableMissions: [],
-  activeMission: null,
-  completedMissions: [],
-  missionFileOperations: {},
-  playerReputation: 50,
-  setActiveMission: vi.fn(),
-  setAvailableMissions: vi.fn(),
-  setCompletedMissions: vi.fn(),
-  ...overrides,
-});
-
-const renderWithContext = (component, contextOverrides = {}) => {
-  const contextValue = createTestContext(contextOverrides);
-  return render(
-    <GameContext.Provider value={contextValue}>
-      {component}
-    </GameContext.Provider>
-  );
-};
 
 describe('MissionBoard Component', () => {
   it('should render app title', () => {
-    renderWithContext(<MissionBoard />);
+    renderWithGameContext(<MissionBoard />);
     expect(screen.getByText('SourceNet Mission Board')).toBeInTheDocument();
   });
 
   it('should have three tabs', () => {
-    renderWithContext(<MissionBoard />);
+    renderWithGameContext(<MissionBoard />);
     expect(screen.getByText('Available Missions')).toBeInTheDocument();
     expect(screen.getByText('Active Mission')).toBeInTheDocument();
     expect(screen.getByText('Completed')).toBeInTheDocument();
   });
 
   it('should show empty state when no missions', () => {
-    renderWithContext(<MissionBoard />);
+    renderWithGameContext(<MissionBoard />);
     expect(screen.getByText(/No missions currently available/i)).toBeInTheDocument();
   });
 
   it('should show subtitle', () => {
-    renderWithContext(<MissionBoard />);
+    renderWithGameContext(<MissionBoard />);
     expect(screen.getByText('Ethical Hacking Contracts')).toBeInTheDocument();
   });
 
@@ -72,7 +48,7 @@ describe('MissionBoard Component', () => {
 
     it('should display file checklist for pending file operation objective', () => {
       const mission = createMissionWithFileObjective();
-      renderWithContext(<MissionBoard />, {
+      renderWithGameContext(<MissionBoard />, {
         activeMission: mission,
         missionFileOperations: {},
       });
@@ -91,7 +67,7 @@ describe('MissionBoard Component', () => {
 
     it('should mark completed files with checkmark', () => {
       const mission = createMissionWithFileObjective();
-      renderWithContext(<MissionBoard />, {
+      renderWithGameContext(<MissionBoard />, {
         activeMission: mission,
         missionFileOperations: {
           paste: new Set(['file1.txt']),
@@ -112,7 +88,7 @@ describe('MissionBoard Component', () => {
 
     it('should show warning for files pasted to wrong location', () => {
       const mission = createMissionWithFileObjective();
-      renderWithContext(<MissionBoard />, {
+      renderWithGameContext(<MissionBoard />, {
         activeMission: mission,
         missionFileOperations: {
           paste: new Set(['file2.txt']),
@@ -132,7 +108,7 @@ describe('MissionBoard Component', () => {
 
     it('should not show file checklist for completed objectives', () => {
       const mission = createMissionWithFileObjective({ status: 'complete' });
-      renderWithContext(<MissionBoard />, {
+      renderWithGameContext(<MissionBoard />, {
         activeMission: mission,
         missionFileOperations: {
           paste: new Set(['file1.txt', 'file2.txt', 'file3.txt']),
@@ -152,7 +128,7 @@ describe('MissionBoard Component', () => {
 
     it('should show progress indicator with correct count', () => {
       const mission = createMissionWithFileObjective();
-      renderWithContext(<MissionBoard />, {
+      renderWithGameContext(<MissionBoard />, {
         activeMission: mission,
         missionFileOperations: {
           paste: new Set(['file1.txt', 'file2.txt']),
@@ -186,7 +162,7 @@ describe('MissionBoard Component', () => {
         ],
       };
 
-      renderWithContext(<MissionBoard />, { activeMission: mission });
+      renderWithGameContext(<MissionBoard />, { activeMission: mission });
 
       fireEvent.click(screen.getByText('Active Mission'));
 
@@ -220,7 +196,7 @@ describe('MissionBoard Component', () => {
       };
 
       const submitFn = vi.fn();
-      renderWithContext(<MissionBoard />, {
+      renderWithGameContext(<MissionBoard />, {
         activeMission: mission,
         submitMissionForCompletion: submitFn,
       });

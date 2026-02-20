@@ -25,6 +25,7 @@ class StoryMissionManager {
     this.gameStateGetter = null; // Function to get current game state
     this.firedEvents = new Set(); // Track which events have already fired to prevent duplicates
     this.consequencesSubscribed = false; // Track if we've subscribed to mission consequences
+    this.consequencesUnsubscriber = null; // Unsubscribe function for mission consequences
     this.pendingEvents = new Map(); // Track pending scheduled events for save/load persistence
     this.pendingEventCounter = 0; // Counter for generating unique event IDs
   }
@@ -232,7 +233,7 @@ class StoryMissionManager {
     this.consequencesSubscribed = true;
     const instanceId = Math.random().toString(36).substr(2, 9);
     console.log(`📡 Subscribing to mission completion consequences... (instance: ${instanceId})`);
-    triggerEventBus.on('missionComplete', (data) => {
+    this.consequencesUnsubscriber = triggerEventBus.on('missionComplete', (data) => {
       console.log(`📡 [${instanceId}] CALLBACK INVOKED for missionComplete`);
       try {
         const { missionId, status } = data;
@@ -911,6 +912,13 @@ class StoryMissionManager {
     this.unsubscribers.forEach((unsubscribers) => {
       unsubscribers.forEach((unsub) => unsub());
     });
+
+    // Unsubscribe from mission consequences
+    if (this.consequencesUnsubscriber) {
+      this.consequencesUnsubscriber();
+      this.consequencesUnsubscriber = null;
+    }
+    this.consequencesSubscribed = false;
 
     this.missions.clear();
     this.unsubscribers.clear();

@@ -1,7 +1,7 @@
 {
   "username": "scenario_user",
-  "playerMailId": "SNET-RNU-DBO-5SD",
-  "currentTime": "2020-03-25T09:09:52.000Z",
+  "playerMailId": "SNET-NQK-9SN-O9C",
+  "currentTime": "2020-03-25T09:11:26.000Z",
   "hardware": {
     "cpu": {
       "id": "cpu-1ghz-single",
@@ -88,7 +88,7 @@
     {
       "id": "account-first-bank",
       "bankName": "First Bank Ltd",
-      "balance": -9366
+      "balance": -9555
     }
   ],
   "messages": [
@@ -107,11 +107,11 @@
     {
       "id": "msg-welcome-manager",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-7W5-TE1",
-      "fromName": "SourceNet Manager Avery",
-      "subject": "Hi from your manager - Avery",
-      "body": "Hey scenario_user!\n\nWelcome to the team! I'm Avery, and I'll be your manager here at SourceNet. I was present during your interview process and I have to say, you really impressed us with your skills and dedication.\n\nTo help you get started, I've attached a welcome bonus cheque for 1,000 credits. Just click on the attachment to deposit it into your bank account.\n\nTake some time to get comfortable with your setup. I'll be reaching out again soon with your first assignment.\n\nLooking forward to working with you!\n\n- Avery",
-      "timestamp": "2020-03-25T09:00:25.000Z",
+      "fromId": "SNET-MGR-0HB-5DT",
+      "fromName": "SourceNet Manager Taylor",
+      "subject": "Hi from your manager - Taylor",
+      "body": "Hey scenario_user!\n\nWelcome to the team! I'm Taylor, and I'll be your manager here at SourceNet. I was present during your interview process and I have to say, you really impressed us with your skills and dedication.\n\nTo help you get started, I've attached a welcome bonus cheque for 1,000 credits. Just click on the attachment to deposit it into your bank account.\n\nTake some time to get comfortable with your setup. I'll be reaching out again soon with your first assignment.\n\nLooking forward to working with you!\n\n- Taylor",
+      "timestamp": "2020-03-25T09:00:19.000Z",
       "read": true,
       "archived": true,
       "attachments": [
@@ -125,11 +125,11 @@
     {
       "id": "msg-mission-board-license",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-37X-PF4",
-      "fromName": "SourceNet Manager Avery",
+      "fromId": "SNET-MGR-J29-P6S",
+      "fromName": "SourceNet Manager Taylor",
       "subject": "Get Ready for Your First Mission",
-      "body": "Hey scenario_user!\n\nNow that you're all set up, it's time to get you started with actual work.\n\nI've attached a license for the SourceNet Mission Board application. This is where you'll find all available missions from our clients.\n\nTo get started:\n\n1. Click the attachment above to add the Mission Board license to your account\n2. Open the OSNet Portal from your app launcher\n3. Go to Software section - you'll see \"SourceNet Mission Board\" marked as \"Licensed\"\n4. Download and install it\n5. Once installed, open the Mission Board from your app launcher\n\nI've posted your first assignment there. It's a straightforward file repair job for one of our clients - perfect for learning the ropes.\n\nOnce you install the Mission Board, I'll send you the software licenses you'll need to complete the mission.\n\n- Avery",
-      "timestamp": "2020-03-25T09:01:09.000Z",
+      "body": "Hey scenario_user!\n\nNow that you're all set up, it's time to get you started with actual work.\n\nI've attached a license for the SourceNet Mission Board application. This is where you'll find all available missions from our clients.\n\nTo get started:\n\n1. Click the attachment above to add the Mission Board license to your account\n2. Open the OSNet Portal from your app launcher\n3. Go to Software section - you'll see \"SourceNet Mission Board\" marked as \"Licensed\"\n4. Download and install it\n5. Once installed, open the Mission Board from your app launcher\n\nI've posted your first assignment there. It's a straightforward file repair job for one of our clients - perfect for learning the ropes.\n\nOnce you install the Mission Board, I'll send you the software licenses you'll need to complete the mission.\n\n- Taylor",
+      "timestamp": "2020-03-25T09:01:02.000Z",
       "read": true,
       "archived": true,
       "attachments": [
@@ -146,11 +146,11 @@
     {
       "id": "msg-tutorial-software-licenses",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-WHX-O8Y",
-      "fromName": "SourceNet Manager Avery",
+      "fromId": "SNET-MGR-F6K-VNN",
+      "fromName": "SourceNet Manager Taylor",
       "subject": "Mission Software",
-      "body": "Great! Now that you have the Mission Board installed, let me get you set up with the tools you'll need for your first mission.\n\nI've attached free licenses for the essential software (total value: $1,350):\n\n- SourceNet VPN Client ($500): Secure access to client networks\n- Network Address Register ($200): Manages your network connections\n- Network Scanner ($300): Finds machines and file systems on networks\n- File Manager ($350): Access and repair files on remote systems\n\nInstallation steps:\n\n1. Click all the attachments above to add them to your account\n2. Open the Portal and install all four software applications\n3. Once installed, open the Mission Board and accept the \"Log File Repair\" mission\n\nWhen you accept the mission, you'll receive the network credentials for ClientA-Corporate as an attachment. Use the Network Address Register to add them to your NAR.\n\nThe mission objectives are straightforward:\n- Connect to ClientA-Corporate network via VPN\n- Scan the network to find their file server\n- Use File Manager to detect and repair corrupted log files\n\nYour Mission Board will track each objective as you complete them.\n\nGood luck!\n\n- Avery",
-      "timestamp": "2020-03-25T09:02:39.000Z",
+      "body": "Great! Now that you have the Mission Board installed, let me get you set up with the tools you'll need for your first mission.\n\nI've attached free licenses for the essential software (total value: $1,350):\n\n- SourceNet VPN Client ($500): Secure access to client networks\n- Network Address Register ($200): Manages your network connections\n- Network Scanner ($300): Finds machines and file systems on networks\n- File Manager ($350): Access and repair files on remote systems\n\nInstallation steps:\n\n1. Click all the attachments above to add them to your account\n2. Open the Portal and install all four software applications\n3. Once installed, open the Mission Board and accept the \"Log File Repair\" mission\n\nWhen you accept the mission, you'll receive the network credentials for ClientA-Corporate as an attachment. Use the Network Address Register to add them to your NAR.\n\nThe mission objectives are straightforward:\n- Connect to ClientA-Corporate network via VPN\n- Scan the network to find their file server\n- Use File Manager to detect and repair corrupted log files\n\nYour Mission Board will track each objective as you complete them.\n\nGood luck!\n\n- Taylor",
+      "timestamp": "2020-03-25T09:01:51.000Z",
       "read": true,
       "archived": true,
       "attachments": [
@@ -189,13 +189,13 @@
       ]
     },
     {
-      "id": "msg-briefing-tutorial-part-1-1771508803945",
+      "id": "msg-briefing-tutorial-part-1-1771597802746",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-XKP-F6Z",
-      "fromName": "SourceNet Manager Avery",
+      "fromId": "SNET-MGR-XR2-S8B",
+      "fromName": "SourceNet Manager Taylor",
       "subject": "ClientA Network Credentials",
-      "body": "Perfect! Now that you've accepted the mission, here are the network credentials for ClientA-Corporate.\n\nClick the attachment above to add it to your Network Address Register. Then you can use your VPN Client to connect to their network.\n\nRemember the mission objectives:\n1. Connect to ClientA-Corporate network\n2. Scan the network to find file servers\n3. Use File Manager to repair corrupted log files\n\nYou've got this!\n\n- Avery",
-      "timestamp": "2020-03-25T09:04:26.000Z",
+      "body": "Perfect! Now that you've accepted the mission, here are the network credentials for ClientA-Corporate.\n\nClick the attachment above to add it to your Network Address Register. Then you can use your VPN Client to connect to their network.\n\nRemember the mission objectives:\n1. Connect to ClientA-Corporate network\n2. Scan the network to find file servers\n3. Use File Manager to repair corrupted log files\n\nYou've got this!\n\n- Taylor",
+      "timestamp": "2020-03-25T09:03:48.000Z",
       "read": true,
       "archived": true,
       "attachments": [
@@ -212,61 +212,61 @@
       ]
     },
     {
-      "id": "bank-firstOverdraft-1771508825836",
+      "id": "bank-firstOverdraft-1771597823982",
       "from": "First Bank Ltd",
       "fromId": "SNET-FBL-000-001",
       "to": "scenario_user",
-      "toId": "SNET-RNU-DBO-5SD",
+      "toId": "SNET-NQK-9SN-O9C",
       "subject": "Overdraft Notice - Interest Charges Apply",
       "body": "Dear scenario_user,\n\nYour account with First Bank Ltd is currently overdrawn.\n\nCurrent Balance: -9,000 credits\nOverdraft Interest Rate: 1% per minute (in-game time)\n\nInterest will be charged every minute until your balance returns to positive.\n\nBANKRUPTCY WARNING:\nIf your account remains overdrawn by MORE than 10,000 credits for 5 consecutive\nminutes, your account will be referred to financial authorities for asset seizure.\n\nWe recommend depositing funds immediately to avoid further charges.\n\nSincerely,\nFirst Bank Ltd",
-      "timestamp": "2020-03-25T09:05:16.000Z",
+      "timestamp": "2020-03-25T09:04:43.000Z",
       "read": true,
       "archived": true
     },
     {
       "id": "msg-manager-angry",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-B7Y-BDC",
-      "fromName": "SourceNet Manager Avery",
+      "fromId": "SNET-MGR-LQC-RIM",
+      "fromName": "SourceNet Manager Taylor",
       "subject": "What happened?!",
-      "body": "scenario_user,\n\nWhat just happened?! I was monitoring your mission and I saw you DELETE all the log files instead of repairing them!\n\nThe client's network administrator had to forcibly disconnect you to prevent further damage and has REVOKED your network access credentials. Those files were CRITICAL for their audit compliance!\n\nThis is a critical lesson: network administrators can revoke your access at any time if they believe you're a security threat. Your NAR entry for ClientA-Corporate is now deauthorized and unusable. You'll need new credentials to reconnect.\n\nThe client is demanding 10,000 credits in compensation for the data loss and emergency recovery. SourceNet policy requires YOU to cover mission failures, so that amount has been deducted from your account.\n\nYour reputation has taken a serious hit. You went from Superb to Accident Prone. I know you impressed us in the interview, but this is completely unacceptable.\n\nYou need to be EXTREMELY careful. DO NOT become bankrupt. If you're overdrawn by more than 10,000 credits for 5 minutes, the financial authorities will seize your assets and SourceNet will not protect you.\n\nI'm giving you another chance, but you need to prove you can handle this work.\n\n- Avery",
-      "timestamp": "2020-03-25T09:05:22.000Z",
+      "body": "scenario_user,\n\nWhat just happened?! I was monitoring your mission and I saw you DELETE all the log files instead of repairing them!\n\nThe client's network administrator had to forcibly disconnect you to prevent further damage and has REVOKED your network access credentials. Those files were CRITICAL for their audit compliance!\n\nThis is a critical lesson: network administrators can revoke your access at any time if they believe you're a security threat. Your NAR entry for ClientA-Corporate is now deauthorized and unusable. You'll need new credentials to reconnect.\n\nThe client is demanding 10,000 credits in compensation for the data loss and emergency recovery. SourceNet policy requires YOU to cover mission failures, so that amount has been deducted from your account.\n\nYour reputation has taken a serious hit. You went from Superb to Accident Prone. I know you impressed us in the interview, but this is completely unacceptable.\n\nYou need to be EXTREMELY careful. DO NOT become bankrupt. If you're overdrawn by more than 10,000 credits for 5 minutes, the financial authorities will seize your assets and SourceNet will not protect you.\n\nI'm giving you another chance, but you need to prove you can handle this work.\n\n- Taylor",
+      "timestamp": "2020-03-25T09:04:52.000Z",
       "read": true,
       "archived": true,
       "attachments": []
     },
     {
-      "id": "bank-approachingBankruptcy-1771508825836",
+      "id": "bank-approachingBankruptcy-1771597823982",
       "from": "First Bank Ltd",
       "fromId": "SNET-FBL-000-001",
       "to": "scenario_user",
-      "toId": "SNET-RNU-DBO-5SD",
+      "toId": "SNET-NQK-9SN-O9C",
       "subject": "Warning: Approaching Bankruptcy Threshold",
       "body": "Dear scenario_user,\n\nWARNING: Your account balance is approaching the bankruptcy threshold.\n\nCurrent Balance: -9,000 credits\nBankruptcy Threshold: -10,000 credits\n\nYou are 1,000 credits away from the bankruptcy threshold.\n\nIf your balance drops below -10,000 credits for 5 consecutive minutes, your\naccount will be referred to financial authorities for asset seizure.\n\nPlease take immediate action to improve your account balance.\n\nSincerely,\nFirst Bank Ltd",
-      "timestamp": "2020-03-25T09:05:19.000Z",
+      "timestamp": "2020-03-25T09:04:47.000Z",
       "read": true,
       "archived": true
     },
     {
       "id": "msg-tutorial-simpler",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-3E8-55C",
-      "fromName": "SourceNet Manager Avery",
+      "fromId": "SNET-MGR-KOK-HQJ",
+      "fromName": "SourceNet Manager Taylor",
       "subject": "Let's try something simpler",
-      "body": "scenario_user,\n\nOkay, I know that was rough. Let me give you a simpler task to help you recover.\n\nThe same client (TechCorp) kept backups of those log files you... deleted. They need you to RESTORE the backups by copying them back to the original location.\n\nThis should be straightforward - just copy files from one location to another. No repairing, no deleting, just copying. You can handle that, right?\n\nHere's what you need to do:\n\n1. Open the Mission Board and accept \"Log File Restoration\"\n2. Reconnect to ClientA-Corporate network (they've re-authorized you)\n3. Use Network Scanner to find BOTH file systems:\n   - fileserver-01 (original location - currently empty)\n   - backup-server (backup location - has the files you need to copy)\n4. Open TWO File Manager windows - one for each file system\n5. Copy all log files FROM backup-server TO fileserver-01\n\nThis mission pays 1,000 credits. It won't get you out of debt, but it's a start.\n\nYou need to work until you're back in the black (not overdrawn anymore). There are several missions available after this one - all basic file work. Boring stuff, but you're not in a position to be picky right now given your situation.\n\nOnce you're out of debt, I'll reach out again with better work.\n\nDon't mess this one up.\n\n- Avery",
-      "timestamp": "2020-03-25T09:05:33.000Z",
+      "body": "scenario_user,\n\nOkay, I know that was rough. Let me give you a simpler task to help you recover.\n\nThe same client (TechCorp) kept backups of those log files you... deleted. They need you to RESTORE the backups by copying them back to the original location.\n\nThis should be straightforward - just copy files from one location to another. No repairing, no deleting, just copying. You can handle that, right?\n\nHere's what you need to do:\n\n1. Open the Mission Board and accept \"Log File Restoration\"\n2. Reconnect to ClientA-Corporate network (they've re-authorized you)\n3. Use Network Scanner to find BOTH file systems:\n   - fileserver-01 (original location - currently empty)\n   - backup-server (backup location - has the files you need to copy)\n4. Open TWO File Manager windows - one for each file system\n5. Copy all log files FROM backup-server TO fileserver-01\n\nThis mission pays 1,000 credits. It won't get you out of debt, but it's a start.\n\nYou need to work until you're back in the black (not overdrawn anymore). There are several missions available after this one - all basic file work. Boring stuff, but you're not in a position to be picky right now given your situation.\n\nOnce you're out of debt, I'll reach out again with better work.\n\nDon't mess this one up.\n\n- Taylor",
+      "timestamp": "2020-03-25T09:05:10.000Z",
       "read": true,
       "archived": true,
       "attachments": []
     },
     {
-      "id": "msg-briefing-tutorial-part-2-1771508830422",
+      "id": "msg-briefing-tutorial-part-2-1771597828376",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-005-VAC",
-      "fromName": "SourceNet Manager Avery",
+      "fromId": "SNET-MGR-AYZ-6J1",
+      "fromName": "SourceNet Manager Taylor",
       "subject": "Updated Network Access - Backup Server",
-      "body": "Good, you accepted the restoration mission.\n\nI've negotiated with the client and secured NEW network credentials for you. After that disaster, they completely revoked your previous access, so this is a fresh NAR entry with different network permissions.\n\nThey've restructured their network access - you'll now connect to a different subnet with access to their backup-server. Click the attachment to add the new credentials to your Network Address Register.\n\nOnce you've added the credentials, use Network Scanner to find BOTH file systems: fileserver-01 (now empty after the sabotage) and backup-server (which has the backup copies).\n\nThen:\n1. Open TWO File Manager windows - one for each file system\n2. Copy all 8 log files from backup-server TO fileserver-01\n\nSimple copy job. Don't mess this up.\n\n- Avery",
-      "timestamp": "2020-03-25T09:07:53.000Z",
+      "body": "Good, you accepted the restoration mission.\n\nI've negotiated with the client and secured NEW network credentials for you. After that disaster, they completely revoked your previous access, so this is a fresh NAR entry with different network permissions.\n\nThey've restructured their network access - you'll now connect to a different subnet with access to their backup-server. Click the attachment to add the new credentials to your Network Address Register.\n\nOnce you've added the credentials, use Network Scanner to find BOTH file systems: fileserver-01 (now empty after the sabotage) and backup-server (which has the backup copies).\n\nThen:\n1. Open TWO File Manager windows - one for each file system\n2. Copy all 8 log files from backup-server TO fileserver-01\n\nSimple copy job. Don't mess this up.\n\n- Taylor",
+      "timestamp": "2020-03-25T09:07:56.000Z",
       "read": true,
       "archived": true,
       "attachments": [
@@ -284,13 +284,13 @@
       ]
     },
     {
-      "id": "msg-1771508840620-as8l1ctf0",
+      "id": "msg-1771597835448-sqe6kkssk",
       "from": "Client A - TechCorp Industries",
-      "fromId": "CLIENT-C3V",
+      "fromId": "CLIENT-L9H",
       "fromName": "Client A - TechCorp Industries",
       "subject": "Payment for Log File Restoration",
       "body": "Dear scenario_user,\n\nThank you for completing the work on \"Log File Restoration\".\n\nPlease find attached a digital cheque for 850 credits as agreed.\n\nSincerely,\nClient A - TechCorp Industries",
-      "timestamp": "2020-03-25T09:09:17.000Z",
+      "timestamp": "2020-03-25T09:08:45.000Z",
       "read": true,
       "archived": true,
       "attachments": [
@@ -304,11 +304,11 @@
     {
       "id": "msg-manager-better",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-59B-3XZ",
-      "fromName": "SourceNet Manager Avery",
+      "fromId": "SNET-MGR-BZ6-X1T",
+      "fromName": "SourceNet Manager Taylor",
       "subject": "Better",
-      "body": "scenario_user,\n\nOkay, that's more like it. Simple task, executed correctly.\n\nYou're still deep in debt (-8,000 credits), but at least you're moving in the right direction.\n\nDue to the recent global security exploit, there's a LOT of work available right now - mostly boring backup and file repair jobs. Not exciting work, but you need to take what you can get until you're back in the black.\n\nCheck the Mission Board - there are several missions available. Work through them until your account is positive again. Once you're out of debt, I'll reach out with better opportunities.\n\nYour reputation is still \"Accident Prone\" after that first mission disaster. You'll need to successfully complete missions to rebuild it.\n\nKeep working.\n\n- Avery",
-      "timestamp": "2020-03-25T09:09:27.000Z",
+      "body": "scenario_user,\n\nOkay, that's more like it. Simple task, executed correctly.\n\nYou're still deep in debt (-8,000 credits), but at least you're moving in the right direction.\n\nDue to the recent global security exploit, there's a LOT of work available right now - mostly boring backup and file repair jobs. Not exciting work, but you need to take what you can get until you're back in the black.\n\nCheck the Mission Board - there are several missions available. Work through them until your account is positive again. Once you're out of debt, I'll reach out with better opportunities.\n\nYour reputation is still \"Accident Prone\" after that first mission disaster. You'll need to successfully complete missions to rebuild it.\n\nKeep working.\n\n- Taylor",
+      "timestamp": "2020-03-25T09:08:59.000Z",
       "read": false,
       "archived": false,
       "attachments": []
@@ -316,17 +316,17 @@
     {
       "id": "msg-manager-nar-info",
       "from": "SourceNet Manager",
-      "fromId": "SNET-MGR-F95-0OY",
-      "fromName": "SourceNet Manager Avery",
+      "fromId": "SNET-MGR-K9P-UDB",
+      "fromName": "SourceNet Manager Taylor",
       "subject": "About Network Access",
-      "body": "scenario_user,\n\nOne more thing - you may have noticed your network access to ClientA-Corporate was revoked after the mission completed.\n\nThis is standard procedure. Network credentials provided for missions are temporary - once a job is done (successfully or not), the client's access credentials are automatically invalidated. You'll see revoked entries in your Network Address Register (NAR) for record-keeping.\n\nDon't worry about losing access. Each new mission comes with fresh credentials. This keeps things clean and secure for both you and the clients.\n\nJust something to be aware of.\n\n- Avery",
-      "timestamp": "2020-03-25T09:09:37.000Z",
+      "body": "scenario_user,\n\nOne more thing - you may have noticed your network access to ClientA-Corporate was revoked after the mission completed.\n\nThis is standard procedure. Network credentials provided for missions are temporary - once a job is done (successfully or not), the client's access credentials are automatically invalidated. You'll see revoked entries in your Network Address Register (NAR) for record-keeping.\n\nDon't worry about losing access. Each new mission comes with fresh credentials. This keeps things clean and secure for both you and the clients.\n\nJust something to be aware of.\n\n- Taylor",
+      "timestamp": "2020-03-25T09:09:08.000Z",
       "read": true,
       "archived": true,
       "attachments": []
     }
   ],
-  "managerName": "Avery",
+  "managerName": "Taylor",
   "windows": [],
   "reputation": 3,
   "reputationCountdown": null,
@@ -339,7 +339,7 @@
       "client": "Client A - TechCorp Industries",
       "difficulty": "Beginner",
       "status": "failed",
-      "completionTime": "2020-03-25T09:05:16.000Z",
+      "completionTime": "2020-03-25T09:04:43.000Z",
       "payout": -10000,
       "reputationChange": -6,
       "failureReason": "Files deleted instead of repaired"
@@ -351,7 +351,7 @@
       "client": "Client A - TechCorp Industries",
       "difficulty": "Beginner",
       "status": "success",
-      "completionTime": "2020-03-25T09:09:17.000Z",
+      "completionTime": "2020-03-25T09:08:45.000Z",
       "payout": 850,
       "reputationChange": 0,
       "failureReason": null
@@ -456,44 +456,60 @@
   "downloadQueue": [],
   "transactions": [
     {
-      "id": "txn-cheque-1771508789873",
-      "date": "2020-03-25T09:01:31.000Z",
+      "id": "txn-cheque-1771597793422",
+      "date": "2020-03-25T09:01:06.000Z",
       "type": "income",
       "amount": 1000,
       "description": "Cheque Deposit",
       "balanceAfter": 1000
     },
     {
-      "id": "txn-interest-1771508827666",
-      "date": "2020-03-25T09:06:16.000Z",
+      "id": "txn-interest-1771597825600",
+      "date": "2020-03-25T09:05:43.000Z",
       "type": "expense",
       "amount": -90,
       "description": "Overdraft Interest",
       "balanceAfter": -9090
     },
     {
-      "id": "txn-interest-1771508828477",
-      "date": "2020-03-25T09:07:16.000Z",
+      "id": "txn-interest-1771597826278",
+      "date": "2020-03-25T09:06:43.000Z",
       "type": "expense",
       "amount": -91,
       "description": "Overdraft Interest",
       "balanceAfter": -9181
     },
     {
-      "id": "txn-interest-1771508838391",
-      "date": "2020-03-25T09:08:16.000Z",
+      "id": "txn-interest-1771597826868",
+      "date": "2020-03-25T09:07:43.000Z",
       "type": "expense",
       "amount": -92,
       "description": "Overdraft Interest",
       "balanceAfter": -9273
     },
     {
-      "id": "txn-interest-1771508840450",
-      "date": "2020-03-25T09:09:16.000Z",
+      "id": "txn-interest-1771597835291",
+      "date": "2020-03-25T09:08:43.000Z",
       "type": "expense",
       "amount": -93,
       "description": "Overdraft Interest",
       "balanceAfter": -9366
+    },
+    {
+      "id": "txn-interest-1771597836039",
+      "date": "2020-03-25T09:09:43.000Z",
+      "type": "expense",
+      "amount": -94,
+      "description": "Overdraft Interest",
+      "balanceAfter": -9460
+    },
+    {
+      "id": "txn-interest-1771597836638",
+      "date": "2020-03-25T09:10:43.000Z",
+      "type": "expense",
+      "amount": -95,
+      "description": "Overdraft Interest",
+      "balanceAfter": -9555
     }
   ],
   "licensedSoftware": [
@@ -570,67 +586,67 @@
         "accessible": false,
         "discovered": true,
         "hostile": false,
-        "accessGrantedDate": "2026-02-19T13:47:11.806Z",
+        "accessGrantedDate": "2026-02-20T14:30:29.509Z",
         "logs": [
           {
-            "id": "log-1771508807296-thwm2zgnk",
-            "timestamp": "2020-03-25T09:04:37.000Z",
+            "id": "log-1771597805938-cjn394naq",
+            "timestamp": "2020-03-25T09:04:02.000Z",
             "type": "remote",
             "action": "connect",
             "user": "scenario_user",
             "note": "Connected via VPN"
           },
           {
-            "id": "log-1771508807296-5mwsimxoa",
-            "timestamp": "2020-03-25T09:04:37.000Z",
+            "id": "log-1771597805938-ljuqw7llp",
+            "timestamp": "2020-03-25T09:04:02.000Z",
             "type": "remote",
             "action": "connect",
             "user": "scenario_user",
             "note": "Connected via VPN"
           },
           {
-            "id": "log-1771508820314-2dxmtx6v8",
-            "timestamp": "2020-03-25T09:05:05.000Z",
+            "id": "log-1771597818488-kllahrjjy",
+            "timestamp": "2020-03-25T09:04:32.000Z",
             "type": "remote",
             "action": "connect",
             "user": "scenario_user",
             "note": "Connected via VPN"
           },
           {
-            "id": "log-1771508820314-pufd30dvt",
-            "timestamp": "2020-03-25T09:05:05.000Z",
+            "id": "log-1771597818488-xo4dwe4rr",
+            "timestamp": "2020-03-25T09:04:32.000Z",
             "type": "remote",
             "action": "connect",
             "user": "scenario_user",
             "note": "Connected via VPN"
           },
           {
-            "id": "log-1771508834702-u8mvhvomr",
-            "timestamp": "2020-03-25T09:08:01.000Z",
+            "id": "log-1771597832570-m40gyavm7",
+            "timestamp": "2020-03-25T09:08:06.000Z",
             "type": "remote",
             "action": "connect",
             "user": "scenario_user",
             "note": "Connected via VPN"
           },
           {
-            "id": "log-1771508834702-gu15cplbl",
-            "timestamp": "2020-03-25T09:08:01.000Z",
+            "id": "log-1771597832570-8jx87mn1t",
+            "timestamp": "2020-03-25T09:08:06.000Z",
             "type": "remote",
             "action": "connect",
             "user": "scenario_user",
             "note": "Connected via VPN"
           },
           {
-            "id": "log-1771508840584-brsm0nps6",
-            "timestamp": "2026-02-19T13:47:20.584Z",
+            "id": "log-1771597835416-8z20mhgpw",
+            "timestamp": "2026-02-20T14:30:35.416Z",
             "type": "remote",
             "action": "disconnect",
             "user": "scenario_user",
             "note": "Disconnected (access revoked): Mission access expired"
           },
           {
-            "id": "log-1771508840584-mvrl3bvm4",
-            "timestamp": "2026-02-19T13:47:20.584Z",
+            "id": "log-1771597835416-y72gtl9m1",
+            "timestamp": "2026-02-20T14:30:35.416Z",
             "type": "remote",
             "action": "disconnect",
             "user": "scenario_user",
@@ -653,8 +669,8 @@
         "requiresCredentials": false,
         "logs": [
           {
-            "id": "log-1771508822015-asir8za86",
-            "timestamp": "2020-03-25T09:05:08.000Z",
+            "id": "log-1771597820272-mjffo1ta3",
+            "timestamp": "2020-03-25T09:04:35.000Z",
             "type": "file",
             "action": "repair",
             "user": "scenario_user",
@@ -663,8 +679,8 @@
             "sizeBytes": 2560
           },
           {
-            "id": "log-1771508822015-9chrftlk7",
-            "timestamp": "2020-03-25T09:05:08.000Z",
+            "id": "log-1771597820273-3alym7qgb",
+            "timestamp": "2020-03-25T09:04:35.000Z",
             "type": "file",
             "action": "repair",
             "user": "scenario_user",
@@ -673,8 +689,8 @@
             "sizeBytes": 3174
           },
           {
-            "id": "log-1771508822016-p11ru6wvq",
-            "timestamp": "2020-03-25T09:05:08.000Z",
+            "id": "log-1771597820273-8r5vzo6lm",
+            "timestamp": "2020-03-25T09:04:35.000Z",
             "type": "file",
             "action": "repair",
             "user": "scenario_user",
@@ -683,8 +699,8 @@
             "sizeBytes": 2867
           },
           {
-            "id": "log-1771508822016-x5s301l0f",
-            "timestamp": "2020-03-25T09:05:08.000Z",
+            "id": "log-1771597820273-4injyonre",
+            "timestamp": "2020-03-25T09:04:35.000Z",
             "type": "file",
             "action": "repair",
             "user": "scenario_user",
@@ -693,8 +709,8 @@
             "sizeBytes": 3277
           },
           {
-            "id": "log-1771508822016-hfjk4h1fr",
-            "timestamp": "2020-03-25T09:05:08.000Z",
+            "id": "log-1771597820273-2dnglzpsr",
+            "timestamp": "2020-03-25T09:04:35.000Z",
             "type": "file",
             "action": "repair",
             "user": "scenario_user",
@@ -703,8 +719,8 @@
             "sizeBytes": 2970
           },
           {
-            "id": "log-1771508822016-s20hu1afs",
-            "timestamp": "2020-03-25T09:05:08.000Z",
+            "id": "log-1771597820273-j8xftfn20",
+            "timestamp": "2020-03-25T09:04:35.000Z",
             "type": "file",
             "action": "repair",
             "user": "scenario_user",
@@ -713,8 +729,8 @@
             "sizeBytes": 3072
           },
           {
-            "id": "log-1771508822016-13ipihrm8",
-            "timestamp": "2020-03-25T09:05:08.000Z",
+            "id": "log-1771597820273-be4b1gr6f",
+            "timestamp": "2020-03-25T09:04:35.000Z",
             "type": "file",
             "action": "repair",
             "user": "scenario_user",
@@ -723,8 +739,8 @@
             "sizeBytes": 2765
           },
           {
-            "id": "log-1771508822016-pib4lylu9",
-            "timestamp": "2020-03-25T09:05:08.000Z",
+            "id": "log-1771597820273-3aibsfbrq",
+            "timestamp": "2020-03-25T09:04:35.000Z",
             "type": "file",
             "action": "repair",
             "user": "scenario_user",
@@ -733,8 +749,8 @@
             "sizeBytes": 3379
           },
           {
-            "id": "log-1771508838322-m8bixr08m",
-            "timestamp": "2020-03-25T09:08:15.000Z",
+            "id": "log-1771597835222-480qu47mu",
+            "timestamp": "2020-03-25T09:08:37.000Z",
             "type": "file",
             "action": "paste",
             "user": "scenario_user",
@@ -743,8 +759,8 @@
             "sizeBytes": 2560
           },
           {
-            "id": "log-1771508838322-16rvx9pkq",
-            "timestamp": "2020-03-25T09:08:15.000Z",
+            "id": "log-1771597835222-xgesfades",
+            "timestamp": "2020-03-25T09:08:37.000Z",
             "type": "file",
             "action": "paste",
             "user": "scenario_user",
@@ -753,8 +769,8 @@
             "sizeBytes": 3174
           },
           {
-            "id": "log-1771508838322-camwyqxip",
-            "timestamp": "2020-03-25T09:08:15.000Z",
+            "id": "log-1771597835222-grouj98rp",
+            "timestamp": "2020-03-25T09:08:37.000Z",
             "type": "file",
             "action": "paste",
             "user": "scenario_user",
@@ -763,8 +779,8 @@
             "sizeBytes": 2867
           },
           {
-            "id": "log-1771508838322-ypw4xpmdw",
-            "timestamp": "2020-03-25T09:08:15.000Z",
+            "id": "log-1771597835222-m40ld6g7c",
+            "timestamp": "2020-03-25T09:08:37.000Z",
             "type": "file",
             "action": "paste",
             "user": "scenario_user",
@@ -773,8 +789,8 @@
             "sizeBytes": 3277
           },
           {
-            "id": "log-1771508838322-5ush0wyuu",
-            "timestamp": "2020-03-25T09:08:15.000Z",
+            "id": "log-1771597835222-iud72pezr",
+            "timestamp": "2020-03-25T09:08:37.000Z",
             "type": "file",
             "action": "paste",
             "user": "scenario_user",
@@ -783,8 +799,8 @@
             "sizeBytes": 2970
           },
           {
-            "id": "log-1771508838322-oy92aavrr",
-            "timestamp": "2020-03-25T09:08:15.000Z",
+            "id": "log-1771597835222-mxivfsxb3",
+            "timestamp": "2020-03-25T09:08:37.000Z",
             "type": "file",
             "action": "paste",
             "user": "scenario_user",
@@ -793,8 +809,8 @@
             "sizeBytes": 3072
           },
           {
-            "id": "log-1771508838322-r5f1e0qxn",
-            "timestamp": "2020-03-25T09:08:15.000Z",
+            "id": "log-1771597835222-d3h9o6vez",
+            "timestamp": "2020-03-25T09:08:37.000Z",
             "type": "file",
             "action": "paste",
             "user": "scenario_user",
@@ -803,8 +819,8 @@
             "sizeBytes": 2765
           },
           {
-            "id": "log-1771508838322-5p7vfysgc",
-            "timestamp": "2020-03-25T09:08:15.000Z",
+            "id": "log-1771597835222-ej2vx5m0o",
+            "timestamp": "2020-03-25T09:08:37.000Z",
             "type": "file",
             "action": "paste",
             "user": "scenario_user",
@@ -826,8 +842,8 @@
         "requiresCredentials": false,
         "logs": [
           {
-            "id": "log-1771508838223-b6jvdb6cm",
-            "timestamp": "2020-03-25T09:08:14.000Z",
+            "id": "log-1771597835222-51wy49l2a",
+            "timestamp": "2020-03-25T09:08:37.000Z",
             "type": "file",
             "action": "copy",
             "user": "scenario_user",
@@ -836,8 +852,8 @@
             "sizeBytes": 2560
           },
           {
-            "id": "log-1771508838223-ur3ykectw",
-            "timestamp": "2020-03-25T09:08:14.000Z",
+            "id": "log-1771597835222-ot9nnoi6d",
+            "timestamp": "2020-03-25T09:08:37.000Z",
             "type": "file",
             "action": "copy",
             "user": "scenario_user",
@@ -846,8 +862,8 @@
             "sizeBytes": 3174
           },
           {
-            "id": "log-1771508838224-ne9w7tgp4",
-            "timestamp": "2020-03-25T09:08:14.000Z",
+            "id": "log-1771597835222-73aehmkdf",
+            "timestamp": "2020-03-25T09:08:37.000Z",
             "type": "file",
             "action": "copy",
             "user": "scenario_user",
@@ -856,8 +872,8 @@
             "sizeBytes": 2867
           },
           {
-            "id": "log-1771508838224-l5qnua7qc",
-            "timestamp": "2020-03-25T09:08:14.000Z",
+            "id": "log-1771597835222-8kldmnw8l",
+            "timestamp": "2020-03-25T09:08:37.000Z",
             "type": "file",
             "action": "copy",
             "user": "scenario_user",
@@ -866,8 +882,8 @@
             "sizeBytes": 3277
           },
           {
-            "id": "log-1771508838224-ku0unq99i",
-            "timestamp": "2020-03-25T09:08:14.000Z",
+            "id": "log-1771597835222-uutlhjoa4",
+            "timestamp": "2020-03-25T09:08:37.000Z",
             "type": "file",
             "action": "copy",
             "user": "scenario_user",
@@ -876,8 +892,8 @@
             "sizeBytes": 2970
           },
           {
-            "id": "log-1771508838224-zld0svqvt",
-            "timestamp": "2020-03-25T09:08:14.000Z",
+            "id": "log-1771597835222-rfdp3zfu3",
+            "timestamp": "2020-03-25T09:08:37.000Z",
             "type": "file",
             "action": "copy",
             "user": "scenario_user",
@@ -886,8 +902,8 @@
             "sizeBytes": 3072
           },
           {
-            "id": "log-1771508838224-lflq29x3k",
-            "timestamp": "2020-03-25T09:08:14.000Z",
+            "id": "log-1771597835222-gumlm1kk8",
+            "timestamp": "2020-03-25T09:08:37.000Z",
             "type": "file",
             "action": "copy",
             "user": "scenario_user",
@@ -896,8 +912,8 @@
             "sizeBytes": 2765
           },
           {
-            "id": "log-1771508838224-etokpi9bg",
-            "timestamp": "2020-03-25T09:08:14.000Z",
+            "id": "log-1771597835222-guvg8j39b",
+            "timestamp": "2020-03-25T09:08:37.000Z",
             "type": "file",
             "action": "copy",
             "user": "scenario_user",
@@ -1035,6 +1051,6 @@
       }
     ]
   },
-  "savedAt": "2026-02-19T13:47:32.944Z",
-  "saveName": "25/03/2020 09:09:52"
+  "savedAt": "2026-02-20T14:30:49.695Z",
+  "saveName": "25/03/2020 09:11:26"
 }

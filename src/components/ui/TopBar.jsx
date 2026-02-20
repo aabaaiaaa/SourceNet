@@ -1,14 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { useGame } from '../../contexts/useGame';
-import { MULTI_INSTANCE_APPS } from '../../constants/gameConstants';
-import { formatDateTime, getAllSavesFlat } from '../../utils/helpers';
+import { formatDateTime } from '../../utils/helpers';
+import { getAppBySoftwareId } from '../../utils/appRegistry';
 import { getReputationTier } from '../../systems/ReputationSystem';
-import { calculateStorageUsed, calculateLocalFilesSize, formatStorage } from '../../systems/StorageSystem';
-import { SOFTWARE_CATALOG } from '../../constants/gameConstants';
-import { getTotalRamMB, getUsedRamMB, formatRam } from '../../systems/RamSystem';
 import useTraceMonitor from '../../systems/useTraceMonitor';
 import networkRegistry from '../../systems/NetworkRegistry';
 import SecurityIndicator from './SecurityIndicator';
+import PowerMenu from './PowerMenu';
+import AppLauncher from './AppLauncher';
+import LoadGameModal from './LoadGameModal';
 import triggerEventBus from '../../core/triggerEventBus';
 import { scheduleGameTimeCallback, clearGameTimeCallback } from '../../core/gameTimeScheduler';
 import './TopBar.css';
@@ -103,9 +103,6 @@ const TopBar = () => {
   const currentTimeRef = useRef(currentTime);
   currentTimeRef.current = currentTime;
 
-  // Timeout refs for delayed menu closing
-  const powerMenuTimeout = useRef(null);
-  const appLauncherTimeout = useRef(null);
   const disconnectionTimerRef = useRef(null);
 
   // Subscribe to network disconnection events
@@ -240,30 +237,10 @@ const TopBar = () => {
   const unreadMessages = messages.filter((m) => !m.read);
   const totalCredits = getTotalCredits();
 
-  // Map software IDs to app launcher entries (only show installed software)
-  const appMap = {
-    mail: { id: 'mail', name: 'SNet Mail', softwareId: 'mail' },
-    banking: { id: 'banking', name: 'SNet Banking App', softwareId: 'banking' },
-    portal: { id: 'portal', name: 'OSNet Portal', softwareId: 'portal' },
-    'mission-board': { id: 'missionBoard', name: 'SourceNet Mission Board', softwareId: 'mission-board' },
-    'vpn-client': { id: 'vpnClient', name: 'SourceNet VPN Client', softwareId: 'vpn-client' },
-    'network-scanner': { id: 'networkScanner', name: 'Network Scanner', softwareId: 'network-scanner' },
-    'network-address-register': { id: 'networkAddressRegister', name: 'Network Address Register', softwareId: 'network-address-register' },
-    'file-manager': { id: 'fileManager', name: 'File Manager', softwareId: 'file-manager' },
-    'log-viewer': { id: 'logViewer', name: 'Log Viewer', softwareId: 'log-viewer' },
-    'data-recovery-tool': { id: 'dataRecoveryTool', name: 'Data Recovery Tool', softwareId: 'data-recovery-tool' },
-    'decryption-tool': { id: 'decryptionTool', name: 'Decryption Tool', softwareId: 'decryption-tool' },
-    'advanced-firewall-av': { id: 'advancedFirewallAv', name: 'Advanced Firewall & Antivirus', softwareId: 'advanced-firewall-av' },
-    'password-cracker': { id: 'passwordCracker', name: 'Password Cracker', softwareId: 'password-cracker' },
-    'vpn-relay-upgrade': { id: 'vpnRelayUpgrade', name: 'VPN Relay Module', softwareId: 'vpn-relay-upgrade', hidden: true },
-    'trace-monitor': { id: 'traceMonitor', name: 'Trace Monitor', softwareId: 'trace-monitor' },
-    'network-sniffer': { id: 'networkSniffer', name: 'Network Sniffer', softwareId: 'network-sniffer' },
-  };
-
   const apps = (software || [])
-    .map((sw) => typeof sw === 'string' ? appMap[sw] : appMap[sw.id])
-    .filter((app) => app !== undefined && !app.hidden)
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .map((sw) => getAppBySoftwareId(typeof sw === 'string' ? sw : sw.id))
+    .filter((app) => app !== null && !app.hidden)
+    .sort((a, b) => a.title.localeCompare(b.title));
 
   const handleSave = () => {
     const saveName = prompt('Enter save name (or leave blank for auto-name):');
@@ -324,61 +301,18 @@ const TopBar = () => {
       )}
 
       {/* Left: Power Button */}
-      <div className="topbar-section">
-        <div
-          className="topbar-button-wrapper"
-          onMouseEnter={() => {
-            if (powerMenuTimeout.current) {
-              clearTimeout(powerMenuTimeout.current);
-            }
-            setShowPowerMenu(true);
-          }}
-          onMouseLeave={() => {
-            powerMenuTimeout.current = setTimeout(() => {
-              setShowPowerMenu(false);
-            }, 100);
-          }}
-        >
-          <button className="topbar-button">⏻</button>
-          {showPowerMenu && (
-            <div
-              className="dropdown-menu power-menu"
-              onMouseEnter={() => {
-                if (powerMenuTimeout.current) {
-                  clearTimeout(powerMenuTimeout.current);
-                }
-              }}
-              onMouseLeave={() => {
-                powerMenuTimeout.current = setTimeout(() => {
-                  setShowPowerMenu(false);
-                }, 100);
-              }}
-            >
-              {!isPaused ? (
-                <button onClick={() => setIsPaused(true)}>Pause</button>
-              ) : (
-                <button onClick={() => setIsPaused(false)}>Resume</button>
-              )}
-              <button
-                onClick={handleSave}
-                disabled={activeConnections?.length > 0 || ransomwareThreat}
-                title={ransomwareThreat ? 'Cannot save during ransomware attack' : activeConnections?.length > 0 ? 'Disconnect from all networks to save your game' : undefined}
-              >Save</button>
-              <button onClick={handleLoad}>Load</button>
-              <button
-                onClick={handleReboot}
-                disabled={ransomwareThreat}
-                title={ransomwareThreat ? 'Cannot reboot during ransomware attack' : undefined}
-              >Reboot</button>
-              <button
-                onClick={handleSleep}
-                disabled={ransomwareThreat}
-                title={ransomwareThreat ? 'Cannot sleep during ransomware attack' : undefined}
-              >Sleep</button>
-            </div>
-          )}
-        </div>
-      </div>
+      <PowerMenu
+        showPowerMenu={showPowerMenu}
+        setShowPowerMenu={setShowPowerMenu}
+        isPaused={isPaused}
+        setIsPaused={setIsPaused}
+        activeConnections={activeConnections}
+        ransomwareThreat={ransomwareThreat}
+        onSave={handleSave}
+        onLoad={handleLoad}
+        onReboot={handleReboot}
+        onSleep={handleSleep}
+      />
 
       {/* Left-Center: Date/Time */}
       <div className="topbar-section">
@@ -664,119 +598,26 @@ const TopBar = () => {
       </div>
 
       {/* Right: App Launcher */}
-      <div className="topbar-section">
-        <div
-          className="topbar-button-wrapper"
-          onMouseEnter={() => {
-            if (appLauncherTimeout.current) {
-              clearTimeout(appLauncherTimeout.current);
-            }
-            setShowAppLauncher(true);
-          }}
-          onMouseLeave={() => {
-            appLauncherTimeout.current = setTimeout(() => {
-              setShowAppLauncher(false);
-            }, 100);
-          }}
-        >
-          <button className="topbar-button">☰</button>
-          {showAppLauncher && (
-            <div
-              className="dropdown-menu app-launcher-menu"
-              onMouseEnter={() => {
-                if (appLauncherTimeout.current) {
-                  clearTimeout(appLauncherTimeout.current);
-                }
-              }}
-              onMouseLeave={() => {
-                appLauncherTimeout.current = setTimeout(() => {
-                  setShowAppLauncher(false);
-                }, 100);
-              }}
-            >
-              {apps.map((app) => {
-                // Check if this is passive software
-                const catalogEntry = SOFTWARE_CATALOG.find(s => s.id === app.softwareId);
-                const isPassive = catalogEntry?.passive === true;
-                const isPassiveRunning = isPassive && activePassiveSoftware?.includes(app.softwareId);
-
-                return (
-                  <button
-                    key={app.id}
-                    onClick={() => {
-                      if (isPassive) {
-                        if (isPassiveRunning && stopPassiveSoftware) {
-                          stopPassiveSoftware(app.softwareId);
-                        } else if (!isPassiveRunning && startPassiveSoftware) {
-                          startPassiveSoftware(app.softwareId);
-                        }
-                      } else {
-                        openWindow(app.id);
-                      }
-                      setShowAppLauncher(false);
-                    }}
-                    className={MULTI_INSTANCE_APPS.includes(app.id) ? 'multi-instance-app' : ''}
-                    title={isPassive
-                      ? (isPassiveRunning ? `${app.name} (running - click to stop)` : `${app.name} (click to start)`)
-                      : (MULTI_INSTANCE_APPS.includes(app.id) ? `${app.name} (can open multiple)` : app.name)}
-                  >
-                    {app.name}
-                    {MULTI_INSTANCE_APPS.includes(app.id) && <span className="multi-instance-badge">⊞</span>}
-                    {isPassive && (
-                      <span className={`passive-status ${isPassiveRunning ? 'on' : 'off'}`}>
-                        {isPassiveRunning ? 'ON' : 'OFF'}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-              <div className="app-launcher-storage">
-                {formatStorage(calculateStorageUsed(software || []), calculateLocalFilesSize(localSSDFiles || []), 90)}
-              </div>
-              <div className="app-launcher-storage">
-                RAM: {formatRam(getUsedRamMB(windows, activePassiveSoftware), getTotalRamMB(hardware))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      <AppLauncher
+        showAppLauncher={showAppLauncher}
+        setShowAppLauncher={setShowAppLauncher}
+        apps={apps}
+        software={software}
+        hardware={hardware}
+        windows={windows}
+        localSSDFiles={localSSDFiles}
+        activePassiveSoftware={activePassiveSoftware}
+        startPassiveSoftware={startPassiveSoftware}
+        stopPassiveSoftware={stopPassiveSoftware}
+        openWindow={openWindow}
+      />
 
       {/* Load Game Modal */}
       {showLoadMenu && (
-        <div className="modal-overlay" onClick={() => setShowLoadMenu(false)}>
-          <div className="modal-content load-game-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Load Game</h3>
-            <div className="load-saves-list">
-              {getAllSavesFlat().length === 0 ? (
-                <p>No saved games found.</p>
-              ) : (
-                getAllSavesFlat().map((save, _index) => {
-                  // Find the save index within this user's saves (sorted by savedAt desc)
-                  const userSaves = getAllSavesFlat().filter(s => s.username === save.username);
-                  const saveIndex = userSaves.findIndex(s => s.savedAt === save.savedAt);
-
-                  return (
-                    <button
-                      key={`${save.username}-${save.savedAt}`}
-                      className="load-save-btn"
-                      onClick={() => handleLoadSave(save.username, saveIndex)}
-                    >
-                      <span className="load-save-username">{save.username}</span>
-                      <span className="load-save-name">{save.saveName}</span>
-                      <span className="load-save-date">{new Date(save.savedAt).toLocaleString()}</span>
-                    </button>
-                  );
-                })
-              )}
-            </div>
-            <button
-              className="modal-close-btn"
-              onClick={() => setShowLoadMenu(false)}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
+        <LoadGameModal
+          onClose={() => setShowLoadMenu(false)}
+          onLoadSave={handleLoadSave}
+        />
       )}
     </div>
   );

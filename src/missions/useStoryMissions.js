@@ -19,15 +19,13 @@ import { scheduleGameTimeCallback, clearGameTimeCallback } from '../core/gameTim
 import { VERIFICATION_DELAY_MS } from '../constants/gameConstants';
 import { hasOptionalObjectives } from './ObjectiveTracker';
 
-// Module-level state that persists across component remounts (including React Strict Mode)
-let eventsSubscribed = false;
-
 /**
  * Initialize story missions system
  * @param {object} gameState - Current game state
  * @param {object} actions - Game actions (addMessage, setAvailableMissions, etc.)
  */
 export const useStoryMissions = (gameState, actions) => {
+  const eventsSubscribedRef = useRef(false);
   const desktopLoadedEmitted = useRef(false);
   const emittedConnectionsRef = useRef(new Set());
   const emittedMissionRef = useRef(null);
@@ -76,16 +74,16 @@ export const useStoryMissions = (gameState, actions) => {
     // Set game state getter for condition evaluation (uses ref to always get latest state)
     storyMissionManager.setGameStateGetter(() => gameStateRef.current);
 
-    // Only subscribe once (module-level flag persists across remounts)
-    if (eventsSubscribed) {
+    // Only subscribe once per mount
+    if (eventsSubscribedRef.current) {
       console.log('📡 Already subscribed, skipping');
-      return; // Don't return cleanup
+      return;
     }
-    eventsSubscribed = true;
+    eventsSubscribedRef.current = true;
 
-    // Subscribe to mission available events (only happens once ever)
+    // Subscribe to mission available events
     console.log('📡 Subscribing to missionAvailable events...');
-    triggerEventBus.on('missionAvailable', (data) => {
+    const unsubMissionAvailable = triggerEventBus.on('missionAvailable', (data) => {
       console.log(`📥 Received missionAvailable event:`, data);
       const { mission } = data;
 
@@ -120,7 +118,10 @@ export const useStoryMissions = (gameState, actions) => {
       console.log(`📋 Mission available: ${mission.title}`);
     });
 
-    // No cleanup - subscriptions persist for app lifetime
+    return () => {
+      unsubMissionAvailable();
+      eventsSubscribedRef.current = false;
+    };
   }, []); // Empty dependency array - only run once on first mount
 
   // Message handler with current username and managerName

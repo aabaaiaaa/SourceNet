@@ -1,10 +1,11 @@
 import { test, expect } from '@playwright/test';
 import { completeBoot, openApp, clearAndReload, waitForGameTime } from '../helpers/common-actions.js';
+import { createRealisticSave, storeSaveInBrowser, storeMultipleSavesInBrowser } from '../helpers/test-data.js';
 import { STARTING_SOFTWARE } from '../../src/constants/gameConstants.js';
 
 /**
  * Consolidated Save/Load Flow Tests
- * 
+ *
  * This test suite covers all save and load scenarios including:
  * - Basic save/load from login screen
  * - Loading from power menu (in-game)
@@ -21,69 +22,19 @@ import { STARTING_SOFTWARE } from '../../src/constants/gameConstants.js';
  * Create a basic save state in localStorage
  */
 async function createSaveInStorage(page, username, balance, additionalData = {}) {
-    await page.evaluate(({ username, balance, startingSoftware, additionalData }) => {
-        const saveData = {
-            username,
-            playerMailId: `SNET-TST-${username.slice(-3)}-XXX`,
-            currentTime: '2020-03-25T10:30:00.000Z',
-            hardware: {
-                cpu: { id: 'cpu-1ghz-single', name: '1GHz Single Core', power: 65 },
-                memory: [{ id: 'ram-2gb', name: '2GB RAM', power: 3 }],
-                storage: [{ id: 'ssd-90gb', name: '90GB SSD', power: 2 }],
-                motherboard: { id: 'board-basic', name: 'Basic Board', power: 5 },
-                powerSupply: { id: 'psu-300w', name: '300W PSU', wattage: 300 },
-                network: { id: 'net-250mb', name: '250Mb Network Card', power: 5 },
-            },
-            software: startingSoftware,
-            bankAccounts: [
-                { id: 'account-first-bank', bankName: 'First Bank Ltd', balance },
-            ],
-            messages: [],
-            managerName: 'TestManager',
-            windows: [],
-            savedAt: new Date().toISOString(),
-            saveName: username,
-            ...additionalData,
-        };
-
-        const saves = JSON.parse(localStorage.getItem('sourcenet_saves') || '{}');
-        saves[username] = [saveData];
-        localStorage.setItem('sourcenet_saves', JSON.stringify(saves));
-    }, { username, balance, startingSoftware: STARTING_SOFTWARE, additionalData });
+    const saveData = createRealisticSave(username, balance, additionalData);
+    await storeSaveInBrowser(page, username, saveData);
 }
 
 /**
  * Create multiple saves in localStorage
  */
 async function createMultipleSaves(page, savesConfig) {
-    await page.evaluate(({ savesConfig, startingSoftware }) => {
-        const saves = {};
-
-        savesConfig.forEach(({ username, balance, messages = [], windows = [] }) => {
-            saves[username] = [{
-                username,
-                playerMailId: `SNET-TST-${username.slice(-3)}-XXX`,
-                currentTime: '2020-03-25T09:00:00',
-                hardware: {
-                    cpu: { id: 'cpu-1ghz', name: '1GHz CPU' },
-                    memory: [{ id: 'ram-2gb', name: '2GB RAM' }],
-                    storage: [{ id: 'ssd-90gb', name: '90GB SSD' }],
-                    motherboard: { id: 'board-basic', name: 'Basic Board' },
-                    powerSupply: { id: 'psu-300w', wattage: 300 },
-                    network: { id: 'net-250mb', speed: 250 },
-                },
-                software: startingSoftware,
-                bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance }],
-                messages,
-                managerName: 'TestManager',
-                windows,
-                savedAt: new Date().toISOString(),
-                saveName: username,
-            }];
-        });
-
-        localStorage.setItem('sourcenet_saves', JSON.stringify(saves));
-    }, { savesConfig, startingSoftware: STARTING_SOFTWARE });
+    const savesMap = {};
+    savesConfig.forEach(({ username, balance, messages = [], windows = [] }) => {
+        savesMap[username] = createRealisticSave(username, balance, { messages, windows });
+    });
+    await storeMultipleSavesInBrowser(page, savesMap);
 }
 
 /**

@@ -1,13 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { GameProvider, GameContext } from '../../contexts/GameContext';
+import { GameContext } from '../../contexts/GameContext';
+import { renderWithGame } from '../../test/helpers/renderHelpers';
 import PasswordCracker from './PasswordCracker';
 import triggerEventBus from '../../core/triggerEventBus';
 import networkRegistry from '../../systems/NetworkRegistry';
-
-const renderWithProvider = (component) => {
-  return render(<GameProvider>{component}</GameProvider>);
-};
 
 const createMockContext = (overrides = {}) => ({
   activeConnections: [],
@@ -33,32 +30,32 @@ describe('PasswordCracker Component', () => {
   });
 
   it('should render app title', () => {
-    renderWithProvider(<PasswordCracker />);
+    renderWithGame(<PasswordCracker />);
     expect(screen.getByText('Password Cracker')).toBeInTheDocument();
   });
 
   it('should render subtitle', () => {
-    renderWithProvider(<PasswordCracker />);
+    renderWithGame(<PasswordCracker />);
     expect(screen.getByText('Crack password-protected files')).toBeInTheDocument();
   });
 
   it('should render without crashing', () => {
-    const { container } = renderWithProvider(<PasswordCracker />);
+    const { container } = renderWithGame(<PasswordCracker />);
     expect(container.querySelector('.password-cracker')).toBeInTheDocument();
   });
 
   it('should show file source section', () => {
-    renderWithProvider(<PasswordCracker />);
+    renderWithGame(<PasswordCracker />);
     expect(screen.getByText('File Source')).toBeInTheDocument();
   });
 
   it('should show empty message when no sources have protected files', () => {
-    renderWithProvider(<PasswordCracker />);
+    renderWithGame(<PasswordCracker />);
     expect(screen.getByText('No sources with password-protected files available.')).toBeInTheDocument();
   });
 
   it('should show no files message when no protected files exist', () => {
-    renderWithProvider(<PasswordCracker />);
+    renderWithGame(<PasswordCracker />);
     expect(screen.getByText('No password-protected files found in this source.')).toBeInTheDocument();
   });
 });

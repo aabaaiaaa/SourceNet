@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { completeBoot, openMail, readMessage } from '../helpers/common-actions.js';
+import { completeBoot, openMail, readMessage, waitForMessage } from '../helpers/common-actions.js';
 import { createSaveWithCheque } from '../helpers/test-data.js';
 
 /**
@@ -19,17 +19,14 @@ test.describe('Banking & Cheque Flow', () => {
             // Complete boot
             await completeBoot(page, 'cheque_test');
 
-            // Wait for first message
-            await page.waitForTimeout(4000);
-
             // Open Mail and read first message (triggers second message)
             await openMail(page);
+            await waitForMessage(page, 'Welcome to SourceNet!', 15000);
             await readMessage(page, 'Welcome to SourceNet!');
             await page.click('button:has-text("Back")');
 
             // Wait for second message to arrive
-            await page.waitForTimeout(4000);
-            await expect(page.locator('.message-item:has-text("Hi from your manager")')).toBeVisible();
+            await waitForMessage(page, 'Hi from your manager', 15000);
 
             // Close Mail
             await page.click('.window:has-text("SNet Mail") button[title="Close"]');
@@ -93,14 +90,14 @@ test.describe('Banking & Cheque Flow', () => {
             // Complete boot
             await completeBoot(page, 'cheque_status_test');
 
-            // Wait for first message and read it
-            await page.waitForTimeout(4000);
+            // Read first message (triggers second message)
             await openMail(page);
+            await waitForMessage(page, 'Welcome', 15000);
             await page.click('.message-item:has-text("Welcome")');
             await page.click('button:has-text("Back")');
 
             // Wait for second message with cheque
-            await page.waitForTimeout(4000);
+            await waitForMessage(page, 'Hi from your manager', 15000);
             await readMessage(page, 'Hi from your manager');
 
             // Verify attachment shows "Click to deposit"
@@ -116,7 +113,7 @@ test.describe('Banking & Cheque Flow', () => {
             await page.click('.account-select-btn');
 
             // Wait for deposit to complete
-            await page.waitForTimeout(500);
+            await expect(page.locator('.cheque-deposit-prompt')).not.toBeVisible({ timeout: 5000 });
 
             // CRITICAL: Go back to Mail window (it should still be open)
             await page.click('.window:has-text("SNet Mail") .window-header');
@@ -140,20 +137,21 @@ test.describe('Banking & Cheque Flow', () => {
             // Complete boot
             await completeBoot(page, 'persist_test');
 
-            // Wait for messages
-            await page.waitForTimeout(4000);
+            // Read first message (triggers second message)
             await openMail(page);
+            await waitForMessage(page, 'Welcome', 15000);
             await page.click('.message-item:has-text("Welcome")');
             await page.click('button:has-text("Back")');
 
-            await page.waitForTimeout(4000);
+            // Wait for second message
+            await waitForMessage(page, 'Hi from your manager', 15000);
             await readMessage(page, 'Hi from your manager');
 
             // Deposit the cheque
             await page.click('.attachment-item');
             await expect(page.locator('.cheque-deposit-prompt')).toBeVisible();
             await page.click('.account-select-btn');
-            await page.waitForTimeout(500);
+            await expect(page.locator('.cheque-deposit-prompt')).not.toBeVisible({ timeout: 5000 });
 
             // Save the game - handle both dialogs in sequence
             let promptHandled = false;
@@ -172,7 +170,15 @@ test.describe('Banking & Cheque Flow', () => {
 
             await page.click('text=⏻');
             await page.click('button:has-text("Save")');
-            await page.waitForTimeout(1000);
+            // Wait for save to complete (dialog handlers are async)
+            await page.waitForFunction(
+                (name) => {
+                    const saves = localStorage.getItem('sourcenet_saves');
+                    return saves && JSON.parse(saves)[name];
+                },
+                'persist_test',
+                { timeout: 5000 }
+            );
 
             // Reload and load the save
             await page.goto('/?skipBoot=true');

@@ -1,8 +1,15 @@
 import { test, expect } from '@playwright/test';
+import {
+    loadScenario,
+    setSpecificTimeSpeed,
+    openMail,
+    closeWindow,
+    openApp,
+} from '../helpers/common-actions.js';
 
 /**
  * Hardware Unlock E2E Tests
- * 
+ *
  * Tests the complete hardware unlock flow:
  * 1. Credits trigger manager message when reaching 1000+
  * 2. Network adapter hardware availability before/after reading message
@@ -10,24 +17,6 @@ import { test, expect } from '@playwright/test';
  */
 
 test.setTimeout(120000);
-
-/**
- * Load a scenario and wait for desktop
- */
-const loadScenario = async (page, scenarioName) => {
-    await page.goto('/');
-    await page.evaluate(() => localStorage.clear());
-    await page.goto(`/?scenario=${scenarioName}`);
-    await expect(page.locator('.desktop')).toBeVisible({ timeout: 15000 });
-    await page.waitForFunction(() => window.gameContext?.setSpecificTimeSpeed, { timeout: 10000 });
-};
-
-/**
- * Set time speed
- */
-const setSpeed = async (page, speed) => {
-    await page.evaluate((s) => window.gameContext.setSpecificTimeSpeed(s), speed);
-};
 
 /**
  * Open debug panel and set credits
@@ -43,43 +32,12 @@ const setCreditsViaDebug = async (page, credits) => {
 };
 
 /**
- * Open Mail app
- */
-const openMail = async (page) => {
-    await page.hover('text=☰');
-    await page.click('.app-launcher-menu >> text=SNet Mail');
-    await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
-};
-
-/**
- * Close mail window
- */
-const closeMail = async (page) => {
-    const mailWindow = page.locator('.window:has-text("SNet Mail")');
-    const closeBtn = mailWindow.locator('button.window-control-btn[title="Close"]');
-    await closeBtn.click();
-    await expect(mailWindow).not.toBeVisible({ timeout: 2000 });
-};
-
-/**
- * Close portal window
- */
-const closePortal = async (page) => {
-    const portalWindow = page.locator('.window:has-text("OSNet Portal")');
-    const closeBtn = portalWindow.locator('button.window-control-btn[title="Close"]');
-    await closeBtn.click();
-    await expect(portalWindow).not.toBeVisible({ timeout: 2000 });
-};
-
-/**
  * Open Portal app and go to Hardware tab
  */
 const openPortalHardware = async (page) => {
-    await page.hover('text=☰');
-    await page.click('.app-launcher-menu >> text=OSNet Portal');
-    await expect(page.locator('.portal')).toBeVisible();
+    await openApp(page, 'OSNet Portal');
     await page.click('button:has-text("Hardware")');
-    await page.waitForTimeout(300);
+    await expect(page.locator('.category-btn').first()).toBeVisible({ timeout: 5000 });
 };
 
 test.describe('Hardware Unlock - Credits Trigger', () => {
@@ -92,10 +50,10 @@ test.describe('Hardware Unlock - Credits Trigger', () => {
         const betterMessage = page.locator('.message-item:has-text("Better")');
         await expect(betterMessage).toBeVisible();
         await betterMessage.click();
-        await page.waitForTimeout(500);
+        await expect(page.locator('.message-view')).toBeVisible();
 
         // Close mail
-        await closeMail(page);
+        await closeWindow(page, 'SNet Mail');
 
         // Get current credits
         const currentCredits = await page.evaluate(() => window.gameContext.getTotalCredits());
@@ -107,9 +65,9 @@ test.describe('Hardware Unlock - Credits Trigger', () => {
         }
 
         // Wait for the hardware unlock message to arrive (it has a 3 second delay)
-        await setSpeed(page, 100);
+        await setSpecificTimeSpeed(page, 100);
         await page.waitForTimeout(500);
-        await setSpeed(page, 1);
+        await setSpecificTimeSpeed(page, 1);
 
         // Open mail and check for hardware unlock message
         await openMail(page);
@@ -129,9 +87,9 @@ test.describe('Hardware Unlock - Credits Trigger', () => {
         await setCreditsViaDebug(page, 1500);
 
         // Wait some time
-        await setSpeed(page, 100);
+        await setSpecificTimeSpeed(page, 100);
         await page.waitForTimeout(500);
-        await setSpeed(page, 1);
+        await setSpecificTimeSpeed(page, 1);
 
         // Open mail - should NOT have hardware unlock message yet
         await openMail(page);
@@ -155,7 +113,7 @@ test.describe('Hardware Unlock - Network Adapter Availability', () => {
 
         // Click on Network Adapters category
         await page.click('.category-btn:has-text("Network")');
-        await page.waitForTimeout(300);
+        await expect(page.locator('.portal-item').first()).toBeVisible({ timeout: 5000 });
 
         // Check for locked indicator or no purchase buttons
         const lockedIndicator = page.locator('text=/locked|Unlock|not available/i');
@@ -176,30 +134,30 @@ test.describe('Hardware Unlock - Network Adapter Availability', () => {
         await openMail(page);
         const betterMessage = page.locator('.message-item:has-text("Better")');
         await betterMessage.click();
-        await page.waitForTimeout(300);
-        await closeMail(page);
+        await expect(page.locator('.message-view')).toBeVisible();
+        await closeWindow(page, 'SNet Mail');
 
         // Set credits high enough to trigger message
         await setCreditsViaDebug(page, 2000);
 
         // Wait for hardware unlock message to arrive
-        await setSpeed(page, 100);
+        await setSpecificTimeSpeed(page, 100);
         await page.waitForTimeout(500);
-        await setSpeed(page, 1);
+        await setSpecificTimeSpeed(page, 1);
 
         // Verify message has arrived but DON'T read it
         await openMail(page);
         const hardwareMessage = page.locator('.message-item:has-text("Hardware"), .message-item:has-text("Opportunities")');
         await expect(hardwareMessage).toBeVisible({ timeout: 5000 });
         // Close mail WITHOUT clicking/reading the message
-        await closeMail(page);
+        await closeWindow(page, 'SNet Mail');
 
         // Open Portal Hardware tab - features should still be locked
         await openPortalHardware(page);
 
         // Click on Network Adapters category
         await page.click('.category-btn:has-text("Network")');
-        await page.waitForTimeout(300);
+        await expect(page.locator('.portal-item').first()).toBeVisible({ timeout: 5000 });
 
         // Network adapters should STILL be locked (message not read yet)
         const lockedIndicator = page.locator('text=/locked|Unlock|not available/i');
@@ -220,31 +178,31 @@ test.describe('Hardware Unlock - Network Adapter Availability', () => {
         await openMail(page);
         const betterMessage = page.locator('.message-item:has-text("Better")');
         await betterMessage.click();
-        await page.waitForTimeout(300);
-        await closeMail(page);
+        await expect(page.locator('.message-view')).toBeVisible();
+        await closeWindow(page, 'SNet Mail');
 
         // Set credits high enough
         await setCreditsViaDebug(page, 2000);
 
         // Wait for hardware unlock message
-        await setSpeed(page, 100);
+        await setSpecificTimeSpeed(page, 100);
         await page.waitForTimeout(500);
-        await setSpeed(page, 1);
+        await setSpecificTimeSpeed(page, 1);
 
         // Read the hardware unlock message
         await openMail(page);
         const hardwareMessage = page.locator('.message-item:has-text("Hardware"), .message-item:has-text("Opportunities")');
         await expect(hardwareMessage).toBeVisible({ timeout: 5000 });
         await hardwareMessage.click();
-        await page.waitForTimeout(300);
-        await closeMail(page);
+        await expect(page.locator('.message-view')).toBeVisible();
+        await closeWindow(page, 'SNet Mail');
 
         // Open Portal Hardware tab
         await openPortalHardware(page);
 
         // Click on Network Adapters category
         await page.click('.category-btn:has-text("Network")');
-        await page.waitForTimeout(300);
+        await expect(page.locator('.portal-item').first()).toBeVisible({ timeout: 5000 });
 
         // Network adapters should now be available (have purchase buttons)
         const networkPurchaseBtn = page.locator('.portal-item:not(.installed):not(.locked) button:has-text("Purchase")');
@@ -265,7 +223,6 @@ test.describe('Log Viewer Software Unlock', () => {
         await expect(page.locator('.portal')).toBeVisible();
 
         // Should be on Software tab by default
-        await page.waitForTimeout(300);
 
         // Look for Log Viewer in the software list
         const logViewerItem = page.locator('.portal-item:has-text("Log Viewer")');
@@ -285,27 +242,26 @@ test.describe('Log Viewer Software Unlock', () => {
         // Trigger unlock: read "better", set credits, read hardware message
         await openMail(page);
         await page.locator('.message-item:has-text("Better")').click();
-        await page.waitForTimeout(300);
-        await closeMail(page);
+        await expect(page.locator('.message-view')).toBeVisible();
+        await closeWindow(page, 'SNet Mail');
 
         await setCreditsViaDebug(page, 2000);
-        await setSpeed(page, 100);
+        await setSpecificTimeSpeed(page, 100);
         await page.waitForTimeout(500);
-        await setSpeed(page, 1);
+        await setSpecificTimeSpeed(page, 1);
 
         // Read the hardware unlock message
         await openMail(page);
         const hardwareMessage = page.locator('.message-item:has-text("Hardware"), .message-item:has-text("Opportunities")');
         await expect(hardwareMessage).toBeVisible({ timeout: 5000 });
         await hardwareMessage.click();
-        await page.waitForTimeout(300);
-        await closeMail(page);
+        await expect(page.locator('.message-view')).toBeVisible();
+        await closeWindow(page, 'SNet Mail');
 
         // Open Portal Software tab
         await page.hover('text=☰');
         await page.click('.app-launcher-menu >> text=OSNet Portal');
         await expect(page.locator('.portal')).toBeVisible();
-        await page.waitForTimeout(300);
 
         // Look for Log Viewer in the software list
         const logViewerItem = page.locator('.portal-item:has-text("Log Viewer")');
@@ -325,26 +281,25 @@ test.describe('Log Viewer Software Unlock', () => {
         // Trigger unlock
         await openMail(page);
         await page.locator('.message-item:has-text("Better")').click();
-        await page.waitForTimeout(300);
-        await closeMail(page);
+        await expect(page.locator('.message-view')).toBeVisible();
+        await closeWindow(page, 'SNet Mail');
 
         await setCreditsViaDebug(page, 2000);
-        await setSpeed(page, 100);
+        await setSpecificTimeSpeed(page, 100);
         await page.waitForTimeout(500);
-        await setSpeed(page, 1);
+        await setSpecificTimeSpeed(page, 1);
 
         await openMail(page);
         const hardwareMessage = page.locator('.message-item:has-text("Hardware"), .message-item:has-text("Opportunities")');
         await expect(hardwareMessage).toBeVisible({ timeout: 5000 });
         await hardwareMessage.click();
-        await page.waitForTimeout(300);
-        await closeMail(page);
+        await expect(page.locator('.message-view')).toBeVisible();
+        await closeWindow(page, 'SNet Mail');
 
         // Open Portal
         await page.hover('text=☰');
         await page.click('.app-launcher-menu >> text=OSNet Portal');
         await expect(page.locator('.portal')).toBeVisible();
-        await page.waitForTimeout(300);
 
         // Purchase Log Viewer
         const logViewerItem = page.locator('.portal-item:has-text("Log Viewer")');
@@ -356,12 +311,12 @@ test.describe('Log Viewer Software Unlock', () => {
         await confirmBtn.click();
 
         // Wait for download to complete (speed up time)
-        await setSpeed(page, 100);
+        await setSpecificTimeSpeed(page, 100);
         await page.waitForTimeout(1000);
-        await setSpeed(page, 1);
+        await setSpecificTimeSpeed(page, 1);
 
         // Close Portal
-        await closePortal(page);
+        await closeWindow(page, 'OSNet Portal');
 
         // Check if Log Viewer is in app launcher
         await page.hover('text=☰');
@@ -383,7 +338,6 @@ test.describe('Data Recovery Tool Software Unlock', () => {
         await expect(page.locator('.portal')).toBeVisible();
 
         // Should be on Software tab by default
-        await page.waitForTimeout(300);
 
         // Look for Data Recovery Tool in the software list
         const dataRecoveryItem = page.locator('.portal-item:has-text("Data Recovery Tool")');
@@ -403,27 +357,26 @@ test.describe('Data Recovery Tool Software Unlock', () => {
         // Trigger unlock: read "better", set credits, read hardware message
         await openMail(page);
         await page.locator('.message-item:has-text("Better")').click();
-        await page.waitForTimeout(300);
-        await closeMail(page);
+        await expect(page.locator('.message-view')).toBeVisible();
+        await closeWindow(page, 'SNet Mail');
 
         await setCreditsViaDebug(page, 2000);
-        await setSpeed(page, 100);
+        await setSpecificTimeSpeed(page, 100);
         await page.waitForTimeout(500);
-        await setSpeed(page, 1);
+        await setSpecificTimeSpeed(page, 1);
 
         // Read the hardware unlock message
         await openMail(page);
         const hardwareMessage = page.locator('.message-item:has-text("Hardware"), .message-item:has-text("Opportunities")');
         await expect(hardwareMessage).toBeVisible({ timeout: 5000 });
         await hardwareMessage.click();
-        await page.waitForTimeout(300);
-        await closeMail(page);
+        await expect(page.locator('.message-view')).toBeVisible();
+        await closeWindow(page, 'SNet Mail');
 
         // Open Portal Software tab
         await page.hover('text=☰');
         await page.click('.app-launcher-menu >> text=OSNet Portal');
         await expect(page.locator('.portal')).toBeVisible();
-        await page.waitForTimeout(300);
 
         // Look for Data Recovery Tool in the software list
         const dataRecoveryItem = page.locator('.portal-item:has-text("Data Recovery Tool")');
@@ -443,26 +396,25 @@ test.describe('Data Recovery Tool Software Unlock', () => {
         // Trigger unlock
         await openMail(page);
         await page.locator('.message-item:has-text("Better")').click();
-        await page.waitForTimeout(300);
-        await closeMail(page);
+        await expect(page.locator('.message-view')).toBeVisible();
+        await closeWindow(page, 'SNet Mail');
 
         await setCreditsViaDebug(page, 2000);
-        await setSpeed(page, 100);
+        await setSpecificTimeSpeed(page, 100);
         await page.waitForTimeout(500);
-        await setSpeed(page, 1);
+        await setSpecificTimeSpeed(page, 1);
 
         await openMail(page);
         const hardwareMessage = page.locator('.message-item:has-text("Hardware"), .message-item:has-text("Opportunities")');
         await expect(hardwareMessage).toBeVisible({ timeout: 5000 });
         await hardwareMessage.click();
-        await page.waitForTimeout(300);
-        await closeMail(page);
+        await expect(page.locator('.message-view')).toBeVisible();
+        await closeWindow(page, 'SNet Mail');
 
         // Open Portal
         await page.hover('text=☰');
         await page.click('.app-launcher-menu >> text=OSNet Portal');
         await expect(page.locator('.portal')).toBeVisible();
-        await page.waitForTimeout(300);
 
         // Purchase Data Recovery Tool
         const dataRecoveryItem = page.locator('.portal-item:has-text("Data Recovery Tool")');
@@ -474,12 +426,12 @@ test.describe('Data Recovery Tool Software Unlock', () => {
         await confirmBtn.click();
 
         // Wait for download to complete (speed up time)
-        await setSpeed(page, 100);
+        await setSpecificTimeSpeed(page, 100);
         await page.waitForTimeout(1000);
-        await setSpeed(page, 1);
+        await setSpecificTimeSpeed(page, 1);
 
         // Close Portal
-        await closePortal(page);
+        await closeWindow(page, 'OSNet Portal');
 
         // Check if Data Recovery Tool is in app launcher
         await page.hover('text=☰');
@@ -498,27 +450,27 @@ test.describe('Hardware Purchase and Reboot Flow', () => {
         // Trigger unlock: read "better", set credits, read hardware message
         await openMail(page);
         await page.locator('.message-item:has-text("Better")').click();
-        await page.waitForTimeout(300);
-        await closeMail(page);
+        await expect(page.locator('.message-view')).toBeVisible();
+        await closeWindow(page, 'SNet Mail');
 
         await setCreditsViaDebug(page, 5000);
-        await setSpeed(page, 100);
+        await setSpecificTimeSpeed(page, 100);
         await page.waitForTimeout(500);
-        await setSpeed(page, 1);
+        await setSpecificTimeSpeed(page, 1);
 
         await openMail(page);
         const hardwareMessage = page.locator('.message-item:has-text("Hardware"), .message-item:has-text("Opportunities")');
         await expect(hardwareMessage).toBeVisible({ timeout: 5000 });
         await hardwareMessage.click();
-        await page.waitForTimeout(300);
-        await closeMail(page);
+        await expect(page.locator('.message-view')).toBeVisible();
+        await closeWindow(page, 'SNet Mail');
 
         // Open Portal Hardware and purchase network adapter
         await openPortalHardware(page);
 
         // Click on Network Adapters category
         await page.click('.category-btn:has-text("Network")');
-        await page.waitForTimeout(300);
+        await expect(page.locator('.portal-item').first()).toBeVisible({ timeout: 5000 });
 
         // Find a purchasable network item
         const networkItem = page.locator('.portal-item:not(.installed):not(.locked)').first();
@@ -544,20 +496,20 @@ test.describe('Hardware Purchase and Reboot Flow', () => {
         // Trigger unlock
         await openMail(page);
         await page.locator('.message-item:has-text("Better")').click();
-        await page.waitForTimeout(300);
-        await closeMail(page);
+        await expect(page.locator('.message-view')).toBeVisible();
+        await closeWindow(page, 'SNet Mail');
 
         await setCreditsViaDebug(page, 5000);
-        await setSpeed(page, 100);
+        await setSpecificTimeSpeed(page, 100);
         await page.waitForTimeout(500);
-        await setSpeed(page, 1);
+        await setSpecificTimeSpeed(page, 1);
 
         await openMail(page);
         const hardwareMessage = page.locator('.message-item:has-text("Hardware"), .message-item:has-text("Opportunities")');
         await expect(hardwareMessage).toBeVisible({ timeout: 5000 });
         await hardwareMessage.click();
-        await page.waitForTimeout(300);
-        await closeMail(page);
+        await expect(page.locator('.message-view')).toBeVisible();
+        await closeWindow(page, 'SNet Mail');
 
         // Get current network speed before upgrade
         const beforeSpeed = await page.evaluate(() => window.gameContext.hardware?.network?.speed || 0);
@@ -568,7 +520,7 @@ test.describe('Hardware Purchase and Reboot Flow', () => {
 
         // Click on Network Adapters category
         await page.click('.category-btn:has-text("Network")');
-        await page.waitForTimeout(300);
+        await expect(page.locator('.portal-item').first()).toBeVisible({ timeout: 5000 });
 
         const networkItem = page.locator('.portal-item:not(.installed):not(.locked)').first();
         await networkItem.locator('button:has-text("Purchase")').click();
@@ -576,7 +528,6 @@ test.describe('Hardware Purchase and Reboot Flow', () => {
         const confirmBtn = page.locator('.modal-content .confirm-btn');
         await expect(confirmBtn).toBeVisible({ timeout: 3000 });
         await confirmBtn.click();
-        await page.waitForTimeout(500);
 
         // Verify pending badge appears (hardware queued for install)
         const pendingBadge = page.locator('.pending-badge').first();
@@ -584,7 +535,7 @@ test.describe('Hardware Purchase and Reboot Flow', () => {
         console.log('✅ Pending badge visible - hardware queued');
 
         // Close Portal
-        await closePortal(page);
+        await closeWindow(page, 'OSNet Portal');
 
         // Reboot via power menu - note: scenario loading skips boot sequence
         await page.click('.topbar-button:has-text("⏻")');

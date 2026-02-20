@@ -4,8 +4,8 @@ import { LOCAL_SSD_NETWORK_ID, LOCAL_SSD_BANDWIDTH } from '../../constants/gameC
 import { calculateStorageUsed, calculateLocalFilesSize, getTotalStorageCapacityGB } from '../../systems/StorageSystem';
 import triggerEventBus from '../../core/triggerEventBus';
 import networkRegistry from '../../systems/NetworkRegistry';
-import { formatTimeRemaining, formatTransferSpeed } from '../../utils/formatUtils';
-import { isKnownMalicious } from '../../systems/MalwareDetectionHelper';
+import FileManagerFileList from './FileManagerFileList';
+import FileManagerActivityLog from './FileManagerActivityLog';
 import './FileManager.css';
 
 const FileManager = () => {
@@ -951,88 +951,28 @@ const FileManager = () => {
                 </button>
               </div>
 
-              <div className="file-list">
-                {files.map((file, idx) => {
-                  const isOperating = operatingFiles.has(file.name);
-                  const progress = fileProgress[file.name] || 0;
-                  const operation = fileOperations[file.name];
-                  const stats = fileOperationStats[file.name] || {};
-                  const isCrossNetworkPaste = operation === 'paste-cross';
-
-                  const isMalicious = isKnownMalicious(file.name, selectedFileSystem, knownMaliciousFiles || []);
-
-                  return (
-                    <div
-                      key={idx}
-                      className={`file-item ${file.corrupted ? 'file-corrupted' : ''
-                        } ${file.selected ? 'file-selected' : ''
-                        } ${isOperating ? 'file-operating' : ''
-                        } ${isMalicious ? 'file-malicious' : ''
-                        }`}
-                      onClick={() => !isOperating && handleFileSelect(idx)}
-                      style={{ cursor: isOperating ? 'default' : 'pointer' }}
-                    >
-                      {file.corrupted && <span className="corruption-icon">⚠</span>}
-                      {isMalicious && <span className="malware-icon">☣</span>}
-                      <span className="file-name">{file.name}</span>
-                      <span className="file-size">{file.size}</span>
-
-                      {isOperating && (
-                        <div className="file-progress">
-                          <div className="file-progress-bar">
-                            <div
-                              className={`file-progress-fill ${isCrossNetworkPaste ? 'cross-network' : ''}`}
-                              style={{ width: `${progress}%` }}
-                            />
-                          </div>
-                          <span className="file-progress-text">
-                            {operation?.replace('-cross', '')} {Math.floor(progress)}%
-                            {stats.transferSpeedMBps > 0 && ` • ${formatTransferSpeed(stats.transferSpeedMBps)}`}
-                            {stats.remainingSeconds > 0 && ` • ${formatTimeRemaining(stats.remainingSeconds)} left`}
-                            {isCrossNetworkPaste && ` • from ${clipboardSourceNetwork}`}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+              <FileManagerFileList
+                files={files}
+                operatingFiles={operatingFiles}
+                fileProgress={fileProgress}
+                fileOperations={fileOperations}
+                fileOperationStats={fileOperationStats}
+                selectedFileSystem={selectedFileSystem}
+                knownMaliciousFiles={knownMaliciousFiles}
+                clipboardSourceNetwork={clipboardSourceNetwork}
+                onFileSelect={handleFileSelect}
+              />
             </>
           )}
         </>
       )}
 
       {/* Activity Log Panel */}
-      <div className={`activity-log-panel ${isLogCollapsed ? 'collapsed' : ''}`}>
-        <div className="activity-log-header" onClick={() => setIsLogCollapsed(!isLogCollapsed)}>
-          <span className="activity-log-title">
-            📋 Activity Log ({activityLog.length})
-          </span>
-          <span className="activity-log-toggle">{isLogCollapsed ? '▲' : '▼'}</span>
-        </div>
-        {!isLogCollapsed && (
-          <div className="activity-log-content">
-            {activityLog.length === 0 ? (
-              <div className="activity-log-empty">No activity yet</div>
-            ) : (
-              activityLog.map((entry) => (
-                <div
-                  key={entry.id}
-                  className={`activity-log-entry ${entry.isSabotage ? 'sabotage-entry' : ''}`}
-                >
-                  <span className="log-timestamp">{entry.timestamp}</span>
-                  <span className="log-operation">{entry.operation.toUpperCase()}</span>
-                  <span className="log-filename">{entry.fileName}</span>
-                  <span className="log-location">@ {entry.location}</span>
-                  <span className={`log-source ${entry.isSabotage ? 'source-unknown' : ''}`}>
-                    {entry.isSabotage ? '⚠️ ' : ''}{entry.source}
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-      </div>
+      <FileManagerActivityLog
+        activityLog={activityLog}
+        isLogCollapsed={isLogCollapsed}
+        setIsLogCollapsed={setIsLogCollapsed}
+      />
     </div>
   );
 };

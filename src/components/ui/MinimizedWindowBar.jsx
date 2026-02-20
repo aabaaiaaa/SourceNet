@@ -1,4 +1,5 @@
 import { useGame } from '../../contexts/useGame';
+import { getAppTitle } from '../../utils/appRegistry';
 import './MinimizedWindowBar.css';
 
 const MinimizedWindowBar = () => {
@@ -9,39 +10,6 @@ const MinimizedWindowBar = () => {
   if (minimizedWindows.length === 0) {
     return null;
   }
-
-  const getAppTitle = (appId) => {
-    switch (appId) {
-      case 'mail':
-        return 'SNet Mail';
-      case 'banking':
-        return 'SNet Banking App';
-      case 'portal':
-        return 'OSNet Portal';
-      case 'missionBoard':
-        return 'SourceNet Mission Board';
-      case 'vpnClient':
-        return 'SourceNet VPN Client';
-      case 'networkScanner':
-        return 'Network Scanner';
-      case 'networkAddressRegister':
-        return 'Network Address Register';
-      case 'fileManager':
-        return 'File Manager';
-      case 'logViewer':
-        return 'Log Viewer';
-      case 'dataRecoveryTool':
-        return 'Data Recovery Tool';
-      case 'decryptionTool':
-        return 'Decryption Tool';
-      case 'passwordCracker':
-        return 'Password Cracker';
-      case 'networkSniffer':
-        return 'Network Sniffer';
-      default:
-        return 'Unknown App';
-    }
-  };
 
   return (
     <div className="minimized-bar">

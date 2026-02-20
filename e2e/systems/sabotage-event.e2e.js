@@ -14,24 +14,18 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { setSpecificTimeSpeed, loadScenario } from '../helpers/common-actions.js';
 
 test.describe('E2E: Tutorial Sabotage Event', () => {
     test('should trigger sabotage event when repairing files', async ({ page }) => {
-        const setSpeed = async (speed) => {
-            await page.evaluate((s) => window.gameContext.setSpecificTimeSpeed(s), speed);
-        };
 
         // ========================================
         // STEP 1: Load scenario
         // ========================================
-        await page.goto('/');
-        await page.evaluate(() => localStorage.clear());
-        await page.goto('/?scenario=tutorial-part-1-prior-to-sabotage');
-        await expect(page.locator('.desktop')).toBeVisible({ timeout: 15000 });
-        await page.waitForFunction(() => window.gameContext?.setSpecificTimeSpeed, { timeout: 10000 });
+        await loadScenario(page, 'tutorial-part-1-prior-to-sabotage');
 
         // Set fast speed for setup
-        await setSpeed(100);
+        await setSpecificTimeSpeed(page, 100);
 
         // ========================================
         // STEP 2: Reconnect to network
@@ -89,7 +83,7 @@ test.describe('E2E: Tutorial Sabotage Event', () => {
         // ========================================
         // STEP 5: Switch to 10x speed and click Repair
         // ========================================
-        await setSpeed(10);
+        await setSpecificTimeSpeed(page, 10);
         // Wait for React state to propagate to StoryMissionManager
         // This ensures the scripted event delay (5000ms game time) uses 10x speed
         await page.waitForTimeout(200);

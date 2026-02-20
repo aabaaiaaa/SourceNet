@@ -18,7 +18,11 @@ import {
     readMessage,
     closeWindow,
     openApp,
+    setSpecificTimeSpeed,
+    waitForMissionOfType,
 } from '../helpers/common-actions.js';
+
+const INVESTIGATION_TYPES = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
 
 test.describe('Investigation Mission Generation', () => {
     test('should have investigation missions available after completing data-detective', async ({ page }) => {
@@ -29,7 +33,7 @@ test.describe('Investigation Mission Generation', () => {
         await expect(page.locator('.desktop')).toBeVisible({ timeout: 15000 });
 
         // Speed up game time for faster testing
-        await page.evaluate(() => window.gameContext.setSpecificTimeSpeed(100));
+        await setSpecificTimeSpeed(page, 100);
 
         // Verify unlockedFeatures includes investigation-missions
         const unlockedFeatures = await page.evaluate(() => window.gameContext.unlockedFeatures);
@@ -42,20 +46,10 @@ test.describe('Investigation Mission Generation', () => {
         await readMessage(page, 'Investigation Missions Unlocked');
         await closeWindow(page, 'SNet Mail');
 
-        // Wait for pool to contain an investigation mission (poll with timeout)
-        const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
-        let missionPool;
-        let hasInvestigationMission = false;
-
-        for (let attempt = 0; attempt < 20; attempt++) {
-            await page.waitForTimeout(500);
-            missionPool = await page.evaluate(() => window.gameContext.missionPool);
-            hasInvestigationMission = missionPool.some(m => investigationTypes.includes(m.missionType));
-            if (hasInvestigationMission) {
-                console.log(`Investigation mission found after ${attempt + 1} attempts`);
-                break;
-            }
-        }
+        // Wait for pool to contain an investigation mission
+        const investigationMission = await waitForMissionOfType(page, INVESTIGATION_TYPES);
+        expect(investigationMission).toBeTruthy();
+        console.log(`Found investigation mission: "${investigationMission.title}" (${investigationMission.missionType})`);
 
         // Open Mission Board
         await openApp(page, 'Mission Board');
@@ -66,30 +60,25 @@ test.describe('Investigation Mission Generation', () => {
         await expect(page.locator('.mission-board .missions-list .mission-card').first()).toBeVisible({ timeout: 10000 });
 
         // Get all mission cards and their types
-        const missionCards = page.locator('.mission-board .missions-list .mission-card');
-        const missionCount = await missionCards.count();
+        const missionPool = await page.evaluate(() => window.gameContext.missionPool);
+        const missionCount = await page.locator('.mission-board .missions-list .mission-card').count();
         console.log(`Found ${missionCount} missions in pool`);
 
         // Check pool via gameContext for mission types
         const missionTypes = missionPool.map(m => m.missionType);
         console.log('Mission types in pool:', missionTypes);
 
-        // Verify we have investigation missions
-        expect(hasInvestigationMission).toBe(true);
         console.log('Investigation missions are present in the pool');
-
-        // Find and verify an investigation mission card
-        const investigationMission = missionPool.find(m => investigationTypes.includes(m.missionType));
-        console.log(`Found investigation mission: "${investigationMission.title}" (${investigationMission.missionType})`);
 
         // Verify the investigation mission has correct requirements
         expect(investigationMission.requirements.software).toContain('log-viewer');
         console.log('Investigation mission requires log-viewer');
 
-        // Verify pool size is at midGame level (5-8, but may be slightly higher when forcing investigation mission)
-        expect(missionPool.length).toBeGreaterThanOrEqual(5);
-        expect(missionPool.length).toBeLessThanOrEqual(10);
-        console.log(`Pool size (${missionPool.length}) is within expected range (5-10)`);
+        // Verify pool size is at midGame level (5-10)
+        const poolSize = missionPool.length;
+        expect(poolSize).toBeGreaterThanOrEqual(5);
+        expect(poolSize).toBeLessThanOrEqual(10);
+        console.log(`Pool size (${poolSize}) is within expected range (5-10)`);
 
         await closeWindow(page, 'Mission Board');
     });
@@ -102,7 +91,7 @@ test.describe('Investigation Mission Generation', () => {
         await expect(page.locator('.desktop')).toBeVisible({ timeout: 15000 });
 
         // Speed up game time
-        await page.evaluate(() => window.gameContext.setSpecificTimeSpeed(100));
+        await setSpecificTimeSpeed(page, 100);
 
         // Read the "Investigation Missions Unlocked" message
         await openMail(page);
@@ -110,20 +99,8 @@ test.describe('Investigation Mission Generation', () => {
         await readMessage(page, 'Investigation Missions Unlocked');
         await closeWindow(page, 'SNet Mail');
 
-        // Wait for pool to contain an investigation mission (poll with timeout)
-        const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
-        let missionPool;
-        let investigationMission;
-
-        for (let attempt = 0; attempt < 20; attempt++) {
-            await page.waitForTimeout(500);
-            missionPool = await page.evaluate(() => window.gameContext.missionPool);
-            investigationMission = missionPool.find(m => investigationTypes.includes(m.missionType));
-            if (investigationMission) {
-                console.log(`Investigation mission found after ${attempt + 1} attempts`);
-                break;
-            }
-        }
+        // Wait for pool to contain an investigation mission
+        const investigationMission = await waitForMissionOfType(page, INVESTIGATION_TYPES);
 
         if (!investigationMission) {
             console.log('No investigation mission found after polling, skipping...');
@@ -169,7 +146,7 @@ test.describe('Investigation Mission Generation', () => {
         await expect(page.locator('.desktop')).toBeVisible({ timeout: 15000 });
 
         // Speed up game time
-        await page.evaluate(() => window.gameContext.setSpecificTimeSpeed(100));
+        await setSpecificTimeSpeed(page, 100);
 
         // Read the "Investigation Missions Unlocked" message
         await openMail(page);
@@ -177,20 +154,8 @@ test.describe('Investigation Mission Generation', () => {
         await readMessage(page, 'Investigation Missions Unlocked');
         await closeWindow(page, 'SNet Mail');
 
-        // Wait for pool to contain an investigation mission (poll with timeout)
-        const investigationTypes = ['investigation-repair', 'investigation-recovery', 'secure-deletion'];
-        let missionPool;
-        let investigationMission;
-
-        for (let attempt = 0; attempt < 20; attempt++) {
-            await page.waitForTimeout(500);
-            missionPool = await page.evaluate(() => window.gameContext.missionPool);
-            investigationMission = missionPool.find(m => investigationTypes.includes(m.missionType));
-            if (investigationMission) {
-                console.log(`Investigation mission found after ${attempt + 1} attempts`);
-                break;
-            }
-        }
+        // Wait for pool to contain an investigation mission
+        const investigationMission = await waitForMissionOfType(page, INVESTIGATION_TYPES);
 
         if (!investigationMission) {
             console.log('No investigation mission found after polling, skipping test');

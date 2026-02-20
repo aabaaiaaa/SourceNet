@@ -25,11 +25,21 @@ const useTraceMonitor = () => {
   const beepIntervalRef = useRef(null);
   const isMonitorActive = activePassiveSoftware?.includes('trace-monitor');
 
+  // Refs for frequently-changing values to avoid effect recreation
+  const currentTimeRef = useRef(currentTime);
+  const activeRelayChainRef = useRef(activeRelayChain);
+  const relayNodesRef = useRef(relayNodes);
+  const rebuildCountRef = useRef(rebuildCount);
+  currentTimeRef.current = currentTime;
+  activeRelayChainRef.current = activeRelayChain;
+  relayNodesRef.current = relayNodes;
+  rebuildCountRef.current = rebuildCount;
+
   // Calculate remaining ETT based on current time
   const getTraceProgress = useCallback(() => {
-    if (!traceState?.active || !currentTime) return null;
+    if (!traceState?.active || !currentTimeRef.current) return null;
 
-    const elapsed = currentTime.getTime() - traceState.startTime;
+    const elapsed = currentTimeRef.current.getTime() - traceState.startTime;
     const remaining = Math.max(0, traceState.totalETT - elapsed);
     const progress = Math.min(1, elapsed / traceState.totalETT);
 
@@ -39,19 +49,19 @@ const useTraceMonitor = () => {
       formattedRemaining: formatETT(remaining),
       isTraced: remaining <= 0,
     };
-  }, [traceState, currentTime]);
+  }, [traceState]);
 
-  // Handle being fully traced
+  // Handle being fully traced - depends only on traceState changing (not currentTime)
   useEffect(() => {
-    if (!traceState?.active || !currentTime) return;
+    if (!traceState?.active) return;
 
     const check = () => {
       const progress = getTraceProgress();
       if (progress?.isTraced) {
         // Player has been traced!
         // Burn all relay nodes in the chain
-        if (activeRelayChain.length > 0) {
-          const burnedNodes = burnChain(activeRelayChain, relayNodes);
+        if (activeRelayChainRef.current.length > 0) {
+          const burnedNodes = burnChain(activeRelayChainRef.current, relayNodesRef.current);
           setRelayNodes(burnedNodes);
         }
 
@@ -61,7 +71,7 @@ const useTraceMonitor = () => {
         setTraceState(null);
 
         // Increment rebuild count
-        const newRebuildCount = rebuildCount + 1;
+        const newRebuildCount = rebuildCountRef.current + 1;
         setRebuildCount(newRebuildCount);
 
         // Emit trace event
@@ -80,7 +90,7 @@ const useTraceMonitor = () => {
 
     const intervalId = setInterval(check, 500);
     return () => clearInterval(intervalId);
-  }, [traceState, currentTime, activeRelayChain, relayNodes]);
+  }, [traceState, getTraceProgress, setTraceState, setRelayNodes, setActiveRelayChain, setActiveConnections, setRebuildCount]);
 
   // Beep logic - only beeps when trace monitor is active as passive software
   useEffect(() => {

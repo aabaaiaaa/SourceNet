@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { STARTING_SOFTWARE } from '../../src/constants/gameConstants.js';
+import { waitForMessage, readMessage } from '../helpers/common-actions.js';
 
 test.describe('E2E Test 5: App Interactions Flow', () => {
   test('should handle complete app interaction flow', async ({ page }) => {
@@ -39,9 +40,8 @@ test.describe('E2E Test 5: App Interactions Flow', () => {
     await page.click('text=✉');
 
     // Step 8-11: Read and archive Message 1
-    await expect(page.locator('.message-item:has-text("Welcome to SourceNet!")')).toBeVisible({ timeout: 5000 });
-    await page.click('.message-item:has-text("Welcome to SourceNet!")');
-    await expect(page.locator('.message-view')).toBeVisible();
+    await waitForMessage(page, 'Welcome to SourceNet!', 5000);
+    await readMessage(page, 'Welcome to SourceNet!');
 
     // Click Archive button in message view
     await page.click('.archive-button');
@@ -57,8 +57,8 @@ test.describe('E2E Test 5: App Interactions Flow', () => {
     await page.click('.tab:has-text("Inbox")');
 
     // Step 12-14: Wait for second message and deposit cheque
-    await expect(page.locator('.message-item:has-text("Hi from your manager")')).toBeVisible({ timeout: 5000 });
-    await page.click('.message-item:has-text("Hi from your manager")');
+    await waitForMessage(page, 'Hi from your manager', 5000);
+    await readMessage(page, 'Hi from your manager');
     await page.click('.attachment-item');
 
     // Reset game speed

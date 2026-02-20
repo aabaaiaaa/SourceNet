@@ -43,6 +43,10 @@ import { applyPendingHardware } from '../systems/HardwareInstallationSystem';
 import { getTotalStorageCapacityGB, trimFilesToFitCapacity } from '../systems/StorageSystem';
 import { useAntivirusScanner } from '../systems/useAntivirusScanner';
 import { generateRelayNodes as genRelayNodes } from '../systems/RelaySystem';
+import { useWindowState } from './useWindowState';
+import { useBankingState } from './useBankingState';
+import { useNetworkState } from './useNetworkState';
+import { useMissionState } from './useMissionState';
 
 export const GameContext = createContext();
 
@@ -61,8 +65,14 @@ export const GameProvider = ({ children }) => {
   const [hardware, setHardware] = useState(STARTING_HARDWARE);
   const [software, setSoftware] = useState(STARTING_SOFTWARE);
 
-  // Bank accounts
-  const [bankAccounts, setBankAccounts] = useState([STARTING_BANK_ACCOUNT]);
+  // Banking (extracted to useBankingState)
+  const {
+    bankAccounts, setBankAccounts, transactions, setTransactions,
+    bankruptcyCountdown, setBankruptcyCountdown, lastInterestTime, setLastInterestTime,
+    bankingMessagesSent, setBankingMessagesSent,
+    prevBalanceRef, bankingMessageQueueRef, bankingMessageTimerRef, processBankingMessageQueueRef,
+    updateBankBalance, getTotalCredits,
+  } = useBankingState();
 
   // Messages
   const [messages, setMessages] = useState([]);
@@ -74,25 +84,14 @@ export const GameProvider = ({ children }) => {
   // VPN quick connect (from NAR)
   const [pendingVpnConnection, setPendingVpnConnection] = useState(null);
 
-  // Windows
-  const [windows, setWindows] = useState([]);
-  const nextZIndexRef = useRef(1000);
-  const nextWindowIdRef = useRef(1);
+  // Windows (extracted to useWindowState)
+  const {
+    windows, setWindows, nextZIndexRef, nextWindowIdRef,
+    openWindow, closeWindow, minimizeWindow, restoreWindow, bringToFront, moveWindow,
+  } = useWindowState();
 
   // Timers
   const timeIntervalRef = useRef(null);
-
-  // Banking message tracking
-  const prevBalanceRef = useRef(null);
-  const bankingMessageQueueRef = useRef([]); // Queue of pending banking messages
-  const bankingMessageTimerRef = useRef(null); // Timer for current queued message
-  const processBankingMessageQueueRef = useRef(null); // Ref for recursive call
-  const [bankingMessagesSent, setBankingMessagesSent] = useState({
-    firstOverdraft: false,
-    approachingBankruptcy: false,
-    bankruptcyCountdownStart: false,
-    bankruptcyCancelled: false,
-  });
 
   // HR message tracking
   const prevReputationTierRef = useRef(null);
@@ -108,69 +107,59 @@ export const GameProvider = ({ children }) => {
   const [reputation, setReputation] = useState(9); // Tier 9 = "Superb" (starting reputation)
   const [reputationCountdown, setReputationCountdown] = useState(null); // {startTime, endTime, remaining} or null
 
-  // Mission System
-  const [activeMission, setActiveMissionRaw] = useState(null); // Current mission object or null
-  const setActiveMission = useCallback((valueOrUpdater) => {
-    if (typeof valueOrUpdater === 'function') {
-      // Functional update - wrap to log the actual value
-      setActiveMissionRaw((prev) => {
-        const newValue = valueOrUpdater(prev);
-        return newValue;
-      });
-    } else {
-      setActiveMissionRaw(valueOrUpdater);
-    }
-  }, []);
-  const [completedMissions, setCompletedMissions] = useState([]); // Array of completed mission objects
-  const [availableMissions, setAvailableMissions] = useState([]); // Array of available mission objects
-  const [missionCooldowns, setMissionCooldowns] = useState({ easy: null, medium: null, hard: null });
+  // Mission System (extracted to useMissionState)
+  const {
+    activeMission, setActiveMission,
+    completedMissions, setCompletedMissions,
+    availableMissions, setAvailableMissions,
+    missionCooldowns, setMissionCooldowns,
+    missionFileOperations, setMissionFileOperations,
+    missionSubmitting, setMissionSubmitting,
+    missionDecryptionOperations, setMissionDecryptionOperations,
+    missionUploadOperations, setMissionUploadOperations,
+    missionAvDetections, setMissionAvDetections,
+    missionPasswordCracks, setMissionPasswordCracks,
+    proceduralMissionsEnabled, setProceduralMissionsEnabled,
+    missionPool, setMissionPool,
+    pendingChainMissions, setPendingChainMissions,
+    activeClientIds, setActiveClientIds,
+    clientStandings, setClientStandings,
+    extensionOffers, setExtensionOffers,
+    failedMissionsRef, completeMissionRef,
+    completeMissionObjective,
+  } = useMissionState();
 
-  // Network System
-  const [activeConnections, setActiveConnections] = useState([]); // Currently connected networks
-  const [lastScanResults, setLastScanResults] = useState(null); // Last network scan results
-  const [discoveredDevices, setDiscoveredDevices] = useState({}); // Map of networkId -> Set of discovered IPs
-  const [fileManagerConnections, setFileManagerConnections] = useState([]); // Active File Manager connections
-  const [lastFileOperation, setLastFileOperation] = useState(null); // Last file operation completed
-  const [missionFileOperations, setMissionFileOperations] = useState({}); // Cumulative file operations for current mission {repair: 5, copy: 3}
-  const [missionSubmitting, setMissionSubmitting] = useState(false); // True while submit-for-completion is in progress
+  // Network System (extracted to useNetworkState)
+  const {
+    activeConnections, setActiveConnections,
+    lastScanResults, setLastScanResults,
+    discoveredDevices, setDiscoveredDevices,
+    fileManagerConnections, setFileManagerConnections,
+    lastFileOperation, setLastFileOperation,
+    fileClipboard, setFileClipboard,
+    localSSDFiles, setLocalSSDFiles,
+    knownMaliciousFiles, setKnownMaliciousFiles,
+    bandwidthOperations, setBandwidthOperations,
+    relayNodes, setRelayNodes,
+    activeRelayChain, setActiveRelayChain,
+    traceState, setTraceState,
+    rebuildCount, setRebuildCount,
+    clearFileClipboard,
+    updateFileSystemFiles,
+    addFilesToFileSystem,
+    addDiscoveredDevices,
+    addFileToLocalSSD, removeFileFromLocalSSD, replaceFileOnLocalSSD,
+    addKnownMaliciousFile,
+    completeBandwidthOperation,
+    updateBandwidthOperationProgress,
+  } = useNetworkState();
 
   // Purchasing & Installation
   const [downloadQueue, setDownloadQueue] = useState([]); // Items being downloaded/installed
-  const [transactions, setTransactions] = useState([]); // Banking transaction history
   const [licensedSoftware, setLicensedSoftware] = useState([]); // Array of software IDs that have been licensed
-
-  // Bandwidth Operations (non-download operations that use bandwidth)
-  const [bandwidthOperations, setBandwidthOperations] = useState([]); // {id, type, status, progress}
-
-  // Banking System extensions
-  const [bankruptcyCountdown, setBankruptcyCountdown] = useState(null); // {startTime, endTime, remaining} or null
-  const [lastInterestTime, setLastInterestTime] = useState(null); // Last time interest was applied
-
-  // File Manager Clipboard (shared across instances, cleared on disconnect)
-  const [fileClipboard, setFileClipboard] = useState({ files: [], sourceFileSystemId: '', sourceNetworkId: '' });
-
-  // Local SSD files (files stored on the player's terminal)
-  const [localSSDFiles, setLocalSSDFiles] = useState([]);
-
-  // Known malicious files detected by antivirus (array of {fileName, sourceFileSystemId})
-  const [knownMaliciousFiles, setKnownMaliciousFiles] = useState([]);
 
   // Auto-tracking control (can be disabled for testing)
   const [autoTrackingEnabled, setAutoTrackingEnabled] = useState(true);
-
-  // Track failed missions to prevent duplicate penalty application
-  const failedMissionsRef = useRef(new Set());
-
-  // Ref to hold the latest completeMission function
-  const completeMissionRef = useRef(null);
-
-  // ===== PROCEDURAL MISSION SYSTEM =====
-  const [proceduralMissionsEnabled, setProceduralMissionsEnabled] = useState(false);
-  const [missionPool, setMissionPool] = useState([]); // Available procedural missions
-  const [pendingChainMissions, setPendingChainMissions] = useState({}); // Unrevealed chain parts
-  const [activeClientIds, setActiveClientIds] = useState([]); // Clients with active/pending missions
-  const [clientStandings, setClientStandings] = useState({}); // { clientId: { successCount, failCount, lastMissionDate } }
-  const [extensionOffers, setExtensionOffers] = useState({}); // { missionId: extensionOffer }
 
   // ===== HARDWARE & SOFTWARE UNLOCK SYSTEM =====
   const [betterMessageRead, setBetterMessageRead] = useState(false); // Track if tutorial "better" message was read
@@ -198,52 +187,9 @@ export const GameProvider = ({ children }) => {
 
   // ===== DECRYPTION SYSTEM =====
   const [decryptionAlgorithms, setDecryptionAlgorithms] = useState(['aes-128', 'aes-256']); // Available decryption algorithms
-  const [missionDecryptionOperations, setMissionDecryptionOperations] = useState({ decrypted: new Set() }); // Track decrypted files for mission objectives
-  const [missionUploadOperations, setMissionUploadOperations] = useState({ uploaded: new Set(), uploadDestinations: new Map() }); // Track uploaded files for mission objectives
-  const [missionAvDetections, setMissionAvDetections] = useState(new Set()); // Track AV-detected malware files for mission objectives
-  const [missionPasswordCracks, setMissionPasswordCracks] = useState(new Set()); // Track cracked files for mission objectives
-
-  // ===== RELAY & TRACE SYSTEM =====
-  const [relayNodes, setRelayNodes] = useState([]); // Array of relay node objects
-  const [activeRelayChain, setActiveRelayChain] = useState([]); // Ordered array of relay node IDs for current connection
-  const [traceState, setTraceState] = useState(null); // { active: boolean, ettRemaining: number, startTime: number } or null
-  const [rebuildCount, setRebuildCount] = useState(0); // Number of system rebuilds (max 2 before fired)
 
   // ===== PASSIVE SOFTWARE SYSTEM =====
   const [activePassiveSoftware, setActivePassiveSoftware] = useState([]); // Array of active passive software IDs
-
-  // ===== BANKING HELPERS =====
-  // Helper function to update bank balance and emit creditsChanged event
-  // This ensures consistent event emission across all balance-changing operations
-  const updateBankBalance = useCallback((accountId, amount, reason) => {
-    setBankAccounts(prev => {
-      const newAccounts = prev.map(acc =>
-        acc.id === accountId
-          ? { ...acc, balance: acc.balance + amount }
-          : acc
-      );
-
-      // Calculate new total after update
-      const newTotal = newAccounts.reduce((sum, acc) => sum + acc.balance, 0);
-
-      // Emit creditsChanged event after state update via microtask
-      queueMicrotask(() => {
-        triggerEventBus.emit('creditsChanged', {
-          newBalance: newTotal,
-          change: amount,
-          reason: reason,
-          accountId: accountId,
-        });
-      });
-
-      return newAccounts;
-    });
-  }, []);
-
-  // Clear file clipboard
-  const clearFileClipboard = useCallback(() => {
-    setFileClipboard({ files: [], sourceFileSystemId: '', sourceNetworkId: '' });
-  }, []);
 
   // Download completion callback - adds software to installed list
   const handleDownloadComplete = useCallback((softwareId) => {
@@ -263,43 +209,6 @@ export const GameProvider = ({ children }) => {
       }
     }
   }, [activeConnections, fileClipboard.sourceNetworkId, clearFileClipboard]);
-
-  // Update files in a specific file system - uses NetworkRegistry as source of truth
-  // Note: This updates the global NetworkRegistry. The event 'fileSystemChanged' is emitted
-  // by the registry, which FileManager can subscribe to for live updates.
-  const updateFileSystemFiles = useCallback((networkId, fileSystemId, updatedFiles) => {
-    console.log(`📁 updateFileSystemFiles called: networkId=${networkId}, fsId=${fileSystemId}, fileCount=${updatedFiles?.length}`);
-
-    // Get previous file count from registry for logging
-    const prevFs = networkRegistry.getFileSystem(fileSystemId);
-    const prevFileCount = prevFs?.files?.length;
-
-    // Update the registry (this will emit 'fileSystemChanged' event)
-    const success = networkRegistry.updateFiles(fileSystemId, updatedFiles);
-
-    if (success) {
-      console.log(`📁 Updated fs ${fileSystemId} files from ${prevFileCount} to ${updatedFiles?.length}`);
-    } else {
-      console.warn(`📁 Failed to update fs ${fileSystemId} - not found in registry`);
-    }
-  }, []);
-
-  // Add files to a specific file system atomically - prevents race conditions
-  // Use this instead of updateFileSystemFiles when adding new files during paste operations
-  const addFilesToFileSystem = useCallback((networkId, fileSystemId, newFiles) => {
-    console.log(`📁 addFilesToFileSystem called: networkId=${networkId}, fsId=${fileSystemId}, newFileCount=${newFiles?.length}`);
-
-    // Add files atomically using NetworkRegistry (this will emit 'fileSystemChanged' event)
-    const success = networkRegistry.addFilesToFileSystem(fileSystemId, newFiles);
-
-    if (success) {
-      console.log(`📁 Added ${newFiles?.length} files to fs ${fileSystemId}`);
-    } else {
-      console.warn(`📁 Failed to add files to fs ${fileSystemId} - not found in registry`);
-    }
-
-    return success;
-  }, []);
 
   // Accumulate file operations for mission tracking (unique files per operation type)
   // For paste operations, also track the destination IP for each file
@@ -901,22 +810,6 @@ export const GameProvider = ({ children }) => {
     };
   }, [hardware, getActiveBandwidthOperationCount]);
 
-  // Complete a bandwidth operation
-  const completeBandwidthOperation = useCallback((operationId) => {
-    setBandwidthOperations((prev) =>
-      prev.filter((op) => op.id !== operationId)
-    );
-  }, []);
-
-  // Update bandwidth operation progress
-  const updateBandwidthOperationProgress = useCallback((operationId, progress) => {
-    setBandwidthOperations((prev) =>
-      prev.map((op) =>
-        op.id === operationId ? { ...op, progress } : op
-      )
-    );
-  }, []);
-
   // Ref to track if this is a new game (for emitting newGameStarted event)
   const isNewGameRef = useRef(false);
 
@@ -1185,18 +1078,6 @@ export const GameProvider = ({ children }) => {
     return () => unsubscribe();
   }, [messages]);
 
-  // Add discovered devices from network scan
-  const addDiscoveredDevices = useCallback((networkId, ips) => {
-    setDiscoveredDevices((prev) => {
-      const existingIps = prev[networkId] || new Set();
-      const updatedIps = new Set([...existingIps, ...ips]);
-      return {
-        ...prev,
-        [networkId]: updatedIps,
-      };
-    });
-  }, []);
-
   // Update message (for attachment activation, etc.)
   const updateMessage = useCallback((messageId, updates) => {
     setMessages((prev) =>
@@ -1231,49 +1112,7 @@ export const GameProvider = ({ children }) => {
     );
   }, []);
 
-  // Window management (defined before initiateChequeDeposit which uses it)
-  const openWindow = useCallback((appId) => {
-    // Pre-calculate ref values before setState to avoid double-increment in StrictMode
-    const newWindowId = nextWindowIdRef.current++;
-    const newZIndex = nextZIndexRef.current++;
-
-    setWindows((prev) => {
-      // Check if app allows multiple instances
-      const allowsMultipleInstances = MULTI_INSTANCE_APPS.includes(appId);
-
-      if (!allowsMultipleInstances) {
-        // Check if window is already open for single-instance apps
-        const existing = prev.find((w) => w.appId === appId);
-
-        if (existing) {
-          // Bring existing window to front with pre-calculated z-index
-          return prev.map((w) =>
-            w.id === existing.id ? { ...w, zIndex: newZIndex, minimized: false } : w
-          );
-        }
-      }
-
-      // Create new window instance
-      const CASCADE_OFFSET = 30;
-      const BASE_X = 50;
-      const BASE_Y = 100;
-      const openWindows = prev.filter((w) => !w.minimized);
-      const offset = openWindows.length * CASCADE_OFFSET;
-
-      const newWindow = {
-        id: `window-${newWindowId}`, // Unique ID for this window instance
-        appId, // App type (for rendering the correct component)
-        zIndex: newZIndex,
-        minimized: false,
-        position: {
-          x: BASE_X + offset,
-          y: BASE_Y + offset,
-        },
-      };
-
-      return [...prev, newWindow];
-    });
-  }, []);
+  // Window management extracted to useWindowState (openWindow defined there)
 
   // Initiate cheque deposit (called when user clicks attachment in Mail)
   const initiateChequeDeposit = useCallback((messageId) => {
@@ -1403,69 +1242,8 @@ export const GameProvider = ({ children }) => {
     });
   }, []);
 
-  // Add file to local SSD (for decryption download step)
-  const addFileToLocalSSD = useCallback((file) => {
-    setLocalSSDFiles((prev) => [...prev, file]);
-  }, []);
-
-  // Remove file from local SSD by name
-  const removeFileFromLocalSSD = useCallback((fileName) => {
-    setLocalSSDFiles((prev) => prev.filter(f => f.name !== fileName));
-  }, []);
-
-  // Replace a file on local SSD (for decryption: replace .enc with decrypted version)
-  const replaceFileOnLocalSSD = useCallback((oldName, newFile) => {
-    setLocalSSDFiles((prev) => prev.map(f => f.name === oldName ? newFile : f));
-  }, []);
-
-  // Add a known malicious file (deduplicates by fileName + sourceFileSystemId)
-  const addKnownMaliciousFile = useCallback((fileName, sourceFileSystemId) => {
-    setKnownMaliciousFiles((prev) => {
-      const exists = prev.some(
-        (f) => f.fileName === fileName && f.sourceFileSystemId === sourceFileSystemId
-      );
-      if (exists) return prev;
-      return [...prev, { fileName, sourceFileSystemId }];
-    });
-  }, []);
-
-  const closeWindow = useCallback((windowId) => {
-    setWindows((prev) => prev.filter((w) => w.id !== windowId));
-  }, []);
-
-  const minimizeWindow = useCallback((windowId) => {
-    setWindows((prev) =>
-      prev.map((w) =>
-        w.id === windowId ? { ...w, minimized: true } : w
-      )
-    );
-  }, []);
-
-  const restoreWindow = useCallback((windowId) => {
-    const newZ = nextZIndexRef.current++;
-    setWindows((prev) =>
-      prev.map((w) =>
-        w.id === windowId ? { ...w, minimized: false, zIndex: newZ } : w
-      )
-    );
-  }, []);
-
-  const bringToFront = useCallback((windowId) => {
-    const newZ = nextZIndexRef.current++;
-    setWindows((prev) =>
-      prev.map((w) =>
-        w.id === windowId ? { ...w, zIndex: newZ } : w
-      )
-    );
-  }, []);
-
-  const moveWindow = useCallback((windowId, position) => {
-    setWindows((prev) =>
-      prev.map((w) =>
-        w.id === windowId ? { ...w, position } : w
-      )
-    );
-  }, []);
+  // closeWindow, minimizeWindow, restoreWindow, bringToFront, moveWindow
+  // extracted to useWindowState
 
   // Time management
   useEffect(() => {
@@ -1500,11 +1278,6 @@ export const GameProvider = ({ children }) => {
   const setSpecificTimeSpeed = useCallback((speed) => {
     setTimeSpeed(speed);
   }, []);
-
-  // Get total credits
-  const getTotalCredits = useCallback(() => {
-    return bankAccounts.reduce((sum, acc) => sum + acc.balance, 0);
-  }, [bankAccounts]);
 
   // Interest accumulation (1% per minute when overdrawn)
   const lastInterestRef = useRef(currentTime);
@@ -1844,36 +1617,6 @@ export const GameProvider = ({ children }) => {
       arcId: mission.arcId,
     });
   }, [currentTime, reputation, unlockedFeatures, activeClientIds]);
-
-  // Complete mission objective
-  // isPreCompleted: true if this objective was completed before becoming the "current" objective
-  const completeMissionObjective = useCallback((objectiveId, isPreCompleted = false) => {
-    // Check for active mission before state update (for logging)
-    if (!activeMission) {
-      console.log(`⚠️ completeMissionObjective: No active mission to update (objective: ${objectiveId})`);
-      return;
-    }
-
-    // Log before state update (outside updater)
-    console.log(`📋 completeMissionObjective: Updating objective ${objectiveId} for mission ${activeMission.missionId}${isPreCompleted ? ' (pre-completed)' : ''}`);
-
-    // Use functional update to get the latest activeMission state
-    // This prevents stale closure issues when multiple updates happen quickly
-    setActiveMission((currentMission) => {
-      if (!currentMission) {
-        return null; // Don't set it back if it was already cleared
-      }
-
-      const updatedObjectives = currentMission.objectives.map(obj =>
-        obj.id === objectiveId ? { ...obj, status: 'complete', preCompleted: isPreCompleted } : obj
-      );
-
-      return {
-        ...currentMission,
-        objectives: updatedObjectives,
-      };
-    });
-  }, [activeMission]);
 
   // Complete mission (success or failure)
   const completeMission = useCallback((status, payout, reputationChange, failureReason = null) => {

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useGame } from '../../contexts/useGame';
 import { WINDOW_SIZES } from '../../constants/gameConstants';
+import { getAppTitle } from '../../utils/appRegistry';
 import SNetMail from '../apps/SNetMail';
 import BankingApp from '../apps/BankingApp';
 import Portal from '../apps/Portal';
@@ -116,39 +117,6 @@ const Window = ({ window }) => {
     }
   };
 
-  const getAppTitle = () => {
-    switch (window.appId) {
-      case 'mail':
-        return 'SNet Mail';
-      case 'banking':
-        return 'SNet Banking App';
-      case 'portal':
-        return 'OSNet Portal';
-      case 'missionBoard':
-        return 'SourceNet Mission Board';
-      case 'vpnClient':
-        return 'SourceNet VPN Client';
-      case 'networkScanner':
-        return 'Network Scanner';
-      case 'networkAddressRegister':
-        return 'Network Address Register';
-      case 'fileManager':
-        return 'File Manager';
-      case 'logViewer':
-        return 'Log Viewer';
-      case 'dataRecoveryTool':
-        return 'Data Recovery Tool';
-      case 'decryptionTool':
-        return 'Decryption Tool';
-      case 'passwordCracker':
-        return 'Password Cracker';
-      case 'networkSniffer':
-        return 'Network Sniffer';
-      default:
-        return 'Unknown App';
-    }
-  };
-
   return (
     <div
       ref={windowRef}
@@ -164,7 +132,7 @@ const Window = ({ window }) => {
       onClick={() => bringToFront(window.appId)}
     >
       <div className="window-header" onMouseDown={handleMouseDown} style={{ cursor: 'grab' }}>
-        <div className="window-title">{getAppTitle()}</div>
+        <div className="window-title">{getAppTitle(window.appId)}</div>
         <div className="window-controls">
           <button
             className="window-control-btn"

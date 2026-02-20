@@ -2,6 +2,8 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useGame } from '../../contexts/useGame';
 import triggerEventBus from '../../core/triggerEventBus';
 import networkRegistry from '../../systems/NetworkRegistry';
+import useFileSystemSelection from '../../hooks/useFileSystemSelection';
+import useNetworkDisconnection from '../../hooks/useNetworkDisconnection';
 import {
   DECRYPTION_ALGORITHMS,
   calculateDownloadDurationFromString,
@@ -45,7 +47,6 @@ const DecryptionTool = () => {
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [decryptionProgress, setDecryptionProgress] = useState(0);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [disconnectionMessage, setDisconnectionMessage] = useState(null);
   const [algorithmWarning, setAlgorithmWarning] = useState(null);
 
   // Matrix animation tick
@@ -79,76 +80,30 @@ const DecryptionTool = () => {
   const cpuSpecs = hardware?.cpu?.specs || '1GHz, 1 core';
 
   // Build list of available file systems from connected networks
-  const availableFileSystems = useMemo(() => {
-    const fileSystems = [];
-    if (!activeConnections) return fileSystems;
-
-    activeConnections.forEach((connection) => {
-      const network = networkRegistry.getNetwork(connection.networkId);
-      const discoveredData = discoveredDevices?.[connection.networkId];
-      const discovered = discoveredData instanceof Set ? discoveredData : new Set(discoveredData || []);
-
-      if (network && network.accessible) {
-        const accessibleDevices = networkRegistry.getAccessibleDevices(connection.networkId);
-        accessibleDevices.forEach((device) => {
-          if (discovered.has(device.ip) && device.fileSystemId) {
-            const fs = networkRegistry.getFileSystem(device.fileSystemId);
-            if (fs) {
-              fileSystems.push({
-                id: fs.id,
-                ip: device.ip,
-                name: device.hostname,
-                label: `${device.ip} - ${device.hostname}`,
-                files: fs.files || [],
-                networkId: connection.networkId,
-              });
-            }
-          }
-        });
-      }
-    });
-
-    return fileSystems;
-  }, [activeConnections, discoveredDevices]);
+  const availableFileSystems = useFileSystemSelection(activeConnections, discoveredDevices);
 
   // Handle network disconnection
-  useEffect(() => {
-    const handleDisconnect = ({ networkId, networkName }) => {
-      if (currentNetworkId === networkId) {
-        if (animationRef.current) {
-          cancelAnimationFrame(animationRef.current);
-          animationRef.current = null;
-        }
-        if (activeBandwidthOpRef.current && completeBandwidthOperation) {
-          completeBandwidthOperation(activeBandwidthOpRef.current);
-          activeBandwidthOpRef.current = null;
-        }
-        setSelectedFileSystem('');
-        setCurrentNetworkId('');
-        setAllFiles([]);
-        setSelectedFile(null);
-        setPhase('idle');
-        setDownloadProgress(0);
-        setDecryptionProgress(0);
-        setUploadProgress(0);
-        setLocalDecryptedFiles(new Map());
-        setUploadedFiles(new Set());
-        setAlgorithmWarning(null);
-        setDisconnectionMessage(`Disconnected from ${networkName}`);
-      }
-    };
-
-    triggerEventBus.on('networkDisconnected', handleDisconnect);
-    return () => triggerEventBus.off('networkDisconnected', handleDisconnect);
-  }, [currentNetworkId]);
-
-  // Auto-clear disconnection message
-  useEffect(() => {
-    if (disconnectionMessage) {
-      const timer = setTimeout(() => setDisconnectionMessage(null), 3000);
-      return () => clearTimeout(timer);
+  const { disconnectionMessage } = useNetworkDisconnection(currentNetworkId, () => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
     }
-  }, [disconnectionMessage]);
+    if (activeBandwidthOpRef.current && completeBandwidthOperation) {
+      completeBandwidthOperation(activeBandwidthOpRef.current);
+      activeBandwidthOpRef.current = null;
+    }
+    setSelectedFileSystem('');
+    setCurrentNetworkId('');
+    setAllFiles([]);
+    setSelectedFile(null);
+    setPhase('idle');
+    setDownloadProgress(0);
+    setDecryptionProgress(0);
+    setUploadProgress(0);
+    setLocalDecryptedFiles(new Map());
+    setUploadedFiles(new Set());
+    setAlgorithmWarning(null);
+  });
 
   // Matrix animation tick - randomizes pending cells every 200ms
   useEffect(() => {

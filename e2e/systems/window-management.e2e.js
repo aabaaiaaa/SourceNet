@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { STARTING_SOFTWARE } from '../../src/constants/gameConstants.js';
+import { createRealisticSave, storeSaveInBrowser } from '../helpers/test-data.js';
 
 /**
  * Consolidated Window Management Tests
@@ -18,33 +18,8 @@ test.describe('Window Management', () => {
     test.describe('Window Lifecycle & Cascading', () => {
         test.beforeEach(async ({ page }) => {
             await page.goto('/?skipBoot=true');
-            await page.evaluate((startingSoftware) => {
-                const saves = {
-                    window_test: [
-                        {
-                            username: 'window_test',
-                            playerMailId: 'SNET-TST-123-456',
-                            currentTime: '2020-03-25T09:10:00',
-                            hardware: {
-                                cpu: { id: 'cpu-1ghz', name: '1GHz CPU' },
-                                memory: [{ id: 'ram-2gb', name: '2GB RAM' }],
-                                storage: [{ id: 'ssd-90gb', name: '90GB SSD' }],
-                                motherboard: { id: 'board-basic', name: 'Basic Board' },
-                                powerSupply: { id: 'psu-300w', wattage: 300 },
-                                network: { id: 'net-250mb', speed: 250 },
-                            },
-                            software: startingSoftware,
-                            bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance: 1000 }],
-                            messages: [],
-                            managerName: 'Test',
-                            windows: [],
-                            savedAt: '2024-01-01T00:00:00.000Z',
-                            saveName: 'WindowTest',
-                        },
-                    ],
-                };
-                localStorage.setItem('sourcenet_saves', JSON.stringify(saves));
-            }, STARTING_SOFTWARE);
+            const saveData = createRealisticSave('window_test');
+            await storeSaveInBrowser(page, 'window_test', saveData);
         });
 
         test('should handle complete window management flow', async ({ page }) => {
@@ -116,33 +91,8 @@ test.describe('Window Management', () => {
     test.describe('Window Dragging', () => {
         test.beforeEach(async ({ page }) => {
             await page.goto('/?skipBoot=true');
-            await page.evaluate((startingSoftware) => {
-                const saves = {
-                    drag_test: [
-                        {
-                            username: 'drag_test',
-                            playerMailId: 'SNET-DRG-123-456',
-                            currentTime: '2020-03-25T09:00:00',
-                            hardware: {
-                                cpu: { id: 'cpu-1ghz', name: '1GHz CPU' },
-                                memory: [{ id: 'ram-2gb', name: '2GB RAM' }],
-                                storage: [{ id: 'ssd-90gb', name: '90GB SSD' }],
-                                motherboard: { id: 'board-basic', name: 'Basic Board' },
-                                powerSupply: { id: 'psu-300w', wattage: 300 },
-                                network: { id: 'net-250mb', speed: 250 },
-                            },
-                            software: startingSoftware,
-                            bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance: 1000 }],
-                            messages: [],
-                            managerName: 'Test',
-                            windows: [],
-                            savedAt: '2024-01-01T00:00:00.000Z',
-                            saveName: 'DragTest',
-                        },
-                    ],
-                };
-                localStorage.setItem('sourcenet_saves', JSON.stringify(saves));
-            }, STARTING_SOFTWARE);
+            const saveData = createRealisticSave('drag_test');
+            await storeSaveInBrowser(page, 'drag_test', saveData);
         });
 
         test('should drag windows to new positions', async ({ page }) => {
@@ -288,70 +238,47 @@ test.describe('Window Management', () => {
             await page.goto('/?skipBoot=true');
 
             // Create a save with specific window state
-            await page.evaluate((startingSoftware) => {
-                const saves = {
-                    window_persist_test: [
-                        {
-                            username: 'window_persist_test',
-                            playerMailId: 'SNET-WIN-123-456',
-                            currentTime: '2020-03-25T09:15:00',
-                            hardware: {
-                                cpu: { id: 'cpu-1ghz', name: '1GHz CPU' },
-                                memory: [{ id: 'ram-2gb', name: '2GB RAM' }],
-                                storage: [{ id: 'ssd-90gb', name: '90GB SSD' }],
-                                motherboard: { id: 'board-basic', name: 'Basic Board' },
-                                powerSupply: { id: 'psu-300w', wattage: 300 },
-                                network: { id: 'net-250mb', speed: 250 },
-                            },
-                            software: startingSoftware,
-                            bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance: 1000 }],
-                            messages: [],
-                            managerName: 'Test',
-                            reputation: 9,
-                            reputationCountdown: null,
-                            activeMission: null,
-                            completedMissions: [],
-                            availableMissions: [],
-                            missionCooldowns: { easy: null, medium: null, hard: null },
-                            activeConnections: [],
-                            lastScanResults: null,
-                            fileManagerConnections: [],
-                            lastFileOperation: null,
-                            downloadQueue: [],
-                            transactions: [],
-                            licensedSoftware: [],
-                            bankruptcyCountdown: null,
-                            lastInterestTime: null,
-                            windows: [
-                                {
-                                    id: 'window-1',
-                                    appId: 'mail',
-                                    zIndex: 1001,
-                                    minimized: false,
-                                    position: { x: 50, y: 100 },
-                                },
-                                {
-                                    id: 'window-2',
-                                    appId: 'banking',
-                                    zIndex: 1000,
-                                    minimized: true,
-                                    position: { x: 80, y: 130 },
-                                },
-                                {
-                                    id: 'window-3',
-                                    appId: 'portal',
-                                    zIndex: 1002,
-                                    minimized: false,
-                                    position: { x: 110, y: 160 },
-                                },
-                            ],
-                            savedAt: '2024-01-01T00:00:00.000Z',
-                            saveName: 'WindowPersistTest',
-                        },
-                    ],
-                };
-                localStorage.setItem('sourcenet_saves', JSON.stringify(saves));
-            }, STARTING_SOFTWARE);
+            const saveData = createRealisticSave('window_persist_test', 1000, {
+                reputation: 9,
+                reputationCountdown: null,
+                activeMission: null,
+                completedMissions: [],
+                availableMissions: [],
+                missionCooldowns: { easy: null, medium: null, hard: null },
+                activeConnections: [],
+                lastScanResults: null,
+                fileManagerConnections: [],
+                lastFileOperation: null,
+                downloadQueue: [],
+                transactions: [],
+                licensedSoftware: [],
+                bankruptcyCountdown: null,
+                lastInterestTime: null,
+                windows: [
+                    {
+                        id: 'window-1',
+                        appId: 'mail',
+                        zIndex: 1001,
+                        minimized: false,
+                        position: { x: 50, y: 100 },
+                    },
+                    {
+                        id: 'window-2',
+                        appId: 'banking',
+                        zIndex: 1000,
+                        minimized: true,
+                        position: { x: 80, y: 130 },
+                    },
+                    {
+                        id: 'window-3',
+                        appId: 'portal',
+                        zIndex: 1002,
+                        minimized: false,
+                        position: { x: 110, y: 160 },
+                    },
+                ],
+            });
+            await storeSaveInBrowser(page, 'window_persist_test', saveData);
 
             await page.reload();
 
@@ -418,33 +345,8 @@ test.describe('Window Management', () => {
             await page.goto('/?skipBoot=true');
 
             // Create a save with credits to skip message flow
-            await page.evaluate((startingSoftware) => {
-                const saves = {
-                    zindex_test: [
-                        {
-                            username: 'zindex_test',
-                            playerMailId: 'SNET-ZZZ-123-456',
-                            currentTime: '2020-03-25T09:00:00',
-                            hardware: {
-                                cpu: { id: 'cpu-1ghz', name: '1GHz CPU' },
-                                memory: [{ id: 'ram-2gb', name: '2GB RAM' }],
-                                storage: [{ id: 'ssd-90gb', name: '90GB SSD' }],
-                                motherboard: { id: 'board-basic', name: 'Basic Board' },
-                                powerSupply: { id: 'psu-300w', wattage: 300 },
-                                network: { id: 'net-250mb', speed: 250 },
-                            },
-                            software: startingSoftware,
-                            bankAccounts: [{ id: 'acc-1', bankName: 'First Bank Ltd', balance: 1000 }],
-                            messages: [],
-                            managerName: 'Test',
-                            windows: [],
-                            savedAt: '2024-01-01T00:00:00.000Z',
-                            saveName: 'ZIndexTest',
-                        },
-                    ],
-                };
-                localStorage.setItem('sourcenet_saves', JSON.stringify(saves));
-            }, STARTING_SOFTWARE);
+            const saveData = createRealisticSave('zindex_test');
+            await storeSaveInBrowser(page, 'zindex_test', saveData);
 
             await page.reload();
             await page.click('button:has-text("Load")');

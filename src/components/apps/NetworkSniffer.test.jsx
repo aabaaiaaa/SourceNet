@@ -1,13 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { GameProvider, GameContext } from '../../contexts/GameContext';
+import { GameContext } from '../../contexts/GameContext';
+import { renderWithGame } from '../../test/helpers/renderHelpers';
 import NetworkSniffer from './NetworkSniffer';
 import triggerEventBus from '../../core/triggerEventBus';
 import networkRegistry from '../../systems/NetworkRegistry';
-
-const renderWithProvider = (component) => {
-  return render(<GameProvider>{component}</GameProvider>);
-};
 
 const createMockContext = (overrides = {}) => ({
   activeConnections: [],
@@ -69,27 +66,27 @@ describe('NetworkSniffer Component', () => {
   });
 
   it('should render app title', () => {
-    renderWithProvider(<NetworkSniffer />);
+    renderWithGame(<NetworkSniffer />);
     expect(screen.getByText('Network Sniffer')).toBeInTheDocument();
   });
 
   it('should render subtitle', () => {
-    renderWithProvider(<NetworkSniffer />);
+    renderWithGame(<NetworkSniffer />);
     expect(screen.getByText('Monitor network traffic and extract credentials')).toBeInTheDocument();
   });
 
   it('should render without crashing', () => {
-    const { container } = renderWithProvider(<NetworkSniffer />);
+    const { container } = renderWithGame(<NetworkSniffer />);
     expect(container.querySelector('.network-sniffer')).toBeInTheDocument();
   });
 
   it('should show no networks message when disconnected', () => {
-    renderWithProvider(<NetworkSniffer />);
+    renderWithGame(<NetworkSniffer />);
     expect(screen.getByText(/No networks connected/)).toBeInTheDocument();
   });
 
   it('should show VPN Client instruction when disconnected', () => {
-    renderWithProvider(<NetworkSniffer />);
+    renderWithGame(<NetworkSniffer />);
     expect(screen.getByText(/Use VPN Client to connect first/)).toBeInTheDocument();
   });
 });

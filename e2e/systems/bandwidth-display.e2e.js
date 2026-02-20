@@ -197,11 +197,13 @@ test.describe('Bandwidth Display - Preview Values', () => {
 
   test('should show accurate active operation count', async ({ page }) => {
     await completeBoot(page, 'bw_preview_count');
-    await setCreditsViaDebug(page, 1000);
-    await openPortalSoftware(page);
-    await purchaseSoftware(page);
 
-    // Wait for bandwidth indicator to show active state first
+    // Register a large download directly to prevent quick completion
+    await page.evaluate(() => {
+      window.gameContext.registerBandwidthOperation('software_download', 500, { id: 'count_test' });
+    });
+
+    // Wait for bandwidth indicator to show active state
     const bandwidthIndicator = page.locator('.topbar-bandwidth');
     await expect(bandwidthIndicator).toContainText('⬇', { timeout: 5000 });
 

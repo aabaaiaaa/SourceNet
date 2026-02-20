@@ -1,20 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { GameProvider } from '../../contexts/GameContext';
+import { screen } from '@testing-library/react';
+import { renderWithGame } from '../../test/helpers/renderHelpers';
 import PauseOverlay from './PauseOverlay';
-
-const renderWithProvider = (component) => {
-  return render(<GameProvider>{component}</GameProvider>);
-};
 
 describe('PauseOverlay Component', () => {
   it('should render pause overlay', () => {
-    renderWithProvider(<PauseOverlay />);
+    renderWithGame(<PauseOverlay />);
     expect(screen.getByText('PAUSED')).toBeInTheDocument();
   });
 
   it('should show resume instruction', () => {
-    renderWithProvider(<PauseOverlay />);
+    renderWithGame(<PauseOverlay />);
     expect(screen.getByText(/Click anywhere or press ESC/i)).toBeInTheDocument();
   });
 });

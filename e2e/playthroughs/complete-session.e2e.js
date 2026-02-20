@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openMail, waitForMessage, readMessage } from '../helpers/common-actions.js';
 
 test.describe('E2E: Complete Gameplay Session', () => {
   test.beforeEach(async ({ page }) => {
@@ -21,20 +22,19 @@ test.describe('E2E: Complete Gameplay Session', () => {
     await page.evaluate(() => window.gameContext.setSpecificTimeSpeed(100));
 
     // Open mail and wait for first message
-    await page.click('text=☰');
-    await page.click('text=SNet Mail');
-    await expect(page.locator('.message-item:has-text("Welcome")')).toBeVisible({ timeout: 5000 });
-    await page.click('.message-item:has-text("Welcome")');
+    await openMail(page);
+    await waitForMessage(page, 'Welcome', 5000);
+    await readMessage(page, 'Welcome');
     await page.click('button:has-text("Back")');
 
     // Wait for second message
-    await expect(page.locator('.message-item:has-text("Hi from your manager")')).toBeVisible({ timeout: 5000 });
+    await waitForMessage(page, 'Hi from your manager', 5000);
 
     // Reset speed before depositing
     await page.evaluate(() => window.gameContext.setSpecificTimeSpeed(1));
 
     // Open and deposit cheque from second message
-    await page.click('.message-item:has-text("Hi from your manager")');
+    await readMessage(page, 'Hi from your manager');
     await page.click('.attachment-item');
     await page.click('.account-select-btn:has-text("First Bank Ltd")');
 

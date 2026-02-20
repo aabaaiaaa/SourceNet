@@ -29,6 +29,17 @@ export const executeFileDeleteAction = async (action, onProgress, onComplete, fi
     triggerEventBus.emit('playerControlBlocked', { blocked: true });
   }
 
+  // Safety timeout at 2x expected real-time duration to prevent softlock
+  const safetyTimeoutMs = (duration / Math.max(timeSpeed, 1)) * 2;
+  let timedOut = false;
+  const safetyTimer = setTimeout(() => {
+    timedOut = true;
+    console.warn('executeFileDeleteAction: safety timeout reached, unblocking player control');
+    if (playerControl === false) {
+      triggerEventBus.emit('playerControlBlocked', { blocked: false });
+    }
+  }, safetyTimeoutMs);
+
   // Simulate file deletion with progress
   const fileCount = typeof files === 'number' ? files : 8; // Default 8 files for tutorial
 
@@ -39,6 +50,8 @@ export const executeFileDeleteAction = async (action, onProgress, onComplete, fi
   const timePerFile = duration / fileCount;
 
   for (let i = 0; i < fileCount; i++) {
+    if (timedOut) break;
+
     await new Promise((resolve) => {
       scheduleGameTimeCallback(resolve, timePerFile, timeSpeed);
     });
@@ -58,6 +71,8 @@ export const executeFileDeleteAction = async (action, onProgress, onComplete, fi
       });
     }
   }
+
+  clearTimeout(safetyTimer);
 
   // Re-enable player control
   if (playerControl === false) {

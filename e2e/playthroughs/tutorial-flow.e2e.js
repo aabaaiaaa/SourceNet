@@ -2,26 +2,35 @@ import { test, expect } from '@playwright/test';
 
 /**
  * Tutorial & Mission System E2E Tests
- * 
- * This test suite covers the complete tutorial mission flow and mission system:
- * - Tutorial missions (including File Manager operations)
- * - Mission Board software purchase and installation
- * - Mission acceptance and completion workflow
- * - Network operations (Scanner, NAR, VPN, connections)
- * - Software download and installation system
+ *
+ * Split into 3 sequential phases sharing a single browser context:
+ * Phase 1: Onboarding - Welcome messages, Mission Board purchase & install
+ * Phase 2: Tutorial Part 1 - Repair mission, sabotage, mission failure
+ * Phase 3: Tutorial Part 2 - Restoration mission, file operations, procedural unlock
  */
 
-test.describe('E2E: Tutorial Mission Flow', () => {
-    test('should complete 2-part tutorial missions with all objectives', async ({ page }) => {
-        test.setTimeout(120000);
+test.describe.serial('E2E: Tutorial Mission Flow', () => {
+    /** @type {import('@playwright/test').BrowserContext} */
+    let context;
+    /** @type {import('@playwright/test').Page} */
+    let page;
 
-        // Capture console logs
+    const setSpeed = async (speed) => {
+        await page.evaluate((s) => window.gameContext.setSpecificTimeSpeed(s), speed);
+    };
+
+    test.beforeAll(async ({ browser }) => {
+        context = await browser.newContext();
+        page = await context.newPage();
         page.on('console', msg => console.log('BROWSER:', msg.text()));
+    });
 
-        // Helper to set game speed
-        const setSpeed = async (speed) => {
-            await page.evaluate((s) => window.gameContext.setSpecificTimeSpeed(s), speed);
-        };
+    test.afterAll(async () => {
+        await context.close();
+    });
+
+    test('Phase 1: Onboarding & Mission Board setup', async () => {
+        test.setTimeout(60000);
 
         // ========================================
         // STEP 1: Initial Setup & Welcome Messages
@@ -118,8 +127,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await page.waitForTimeout(100);
 
         await page.click('text=☰');
-        await page.waitForTimeout(100);
-        await page.click('text=OSNet Portal');
+        await page.locator('.app-launcher-menu >> text=OSNet Portal').click();
         await expect(page.locator('.window:has-text("OSNet Portal")').or(page.locator('.window:has-text("Portal")'))).toBeVisible();
 
         await page.click('button:has-text("Software")');
@@ -136,6 +144,10 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         // Verify Mission Board installed
         await page.click('text=☰');
         await expect(page.locator('.app-launcher-menu >> text=Mission Board')).toBeVisible();
+    });
+
+    test('Phase 2: Tutorial Part 1 - Repair mission & sabotage', async () => {
+        test.setTimeout(60000);
 
         // ========================================
         // STEP 4: Verify Mission in Mission Board
@@ -149,8 +161,6 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         if (await availableTab.count() > 0) {
             await availableTab.click();
         }
-
-        await page.waitForTimeout(1000);
 
         const missionCard = page.locator('.mission-card:has-text("Log File Repair")');
         await expect(missionCard).toBeVisible({ timeout: 5000 });
@@ -206,7 +216,6 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await page.waitForTimeout(100);
 
         await page.click('text=☰');
-        await page.waitForTimeout(200);
         const portalMenuItem = page.locator('.app-launcher-menu >> text=OSNet Portal');
         await expect(portalMenuItem).toBeVisible({ timeout: 5000 });
         await portalMenuItem.click();
@@ -234,8 +243,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         // STEP 8: Accept Mission
         // ========================================
         await page.click('text=☰');
-        await page.waitForTimeout(200);
-        await page.click('text=Mission Board');
+        await page.locator('.app-launcher-menu >> text=Mission Board').click();
         await expect(page.locator('.window:has(.window-header:has-text("SourceNet Mission Board"))')).toBeVisible();
 
         const missionCardToAccept = page.locator('.mission-card:has-text("Log File Repair")');
@@ -253,8 +261,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await setSpeed(1);
 
         await page.click('text=☰');
-        await page.waitForTimeout(200);
-        await page.click('text=SNet Mail');
+        await page.locator('.app-launcher-menu >> text=SNet Mail').click();
         await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
 
         const backToInboxBtn = page.locator('button:has-text("Back")');
@@ -312,10 +319,8 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         // ========================================
         const missionBoardWindowAfterScanner = page.locator('.window:has(.window-header:has-text("SourceNet Mission Board"))');
         await missionBoardWindowAfterScanner.locator('.window-controls button:has-text("×")').click();
-        await page.waitForTimeout(100);
 
         await page.click('text=☰');
-        await page.waitForTimeout(200);
 
         const vpnMenuItem = page.locator('.app-launcher-menu >> text=VPN Client').or(
             page.locator('.app-launcher-menu >> text=SourceNet VPN')
@@ -352,8 +357,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await page.waitForTimeout(100);
 
         await page.click('text=☰');
-        await page.waitForTimeout(200);
-        await page.click('text=Mission Board');
+        await page.locator('.app-launcher-menu >> text=Mission Board').click();
         await expect(page.locator('.window >> .window-header:has-text("SourceNet Mission Board")')).toBeVisible();
 
         await page.locator('.tab:has-text("Active")').click();
@@ -370,10 +374,8 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         // ========================================
         const missionBoardWindow2 = page.locator('.window:has(.window-header:has-text("Mission Board"))');
         await missionBoardWindow2.locator('.window-controls button:has-text("×")').click();
-        await page.waitForTimeout(100);
 
         await page.click('text=☰');
-        await page.waitForTimeout(200);
 
         const scannerMenuItem = page.locator('.app-launcher-menu >> text=Network Scanner').or(
             page.locator('.app-launcher-menu >> text=Scanner')
@@ -410,7 +412,6 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await page.waitForTimeout(100);
 
         await page.click('text=☰');
-        await page.waitForTimeout(200);
         await page.locator('.app-launcher-menu >> text=Mission Board').click();
         await expect(page.locator('.window >> .window-header:has-text("SourceNet Mission Board")')).toBeVisible();
 
@@ -453,7 +454,6 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await page.waitForTimeout(100);
 
         await page.click('text=☰');
-        await page.waitForTimeout(200);
         await page.locator('.app-launcher-menu >> text=Mission Board').click();
         await expect(page.locator('.window >> .window-header:has-text("SourceNet Mission Board")')).toBeVisible();
 
@@ -474,7 +474,6 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await page.waitForTimeout(100);
 
         await page.click('text=☰');
-        await page.waitForTimeout(200);
         await page.locator('.app-launcher-menu >> text=File Manager').click();
 
         const fileManagerWindowStep15 = page.locator('.window:has(.window-header:has-text("File Manager"))').first();
@@ -525,8 +524,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         }
 
         await page.click('text=☰');
-        await page.waitForTimeout(200);
-        await page.click('text=Mission Board');
+        await page.locator('.app-launcher-menu >> text=Mission Board').click();
         await expect(page.locator('.window >> .window-header:has-text("SourceNet Mission Board")')).toBeVisible();
 
         const missionStillActive = await page.evaluate(() => {
@@ -556,7 +554,6 @@ test.describe('E2E: Tutorial Mission Flow', () => {
 
         // Verify VPN disconnected
         await page.click('text=☰');
-        await page.waitForTimeout(200);
         const vpnMenuItem2 = page.locator('.app-launcher-menu >> text=VPN Client').or(
             page.locator('.app-launcher-menu >> text=SourceNet VPN')
         );
@@ -576,8 +573,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await page.waitForTimeout(100);
 
         await page.click('text=☰');
-        await page.waitForTimeout(200);
-        await page.click('text=Mission Board');
+        await page.locator('.app-launcher-menu >> text=Mission Board').click();
         await expect(page.locator('.window >> .window-header:has-text("SourceNet Mission Board")')).toBeVisible();
 
         await page.locator('.tab:has-text("Failed")').click();
@@ -595,6 +591,10 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await expect(page.locator('text=Tier 3').or(
             page.locator('text=Accident Prone')
         ).first()).toBeVisible({ timeout: 3000 });
+    });
+
+    test('Phase 3: Tutorial Part 2 - Restoration & procedural unlock', async () => {
+        test.setTimeout(60000);
 
         // ========================================
         // STEP 17: Read Failure Messages
@@ -607,8 +607,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await setSpeed(1);
 
         await page.click('text=☰');
-        await page.waitForTimeout(200);
-        await page.click('text=SNet Mail');
+        await page.locator('.app-launcher-menu >> text=SNet Mail').click();
         await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
 
         const backBtn = page.locator('button:has-text("Back")');
@@ -661,8 +660,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await page.waitForTimeout(100);
 
         await page.click('text=☰');
-        await page.waitForTimeout(200);
-        await page.click('text=Mission Board');
+        await page.locator('.app-launcher-menu >> text=Mission Board').click();
         await expect(page.locator('.window >> .window-header:has-text("SourceNet Mission Board")')).toBeVisible();
 
         await page.locator('.tab:has-text("Available")').click();
@@ -703,8 +701,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await page.waitForTimeout(200);
 
         await page.click('text=☰');
-        await page.waitForTimeout(200);
-        await page.click('text=Mail');
+        await page.locator('.app-launcher-menu >> text=SNet Mail').click();
         await page.waitForTimeout(500);
 
         const mailWindow3 = page.locator('.window').filter({ hasText: 'Mail' });
@@ -748,8 +745,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
 
         // Verify objectives
         await page.click('text=☰');
-        await page.waitForTimeout(200);
-        await page.click('text=Mission Board');
+        await page.locator('.app-launcher-menu >> text=Mission Board').click();
         await expect(page.locator('.window >> .window-header:has-text("SourceNet Mission Board")')).toBeVisible();
 
         await page.locator('.tab:has-text("Active")').click();
@@ -768,7 +764,6 @@ test.describe('E2E: Tutorial Mission Flow', () => {
 
         // Reconnect VPN
         await page.click('text=☰');
-        await page.waitForTimeout(200);
         const vpnMenuItem3 = page.locator('.app-launcher-menu >> text=VPN Client').or(
             page.locator('.app-launcher-menu >> text=SourceNet VPN')
         );
@@ -794,7 +789,6 @@ test.describe('E2E: Tutorial Mission Flow', () => {
 
         // Scan the network
         await page.click('text=☰');
-        await page.waitForTimeout(200);
         const scannerMenuItem2 = page.locator('.app-launcher-menu >> text=Network Scanner').or(
             page.locator('.app-launcher-menu >> text=Scanner')
         );
@@ -841,7 +835,6 @@ test.describe('E2E: Tutorial Mission Flow', () => {
 
         // Open File Manager #1 (backup-server)
         await page.click('text=☰');
-        await page.waitForTimeout(200);
         const fileManagerMenuItem2 = page.locator('.app-launcher-menu >> text=File Manager');
         await fileManagerMenuItem2.click();
         await page.waitForTimeout(200);
@@ -985,8 +978,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await page.waitForTimeout(200);
 
         await page.click('text=☰');
-        await page.waitForTimeout(200);
-        await page.click('text=Mission Board');
+        await page.locator('.app-launcher-menu >> text=Mission Board').click();
         await expect(page.locator('.window >> .window-header:has-text("SourceNet Mission Board")')).toBeVisible();
 
         await page.locator('.tab:has-text("Completed")').click();
@@ -1009,8 +1001,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await setSpeed(1);
 
         await page.click('text=☰');
-        await page.waitForTimeout(200);
-        await page.click('text=SNet Mail');
+        await page.locator('.app-launcher-menu >> text=SNet Mail').click();
         await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
 
         const backBtnPayment = page.locator('button:has-text("Back")');
@@ -1074,18 +1065,20 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         const betterMsgBody = await page.locator('.message-body').textContent();
         expect(betterMsgBody.length).toBeGreaterThan(50);
 
-        await page.waitForTimeout(5000);
+        // Wait for procedural mission generation (triggered by reading "Better" message)
+        await page.waitForFunction(
+            () => (window.gameContext?.missionPool?.length || 0) >= 4,
+            { timeout: 15000 }
+        );
 
         // ========================================
         // STEP 26.5: Verify Procedural Missions Generated
         // ========================================
-        // Reading the "Better" message triggers procedural mission generation
         // Close Mail and check Mission Board for generated missions
         await page.locator('.window:has(.window-header:has-text("Mail"))').locator('.window-controls button:has-text("×")').click({ force: true });
         await page.waitForTimeout(300);
 
         await page.click('text=☰');
-        await page.waitForTimeout(500);
         const missionBoardMenuItem = page.locator('.app-launcher-menu >> text=Mission Board').or(
             page.locator('.app-launcher-menu >> text=SourceNet Mission Board')
         );
@@ -1116,8 +1109,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
         await page.waitForTimeout(100);
 
         await page.click('text=☰');
-        await page.waitForTimeout(200);
-        await page.click('text=SNet Mail');
+        await page.locator('.app-launcher-menu >> text=SNet Mail').click();
         await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
 
         // Go back to inbox if needed
@@ -1153,7 +1145,7 @@ test.describe('E2E: Tutorial Mission Flow', () => {
 
         // Verify installed apps
         await page.click('text=☰');
-        await page.waitForTimeout(200);
+        await expect(page.locator('.app-launcher-menu')).toBeVisible();
         const appMenuItems = await page.locator('.app-launcher-menu button').count();
         expect(appMenuItems).toBeGreaterThanOrEqual(8);
 

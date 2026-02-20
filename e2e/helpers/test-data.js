@@ -20,6 +20,18 @@ export const STARTING_HARDWARE = [
     { id: 'storage-1', type: 'storage', name: 'Standard HDD', specs: '500 GB' },
 ];
 
+/**
+ * Default hardware in the real save format (object with slots, not array)
+ */
+export const DEFAULT_HARDWARE = {
+    cpu: { id: 'cpu-1ghz-single', name: '1GHz Single Core', power: 65 },
+    memory: [{ id: 'ram-2gb', name: '2GB RAM', power: 3 }],
+    storage: [{ id: 'ssd-90gb', name: '90GB SSD', power: 2 }],
+    motherboard: { id: 'board-basic', name: 'Basic Board', power: 5 },
+    powerSupply: { id: 'psu-300w', name: '300W PSU', wattage: 300 },
+    network: { id: 'net-250mb', name: '250Mb Network Card', power: 5 },
+};
+
 export const STARTING_BANK_ACCOUNT = {
     id: 'acc-1',
     name: 'Current Account',
@@ -198,4 +210,64 @@ export function createMessageWithCheque(amount = 500) {
             },
         ],
     };
+}
+
+// ============================================================================
+// E2E SAVE BUILDERS (realistic save format for browser localStorage)
+// ============================================================================
+
+/**
+ * Create a realistic save state matching the actual game save format.
+ * Uses DEFAULT_HARDWARE and imports STARTING_SOFTWARE from gameConstants at runtime.
+ * @param {string} username - Username for the save
+ * @param {number} balance - Bank account balance
+ * @param {Object} overrides - Optional overrides for any save properties
+ * @returns {Object} Complete save state object in the real save format
+ */
+export function createRealisticSave(username, balance = 1000, overrides = {}) {
+    return {
+        username,
+        playerMailId: `SNET-TST-${username.slice(-3)}-XXX`,
+        currentTime: '2020-03-25T10:30:00.000Z',
+        hardware: { ...DEFAULT_HARDWARE },
+        software: [...STARTING_SOFTWARE],
+        bankAccounts: [
+            { id: 'account-first-bank', bankName: 'First Bank Ltd', balance },
+        ],
+        messages: [],
+        managerName: 'TestManager',
+        windows: [],
+        savedAt: new Date().toISOString(),
+        saveName: username,
+        ...overrides,
+    };
+}
+
+/**
+ * Store a save in the browser's localStorage via page.evaluate.
+ * @param {Page} page - Playwright page object
+ * @param {string} username - Username key for the save slot
+ * @param {Object} saveData - Save data object (from createRealisticSave or similar)
+ */
+export async function storeSaveInBrowser(page, username, saveData) {
+    await page.evaluate(({ username, saveData }) => {
+        const saves = JSON.parse(localStorage.getItem('sourcenet_saves') || '{}');
+        saves[username] = [saveData];
+        localStorage.setItem('sourcenet_saves', JSON.stringify(saves));
+    }, { username, saveData });
+}
+
+/**
+ * Store multiple saves in the browser's localStorage via page.evaluate.
+ * @param {Page} page - Playwright page object
+ * @param {Object} savesMap - Map of username → saveData (e.g., { user1: saveData1, user2: saveData2 })
+ */
+export async function storeMultipleSavesInBrowser(page, savesMap) {
+    await page.evaluate((savesMap) => {
+        const saves = {};
+        for (const [username, saveData] of Object.entries(savesMap)) {
+            saves[username] = [saveData];
+        }
+        localStorage.setItem('sourcenet_saves', JSON.stringify(saves));
+    }, savesMap);
 }

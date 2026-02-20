@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { GameProvider } from '../../contexts/GameContext';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { renderWithGame } from '../../test/helpers/renderHelpers';
 import TopBar from './TopBar';
 
 // Mock helpers module with all required exports
@@ -12,44 +12,40 @@ vi.mock('../../utils/helpers', async (importOriginal) => {
   };
 });
 
-const renderWithProvider = (component) => {
-  return render(<GameProvider>{component}</GameProvider>);
-};
-
 describe('TopBar Component', () => {
   it('should render power button', () => {
-    renderWithProvider(<TopBar />);
+    renderWithGame(<TopBar />);
     expect(screen.getByText('⏻')).toBeInTheDocument();
   });
 
   it('should display formatted time', () => {
-    renderWithProvider(<TopBar />);
+    renderWithGame(<TopBar />);
     expect(screen.getByText('25/03/2020 09:00:00')).toBeInTheDocument();
   });
 
   it('should display time speed toggle', () => {
-    renderWithProvider(<TopBar />);
+    renderWithGame(<TopBar />);
     expect(screen.getByText('1x')).toBeInTheDocument();
   });
 
   it('should display credits', () => {
-    renderWithProvider(<TopBar />);
+    renderWithGame(<TopBar />);
     expect(screen.getByText(/0 credits/)).toBeInTheDocument();
   });
 
   it('should display notification icons', () => {
-    renderWithProvider(<TopBar />);
+    renderWithGame(<TopBar />);
     expect(screen.getByText('✉')).toBeInTheDocument();
     expect(screen.getByText('💳')).toBeInTheDocument();
   });
 
   it('should display app launcher button', () => {
-    renderWithProvider(<TopBar />);
+    renderWithGame(<TopBar />);
     expect(screen.getByText('☰')).toBeInTheDocument();
   });
 
   it('should show power menu on hover', async () => {
-    renderWithProvider(<TopBar />);
+    renderWithGame(<TopBar />);
     const powerButton = screen.getByText('⏻');
 
     fireEvent.mouseEnter(powerButton.parentElement);
@@ -64,7 +60,7 @@ describe('TopBar Component', () => {
   });
 
   it('should show app launcher menu on hover', async () => {
-    renderWithProvider(<TopBar />);
+    renderWithGame(<TopBar />);
     const appLauncherButton = screen.getByText('☰');
 
     fireEvent.mouseEnter(appLauncherButton.parentElement);
@@ -77,7 +73,7 @@ describe('TopBar Component', () => {
   });
 
   it('should toggle time speed when clicked', () => {
-    renderWithProvider(<TopBar />);
+    renderWithGame(<TopBar />);
     const speedToggle = screen.getByText('1x');
 
     fireEvent.click(speedToggle);
@@ -86,7 +82,7 @@ describe('TopBar Component', () => {
   });
 
   it('should toggle pause/resume when pause button clicked', async () => {
-    renderWithProvider(<TopBar />);
+    renderWithGame(<TopBar />);
     const powerButton = screen.getByText('⏻');
 
     fireEvent.mouseEnter(powerButton.parentElement);
@@ -109,7 +105,7 @@ describe('TopBar Component', () => {
     global.prompt = vi.fn(() => 'TestSave');
     global.alert = vi.fn();
 
-    renderWithProvider(<TopBar />);
+    renderWithGame(<TopBar />);
     const powerButton = screen.getByText('⏻');
 
     fireEvent.mouseEnter(powerButton.parentElement);
@@ -125,7 +121,7 @@ describe('TopBar Component', () => {
   });
 
   it('should show load modal when Load clicked', async () => {
-    renderWithProvider(<TopBar />);
+    renderWithGame(<TopBar />);
     const powerButton = screen.getByText('⏻');
 
     fireEvent.mouseEnter(powerButton.parentElement);
@@ -148,7 +144,7 @@ describe('TopBar Component', () => {
   it('should show confirmation when Reboot clicked', async () => {
     global.confirm = vi.fn(() => false); // User cancels
 
-    renderWithProvider(<TopBar />);
+    renderWithGame(<TopBar />);
     const powerButton = screen.getByText('⏻');
 
     fireEvent.mouseEnter(powerButton.parentElement);
@@ -165,7 +161,7 @@ describe('TopBar Component', () => {
   });
 
   it('should show Sleep option in power menu', async () => {
-    renderWithProvider(<TopBar />);
+    renderWithGame(<TopBar />);
     const powerButton = screen.getByText('⏻');
 
     fireEvent.mouseEnter(powerButton.parentElement);
@@ -179,7 +175,7 @@ describe('TopBar Component', () => {
 
   describe('bandwidth indicator', () => {
     it('should display bandwidth indicator', () => {
-      renderWithProvider(<TopBar />);
+      renderWithGame(<TopBar />);
 
       // Bandwidth indicator should be present (idle state shows circle)
       const bandwidthIndicator = document.querySelector('.topbar-bandwidth');
@@ -187,7 +183,7 @@ describe('TopBar Component', () => {
     });
 
     it('should show idle icon when no active operations', () => {
-      renderWithProvider(<TopBar />);
+      renderWithGame(<TopBar />);
 
       const bandwidthIndicator = document.querySelector('.topbar-bandwidth');
       expect(bandwidthIndicator).toBeInTheDocument();
@@ -195,7 +191,7 @@ describe('TopBar Component', () => {
     });
 
     it('should have bandwidth class on indicator', () => {
-      renderWithProvider(<TopBar />);
+      renderWithGame(<TopBar />);
 
       const bandwidthIndicator = document.querySelector('.topbar-bandwidth');
       expect(bandwidthIndicator).toBeInTheDocument();
@@ -203,21 +199,21 @@ describe('TopBar Component', () => {
     });
 
     it('should have bandwidth icon element', () => {
-      renderWithProvider(<TopBar />);
+      renderWithGame(<TopBar />);
 
       const bandwidthIcon = document.querySelector('.bandwidth-icon');
       expect(bandwidthIcon).toBeInTheDocument();
     });
 
     it('should not show speed element when inactive', () => {
-      renderWithProvider(<TopBar />);
+      renderWithGame(<TopBar />);
 
       const speedElement = document.querySelector('.bandwidth-speed');
       expect(speedElement).not.toBeInTheDocument();
     });
 
     it('should show preview with Total, In Use, Available, Active Operations on hover', async () => {
-      renderWithProvider(<TopBar />);
+      renderWithGame(<TopBar />);
 
       const bandwidthIndicator = document.querySelector('.topbar-bandwidth');
       fireEvent.mouseEnter(bandwidthIndicator);
@@ -234,7 +230,7 @@ describe('TopBar Component', () => {
     });
 
     it('should show total bandwidth in MB/s format', async () => {
-      renderWithProvider(<TopBar />);
+      renderWithGame(<TopBar />);
 
       const bandwidthIndicator = document.querySelector('.topbar-bandwidth');
       fireEvent.mouseEnter(bandwidthIndicator);
@@ -245,7 +241,7 @@ describe('TopBar Component', () => {
     });
 
     it('should not show usage bar when idle', () => {
-      renderWithProvider(<TopBar />);
+      renderWithGame(<TopBar />);
 
       const usageBar = document.querySelector('.bandwidth-usage-bar');
       expect(usageBar).not.toBeInTheDocument();

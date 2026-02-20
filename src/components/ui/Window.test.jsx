@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { GameProvider } from '../../contexts/GameContext';
+import { screen } from '@testing-library/react';
+import { renderWithGame } from '../../test/helpers/renderHelpers';
 import Window from './Window';
 
 // Mock the app components
@@ -23,41 +23,37 @@ const mockWindow = {
   position: { x: 100, y: 100 },
 };
 
-const renderWithProvider = (component) => {
-  return render(<GameProvider>{component}</GameProvider>);
-};
-
 describe('Window Component', () => {
   it('should render window with correct title', () => {
-    renderWithProvider(<Window window={mockWindow} />);
+    renderWithGame(<Window window={mockWindow} />);
     expect(screen.getByText('SNet Mail')).toBeInTheDocument();
   });
 
   it('should render minimize button', () => {
-    renderWithProvider(<Window window={mockWindow} />);
+    renderWithGame(<Window window={mockWindow} />);
     expect(screen.getByTitle('Minimize')).toBeInTheDocument();
   });
 
   it('should render close button', () => {
-    renderWithProvider(<Window window={mockWindow} />);
+    renderWithGame(<Window window={mockWindow} />);
     expect(screen.getByTitle('Close')).toBeInTheDocument();
   });
 
   it('should render app content', () => {
-    renderWithProvider(<Window window={mockWindow} />);
+    renderWithGame(<Window window={mockWindow} />);
     expect(screen.getByText('SNet Mail App')).toBeInTheDocument();
   });
 
   it('should render banking app when appId is banking', () => {
     const bankingWindow = { ...mockWindow, appId: 'banking' };
-    renderWithProvider(<Window window={bankingWindow} />);
+    renderWithGame(<Window window={bankingWindow} />);
     expect(screen.getByText('Banking App')).toBeInTheDocument();
     expect(screen.getByText('SNet Banking App')).toBeInTheDocument();
   });
 
   it('should render portal app when appId is portal', () => {
     const portalWindow = { ...mockWindow, appId: 'portal' };
-    renderWithProvider(<Window window={portalWindow} />);
+    renderWithGame(<Window window={portalWindow} />);
     expect(screen.getByText('Portal App')).toBeInTheDocument();
     expect(screen.getByText('OSNet Portal')).toBeInTheDocument();
   });

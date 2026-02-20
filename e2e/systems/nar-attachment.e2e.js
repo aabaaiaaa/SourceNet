@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openMail, readMessage } from '../helpers/common-actions.js';
 
 test.describe('E2E: Network Address Attachment Flow', () => {
     test.beforeEach(async ({ page }) => {
@@ -99,14 +100,10 @@ test.describe('E2E: Network Address Attachment Flow', () => {
         // STEP 2: Open Mail and verify network attachment is clickable
         // ========================================
 
-        await page.hover('text=☰');
-        await page.click('text=SNet Mail');
-
-        const mailWindow = page.locator('.window:has-text("SNet Mail")');
-        await expect(mailWindow).toBeVisible();
+        await openMail(page);
 
         // Click on the VPN message
-        await page.click('.message-item:has-text("VPN Access Credentials")');
+        await readMessage(page, 'VPN Access Credentials');
 
         // Verify message is displayed
         await expect(page.locator('text=You have been granted access')).toBeVisible();
@@ -203,12 +200,10 @@ test.describe('E2E: Network Address Attachment Flow', () => {
         await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
         // Open Mail
-        await page.hover('text=☰');
-        await page.click('text=SNet Mail');
-        await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
+        await openMail(page);
 
         // Click on the VPN message
-        await page.click('.message-item:has-text("VPN Access Credentials")');
+        await readMessage(page, 'VPN Access Credentials');
 
         // Verify attachment shows install requirement message
         await expect(page.locator('text=Install Network Address Register to use this attachment')).toBeVisible();
@@ -337,10 +332,8 @@ test.describe('E2E: Network Address Attachment Flow', () => {
         await expect(page.locator('.desktop')).toBeVisible({ timeout: 5000 });
 
         // Open Mail and click the extension message
-        await page.hover('text=☰');
-        await page.click('text=SNet Mail');
-        await expect(page.locator('.window:has-text("SNet Mail")')).toBeVisible();
-        await page.click('.message-item:has-text("Mission Extension: Archive Server Access")');
+        await openMail(page);
+        await readMessage(page, 'Mission Extension: Archive Server Access');
 
         // Verify message content shows the server name (not placeholder)
         await expect(page.locator('text=ACME-archive')).toBeVisible();
