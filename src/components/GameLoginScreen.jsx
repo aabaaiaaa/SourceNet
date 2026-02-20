@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useGame } from '../contexts/useGame';
 import { getAllSavesFlat, deleteSave } from '../utils/helpers';
+import { getBuildString } from '../utils/buildInfo';
 import './GameLoginScreen.css';
 
 const GameLoginScreen = () => {
@@ -147,6 +148,8 @@ const GameLoginScreen = () => {
         <button className="new-game-btn" onClick={handleNewGame}>
           + New Game
         </button>
+
+        <div className="build-version">{getBuildString()}</div>
       </div>
     </div>
   );

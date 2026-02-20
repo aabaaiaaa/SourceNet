@@ -184,6 +184,13 @@
   text-align: center;
 }
 
+.debug-build-info {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #888;
+  text-align: center;
+}
+
 /* State Controls */
 .state-controls {
   display: flex;

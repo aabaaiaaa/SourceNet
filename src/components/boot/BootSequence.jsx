@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '../../contexts/useGame';
+import { getBuildString } from '../../utils/buildInfo';
 import './BootSequence.css';
 
 const BootSequence = () => {
@@ -198,6 +199,7 @@ const BootSequence = () => {
             <div className="logo-line"> \___/|____/|_| \_|\___|\___|</div>
           </div>
           <div className="osnet-title">SourceNet Operating System</div>
+          <div className="build-version">{getBuildString()}</div>
           <div className="progress-bar-container">
             <div className="progress-bar-label">Installing...</div>
             <div className="progress-bar-outer">

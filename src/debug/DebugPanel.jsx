@@ -18,6 +18,7 @@ import { getAllClients, getClientsGroupedByIndustry, getIndustryInfo } from '../
 import { canAccessClientType } from '../systems/ReputationSystem';
 import networkRegistry from '../systems/NetworkRegistry';
 import triggerEventBus from '../core/triggerEventBus';
+import { BUILD_SHA, BUILD_DATE, getTimeAgo } from '../utils/buildInfo';
 import './DebugPanel.css';
 
 const DebugPanel = ({ onClose }) => {
@@ -613,6 +614,10 @@ const DebugPanel = ({ onClose }) => {
 
         <div className="debug-footer">
           <p className="debug-warning">⚠️ Development Mode Only - Changes not saved unless you use Save Game</p>
+          <p className="debug-build-info">
+            Build: {BUILD_SHA}
+            {BUILD_DATE && <> | {new Date(BUILD_DATE).toLocaleString()} ({getTimeAgo(BUILD_DATE)})</>}
+          </p>
         </div>
       </div>
     </div>
